@@ -1,0 +1,37 @@
+# Allow specific file types
+!*.tex
+!*.png
+!*.jpg
+!*.jpeg
+!*.svg
+!*.gif
+!*.md
+!Makefile
+!*.bib
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Ignore LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# Ignore temporary files
+*.tmp
+*.bak
+*.swp
+
+# Ignore output files
+*.pdf
+
+main.synctex(busy)

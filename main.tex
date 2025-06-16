@@ -1,0 +1,33 @@
+\documentclass[12pt,a4paper]{report}
+\input{styles/codespace.tex}
+
+\setDocsName{Module Bluetooth}
+\setDocsType{ }
+\setAuthName{
+    \fontsize{20pt}{20pt}\selectfont \textit{\textbf{Hướng dẫn:} Huỳnh Hoàng Kha} \\
+    \\
+    \fontsize{20pt}{20pt}\selectfont \textit{Hồng Thiện Nhân} \\
+    % \fontsize{20pt}{20pt}\selectfont \textit{Trần Hải Thảo Quảng} \\
+}
+\setCityName{Tp. Hồ Chí Minh}
+\setOrgName{Trường Đại học Bách Khoa, Đại học Quốc Gia TP.HCM}
+
+\begin{document}
+    \input{contents/cover.tex}
+    \tableofcontents
+    \listoffigures
+    \listoftables
+    % \input{contents/introduction.tex}
+    % \input{contents/sample_main_content.tex}
+    % \input{contents/sample_figure.tex}
+    % \input{contents/sample_table.tex}
+    % \input{contents/sample_code.tex}
+
+    \input{contents/preparation.tex}
+
+    \nocite{*}
+    \newpage
+    \bibliographystyle{plain}
+    \bibliography{bibliography.bib}
+
+\end{document}

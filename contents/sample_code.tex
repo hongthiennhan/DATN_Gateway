@@ -1,0 +1,39 @@
+\chapter{Sample Code}
+    \section{Python}
+        \begin{lstlisting}[language=Python, caption=Python Example]
+            def greet(name):
+                print(f"Hello, {name}!")
+
+            greet("World")
+        \end{lstlisting}
+
+    \section{Java}
+        \begin{lstlisting}[language=Java, caption=Java Example]
+            public class Main {
+                public static void main(String[] args) {
+                    System.out.println("Hello, World!");
+                }
+            }
+        \end{lstlisting}
+
+    \section{C++}
+        \begin{lstlisting}[
+            language=C++,
+            basicstyle=\ttfamily\small,  % Cỡ chữ nhỏ, font monospace
+            keywordstyle=\color{blue},   % Màu xanh cho từ khóa
+            stringstyle=\color{red},     % Màu đỏ cho chuỗi
+            commentstyle=\color{gray},   % Màu xám cho comment
+            numbers=left,                % Đánh số dòng bên trái
+            numberstyle=\tiny\color{gray}, % Cỡ chữ nhỏ cho số dòng
+            frame=single,                 % Viền xung quanh đoạn code
+            caption=C++ Example
+        ]
+            /* Comment in C++ */
+            #include <iostream>
+            using namespace std;
+            
+            int main() {
+                cout << "Hello, World!" << endl;
+                return 0;
+            }
+        \end{lstlisting}

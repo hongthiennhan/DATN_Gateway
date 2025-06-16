@@ -1,0 +1,177 @@
+% ==========================
+% Gói hỗ trợ màu sắc
+% ==========================
+\usepackage{xcolor}
+\definecolor{TLgreen}{HTML}{00a79d}
+\usepackage[table,xcdraw]{xcolor}
+% ==========================
+% Gói hỗ trợ toán học và định dạng
+% ==========================
+\usepackage{amsmath}    % Hỗ trợ các công thức toán học
+\usepackage{amsfonts}   % Hỗ trợ các font toán học
+\usepackage{listings}   % Hỗ trợ hiển thị mã nguồn
+\lstset{
+    basicstyle=\ttfamily\small,       % Font monospace nhỏ
+    keywordstyle=\color{blue},        % Màu xanh cho từ khóa
+    stringstyle=\color{red},          % Màu đỏ cho chuỗi
+    commentstyle=\color{gray},        % Màu xám cho comment
+    identifierstyle=\color{black},    % Màu đen cho tên biến/hàm
+    numberstyle=\tiny\color{gray},    % Số dòng nhỏ màu xám
+    backgroundcolor=\color{lightgray!20}, % Nền xám nhạt
+    numbers=left,                     % Hiển thị số dòng
+    frame=single,                     % Viền quanh đoạn code
+    breaklines=true,                  % Tự động xuống dòng
+    breakatwhitespace=true            % Chỉ xuống dòng tại khoảng trắng
+}
+
+% ==========================
+% Gói hỗ trợ hình ảnh và liên kết
+% ==========================
+\usepackage{graphicx}                % Hỗ trợ chèn hình ảnh
+\usepackage{xurl}
+\usepackage[
+    hidelinks,
+    colorlinks=true,
+    linkcolor=black,   % Màu cho link nội bộ (như mục lục)
+    citecolor=black,   % Màu cho trích dẫn (nếu có)
+    filecolor=black,   % Màu cho file links (ít dùng)
+    urlcolor=blue      % Màu của \url
+]{hyperref}
+\usepackage{subcaption}  % Hỗ trợ chú thích con
+\usepackage{longtable}   % Hỗ trợ bảng dài
+\usepackage{multirow}
+\setlength{\parindent}{0pt}          % Không thụt đầu dòng
+\usepackage{parskip}                 % Thêm khoảng cách giữa các đoạn
+
+% ==========================
+% Hỗ trợ tiếng Việt và Unicode
+% ==========================
+\usepackage[T5]{fontenc}             % Hỗ trợ mã hóa font
+\usepackage[utf8]{inputenc}          % Hỗ trợ Unicode UTF-8
+\usepackage[vietnamese]{babel}          % Ngôn ngữ (vietnamese/english)
+\addto\extrasvietnamese{
+    \renewcommand{\equationautorefname}{Phương trình}
+    \renewcommand{\figureautorefname}{Hình}
+    \renewcommand{\tableautorefname}{Bảng}
+    \renewcommand{\sectionautorefname}{Mục}
+    \renewcommand{\subsectionautorefname}{Tiểu mục}
+    \renewcommand{\subsubsectionautorefname}{Mục nhỏ}
+}
+
+% ==========================
+% Thiết lập lề trang
+% ==========================
+\usepackage[a4paper, left=0.5in, right=1in, top=1in, bottom=1in]{geometry} % Lề trang chuẩn
+\geometry{top=3cm, bottom=3cm, left=3cm, right=3cm} % Ghi đè lề trang nếu cần
+
+% ==========================
+% Gói hỗ trợ bố cục nhiều cột
+% ==========================
+\usepackage{multicol}
+
+% ==========================
+% Gói hỗ trợ đồ họa và nền
+% ==========================
+\usepackage{tikz}                    % Hỗ trợ đồ họa
+\usepackage{transparent}             % Hỗ trợ độ trong suốt
+\usetikzlibrary{shadings, fadings}   % Thư viện TikZ cho hiệu ứng
+\usetikzlibrary{calc}                % Thư viện TikZ cho tính toán tọa độ
+
+% ==========================
+% Header và Footer
+% ==========================
+\usepackage{fancyhdr}                % Hỗ trợ chỉnh header và footer
+\pagestyle{fancy}                    % Kích hoạt kiểu header/footer fancy
+\fancyhf{}                           % Xóa header/footer mặc định
+
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \setlength{\headsep}{10pt}
+
+    \fancyfoot[C]{
+        \\[-20pt]
+        {\color{TLgreen}\rule{\textwidth}{1pt}} % Đường kẻ màu xanh
+        \thepage
+    }
+    \setlength{\footskip}{75pt}
+}
+
+% Thiết lập header
+\renewcommand{\headrulewidth}{0pt}
+
+\fancyhead[L]{
+    {\color{TLgreen}\Large\textbf{\docsName}}\\
+    {\color{TLgreen}\rule{\textwidth}{5pt}}\\[-12pt]
+    {\color{TLgreen}\rule{\textwidth}{1pt}}
+    \leftmark
+}
+
+\fancyhead[R]{
+    \includegraphics[height=1.2cm]{figures/logo/START_HERE__GO_ANYWHERE-removebg-preview.png}
+    \\[10pt]
+    \rightmark
+}
+\setlength{\headsep}{65pt}
+
+% Thiết lập footer
+\fancyfoot[C]{
+    \\[-20pt]
+    {\color{TLgreen}\rule{\textwidth}{1pt}}
+    \thepage
+}
+\setlength{\footskip}{20pt}
+
+% Đường kẻ header/footer
+% \renewcommand{\headrulewidth}{0.4pt} % Độ dày đường kẻ header
+% \renewcommand{\headrule}{\color{TLgreen}\hrule width\headwidth height\headrulewidth}
+% \renewcommand{\footrulewidth}{0.4pt} % Độ dày đường kẻ footer
+
+% ==========================
+% Gói hỗ trợ thiết lập nền
+% ==========================
+\usepackage{background}
+\backgroundsetup{
+    scale=1,
+    color=TLgreen,
+    opacity=1,
+    position={8cm,2.1cm},
+    angle=0,
+    vshift=0cm,
+    pages=all,
+    contents={
+        \ifnum\value{page}>1
+            \rule{25cm}{1cm}
+        \fi
+    },
+}
+
+% ==========================
+% Biến tùy chỉnh
+% ==========================
+\newcommand{\docsName}{Documentation Name}
+\newcommand{\docsType}{Documentation type}
+\newcommand{\authName}{
+    \fontsize{20pt}{20pt}\selectfont \textit{Author 1} \\
+    \fontsize{20pt}{20pt}\selectfont \textit{Author 2} \\
+    \fontsize{20pt}{20pt}\selectfont \textit{Author 3} \\
+}
+\newcommand{\cityName}{City}
+\newcommand{\orgName}{Organization}
+
+% Cho phép người dùng thay đổi giá trị các biến
+\newcommand{\setDocsName}[1]{\renewcommand{\docsName}{#1}}
+\newcommand{\setDocsType}[1]{\renewcommand{\docsType}{#1}}
+\newcommand{\setAuthName}[1]{\renewcommand{\authName}{#1}}
+\newcommand{\setCityName}[1]{\renewcommand{\cityName}{#1}}
+\newcommand{\setOrgName}[1]{\renewcommand{\orgName}{#1}}
+
+% ==========================
+% Thiết lập độ sâu của mục lục
+% ==========================
+\setcounter{secnumdepth}{5}    % Đánh số đến 5 cấp
+\setcounter{tocdepth}{3}       % Hiển thị trong mục lục đến 3 cấp
+
+% Định nghĩa lại tên các cấp (tùy chọn)
+\renewcommand{\theparagraph}{\thesubsubsection.\arabic{paragraph}}
+\renewcommand{\thesubparagraph}{\theparagraph.\arabic{subparagraph}}
