@@ -36,14 +36,10 @@ Theo khảo sát sản phẩm, \textbf{Ethernet} và \textbf{Wi-Fi} là các gia
         \item \url{https://research.aimultiple.com/iot-applications/}
         \item \url{https://www.particle.io/iot-guides-and-resources/iot-gateway/} - trang này hay phết.
         \item \url{https://www.kaaiot.com/iot-knowledge-base/top-17-protocols-iot-use-cases}
-        \item \url{}
-        \item \url{}
-        \item \url{}
-        \item \url{}
-        \item \url{}
-        \item \url{}
-        \item \url{}
-        \item \url{}
+        \item \url{https://www.azilen.com/blog/iot-protocols/}
+        \item \url{https://www.pusr.com/blog/Six-types-of-iot-gateway-selection-functions-protocols-and-application-scenarios}
+        \item \url{https://thingsboard.io/docs/iot-gateway/}
+        \item \url{https://www.slideshare.net/slideshow/iot-hardware-innovation/81363705}
         \item \url{}
         \item \url{}
     \end{itemize}
@@ -55,8 +51,6 @@ Theo khảo sát sản phẩm, \textbf{Ethernet} và \textbf{Wi-Fi} là các gia
 
 \section*{Note phần cần tìm hiểu}
 \begin{itemize}
-    \item Cần xác định cách cấu hình gateway sao cho khi cắm bất kỳ module nào vào, 
-    hệ thống có thể tự nhận diện và áp dụng cấu hình phù hợp.
     \item Liên quan đến các từ khóa:
     \begin{itemize}
         \item Linux / MCU - FreeRTOS (Embed OS - ARM)
@@ -83,14 +77,28 @@ Theo khảo sát sản phẩm, \textbf{Ethernet} và \textbf{Wi-Fi} là các gia
         \item các giao thức để giao tiếp giữa các node/end device với gateway:
         \begin{itemize}
             \item Kết nối các thiết bị IoT với mạng nội bộ hoặc internet.
+        \end{itemize}
+        \item các yêu cầu người dùng khác nhau, tùy use case:
+        \item các yêu cầu về giao thức để giao tiếp với server/cloud:
+        \begin{itemize}
             \item Gateway hỗ trợ giao tiếp với server nào, địa chỉ nào(Ipv4, Ipv6)?
             \item Sử dụng giao thức tầng ứng dụng (HTTP, MQTT...) hay tầng network (UDP, TCP...)?
             \item Có hỗ trợ giao thức bảo mật (SSL/TLS...) không?
         \end{itemize}
-        \item các yêu cầu người dùng khác nhau, tùy use case:
-        \item các yêu cầu về giao thức để giao tiếp với server/cloud:
-        \item các yêu cầu về khả năng mở rộng của gateway:
+        \item các yêu cầu về khả năng cấu hình và mở rộng của gateway:
         \begin{itemize}
+            \item Khi cấu hình gateway bằng máy tính:
+            \begin{itemize}
+                \item Cần có giao diện người dùng (GUI) hay dòng lệnh (CLI)?
+                \item Có cần hỗ trợ cấu hình từ xa không?
+                \item Có cần hỗ trợ cập nhật firmware qua mạng không?
+                \item Cắm vào vị trí nào trên mạch?
+                \item Luồng dữ liệu chạy như thế nào trong hệ thống khi cấu hình và khi vận hành? 
+                \item Cần xác định cách cấu hình gateway sao cho khi cắm bất kỳ module nào vào, 
+                hệ thống có thể tự nhận diện và áp dụng cấu hình phù hợp.
+            \end{itemize}
+            \item Nếu gặp thiết bị có tập lệnh tự định nghĩa, gateway sẽ hiểu và giao tiếp với
+            chúng như thế nào? Có thể định nghĩa tập lệnh mới mà không phải viết lại chương trình không?
             \item Định nghĩa một tập lệnh riêng, buộc thiết bị phải tuân thủ?
             \item Hỗ trợ một số tập lệnh tiêu chuẩn, bỏ qua thiết bị không theo chuẩn?
             \item Kết hợp cả hai hướng trên?
