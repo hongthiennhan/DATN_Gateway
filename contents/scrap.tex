@@ -75,6 +75,60 @@ Theo khảo sát sản phẩm, \textbf{Ethernet} và \textbf{Wi-Fi} là các gia
     \item Cần tìm hiểu các use case của IoT Gateway.
     \begin{itemize}
         \item các giao thức để giao tiếp giữa các node/end device với gateway:
+        \subsection*{1. Giao Thức Truyền Thông Dữ Liệu (Data Link/Protocol Layer)}
+        \begin{itemize}
+            \item \textbf{Modbus (RTU/ASCII/TCP):}
+            \begin{itemize}
+                \item Rất phổ biến trong công nghiệp, dùng để truyền dữ liệu giữa gateway và thiết bị qua RS485, RS232 hoặc TCP/IP.
+                \item Hỗ trợ cả cảm biến và chấp hành, dễ cấu hình, mạnh về khả năng mở rộng.
+            \end{itemize}
+            \item \textbf{CAN/CANopen (Controller Area Network):}
+            \begin{itemize}
+                \item Được dùng nhiều trong ô tô, máy công nghiệp, cho phép nhiều thiết bị giao tiếp song song trên một bus vật lý.
+                \item Chuẩn SAE J1939 là biến thể phổ biến trong công nghiệp nặng.
+            \end{itemize}
+            \item \textbf{IO-Link:}
+            \begin{itemize}
+                \item Chuẩn mở theo IEC 61131-9, cho phép giao tiếp hai chiều giữa master (gateway) và sensor/actuator.
+                \item Hỗ trợ cấu hình, chẩn đoán thiết bị từ xa, thường dùng trong tự động hóa nhà máy.
+            \end{itemize}
+            \item \textbf{1-Wire, Dallas/Maxim:}
+            \begin{itemize}
+                \item Giao tiếp đơn giản, dùng cho cảm biến nhiệt độ, độ ẩm, v.v.
+            \end{itemize}
+        \end{itemize}
+        \subsection*{2. Giao Thức Không Dây (Wireless Protocols)}
+        \begin{itemize}
+            \item \textbf{Zigbee, Z-Wave, Bluetooth Low Energy (BLE):}
+            \begin{itemize}
+                \item Dùng cho các mạng cảm biến không dây, smart home, smart building.
+                \item Gateway cần có module radio và stack phần mềm tương ứng để giao tiếp với thiết bị.
+            \end{itemize}
+            \item \textbf{LoRa/LoRaWAN:}
+            \begin{itemize}
+                \item Phù hợp cho các ứng dụng IoT diện rộng, tiết kiệm năng lượng, truyền dữ liệu tầm xa.
+            \end{itemize}
+            \item \textbf{Wi-Fi:}
+            \begin{itemize}
+                \item Một số cảm biến/actuator hỗ trợ Wi-Fi, giao tiếp qua TCP/UDP hoặc HTTP/MQTT.
+            \end{itemize}
+        \end{itemize}
+        \subsection*{3. Giao Thức Ứng Dụng (Application Protocols)}
+        \begin{itemize}
+            \item \textbf{AT Command (tập lệnh AT):}
+            \begin{itemize}
+                \item Nhiều module modem, cảm biến dùng tập lệnh AT để cấu hình, điều khiển, truy vấn trạng thái.
+                \item Gateway phải tích hợp parser để gửi/nhận và xử lý tập lệnh AT.
+            \end{itemize}
+            \item \textbf{Custom Protocols:}
+            \begin{itemize}
+                \item Một số thiết bị sử dụng giao thức tự định nghĩa, cần mapping hoặc scripting để gateway hiểu và chuyển đổi dữ liệu.
+            \end{itemize}
+            \item \textbf{MQTT, CoAP, HTTP (nếu cảm biến thông minh):}
+            \begin{itemize}
+                \item Một số thiết bị hiện đại tích hợp sẵn giao thức tầng ứng dụng, cho phép giao tiếp trực tiếp với gateway qua mạng IP.
+            \end{itemize}
+        \end{itemize}
         \begin{itemize}
             \item Kết nối các thiết bị IoT với mạng nội bộ hoặc internet.
         \end{itemize}
