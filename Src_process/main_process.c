@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);
-    Clear_Startup_UART(uart_fd, 2000);
+    Clear_Startup_UART(uart_fd, 10000);
 
     // Start UART thread
     pthread_t uart_thread;
