@@ -73,13 +73,10 @@ void Uart_Init(speed_t baudrate, char *device) {
  * @return Pointer to the allocated buffer containing the response, or NULL on error/timeout.
  */
 unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
-    if (bytes_read_out == NULL) {
-        // Invalid output parameter
-        return NULL;
-    }
-    *bytes_read_out = 0;  // Initialize output to 0
+    if (bytes_read_out == NULL) return NULL;
+    *bytes_read_out = 0;
 
-    // Wait for semaphore
+    // Acquire semaphore for thread-safe UART access
     if (sem_wait(uart_sem) != 0) return NULL;
     if (uart_fd == -1) {
         sem_post(uart_sem);
@@ -87,56 +84,62 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
         return NULL;
     }
 
-    // Prepare select for timeout
-    fd_set read_fds;
-    FD_ZERO(&read_fds);
-    FD_SET(uart_fd, &read_fds);
-
-    struct timeval timeout = { .tv_sec = 0, .tv_usec = timeout_ms * 1000 }; // Convert ms to us
-    int ready = select(uart_fd + 1, &read_fds, NULL, NULL, &timeout);
-
-    if (ready < 0) { // Select error
-        perror("Select error");
-        sem_post(uart_sem);
-        return NULL;
-    } else if (ready == 0) { // Timeout occurred
-        sem_post(uart_sem);
-        return NULL;
-    }
-
-    // Allocate dynamic buffer
+    // Allocate buffer for response
     unsigned char* buffer = (unsigned char*)malloc(512);
-    if (buffer == NULL) {
-        perror("Malloc failed");
+    if (!buffer) {
+        perror("Memory allocation failed");
         sem_post(uart_sem);
         return NULL;
     }
 
-    // Read available data
-    ssize_t bytes_read = read(uart_fd, buffer, 512);  // Read up to 512 bytes
-    if (bytes_read > 0) {
-        *bytes_read_out = (uint16_t)bytes_read;  // Set output bytes read
-        // Debug print to stderr using snprintf
-        char debug_msg[1024];  // Buffer for debug message
-        int offset = snprintf(debug_msg, sizeof(debug_msg), "Response received (%zd bytes): ", bytes_read);
-        for (ssize_t i = 0; i < bytes_read && offset < sizeof(debug_msg) - 2; ++i) {
-            offset += snprintf(debug_msg + offset, sizeof(debug_msg) - offset, "%c", buffer[i]);
+    ssize_t total_read = 0;
+    uint32_t waited_ms = 0;
+    const uint32_t poll_interval = 20; // Check every 20 ms
+
+    while (waited_ms < timeout_ms && total_read < 512) {
+        // Wait for UART data to become available
+        fd_set read_fds;
+        FD_ZERO(&read_fds);
+        FD_SET(uart_fd, &read_fds);
+
+        struct timeval timeout;
+        timeout.tv_sec = poll_interval / 1000;
+        timeout.tv_usec = (poll_interval % 1000) * 1000;
+
+        int ready = select(uart_fd + 1, &read_fds, NULL, NULL, &timeout);
+        if (ready < 0) {
+            perror("select() failed");
+            break;
+        } else if (ready == 0) {
+            // No data yet; increment wait timer
+            waited_ms += poll_interval;
+            continue;
         }
-        fputs(debug_msg, stderr);  // Print to stderr
-        fputs("\n", stderr);       // Add newline
-    } else if (bytes_read < 0) {
-        perror("Read error");
-        free(buffer);  // Free on error
-        buffer = NULL;
-    } else {
-        // No data read (bytes_read == 0)
+
+        // Data available — read from UART
+        ssize_t r = read(uart_fd, buffer + total_read, 512 - total_read);
+        if (r > 0) {
+            total_read += r;
+
+            // Optional:
+            // break; // Uncomment to exit on first successful read
+        } else if (r < 0) {
+            perror("read() failed");
+            break;
+        }
+        // Else (r == 0): continue polling
+    }
+
+    *bytes_read_out = (uint16_t)total_read;
+
+    if (total_read == 0) {
+        // No data received
         free(buffer);
         buffer = NULL;
     }
 
-    // Release semaphore
-    sem_post(uart_sem);
-    return buffer;  // Return buffer pointer (caller must free)
+    sem_post(uart_sem); // Release UART access
+    return buffer;
 }
 
 /**
