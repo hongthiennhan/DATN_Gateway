@@ -6,6 +6,8 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
+volatile uint8_t is_busy = 0;
+
 static const char *menu_items[] = {
     "1. Direction1",
     "2. Direction2",
@@ -41,6 +43,10 @@ void *uart_thread_func(void *arg) {
             usleep(10 * 1000); // Avoid CPU spin
             continue;
         }
+
+        int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6);
+        if (block_ui)
+            is_busy = 1;  //Block UI when handling these commands
 
         unsigned char *resp = NULL;
 
@@ -94,6 +100,9 @@ void *uart_thread_func(void *arg) {
             free(resp);
             resp_len = 0; // Reset response length
         }
+
+        if (block_ui)
+            is_busy = 0;  // Unblock UI when done
     }
 
     return NULL;
@@ -181,6 +190,11 @@ int main(int argc, char **argv) {
                 highlight = (highlight == num_items - 1) ? 0 : highlight + 1;
                 break;
             case 10: // Enter
+                if (is_busy) {
+                    snprintf(status_response, sizeof(status_response), "Busy: Please wait for command to finish");
+                    status_color = 3;
+                    break;
+                }
                 pthread_mutex_lock(&command_mutex);
                 command_code = highlight + 1;
                 command_pending = 1;
