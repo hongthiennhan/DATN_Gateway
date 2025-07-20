@@ -96,16 +96,7 @@ void *uart_thread_func(void *arg) {
         else if (resp && resp_len > 5 && cmd == 6) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
             snprintf(receive_data, sizeof(receive_data), "Response of command %d:", cmd);
-
-            size_t len = strlen(receive_data);
-            for (int i = 0; i < resp_len && len < sizeof(receive_data) - 4; i++) {
-                char temp[5];
-                snprintf(temp, sizeof(temp), " %c", save_data[i]);
-                size_t space_left = sizeof(receive_data) - len - 1;
-                strncat(receive_data + len, temp, space_left);
-                len = strlen(receive_data);
-            }
-
+            snprintf(receive_data, sizeof(receive_data), " %s",resp);
             status_color = 2;
         }
         else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
