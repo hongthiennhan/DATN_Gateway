@@ -90,18 +90,22 @@ void *uart_thread_func(void *arg) {
         pthread_mutex_lock(&command_mutex);
         if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
             snprintf(status_response, sizeof(status_response), "Command %d executed successfully", cmd);
+            snprintf(receive_data, sizeof(receive_data), "Response: %s", (const char *)resp);
             status_color = 2;
         } 
         else if (resp && resp_len > 0 && cmd == 6) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
+            snprintf(receive_data, sizeof(receive_data), "%s", (const char *)resp);
             status_color = 2;
         } 
         else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
+            snprintf(receive_data, sizeof(receive_data), "No response expected for command %d", cmd);
             status_color = 2;
         } 
         else {
             snprintf(status_response, sizeof(status_response), "Command %d failed", cmd);
+            snprintf(receive_data, sizeof(receive_data), "No response or error for command %d", cmd);
             status_color = 3;
         }
         pthread_mutex_unlock(&command_mutex);
