@@ -88,10 +88,16 @@ void *uart_thread_func(void *arg) {
         if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
             snprintf(status_response, sizeof(status_response), "Command %d executed successfully", cmd);
             status_color = 2;
-        } else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
+        } 
+        else if (resp && resp_len > 0 && cmd == 6) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
             status_color = 2;
-        } else {
+        } 
+        else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
+            snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
+            status_color = 2;
+        } 
+        else {
             snprintf(status_response, sizeof(status_response), "Command %d failed", cmd);
             status_color = 3;
         }
@@ -151,7 +157,8 @@ int main(int argc, char **argv) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-
+    timeout(100);
+    
     int highlight = 0;
     int key;
 
