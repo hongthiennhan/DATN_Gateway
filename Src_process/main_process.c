@@ -166,13 +166,13 @@ int main(int argc, char **argv) {
                         write_command(CMD_SEND_STATUS);
                         unsigned char *response_4 = Read_Response(100, &response_bytes);
                         if (response_4 != NULL && response_bytes > 0) {
-                            char response_str[513];
-                            strncpy(response_str, (const char*)response_4, response_bytes);
-                            response_str[response_bytes] = '\0';  // Null-terminate
-                            mvprintw(4 + num_items + 2, 0, "Response: %s", response_str);
+                            // Copy response vào buffer display (null-terminated)
+                            strncpy(response_display, (const char*)response_4, response_bytes);
+                            response_display[response_bytes] = '\0';  // Null-terminate
 
                             snprintf(status, sizeof(status), "Send_Status executed successfully");
                         } else {
+                            response_display[0] = '\0';  // Xóa buffer display nếu failed
                             snprintf(status, sizeof(status), "Send_Status failed: No response");
                             status_color = 3; // Error color
                         }
