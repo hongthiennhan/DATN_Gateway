@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-    timeout(1);
+    nodelay(stdscr, TRUE);
 
     int highlight = 0;
     int key;
