@@ -1,60 +1,42 @@
 #include "control_command.h"
 
-// Global variables for UART and mutex (static to limit scope)
+// Global variables for UART and semaphore (static to limit scope)
 int uart_fd = -1;                        // UART file descriptor
-static pthread_mutex_t uart_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for UART access
-static int mutex_initialized = 0;               // Flag to prevent multiple mutex initializations
-
-// Define long options for command line parsing
-const struct option long_options[] = {
-    {"Direction1", no_argument, 0, 0},
-    {"Direction2", no_argument, 0, 0},
-    {"Direction3", no_argument, 0, 0},
-    {"Relay_On",   no_argument, 0, 0},
-    {"Relay_Off",  no_argument, 0, 0},
-    {"Led_On",     no_argument, 0, 0},
-    {"Led_Off",    no_argument, 0, 0},
-    {"Send_Status",no_argument, 0, 0},
-    {"Init",       no_argument, 0, 0},
-    {0,            0,           0, 0}
-};
-
+sem_t *uart_sem = NULL;
 /**
- * @brief Initializes the UART communication with thread-safe mutex protection.
+ * @brief Initializes the UART communication with thread-safe semephore protection.
  * 
  * This function sets up the UART parameters (baud rate, data bits, stop bits, parity)
- * and initializes a mutex for exclusive access in multithreaded environments.
+ * and initializes a semephore for exclusive access in multithreaded environments.
  * It should be called once before any read/write operations.
  */
 void Uart_Init(speed_t baudrate, char *device){
-    // Initialize mutex only once
-    if (!mutex_initialized) {
-        if (pthread_mutex_init(&uart_mutex, NULL) != 0) {
-            perror("Failed to initialize UART mutex");
-            return;
-        }
-        mutex_initialized = 1;
-    }
-    // Lock mutex for safe UART access
-    if (pthread_mutex_lock(&uart_mutex) != 0) {
+    uart_sem = sem_open("/uart_sem", O_CREAT, 0644, 1);
+    if (uart_sem == SEM_FAILED) {
+        perror("sem_open failed");
         return;
     }
-    // Open UART device
+
+    if (sem_wait(uart_sem) != 0) {
+        return;
+    }
+
     uart_fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (uart_fd == -1) {
         perror("Failed to open UART device");
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
-    // Configure UART settings
+
     struct termios options;
     if (tcgetattr(uart_fd, &options) != 0) {
         perror("Failed to get UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
+
     // Set baud rate, data bits, parity, stop bits, and other flags
     cfsetispeed(&options, baudrate);
     cfsetospeed(&options, baudrate);
@@ -66,54 +48,50 @@ void Uart_Init(speed_t baudrate, char *device){
     options.c_oflag = 0;                                 // No output processing
     options.c_lflag = 0;                                 // No input processing
     tcflush(uart_fd, TCIFLUSH);                          // Flush input buffer
+
     if (tcsetattr(uart_fd, TCSANOW, &options) != 0) {
         perror("Failed to set UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
-    // fprintf(stderr, "UART initialized successfully on %s.\n", device);
-    // Unlock mutex
-    pthread_mutex_unlock(&uart_mutex);
+
+    sem_post(uart_sem);
 }
 
 /**
- * @brief Reads available response data from the UART with thread-safe mutex protection.
+ * @brief Reads available response data from the UART with thread-safe semephore protection.
  * 
  * This function attempts to read as many bytes as available from the UART (up to a buffer limit)
- * and prints the received bytes in hexadecimal format. It ensures exclusive access using the mutex.
+ * and prints the received bytes in hexadecimal format. It ensures exclusive access using the semephore.
  * Additional processing logic can be added here if needed.
  */
-uint16_t Read_Response(void) {
-    // Lock mutex for safe UART access
-    if (pthread_mutex_lock(&uart_mutex) != 0) return 0;
+uint16_t Read_Response(uint32_t timeout_ms) {
+    if (sem_wait(uart_sem) != 0) return 0;
     if (uart_fd == -1) {
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         perror("UART not initialized or already closed");
         return 0;
     }
-
-    // Wait for data using select() with timeout
+    // Use select to wait for data with a timeout
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(uart_fd, &read_fds);
 
-    struct timeval timeout = { .tv_sec = 0, .tv_usec = 100000 };  // 100ms timeout
+    struct timeval timeout = { .tv_sec = 0, .tv_usec = timeout_ms * 1000 }; // timeout
     int ready = select(uart_fd + 1, &read_fds, NULL, NULL, &timeout);
 
-    if (ready < 0) {  // Error
+    if (ready < 0) { // Error in select
         perror("Select error");
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return 0;
-    } else if (ready == 0) {  // Timeout, no data
-        fprintf(stderr, "Read timeout: No response.\n");  // No errno for timeout, use fprintf
-        pthread_mutex_unlock(&uart_mutex);
+    } else if (ready == 0) { // Timeout, no data available
+        sem_post(uart_sem);
         return 0;
     }
-
-    // Data available, read it
-    unsigned char buffer[256] = {0};
+    // Data is available, read it
+    unsigned char buffer[512] = {0};
     uint16_t bytes_read = read(uart_fd, buffer, sizeof(buffer));
     if (bytes_read > 0) {
         fprintf(stderr, "Response received (%u bytes): ", bytes_read);
@@ -124,60 +102,56 @@ uint16_t Read_Response(void) {
     } else if (bytes_read < 0) {
         perror("Read error");
     }
-
-    // Unlock mutex
-    pthread_mutex_unlock(&uart_mutex);
-    return bytes_read;  // Return number of bytes read
+    
+    sem_post(uart_sem);
+    return bytes_read;
 }
 
 /**
- * @brief Writes a command to the UART with thread-safe mutex protection.
+ * @brief Writes a command to the UART with thread-safe semephore protection.
  * 
  * This function converts the Command enum to a single byte and sends it over UART.
- * It ensures exclusive access using the mutex.
+ * It ensures exclusive access using the semephore.
  * 
  * @param cmd The Command enum value to send.
  */
 void write_command(Command cmd) {
-    // Lock mutex for safe UART access
-    if (pthread_mutex_lock(&uart_mutex) != 0) return;
+    if (sem_wait(uart_sem) != 0) return;
     if (uart_fd == -1) {
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
-    // Convert enum to byte and write
+
     unsigned char byte_cmd = (unsigned char)cmd;
-    uint16_t bytes_written = write(uart_fd, &byte_cmd, 1); // Write single byte command
-    // Unlock mutex
-    pthread_mutex_unlock(&uart_mutex);
+    uint16_t bytes_written = write(uart_fd, &byte_cmd, 1);
+
+    sem_post(uart_sem);
 }
+
 /**
  * @brief Writes an initialization command with baudrate to the UART.
  * 
  * This function sends a command to initialize the UART with a specific baudrate.
- * It locks the mutex for thread-safe access and prepares the command buffer.
+ * It locks the semephore for thread-safe access and prepares the command buffer.
  * 
  * @param baudrate The baud rate to set for the UART.
  */
 void write_init(uint32_t baudrate) {
-    // Lock mutex for safe UART access
-    if (pthread_mutex_lock(&uart_mutex) != 0) return;
+    if (sem_wait(uart_sem) != 0) return;
     if (uart_fd == -1) {
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
-    // Prepare buffer: first byte 0xFF, then 4 bytes baudrate
+
     uint8_t buffer[5];
-    buffer[0] = CMD_INIT;  // Command init
-    // Convert baudrate to 4 bytes little-endian
-    buffer[1] = (uint8_t)(baudrate & 0xFF);         // lowest byte
+    buffer[0] = CMD_INIT;
+    buffer[1] = (uint8_t)(baudrate & 0xFF);
     buffer[2] = (uint8_t)((baudrate >> 8) & 0xFF);
     buffer[3] = (uint8_t)((baudrate >> 16) & 0xFF);
-    buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF); // highest byte
+    buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF);
     uint16_t bytes_written = write(uart_fd, buffer, 5);
-    // Unlock mutex
-    pthread_mutex_unlock(&uart_mutex);
-    
+
+    sem_post(uart_sem);
 }
 
 /**

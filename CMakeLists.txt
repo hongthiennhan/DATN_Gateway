@@ -11,6 +11,12 @@ message(STATUS "GPIOD include dirs: ${GPIOD_INCLUDE_DIRS}")
 message(STATUS "GPIOD library dirs: ${GPIOD_LIBRARY_DIRS}")
 message(STATUS "GPIOD libraries: ${GPIOD_LIBRARIES}")
 
+pkg_check_modules(NCURSES REQUIRED ncurses)
+
+message(STATUS "NCURSES include dirs: ${NCURSES_INCLUDE_DIRS}")
+message(STATUS "NCURSES library dirs: ${NCURSES_LIBRARY_DIRS}")
+message(STATUS "NCURSES libraries: ${NCURSES_LIBRARIES}")
+
 
 # Include directories
 set(INCLUDE_DIRS
@@ -21,7 +27,7 @@ set(INCLUDE_DIRS
 
 # Source files thread 1
 set(SOURCES_1
-    Src_thread/led_control.c)
+    Src_process/led_control.c)
 
 # Add executable 1
 add_executable(led_app ${SOURCES_1})
@@ -34,7 +40,7 @@ target_link_libraries(led_app ${GPIOD_LIBRARIES})
 
 # Source files thread 2
 set(SOURCES_2
-    Src_thread/main_process.c
+    Src_process/main_process.c
     esp_command/control_command.c
     i2c_ssd1306/ssd1306.c
     i2c_ssd1306/linux_i2c.c
@@ -46,4 +52,4 @@ add_executable(main_app ${SOURCES_2})
 # Include directories for main_app
 target_include_directories(main_app PRIVATE ${INCLUDE_DIRS})
 
-target_link_libraries(main_app ${GPIOD_LIBRARIES})
+target_link_libraries(main_app ${GPIOD_LIBRARIES} ${NCURSES_LIBRARIES})
