@@ -73,8 +73,8 @@ void *uart_thread_func(void *arg) {
             case 6:
                 write_command(CMD_SEND_STATUS);
                 resp = Read_Response(1000, &resp_len);
-                strncpy(receive_data, (const char*)resp, resp_len);
-                receive_data[resp_len] = '\0';
+                strncpy(save_data, (const char*)resp, resp_len);
+                save_data[resp_len] = '\0';
                 break;
             case 7:
                 write_command(CMD_STOP_SYSTEM);
