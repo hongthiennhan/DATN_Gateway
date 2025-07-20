@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
     int option_index = 0;
     uint32_t baudrate = 115200;  // Default baudrate
     char *device = "/dev/ttyUSB0";  // Default device
+    char response_display[513] = "";  // Buffer for response display
 
     // Parse command-line options for -B (baudrate) and -d (device)
     while ((opt = getopt_long(argc, argv, "B:d:", long_options, &option_index)) != -1) {
