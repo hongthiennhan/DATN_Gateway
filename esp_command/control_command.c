@@ -61,50 +61,72 @@ void Uart_Init(speed_t baudrate, char *device){
 }
 
 /**
- * @brief Reads available response data from the UART with thread-safe semephore protection.
+ * Reads UART response with timeout and returns a pointer to the dynamically allocated buffer.
+ * The caller must free the returned buffer after use to avoid memory leaks.
  * 
- * This function attempts to read as many bytes as available from the UART (up to a buffer limit)
- * and prints the received bytes in hexadecimal format. It ensures exclusive access using the semephore.
- * Additional processing logic can be added here if needed.
+ * @param timeout_ms Timeout in milliseconds for waiting on data.
+ * @param bytes_read_out Pointer to store the number of bytes read (output parameter).
+ * @return Pointer to the allocated buffer containing the response, or NULL on error/timeout.
  */
-uint16_t Read_Response(uint32_t timeout_ms) {
-    if (sem_wait(uart_sem) != 0) return 0;
+unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
+    if (bytes_read_out == NULL) {
+        // Invalid output parameter
+        return NULL;
+    }
+    *bytes_read_out = 0;  // Initialize output to 0
+
+    // Wait for semaphore
+    if (sem_wait(uart_sem) != 0) return NULL;
     if (uart_fd == -1) {
         sem_post(uart_sem);
         perror("UART not initialized or already closed");
-        return 0;
+        return NULL;
     }
-    // Use select to wait for data with a timeout
+
+    // Prepare select for timeout
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(uart_fd, &read_fds);
 
-    struct timeval timeout = { .tv_sec = 0, .tv_usec = timeout_ms * 1000 }; // timeout
+    struct timeval timeout = { .tv_sec = 0, .tv_usec = timeout_ms * 1000 }; // Convert ms to us
     int ready = select(uart_fd + 1, &read_fds, NULL, NULL, &timeout);
 
-    if (ready < 0) { // Error in select
+    if (ready < 0) { // Select error
         perror("Select error");
         sem_post(uart_sem);
-        return 0;
-    } else if (ready == 0) { // Timeout, no data available
+        return NULL;
+    } else if (ready == 0) { // Timeout occurred
         sem_post(uart_sem);
-        return 0;
+        return NULL;
     }
-    // Data is available, read it
-    unsigned char buffer[512] = {0};
-    uint16_t bytes_read = read(uart_fd, buffer, sizeof(buffer));
+
+    // Allocate dynamic buffer
+    unsigned char* buffer = (unsigned char*)malloc(512);
+    if (buffer == NULL) {
+        perror("Malloc failed");
+        sem_post(uart_sem);
+        return NULL;
+    }
+
+    // Read available data
+    ssize_t bytes_read = read(uart_fd, buffer, 512);  // Read up to 512 bytes
     if (bytes_read > 0) {
-        fprintf(stderr, "Response received (%u bytes): ", bytes_read);
-        for (uint16_t i = 0; i < bytes_read; ++i) {
-            fprintf(stderr, "%c", buffer[i]);
-        }
-        fprintf(stderr, "\n");
+        *bytes_read_out = (uint16_t)bytes_read;  // Set output bytes read
+        // Debug print to stderr
+        fprintf(stderr, "Response received (%zd bytes): ", bytes_read);
     } else if (bytes_read < 0) {
         perror("Read error");
+        free(buffer);  // Free on error
+        buffer = NULL;
+    } else {
+        // No data read (bytes_read == 0)
+        free(buffer);
+        buffer = NULL;
     }
-    
+
+    // Release semaphore
     sem_post(uart_sem);
-    return bytes_read;
+    return buffer;  // Return buffer pointer (caller must free)
 }
 
 /**
@@ -175,7 +197,7 @@ speed_t map_to_speed(uint32_t baud_num) {
         case 460800:  return B460800;
         case 921600:  return B921600;
         default:
-            fprintf(stderr, "Unsupported baudrate: %u. Using default B115200.\n", baud_num);
+            snprintf(stderr, "Unsupported baudrate: %u. Using default B115200.\n", baud_num);
         return B115200;
     }
 }
@@ -192,7 +214,7 @@ speed_t map_to_speed(uint32_t baud_num) {
 void save_config(uint32_t baud, const char *dev) {
     FILE *fp = fopen(CONFIG_FILE, "w");
     if (fp) {
-        fprintf(fp, "%u\n%s", baud, dev);
+        snprintf(fp, "%u\n%s", baud, dev);
         fclose(fp);
     }
 }

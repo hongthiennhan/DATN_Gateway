@@ -23,6 +23,7 @@ int num_items = sizeof(menu_items) / sizeof(menu_items[0]);
 
 // Main function: Handles command-line options and ncurses-based interactive menu with colors
 int main(int argc, char **argv) {
+    uint16_t response_bytes = 0;
     int opt;
     int option_index = 0;
     uint32_t baudrate = 115200;  // Default baudrate
@@ -116,18 +117,42 @@ int main(int argc, char **argv) {
                 switch (choice) {
                     case 1:
                         write_command(CMD_DIRECTION_1);
-                        Read_Response(5000);
-                        snprintf(status, sizeof(status), "Direction1 executed successfully");
+                        unsigned char *response = read_response(5000, &response_bytes);
+                        if (response != NULL && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
+                            snprintf(status, sizeof(status), "Direction1 executed successfully");
+                        } else {
+                            snprintf(status, sizeof(status), "Direction1 failed: Invalid response");
+                            status_color = 3; // Error color
+                        }
+                        if (response != NULL) {
+                            free(response);  // Free allocated buffer
+                        }
                         break;
                     case 2:
                         write_command(CMD_DIRECTION_2);
-                        Read_Response(5000);
-                        snprintf(status, sizeof(status), "Direction2 executed successfully");
+                        unsigned char *response = read_response(5000, &response_bytes);
+                        if (response != NULL && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
+                            snprintf(status, sizeof(status), "Direction2 executed successfully");
+                        } else {
+                            snprintf(status, sizeof(status), "Direction2 failed: Invalid response");
+                            status_color = 3; // Error color
+                        }
+                        if (response != NULL) {
+                            free(response);  // Free allocated buffer
+                        }
                         break;
                     case 3:
                         write_command(CMD_DIRECTION_3);
-                        Read_Response(5000);
-                        snprintf(status, sizeof(status), "Direction3 executed successfully");
+                        unsigned char *response = read_response(5000, &response_bytes);
+                        if (response != NULL && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
+                            snprintf(status, sizeof(status), "Direction3 executed successfully");
+                        } else {
+                            snprintf(status, sizeof(status), "Direction3 failed: Invalid response");
+                            status_color = 3; // Error color
+                        } 
+                        if (response != NULL) {
+                            free(response);  // Free allocated buffer
+                        }
                         break;
                     case 4:
                         write_command(CMD_LED_ON);
@@ -139,8 +164,21 @@ int main(int argc, char **argv) {
                         break;
                     case 6:
                         write_command(CMD_SEND_STATUS);
-                        Read_Response(100);
-                        snprintf(status, sizeof(status), "Send_Status executed successfully");
+                        unsigned char *response = Read_Response(100, &response_bytes);
+                        if (response != NULL && response_bytes > 0) {
+                            char response_str[513];
+                            strncpy(response_str, (const char*)response, response_bytes);
+                            response_str[response_bytes] = '\0';  // Null-terminate
+                            mvprintw(4 + num_items + 2, 0, "Response: %s", response_str);
+
+                            snprintf(status, sizeof(status), "Send_Status executed successfully");
+                        } else {
+                            snprintf(status, sizeof(status), "Send_Status failed: No response");
+                            status_color = 3; // Error color
+                        }
+                        if (response != NULL) {
+                            free(response);  // Free allocated buffer
+                        }
                         break;
                     case 7:
                         write_command(CMD_STOP_SYSTEM);
