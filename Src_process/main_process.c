@@ -90,7 +90,10 @@ void *uart_thread_func(void *arg) {
             status_color = 3;
         }
         pthread_mutex_unlock(&command_mutex);
-        if (resp) free(resp);
+        if (resp) {
+            free(resp);
+            resp_len = 0; // Reset response length
+        }
     }
 
     return NULL;
