@@ -1,8 +1,8 @@
 // Include necessary headers
 #include "main.h"
 #include "control_command.h"
-#include <stdlib.h>  // For malloc/free
-#include <string.h>  // For strncpy, strncmp, strlen
+#include <stdlib.h>
+#include <string.h>
 
 // Define long_options (simplified, as we only parse -B and -d)
 static struct option long_options[] = {
@@ -23,26 +23,26 @@ const char *menu_items[] = {
 };
 int num_items = sizeof(menu_items) / sizeof(menu_items[0]);
 
-// Main function: Handles command-line options and ncurses-based interactive menu with colors
 int main(int argc, char **argv) {
     uint16_t response_bytes = 0;
     int opt;
     int option_index = 0;
     uint32_t baudrate = 115200;  // Default baudrate
     char *device = "/dev/ttyUSB0";  // Default device
-    char response_display[513] = "";  // Buffer for response display (kept until new Send_Status command)
+
+    char receive_data_display[513] = ""; // Always holds the latest received response
 
     // Parse command-line options for -B (baudrate) and -d (device)
     while ((opt = getopt_long(argc, argv, "B:d:", long_options, &option_index)) != -1) {
         switch (opt) {
-            case 'B':  // Set baudrate from argument
+            case 'B':
                 baudrate = atoi(optarg);
-                if (map_to_speed(baudrate) == B115200) baudrate = 115200; // Ensure valid baudrate
+                if (map_to_speed(baudrate) == B115200) baudrate = 115200;
                 break;
-            case 'd':  // Set device from argument
+            case 'd':
                 device = optarg;
                 break;
-            case '?':  // Handle unrecognized option
+            case '?':
                 fprintf(stderr, "Usage: ./main_app [-B <baudrate>] [-d <device>]\n");
                 fprintf(stderr, "Example: ./main_app -B 9600 -d /dev/ttyUSB1\n");
                 exit(1);
@@ -51,65 +51,56 @@ int main(int argc, char **argv) {
         }
     }
 
-    // Load saved config (overridden by command-line options if provided)
     load_config(&baudrate, &device);
-    // Initialize UART with current baudrate and device
     Uart_Init(map_to_speed(baudrate), device);
 
-    // Initialize ncurses
-    initscr();            // Start ncurses mode
-    start_color();        // Enable colors
-    init_pair(1, COLOR_BLACK, COLOR_WHITE); // Highlight: black on white
-    init_pair(2, COLOR_GREEN, COLOR_BLACK); // Success status: green on black
-    init_pair(3, COLOR_RED, COLOR_BLACK);   // Error status: red on black
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Header: yellow on black
-    keypad(stdscr, TRUE); // Enable keypad (arrow keys)
-    noecho();             // Don't echo input
-    curs_set(0);          // Hide cursor
+    // Ncurses init
+    initscr();
+    start_color();
+    init_pair(1, COLOR_BLACK, COLOR_WHITE); // Highlight
+    init_pair(2, COLOR_GREEN, COLOR_BLACK); // Success
+    init_pair(3, COLOR_RED, COLOR_BLACK);   // Error
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK);// Header
+    keypad(stdscr, TRUE);
+    noecho();
+    curs_set(0);
 
-    // Status buffer
     char status[100] = "Welcome! Select a command.";
-    int status_color = 2; // Default to success color
+    int status_color = 2; // Green (success) by default
 
-    // Display initial config and menu
-    int highlight = 0; // Current highlighted item
+    int highlight = 0;
     int choice = 0;
     int key;
 
     while (1) {
-        clear(); // Clear screen
-
-        // Display header with color
+        clear();
+        // --- HEADER ---
         attron(COLOR_PAIR(4));
         mvprintw(0, 0, "=== COMMAND SELECTION MENU ===");
         attroff(COLOR_PAIR(4));
         mvprintw(1, 0, "Current Baudrate: %u", baudrate);
         mvprintw(2, 0, "Current Device: %s", device);
 
-        // Display menu items with highlight
+        // --- MENU ---
         for (int i = 0; i < num_items; i++) {
-            if (i == highlight) {
-                attron(COLOR_PAIR(1)); // Highlight color
-            }
+            if (i == highlight)
+                attron(COLOR_PAIR(1));
             mvprintw(4 + i, 0, "%s", menu_items[i]);
-            if (i == highlight) {
+            if (i == highlight)
                 attroff(COLOR_PAIR(1));
-            }
         }
 
-        // Display status with color
+        // --- STATUS ---
         attron(COLOR_PAIR(status_color));
         mvprintw(4 + num_items + 1, 0, "Status: %s", status);
         attroff(COLOR_PAIR(status_color));
 
-        // Display the last response if available (kept until new Send_Status command)
-        if (strlen(response_display) > 0) {
-            mvprintw(4 + num_items + 2, 0, "Response: %s", response_display);
-        }
+        // --- RECEIVE DATA ---
+        mvprintw(4 + num_items + 2, 0, "Receive Data: %s", receive_data_display);
 
-        refresh(); // Refresh screen
+        refresh();
 
-        // Get user input
+        // --- USER INPUT ---
         key = getch();
         switch (key) {
             case KEY_UP:
@@ -119,99 +110,107 @@ int main(int argc, char **argv) {
                 highlight = (highlight == num_items - 1) ? 0 : highlight + 1;
                 break;
             case 10: // Enter key
-                choice = highlight + 1; // Map to 1-9 (9 for exit)
-                status_color = 2; // Default to success
-                // Handle choice
+                choice = highlight + 1;
+                status_color = 2; // Success as default
+
                 switch (choice) {
-                    case 1:
+                    case 1: { // Direction1
                         write_command(CMD_DIRECTION_1);
-                        unsigned char *response_1 = Read_Response(20000, &response_bytes);
-                        if (response_1 != NULL && response_bytes >= 2 && strncmp((const char*)response_1, "OK", 2) == 0) {
+                        unsigned char *response = Read_Response(20000, &response_bytes);
+                        if (response && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction1 executed successfully");
                         } else {
                             snprintf(status, sizeof(status), "Direction1 failed: Invalid response");
-                            status_color = 3; // Error color
+                            status_color = 3;
                         }
-                        if (response_1 != NULL) {
-                            free(response_1);  // Free allocated buffer
+                        if (response && response_bytes > 0) {
+                            strncpy(receive_data_display, (const char*)response, response_bytes);
+                            receive_data_display[response_bytes] = '\0';
                         }
+                        if (response) free(response);
                         break;
-                    case 2:
+                    }
+                    case 2: { // Direction2
                         write_command(CMD_DIRECTION_2);
-                        unsigned char *response_2 = Read_Response(15000, &response_bytes);
-                        if (response_2 != NULL && response_bytes >= 2 && strncmp((const char*)response_2, "OK", 2) == 0) {
+                        unsigned char *response = Read_Response(15000, &response_bytes);
+                        if (response && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction2 executed successfully");
                         } else {
                             snprintf(status, sizeof(status), "Direction2 failed: Invalid response");
-                            status_color = 3; // Error color
+                            status_color = 3;
                         }
-                        if (response_2 != NULL) {
-                            free(response_2);  // Free allocated buffer
+                        if (response && response_bytes > 0) {
+                            strncpy(receive_data_display, (const char*)response, response_bytes);
+                            receive_data_display[response_bytes] = '\0';
                         }
+                        if (response) free(response);
                         break;
-                    case 3:
+                    }
+                    case 3: { // Direction3
                         write_command(CMD_DIRECTION_3);
-                        unsigned char *response_3 = Read_Response(20000, &response_bytes);
-                        if (response_3 != NULL && response_bytes >= 2 && strncmp((const char*)response_3, "OK", 2) == 0) {
+                        unsigned char *response = Read_Response(20000, &response_bytes);
+                        if (response && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction3 executed successfully");
                         } else {
                             snprintf(status, sizeof(status), "Direction3 failed: Invalid response");
-                            status_color = 3; // Error color
+                            status_color = 3;
                         }
-                        if (response_3 != NULL) {
-                            free(response_3);  // Free allocated buffer
+                        if (response && response_bytes > 0) {
+                            strncpy(receive_data_display, (const char*)response, response_bytes);
+                            receive_data_display[response_bytes] = '\0';
                         }
+                        if (response) free(response);
                         break;
-                    case 4:
+                    }
+                    case 4: // Led_On
                         write_command(CMD_LED_ON);
                         snprintf(status, sizeof(status), "Led_On executed successfully");
+                        // No new UART data, do not update receive_data_display
                         break;
-                    case 5:
+                    case 5: // Led_Off
                         write_command(CMD_LED_OFF);
                         snprintf(status, sizeof(status), "Led_Off executed successfully");
+                        // No new UART data, do not update receive_data_display
                         break;
-                    case 6:
+                    case 6: { // Send_Status
                         write_command(CMD_SEND_STATUS);
-                        unsigned char *response_4 = Read_Response(100, &response_bytes);
-                        if (response_4 != NULL && response_bytes > 0) {
-                            // Update new response (only when Send_Status is called again)
-                            strncpy(response_display, (const char*)response_4, response_bytes);
-                            response_display[response_bytes] = '\0';  // Null-terminate
-
+                        unsigned char *response = Read_Response(1000, &response_bytes);
+                        if (response && response_bytes > 0) {
                             snprintf(status, sizeof(status), "Send_Status executed successfully");
+                            strncpy(receive_data_display, (const char*)response, response_bytes);
+                            receive_data_display[response_bytes] = '\0';
                         } else {
-                            response_display[0] = '\0';  // Delete old response if failed (only when Send_Status is called again)
                             snprintf(status, sizeof(status), "Send_Status failed: No response");
-                            status_color = 3; // Error color
+                            status_color = 3;
+                            // Không xóa receive_data_display: giữ lại giá trị cũ như yêu cầu
                         }
-                        if (response_4 != NULL) {
-                            free(response_4);  // Free allocated buffer
-                        }
+                        if (response) free(response);
                         break;
-                    case 7:
+                    }
+                    case 7: // Stop_System
                         write_command(CMD_STOP_SYSTEM);
                         snprintf(status, sizeof(status), "Stop_System executed successfully");
                         break;
-                    case 8:
+                    case 8: // Init
                         if (map_to_speed(baudrate) == B115200) baudrate = 115200;
                         write_init(baudrate);
                         snprintf(status, sizeof(status), "Init executed successfully");
                         break;
                     case 9: // Exit
-                        endwin(); // End ncurses
+                        endwin();
                         printf("Exiting program...\n");
                         close(uart_fd);
                         return 0;
                     default:
                         snprintf(status, sizeof(status), "Invalid choice! Please select again.");
-                        status_color = 3; // Error color
+                        status_color = 3;
                         break;
                 }
                 break;
         }
     }
 
-    endwin(); // End ncurses (fallback)
+    endwin();
     close(uart_fd);
     return 0;
 }
