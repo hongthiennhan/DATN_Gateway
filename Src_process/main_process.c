@@ -117,41 +117,41 @@ int main(int argc, char **argv) {
                 switch (choice) {
                     case 1:
                         write_command(CMD_DIRECTION_1);
-                        unsigned char *response = read_response(5000, &response_bytes);
-                        if (response != NULL && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
+                        unsigned char *response_1 = read_response(5000, &response_bytes);
+                        if (response_1 != NULL && response_bytes >= 2 && strncmp((const char*)response_1, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction1 executed successfully");
                         } else {
                             snprintf(status, sizeof(status), "Direction1 failed: Invalid response");
                             status_color = 3; // Error color
                         }
-                        if (response != NULL) {
-                            free(response);  // Free allocated buffer
+                        if (response_1 != NULL) {
+                            free(response_1);  // Free allocated buffer
                         }
                         break;
                     case 2:
                         write_command(CMD_DIRECTION_2);
-                        unsigned char *response = read_response(5000, &response_bytes);
-                        if (response != NULL && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
+                        unsigned char *response_2 = read_response(5000, &response_bytes);
+                        if (response_2 != NULL && response_bytes >= 2 && strncmp((const char*)response_2, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction2 executed successfully");
                         } else {
                             snprintf(status, sizeof(status), "Direction2 failed: Invalid response");
                             status_color = 3; // Error color
                         }
-                        if (response != NULL) {
-                            free(response);  // Free allocated buffer
+                        if (response_2 != NULL) {
+                            free(response_2);  // Free allocated buffer
                         }
                         break;
                     case 3:
                         write_command(CMD_DIRECTION_3);
-                        unsigned char *response = read_response(5000, &response_bytes);
-                        if (response != NULL && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
+                        unsigned char *response_3 = read_response(5000, &response_bytes);
+                        if (response_3 != NULL && response_bytes >= 2 && strncmp((const char*)response_3, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction3 executed successfully");
                         } else {
                             snprintf(status, sizeof(status), "Direction3 failed: Invalid response");
                             status_color = 3; // Error color
-                        } 
-                        if (response != NULL) {
-                            free(response);  // Free allocated buffer
+                        }
+                        if (response_3 != NULL) {
+                            free(response_3);  // Free allocated buffer
                         }
                         break;
                     case 4:
@@ -164,10 +164,10 @@ int main(int argc, char **argv) {
                         break;
                     case 6:
                         write_command(CMD_SEND_STATUS);
-                        unsigned char *response = Read_Response(100, &response_bytes);
-                        if (response != NULL && response_bytes > 0) {
+                        unsigned char *response_4 = Read_Response(100, &response_bytes);
+                        if (response_4 != NULL && response_bytes > 0) {
                             char response_str[513];
-                            strncpy(response_str, (const char*)response, response_bytes);
+                            strncpy(response_str, (const char*)response_4, response_bytes);
                             response_str[response_bytes] = '\0';  // Null-terminate
                             mvprintw(4 + num_items + 2, 0, "Response: %s", response_str);
 
@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
                             snprintf(status, sizeof(status), "Send_Status failed: No response");
                             status_color = 3; // Error color
                         }
-                        if (response != NULL) {
-                            free(response);  // Free allocated buffer
+                        if (response_4 != NULL) {
+                            free(response_4);  // Free allocated buffer
                         }
                         break;
                     case 7:

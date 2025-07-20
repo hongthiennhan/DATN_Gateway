@@ -1,16 +1,20 @@
 #include "control_command.h"
+#include <stdio.h>   // For fprintf, fputs
+#include <stdlib.h>  // For malloc/free
+#include <string.h>  // For strlen
 
 // Global variables for UART and semaphore (static to limit scope)
 int uart_fd = -1;                        // UART file descriptor
 sem_t *uart_sem = NULL;
+
 /**
- * @brief Initializes the UART communication with thread-safe semephore protection.
+ * @brief Initializes the UART communication with thread-safe semaphore protection.
  * 
  * This function sets up the UART parameters (baud rate, data bits, stop bits, parity)
- * and initializes a semephore for exclusive access in multithreaded environments.
+ * and initializes a semaphore for exclusive access in multithreaded environments.
  * It should be called once before any read/write operations.
  */
-void Uart_Init(speed_t baudrate, char *device){
+void Uart_Init(speed_t baudrate, char *device) {
     uart_sem = sem_open("/uart_sem", O_CREAT, 0644, 1);
     if (uart_sem == SEM_FAILED) {
         perror("sem_open failed");
@@ -112,8 +116,14 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     ssize_t bytes_read = read(uart_fd, buffer, 512);  // Read up to 512 bytes
     if (bytes_read > 0) {
         *bytes_read_out = (uint16_t)bytes_read;  // Set output bytes read
-        // Debug print to stderr
-        fprintf(stderr, "Response received (%zd bytes): ", bytes_read);
+        // Debug print to stderr using snprintf
+        char debug_msg[1024];  // Buffer for debug message
+        int offset = snprintf(debug_msg, sizeof(debug_msg), "Response received (%zd bytes): ", bytes_read);
+        for (ssize_t i = 0; i < bytes_read && offset < sizeof(debug_msg) - 2; ++i) {
+            offset += snprintf(debug_msg + offset, sizeof(debug_msg) - offset, "%c", buffer[i]);
+        }
+        fputs(debug_msg, stderr);  // Print to stderr
+        fputs("\n", stderr);       // Add newline
     } else if (bytes_read < 0) {
         perror("Read error");
         free(buffer);  // Free on error
@@ -130,10 +140,10 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
 }
 
 /**
- * @brief Writes a command to the UART with thread-safe semephore protection.
+ * @brief Writes a command to the UART with thread-safe semaphore protection.
  * 
  * This function converts the Command enum to a single byte and sends it over UART.
- * It ensures exclusive access using the semephore.
+ * It ensures exclusive access using the semaphore.
  * 
  * @param cmd The Command enum value to send.
  */
@@ -154,7 +164,7 @@ void write_command(Command cmd) {
  * @brief Writes an initialization command with baudrate to the UART.
  * 
  * This function sends a command to initialize the UART with a specific baudrate.
- * It locks the semephore for thread-safe access and prepares the command buffer.
+ * It locks the semaphore for thread-safe access and prepares the command buffer.
  * 
  * @param baudrate The baud rate to set for the UART.
  */
@@ -197,8 +207,11 @@ speed_t map_to_speed(uint32_t baud_num) {
         case 460800:  return B460800;
         case 921600:  return B921600;
         default:
-            snprintf(stderr, "Unsupported baudrate: %u. Using default B115200.\n", baud_num);
-        return B115200;
+            // Use snprintf for error message
+            char error_msg[100];
+            snprintf(error_msg, sizeof(error_msg), "Unsupported baudrate: %u. Using default B115200.\n", baud_num);
+            fputs(error_msg, stderr);  // Print to stderr
+            return B115200;
     }
 }
 
@@ -214,7 +227,8 @@ speed_t map_to_speed(uint32_t baud_num) {
 void save_config(uint32_t baud, const char *dev) {
     FILE *fp = fopen(CONFIG_FILE, "w");
     if (fp) {
-        snprintf(fp, "%u\n%s", baud, dev);
+        // Use fprintf instead of snprintf for direct file writing
+        fprintf(fp, "%u\n%s", baud, dev);
         fclose(fp);
     }
 }
