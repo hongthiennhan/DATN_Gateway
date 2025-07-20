@@ -27,7 +27,7 @@ set(INCLUDE_DIRS
 
 # Source files thread 1
 set(SOURCES_1
-    Src_process/led_control.c)
+    Src_process/led_process.c)
 
 # Add executable 1
 add_executable(led_app ${SOURCES_1})
@@ -44,7 +44,7 @@ set(SOURCES_2
     esp_command/control_command.c
     i2c_ssd1306/ssd1306.c
     i2c_ssd1306/linux_i2c.c
-    i2c_ssd1306/fonts.c)
+    i2c_ssd1306/font.c)
 
 # Add executable 2
 add_executable(main_app ${SOURCES_2})
