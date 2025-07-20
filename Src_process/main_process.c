@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     int option_index = 0;
     uint32_t baudrate = 115200;  // Default baudrate
     char *device = "/dev/ttyUSB0";  // Default device
-    char response_display[513] = "";  // Buffer for response display (kept until new command)
+    char response_display[513] = "";  // Buffer for response display (kept until new Send_Status command)
 
     // Parse command-line options for -B (baudrate) and -d (device)
     while ((opt = getopt_long(argc, argv, "B:d:", long_options, &option_index)) != -1) {
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
         mvprintw(4 + num_items + 1, 0, "Status: %s", status);
         attroff(COLOR_PAIR(status_color));
 
-        // Display the last response if available (kept until new command updates it)
+        // Display the last response if available (kept until new Send_Status command)
         if (strlen(response_display) > 0) {
             mvprintw(4 + num_items + 2, 0, "Response: %s", response_display);
         }
@@ -174,13 +174,13 @@ int main(int argc, char **argv) {
                         write_command(CMD_SEND_STATUS);
                         unsigned char *response_4 = Read_Response(100, &response_bytes);
                         if (response_4 != NULL && response_bytes > 0) {
-                            // Copy response into display buffer (null-terminated) - only update if new data
+                            // Update new response (only when Send_Status is called again)
                             strncpy(response_display, (const char*)response_4, response_bytes);
                             response_display[response_bytes] = '\0';  // Null-terminate
 
                             snprintf(status, sizeof(status), "Send_Status executed successfully");
                         } else {
-                            response_display[0] = '\0';  // Clear buffer if failed (no new data)
+                            response_display[0] = '\0';  // Delete old response if failed (only when Send_Status is called again)
                             snprintf(status, sizeof(status), "Send_Status failed: No response");
                             status_color = 3; // Error color
                         }
