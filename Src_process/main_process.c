@@ -53,6 +53,7 @@ int main(int argc, char **argv) {
 
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);
+    Clear_Startup_UART(uart_fd, 2000); 
 
     // Ncurses init
     initscr();
@@ -95,9 +96,6 @@ int main(int argc, char **argv) {
         mvprintw(4 + num_items + 1, 0, "Status: %s", status);
         attroff(COLOR_PAIR(status_color));
 
-        // --- RECEIVE DATA ---
-        mvprintw(4 + num_items + 2, 0, "Receive Data: %s", receive_data_display);
-
         refresh();
 
         // --- USER INPUT ---
@@ -116,7 +114,7 @@ int main(int argc, char **argv) {
                 switch (choice) {
                     case 1: { // Direction1
                         write_command(CMD_DIRECTION_1);
-                        unsigned char *response = Read_Response(20000, &response_bytes);
+                        unsigned char *response = Read_Response(10000, &response_bytes);
                         if (response && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction1 executed successfully");
                         } else {
@@ -127,12 +125,12 @@ int main(int argc, char **argv) {
                             strncpy(receive_data_display, (const char*)response, response_bytes);
                             receive_data_display[response_bytes] = '\0';
                         }
-                        if (response) free(response);
+                        if (response_bytes > 0) free(response);
                         break;
                     }
                     case 2: { // Direction2
                         write_command(CMD_DIRECTION_2);
-                        unsigned char *response = Read_Response(15000, &response_bytes);
+                        unsigned char *response = Read_Response(5000, &response_bytes);
                         if (response && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction2 executed successfully");
                         } else {
@@ -143,12 +141,12 @@ int main(int argc, char **argv) {
                             strncpy(receive_data_display, (const char*)response, response_bytes);
                             receive_data_display[response_bytes] = '\0';
                         }
-                        if (response) free(response);
+                        if (response_bytes > 0) free(response);
                         break;
                     }
                     case 3: { // Direction3
                         write_command(CMD_DIRECTION_3);
-                        unsigned char *response = Read_Response(20000, &response_bytes);
+                        unsigned char *response = Read_Response(10000, &response_bytes);
                         if (response && response_bytes >= 2 && strncmp((const char*)response, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction3 executed successfully");
                         } else {
@@ -159,7 +157,7 @@ int main(int argc, char **argv) {
                             strncpy(receive_data_display, (const char*)response, response_bytes);
                             receive_data_display[response_bytes] = '\0';
                         }
-                        if (response) free(response);
+                        if (response_bytes > 0) free(response);
                         break;
                     }
                     case 4: // Led_On
@@ -184,7 +182,7 @@ int main(int argc, char **argv) {
                             status_color = 3;
                             // Không xóa receive_data_display: giữ lại giá trị cũ như yêu cầu
                         }
-                        if (response) free(response);
+                        if (response_bytes > 0) free(response);
                         break;
                     }
                     case 7: // Stop_System

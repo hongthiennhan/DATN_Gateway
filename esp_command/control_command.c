@@ -258,3 +258,45 @@ uint8_t load_config(uint32_t *baud, char **dev) {
     fclose(fp);
     return 1;
 }
+
+/**
+ * @brief Clears the UART input buffer for a specified duration.
+ * 
+ * This function reads from the UART file descriptor to clear any existing data
+ * in the input buffer. It uses select() to wait for data and reads in chunks
+ * until the specified flush duration is reached.
+ * 
+ * @param fd The file descriptor of the UART device.
+ * @param flush_duration_ms Duration in milliseconds to flush the buffer.
+ */
+void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
+    unsigned char temp_buf[256];
+    fd_set read_fds;
+
+    struct timeval timeout;
+    uint32_t waited_ms = 0;
+    const uint32_t interval_ms = 50;  // check every 50ms
+
+    // Non-blocking read loop for flush_duration_ms
+    while (waited_ms < flush_duration_ms) {
+        FD_ZERO(&read_fds);
+        FD_SET(fd, &read_fds);
+
+        timeout.tv_sec = 0;
+        timeout.tv_usec = interval_ms * 1000;
+
+        int ready = select(fd + 1, &read_fds, NULL, NULL, &timeout);
+        if (ready > 0 && FD_ISSET(fd, &read_fds)) {
+            ssize_t r = read(fd, temp_buf, sizeof(temp_buf));
+            if (r > 0) {
+                // Optionally dump data to log
+                // fwrite(temp_buf, 1, r, stderr);
+            }
+        }
+
+        waited_ms += interval_ms;
+    }
+
+    // Ensure buffer is flushed at end
+    tcflush(fd, TCIFLUSH);
+}
