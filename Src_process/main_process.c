@@ -27,8 +27,8 @@ int command_pending = 0;
 int command_code = -1;
 char status_response[100] = "Waiting for command...";
 int status_color = 2;
-char receive_data[512] = {0};
-
+unsigned char receive_data[512] = {0};
+unsigned char save_data[512] = {0};
 // ==================== UART THREAD ====================
 void *uart_thread_func(void *arg) {
     uint16_t resp_len = 0;
@@ -90,14 +90,17 @@ void *uart_thread_func(void *arg) {
         pthread_mutex_lock(&command_mutex);
         if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
             snprintf(status_response, sizeof(status_response), "Command %d executed successfully", cmd);
-            snprintf(receive_data, sizeof(receive_data), "Response: %s", (const char *)resp);
+            snprintf(receive_data, sizeof(receive_data), "OK");
             status_color = 2;
         } 
-        else if (resp && resp_len > 0 && cmd == 6) {
+        else if (resp && resp_len > 5 && cmd == 6) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "%s", (const char *)resp);
+            snprintf(receive_data, sizeof(receive_data), "Response of command %d:", cmd);
+            for (int i = 0; i < resp_len; i++) {
+                snprintf(receive_data + strlen(receive_data), sizeof(receive_data) - strlen(receive_data)," %c", resp[i]);
+            }
             status_color = 2;
-        } 
+        }
         else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
             snprintf(receive_data, sizeof(receive_data), "No response expected for command %d", cmd);
