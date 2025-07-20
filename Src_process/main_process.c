@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
                 switch (choice) {
                     case 1:
                         write_command(CMD_DIRECTION_1);
-                        unsigned char *response_1 = Read_Response(5000, &response_bytes);
+                        unsigned char *response_1 = Read_Response(20000, &response_bytes);
                         if (response_1 != NULL && response_bytes >= 2 && strncmp((const char*)response_1, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction1 executed successfully");
                         } else {
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
                         break;
                     case 2:
                         write_command(CMD_DIRECTION_2);
-                        unsigned char *response_2 = Read_Response(5000, &response_bytes);
+                        unsigned char *response_2 = Read_Response(15000, &response_bytes);
                         if (response_2 != NULL && response_bytes >= 2 && strncmp((const char*)response_2, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction2 executed successfully");
                         } else {
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
                         break;
                     case 3:
                         write_command(CMD_DIRECTION_3);
-                        unsigned char *response_3 = Read_Response(5000, &response_bytes);
+                        unsigned char *response_3 = Read_Response(20000, &response_bytes);
                         if (response_3 != NULL && response_bytes >= 2 && strncmp((const char*)response_3, "OK", 2) == 0) {
                             snprintf(status, sizeof(status), "Direction3 executed successfully");
                         } else {
