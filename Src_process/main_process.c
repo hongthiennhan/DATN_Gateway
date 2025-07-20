@@ -95,7 +95,7 @@ void *uart_thread_func(void *arg) {
         } 
         else if (resp && resp_len > 5 && cmd == 6) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "Response of command %d:", cmd);
+            //snprintf(receive_data, sizeof(receive_data), "Response of command %d:", cmd);
             snprintf(receive_data, sizeof(receive_data), " %s",resp);
             status_color = 2;
         }
