@@ -27,6 +27,7 @@ int command_pending = 0;
 int command_code = -1;
 char status_response[100] = "Waiting for command...";
 int status_color = 2;
+char receive_data[512] = {0};
 
 // ==================== UART THREAD ====================
 void *uart_thread_func(void *arg) {
@@ -72,6 +73,8 @@ void *uart_thread_func(void *arg) {
             case 6:
                 write_command(CMD_SEND_STATUS);
                 resp = Read_Response(1000, &resp_len);
+                strncpy(receive_data, (const char*)resp, resp_len);
+                receive_data[resp_len] = '\0';
                 break;
             case 7:
                 write_command(CMD_STOP_SYSTEM);
@@ -154,6 +157,7 @@ int main(int argc, char **argv) {
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     init_pair(3, COLOR_RED, COLOR_BLACK);
     init_pair(4, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(5, COLOR_CYAN, COLOR_BLACK);
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
@@ -184,6 +188,10 @@ int main(int argc, char **argv) {
         attron(COLOR_PAIR(status_color));
         mvprintw(4 + num_items + 2, 0, "Status: %s", status_response);
         attroff(COLOR_PAIR(status_color));
+        attron(COLOR_PAIR(5)); // Received Data Color
+        mvprintw(4 + num_items + 3, 0, "Received Data: %s", receive_data);
+        attroff(COLOR_PAIR(5));
+
         pthread_mutex_unlock(&command_mutex);
 
         refresh();
