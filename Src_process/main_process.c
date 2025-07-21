@@ -77,7 +77,7 @@ void *uart_thread_func(void *arg) {
                     strncpy(save_data, (const char *)resp, resp_len);
                     save_data[resp_len] = '\0';
                     // Parse T1, T2, T3
-                    sscanf((const char*)save_data, "T1:%d,T2:%d,T3:%d", &t1_val, &t2_val, &t3_val);
+                    sscanf((const char*)save_data, "T1 (%d),T2 (%d),T3 (%d)", &t1_val, &t2_val, &t3_val);
                 }
                 break;
             case 7:
