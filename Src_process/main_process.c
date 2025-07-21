@@ -50,7 +50,7 @@ void *uart_thread_func(void *arg) {
             is_busy = 1;  //Block UI when handling these commands
 
         unsigned char *resp = NULL;
-
+        int t1_val = 0, t2_val = 0, t3_val = 0;
         switch (cmd) {
             case 1:
                 write_command(CMD_DIRECTION_1);
@@ -73,8 +73,12 @@ void *uart_thread_func(void *arg) {
             case 6:
                 write_command(CMD_SEND_STATUS);
                 resp = Read_Response(100, &resp_len);
-                strncpy(save_data, (const char*)resp, resp_len);
-                save_data[resp_len] = '\0';
+                if (resp && resp_len > 0) {
+                    strncpy(save_data, (const char *)resp, resp_len);
+                    save_data[resp_len] = '\0';
+                    // Parse T1, T2, T3
+                    sscanf((const char*)save_data, "T1:%d,T2:%d,T3:%d", &t1_val, &t2_val, &t3_val);
+                }
                 break;
             case 7:
                 write_command(CMD_STOP_SYSTEM);
@@ -95,7 +99,7 @@ void *uart_thread_func(void *arg) {
         } 
         else if (resp && resp_len > 5 && cmd == 6) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "length of response %d", resp_len);
+            snprintf(receive_data, sizeof(receive_data), "T1:%d,T2:%d,T3:%d", t1_val, t2_val, t3_val);
             status_color = 2;
         }
         else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {

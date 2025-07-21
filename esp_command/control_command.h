@@ -16,6 +16,13 @@ typedef enum {
     CMD_INIT         = 0xFF
 } Command;
 
+typedef enum {
+    CMD_LED_ON          = 0x01,
+    CMD_LED_OFF         = 0x02,
+    CMD_READ_SINGLE     = 0x03,
+    CMD_READ_CONTINUOUS = 0x04
+} Command_2;
+
 extern int uart_fd;  
 extern sem_t *uart_sem;
 void Uart_Init(speed_t baudrate, char *device);
