@@ -85,7 +85,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     }
 
     // Allocate buffer for response
-    unsigned char* buffer = (unsigned char*)malloc(512);
+    unsigned char* buffer = (unsigned char*)malloc(2048); // Allocate 2048 bytes
     if (!buffer) {
         perror("Memory allocation failed");
         sem_post(uart_sem);
@@ -96,7 +96,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     uint32_t waited_ms = 0;
     const uint32_t poll_interval = 20; // Check every 20 ms
 
-    while (waited_ms < timeout_ms && total_read < 512) {
+    while (waited_ms < timeout_ms && total_read < 2048) {
         // Wait for UART data to become available
         fd_set read_fds;
         FD_ZERO(&read_fds);
@@ -117,12 +117,10 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
         }
 
         // Data available — read from UART
-        ssize_t r = read(uart_fd, buffer + total_read, 512 - total_read);
+        ssize_t r = read(uart_fd, buffer + total_read, 2048 - total_read);
         if (r > 0) {
             total_read += r;
-
-            // Optional:
-            // break; // Uncomment to exit on first successful read
+            break;
         } else if (r < 0) {
             perror("read() failed");
             break;
