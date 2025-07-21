@@ -19,7 +19,7 @@ typedef enum {
 extern int uart_fd;  
 extern sem_t *uart_sem;
 void Uart_Init(speed_t baudrate, char *device);
-void write_command(Command cmd);
+void write_command(uint8_t cmd);
 void write_init(uint32_t baudrate);
 unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out);
 speed_t map_to_speed(uint32_t baud_num);

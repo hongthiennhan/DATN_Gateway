@@ -148,7 +148,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
  * 
  * @param cmd The Command enum value to send.
  */
-void write_command(Command cmd) {
+void write_command(uint8_t cmd) {
     if (sem_wait(uart_sem) != 0) return;
     if (uart_fd == -1) {
         sem_post(uart_sem);
