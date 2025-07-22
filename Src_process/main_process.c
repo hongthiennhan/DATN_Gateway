@@ -53,6 +53,7 @@ void *uart_thread_func(void *arg) {
 
         unsigned char *resp = NULL;
         int t1_val = 0, t2_val = 0, t3_val = 0;
+        uint8_t ret = 0;
         switch (cmd) {
             case 1:
                 write_command(CMD_DIRECTION_1);
@@ -96,22 +97,9 @@ void *uart_thread_func(void *arg) {
                 pthread_mutex_unlock(&command_mutex);
 
                 // Chạy lệnh shell để flash
-                int ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
+                ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
                                 "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
                                 "deactivate'");
-
-                pthread_mutex_lock(&command_mutex);
-                if (ret == 0) {
-                    snprintf(status_response, sizeof(status_response), "Firmware flashed successfully.");
-                    snprintf(receive_data, sizeof(receive_data), "esptool executed.");
-                    status_color = 2;
-                } else {
-                    snprintf(status_response, sizeof(status_response), "Flashing failed!");
-                    snprintf(receive_data, sizeof(receive_data), "esptool error: return %d", ret);
-                    status_color = 3;
-                }
-                pthread_mutex_unlock(&command_mutex);
-
                 is_busy = 0;
                 break;
             default:
@@ -134,7 +122,18 @@ void *uart_thread_func(void *arg) {
             snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
             snprintf(receive_data, sizeof(receive_data), "No response expected for command %d", cmd);
             status_color = 2;
-        } 
+        }
+        else if (cmd == 9) {
+            if (ret == 0) {
+                    snprintf(status_response, sizeof(status_response), "Firmware flashed successfully.");
+                    snprintf(receive_data, sizeof(receive_data), "esptool executed.");
+                    status_color = 2;
+                } else {
+                    snprintf(status_response, sizeof(status_response), "Flashing failed!");
+                    snprintf(receive_data, sizeof(receive_data), "esptool error: return %d", ret);
+                    status_color = 3;
+                }
+        }
         else {
             snprintf(status_response, sizeof(status_response), "Command %d failed", cmd);
             snprintf(receive_data, sizeof(receive_data), "No response or error for command %d", cmd);
