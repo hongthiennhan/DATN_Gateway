@@ -1,8 +1,5 @@
 #!/bin/bash
-# Flash the ESP32 with the binary file
-source ../../../esptool-env/bin/activate
-esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin
-deactivate
+
 # Default values
 BAUDRATE=${1:-115200}
 DEVICE=${2:-/dev/ttyUSB0}

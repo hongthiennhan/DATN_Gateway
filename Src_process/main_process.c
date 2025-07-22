@@ -17,8 +17,10 @@ static const char *menu_items[] = {
     "6. Send_Status",
     "7. Stop_System",
     "8. Init",
+    "9. Re-flash firmware",
     "0. Exit program"
 };
+
 int num_items = sizeof(menu_items) / sizeof(menu_items[0]);
 
 // ========== Shared state between threads ==========
@@ -85,6 +87,32 @@ void *uart_thread_func(void *arg) {
                 break;
             case 8:
                 write_init(115200);
+                break;
+            case 9:  // CMD_REFLASH
+                is_busy = 1;
+                pthread_mutex_lock(&command_mutex);
+                snprintf(status_response, sizeof(status_response), "Flashing firmware...");
+                status_color = 4;
+                pthread_mutex_unlock(&command_mutex);
+
+                // Chạy lệnh shell để flash
+                int ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
+                                "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
+                                "deactivate'");
+
+                pthread_mutex_lock(&command_mutex);
+                if (ret == 0) {
+                    snprintf(status_response, sizeof(status_response), "Firmware flashed successfully.");
+                    snprintf(receive_data, sizeof(receive_data), "esptool executed.");
+                    status_color = 2;
+                } else {
+                    snprintf(status_response, sizeof(status_response), "Flashing failed!");
+                    snprintf(receive_data, sizeof(receive_data), "esptool error: return %d", ret);
+                    status_color = 3;
+                }
+                pthread_mutex_unlock(&command_mutex);
+
+                is_busy = 0;
                 break;
             default:
                 break;
@@ -223,7 +251,7 @@ int main(int argc, char **argv) {
                 command_pending = 1;
                 pthread_mutex_unlock(&command_mutex);
 
-                if (command_code == 9) { // Exit
+                if (command_code == 10) { // Exit
                     endwin();
                     printf("Exiting...\n");
                     close(uart_fd);
