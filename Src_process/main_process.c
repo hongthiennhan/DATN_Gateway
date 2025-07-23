@@ -2,6 +2,10 @@
 #include "control_command.h"
 #include "thread_func.h"
 
+static struct option long_options[] = {
+    {0, 0, 0, 0}
+};
+
 // ==================== MAIN FUNCTION ====================
 int main(int argc, char **argv) {
     uint32_t baudrate = 115200;
