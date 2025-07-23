@@ -1,4 +1,2 @@
-# LaTeX_template_source
-1. Run source in Visual Studio Code
-2. Install extension LaTeX Workshop - James Yu
-3. Install eviroment MiKTeK and Strawberry Perl
+### Sơ đồ hệ thống (sơ đồ chức năng):
+![Function diagram](./images/Task_1_Function_diagram.png)

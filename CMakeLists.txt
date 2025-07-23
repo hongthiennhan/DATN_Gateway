@@ -21,7 +21,6 @@ message(STATUS "NCURSES libraries: ${NCURSES_LIBRARIES}")
 # Include directories
 set(INCLUDE_DIRS
     esp_command
-    i2c_ssd1306
     Inc
 )
 
@@ -41,10 +40,8 @@ target_link_libraries(led_app ${GPIOD_LIBRARIES})
 # Source files thread 2
 set(SOURCES_2
     Src_process/main_process.c
-    esp_command/control_command.c
-    i2c_ssd1306/ssd1306.c
-    i2c_ssd1306/linux_i2c.c
-    i2c_ssd1306/font.c)
+    Src_process/thread_func.c
+    esp_command/control_command.c)
 
 # Add executable 2
 add_executable(main_app ${SOURCES_2})
