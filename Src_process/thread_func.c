@@ -70,6 +70,7 @@ void *uart_thread_func(void *arg) {
 
         unsigned char *resp = NULL;
         int t1_val = 0, t2_val = 0, t3_val = 0;
+        uint16_t adc_value = 0;  // For Node2 ADC readings
         uint8_t ret = 0;
 
         // Handle commands based on selected_node_type
@@ -96,11 +97,12 @@ void *uart_thread_func(void *arg) {
                 case 6:
                     write_command(CMD_SEND_STATUS);
                     resp = Read_Response(100, &resp_len);
-                    if (resp && resp_len > 0) {
-                        strncpy(save_data, (const char *)resp, resp_len);
-                        save_data[resp_len] = '\0';
-                        // Parse T1, T2, T3
-                        sscanf((const char*)save_data, "T1 (%d),T2 (%d),T3 (%d)", &t1_val, &t2_val, &t3_val);
+                    // Parse 12 byte binary data (3 x u32 little-endian)
+                    if (resp && resp_len >= 12) {
+                        // Convert little-endian bytes to u32 values
+                        t1_val = resp[0] | (resp[1] << 8) | (resp[2] << 16) | (resp[3] << 24);
+                        t2_val = resp[4] | (resp[5] << 8) | (resp[6] << 16) | (resp[7] << 24);
+                        t3_val = resp[8] | (resp[9] << 8) | (resp[10] << 16) | (resp[11] << 24);
                     }
                     break;
                 case 7:
@@ -126,41 +128,40 @@ void *uart_thread_func(void *arg) {
                     break;
             }
 
-        // Handle commands for Node2
-        // ========== STATUS HANDLING FOR NODE1 (Motor Controller) ==========
-        pthread_mutex_lock(&command_mutex);
-        if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
-            snprintf(status_response, sizeof(status_response), "Node1 Command %d executed successfully", cmd);
-            snprintf(receive_data, sizeof(receive_data), "OK");
-            status_color = 2;
-        } 
-        else if (resp && resp_len > 5 && cmd == 6) {  // Send_Status command specific to Node1
-            snprintf(status_response, sizeof(status_response), "Node1 Status command executed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "T1:%d,T2:%d,T3:%d", t1_val, t2_val, t3_val);
-            status_color = 2;
-        }
-        else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {  // Commands with no response
-            snprintf(status_response, sizeof(status_response), "Node1 Command %d executed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "No response expected for Node1 command %d", cmd);
-            status_color = 2;
-        }
-        else if (cmd == 9) {  // Re-flash firmware for Node1
-            if (ret == 0) {
-                snprintf(status_response, sizeof(status_response), "Node1 firmware flashed successfully.");
-                snprintf(receive_data, sizeof(receive_data), "Node1 esptool executed successfully.");
+            // ========== STATUS HANDLING FOR NODE1 (Motor Controller) ==========
+            pthread_mutex_lock(&command_mutex);
+            if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
+                snprintf(status_response, sizeof(status_response), "Node1 Command %d executed successfully", cmd);
+                snprintf(receive_data, sizeof(receive_data), "OK");
                 status_color = 2;
-            } else {
-                snprintf(status_response, sizeof(status_response), "Node1 flashing failed!");
-                snprintf(receive_data, sizeof(receive_data), "Node1 esptool error: return %d", ret);
+            } 
+            else if (resp && resp_len >= 12 && cmd == 6) {  // Binary status data (12 bytes)
+                snprintf(status_response, sizeof(status_response), "Node1 Status command executed");
+                snprintf(receive_data, sizeof(receive_data), "T1:%d,T2:%d,T3:%d", t1_val, t2_val, t3_val);
+                status_color = 2;
+            }
+            else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {  // Commands with no response
+                snprintf(status_response, sizeof(status_response), "Node1 Command %d executed", cmd);
+                snprintf(receive_data, sizeof(receive_data), "No response expected for Node1 command %d", cmd);
+                status_color = 2;
+            }
+            else if (cmd == 9) {  // Re-flash firmware for Node1
+                if (ret == 0) {
+                    snprintf(status_response, sizeof(status_response), "Node1 firmware flashed successfully.");
+                    snprintf(receive_data, sizeof(receive_data), "Node1 esptool executed successfully.");
+                    status_color = 2;
+                } else {
+                    snprintf(status_response, sizeof(status_response), "Node1 flashing failed!");
+                    snprintf(receive_data, sizeof(receive_data), "Node1 esptool error: return %d", ret);
+                    status_color = 3;
+                }
+            }
+            else {
+                snprintf(status_response, sizeof(status_response), "Node1 Command %d failed", cmd);
+                snprintf(receive_data, sizeof(receive_data), "Node1 no response or error for command %d", cmd);
                 status_color = 3;
             }
-        }
-        else {
-            snprintf(status_response, sizeof(status_response), "Node1 Command %d failed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "Node1 no response or error for command %d", cmd);
-            status_color = 3;
-        }
-        pthread_mutex_unlock(&command_mutex);
+            pthread_mutex_unlock(&command_mutex);
         }
         else if (local_node_type == NODE_TYPE_2) {
             switch (cmd) {
@@ -172,11 +173,44 @@ void *uart_thread_func(void *arg) {
                     break;
                 case 3:
                     write_command(CMD2_READ_SINGLE);
-                    resp = Read_Response(100, &resp_len);  // Assume response
+                    resp = Read_Response(2000, &resp_len);  // Expect 2 bytes
+                    // Parse 2 byte ADC data (u16 little-endian)
+                    if (resp && resp_len >= 2) {
+                        adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
+                    }
                     break;
                 case 4:
                     write_command(CMD2_READ_CONTINUOUS);
-                    resp = Read_Response(100, &resp_len);  // Assume response
+                    // For continuous reading, keep reading until stopped
+                    while (local_node_type == NODE_TYPE_2) {
+                        resp = Read_Response(200, &resp_len);  // Expect 2 bytes every ~100ms
+                        if (resp && resp_len >= 2) {
+                            adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
+                            
+                            // Update display with new ADC value
+                            pthread_mutex_lock(&command_mutex);
+                            float voltage = (adc_value / 4095.0) * 3.3;  // Convert to voltage
+                            snprintf(status_response, sizeof(status_response), "Node2 Continuous reading");
+                            snprintf(receive_data, sizeof(receive_data), "ADC: %d (%.3fV)", adc_value, voltage);
+                            status_color = 2;
+                            pthread_mutex_unlock(&command_mutex);
+                            
+                            if (resp) {
+                                free(resp);
+                                resp = NULL;
+                            }
+                        }
+                        
+                        // Check if command changed (to exit continuous mode)
+                        pthread_mutex_lock(&command_mutex);
+                        if (command_pending && command_code != 4) {
+                            pthread_mutex_unlock(&command_mutex);
+                            break;
+                        }
+                        pthread_mutex_unlock(&command_mutex);
+                        
+                        usleep(50 * 1000);  // Small delay between reads
+                    }
                     break;
                 // ADDED: Reflash firmware case for Node2
                 case 5:  // ADDED: CMD_REFLASH for Node2
@@ -187,7 +221,6 @@ void *uart_thread_func(void *arg) {
                     pthread_mutex_unlock(&command_mutex);
 
                     // ADDED: Run shell command to flash Node2 firmware
-                    // You may need to adjust the binary path and flash address for Node2
                     ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
                                  "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && "
                                  "deactivate'");
@@ -196,6 +229,7 @@ void *uart_thread_func(void *arg) {
                 default:
                     break;
             }
+            
             // ========== STATUS HANDLING FOR NODE2 (Sensor Board) ==========
             pthread_mutex_lock(&command_mutex);
             if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
@@ -203,9 +237,15 @@ void *uart_thread_func(void *arg) {
                 snprintf(receive_data, sizeof(receive_data), "OK");
                 status_color = 2;
             }
-            else if (resp && resp_len > 0 && (cmd == 3 || cmd == 4)) {  // Read commands specific to Node2
-                snprintf(status_response, sizeof(status_response), "Node2 Read command %d executed", cmd);
-                snprintf(receive_data, sizeof(receive_data), "Node2 sensor data: %s", (char*)resp);
+            else if (resp && resp_len >= 2 && (cmd == 3)) {  // Single ADC read (2 bytes binary)
+                float voltage = (adc_value / 4095.0) * 3.3;  // Convert to voltage
+                snprintf(status_response, sizeof(status_response), "Node2 Single read command executed");
+                snprintf(receive_data, sizeof(receive_data), "ADC: %d (%.3fV)", adc_value, voltage);
+                status_color = 2;
+            }
+            else if (cmd == 4) {  // Continuous mode handled above
+                snprintf(status_response, sizeof(status_response), "Node2 Continuous mode ended");
+                snprintf(receive_data, sizeof(receive_data), "Last ADC: %d", adc_value);
                 status_color = 2;
             }
             else if (resp_len == 0 && (cmd == 1 || cmd == 2)) {  // LED commands with no response
