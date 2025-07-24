@@ -121,28 +121,7 @@ void *uart_thread_func(void *arg) {
                 default:
                     break;
             }
-        } else if (local_node_type == NODE_TYPE_2) {
-            switch (cmd) {
-                case 1:
-                    write_command(CMD2_LED_ON);  // Assume defined in control_command.h
-                    break;
-                case 2:
-                    write_command(CMD2_LED_OFF);
-                    break;
-                case 3:
-                    write_command(CMD2_READ_SINGLE);
-                    resp = Read_Response(100, &resp_len);  // Assume response
-                    break;
-                case 4:
-                    write_command(CMD2_READ_CONTINUOUS);
-                    resp = Read_Response(100, &resp_len);  // Assume response
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // Update status (keep as is, adjust per node if needed)
+                // Update status (keep as is, adjust per node if needed)
         pthread_mutex_lock(&command_mutex);
         if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
             snprintf(status_response, sizeof(status_response), "Command %d executed successfully", cmd);
@@ -176,6 +155,28 @@ void *uart_thread_func(void *arg) {
             status_color = 3;
         }
         pthread_mutex_unlock(&command_mutex);
+        
+        } else if (local_node_type == NODE_TYPE_2) {
+            switch (cmd) {
+                case 1:
+                    write_command(CMD2_LED_ON);  // Assume defined in control_command.h
+                    break;
+                case 2:
+                    write_command(CMD2_LED_OFF);
+                    break;
+                case 3:
+                    write_command(CMD2_READ_SINGLE);
+                    resp = Read_Response(100, &resp_len);  // Assume response
+                    break;
+                case 4:
+                    write_command(CMD2_READ_CONTINUOUS);
+                    resp = Read_Response(100, &resp_len);  // Assume response
+                    break;
+                default:
+                    break;
+            }
+        }
+
         if (resp) {
             free(resp);
             resp_len = 0; // Reset response length
