@@ -26,11 +26,13 @@ static const char *node1_menu_items[] = {
     "0. Exit program"
 };
 
+// ADDED: Re-flash firmware option for Node2
 static const char *node2_menu_items[] = {
     "1. LED On",
     "2. LED Off",
     "3. Read Single",
     "4. Read Continuous",
+    "5. Re-flash firmware",  // ADDED: New reflash option for Node2
     "0. Exit"
 };
 
@@ -60,7 +62,9 @@ void *uart_thread_func(void *arg) {
             continue;
         }
 
-        int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6);
+        // UPDATED: Added case 5 for Node2 reflash command to block UI
+        int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6) || 
+                       (local_node_type == NODE_TYPE_2 && cmd == 5);  // ADDED: Block UI for Node2 reflash
         if (block_ui)
             is_busy = 1;  // Block UI when handling these commands
 
@@ -121,42 +125,44 @@ void *uart_thread_func(void *arg) {
                 default:
                     break;
             }
-                // Update status (keep as is, adjust per node if needed)
+
+        // Handle commands for Node2
+        // ========== STATUS HANDLING FOR NODE1 (Motor Controller) ==========
         pthread_mutex_lock(&command_mutex);
         if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
-            snprintf(status_response, sizeof(status_response), "Command %d executed successfully", cmd);
+            snprintf(status_response, sizeof(status_response), "Node1 Command %d executed successfully", cmd);
             snprintf(receive_data, sizeof(receive_data), "OK");
             status_color = 2;
         } 
-        else if (resp && resp_len > 5 && cmd == 6 && local_node_type == NODE_TYPE_1) {
-            snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
+        else if (resp && resp_len > 5 && cmd == 6) {  // Send_Status command specific to Node1
+            snprintf(status_response, sizeof(status_response), "Node1 Status command executed", cmd);
             snprintf(receive_data, sizeof(receive_data), "T1:%d,T2:%d,T3:%d", t1_val, t2_val, t3_val);
             status_color = 2;
         }
-        else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
-            snprintf(status_response, sizeof(status_response), "Command %d executed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "No response expected for command %d", cmd);
+        else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {  // Commands with no response
+            snprintf(status_response, sizeof(status_response), "Node1 Command %d executed", cmd);
+            snprintf(receive_data, sizeof(receive_data), "No response expected for Node1 command %d", cmd);
             status_color = 2;
         }
-        else if (cmd == 9 && local_node_type == NODE_TYPE_1) {
+        else if (cmd == 9) {  // Re-flash firmware for Node1
             if (ret == 0) {
-                snprintf(status_response, sizeof(status_response), "Firmware flashed successfully.");
-                snprintf(receive_data, sizeof(receive_data), "esptool executed.");
+                snprintf(status_response, sizeof(status_response), "Node1 firmware flashed successfully.");
+                snprintf(receive_data, sizeof(receive_data), "Node1 esptool executed successfully.");
                 status_color = 2;
             } else {
-                snprintf(status_response, sizeof(status_response), "Flashing failed!");
-                snprintf(receive_data, sizeof(receive_data), "esptool error: return %d", ret);
+                snprintf(status_response, sizeof(status_response), "Node1 flashing failed!");
+                snprintf(receive_data, sizeof(receive_data), "Node1 esptool error: return %d", ret);
                 status_color = 3;
             }
         }
         else {
-            snprintf(status_response, sizeof(status_response), "Command %d failed", cmd);
-            snprintf(receive_data, sizeof(receive_data), "No response or error for command %d", cmd);
+            snprintf(status_response, sizeof(status_response), "Node1 Command %d failed", cmd);
+            snprintf(receive_data, sizeof(receive_data), "Node1 no response or error for command %d", cmd);
             status_color = 3;
         }
         pthread_mutex_unlock(&command_mutex);
-        
-        } else if (local_node_type == NODE_TYPE_2) {
+        }
+        else if (local_node_type == NODE_TYPE_2) {
             switch (cmd) {
                 case 1:
                     write_command(CMD2_LED_ON);  // Assume defined in control_command.h
@@ -172,9 +178,58 @@ void *uart_thread_func(void *arg) {
                     write_command(CMD2_READ_CONTINUOUS);
                     resp = Read_Response(100, &resp_len);  // Assume response
                     break;
+                // ADDED: Reflash firmware case for Node2
+                case 5:  // ADDED: CMD_REFLASH for Node2
+                    is_busy = 1;
+                    pthread_mutex_lock(&command_mutex);
+                    snprintf(status_response, sizeof(status_response), "Flashing Node2 firmware...");
+                    status_color = 4;
+                    pthread_mutex_unlock(&command_mutex);
+
+                    // ADDED: Run shell command to flash Node2 firmware
+                    // You may need to adjust the binary path and flash address for Node2
+                    ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
+                                 "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && "
+                                 "deactivate'");
+                    is_busy = 0;
+                    break;
                 default:
                     break;
             }
+            // ========== STATUS HANDLING FOR NODE2 (Sensor Board) ==========
+            pthread_mutex_lock(&command_mutex);
+            if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
+                snprintf(status_response, sizeof(status_response), "Node2 Command %d executed successfully", cmd);
+                snprintf(receive_data, sizeof(receive_data), "OK");
+                status_color = 2;
+            }
+            else if (resp && resp_len > 0 && (cmd == 3 || cmd == 4)) {  // Read commands specific to Node2
+                snprintf(status_response, sizeof(status_response), "Node2 Read command %d executed", cmd);
+                snprintf(receive_data, sizeof(receive_data), "Node2 sensor data: %s", (char*)resp);
+                status_color = 2;
+            }
+            else if (resp_len == 0 && (cmd == 1 || cmd == 2)) {  // LED commands with no response
+                snprintf(status_response, sizeof(status_response), "Node2 LED command %d executed", cmd);
+                snprintf(receive_data, sizeof(receive_data), "No response expected for Node2 LED command %d", cmd);
+                status_color = 2;
+            }
+            else if (cmd == 5) {  // Re-flash firmware for Node2
+                if (ret == 0) {
+                    snprintf(status_response, sizeof(status_response), "Node2 firmware flashed successfully.");
+                    snprintf(receive_data, sizeof(receive_data), "Node2 esptool executed successfully.");
+                    status_color = 2;
+                } else {
+                    snprintf(status_response, sizeof(status_response), "Node2 flashing failed!");
+                    snprintf(receive_data, sizeof(receive_data), "Node2 esptool error: return %d", ret);
+                    status_color = 3;
+                }
+            }
+            else {
+                snprintf(status_response, sizeof(status_response), "Node2 Command %d failed", cmd);
+                snprintf(receive_data, sizeof(receive_data), "Node2 no response or error for command %d", cmd);
+                status_color = 3;
+            }
+            pthread_mutex_unlock(&command_mutex);
         }
 
         if (resp) {
@@ -329,9 +384,10 @@ void *ui_thread_func(void *arg) {
                 command_pending = 1;
                 pthread_mutex_unlock(&command_mutex);
 
-                // Handle exit based on node
+                // UPDATED: Handle exit based on node with updated exit codes
+                // Node2 now has 6 items (1-5 + 0), so exit is still command 6 (0-based index 5 + 1)
                 if ((selected_node_type == NODE_TYPE_1 && command_code == NODE1_EXIT_CODE) ||
-                    (selected_node_type == NODE_TYPE_2 && command_code == NODE2_EXIT_CODE)) {
+                    (selected_node_type == NODE_TYPE_2 && command_code == NODE2_EXIT_CODE)) {  // UPDATED: Node2 exit code is now 6
                     endwin();
                     printf("Exiting...\n");
                     close(uart_fd);
