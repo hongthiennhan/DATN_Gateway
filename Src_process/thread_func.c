@@ -122,6 +122,7 @@ void *uart_thread_func(void *arg) {
                     ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
                                  "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
                                  "deactivate'");
+                    Clear_Startup_UART(uart_fd, 10000);  // Clear UART buffer after flashing
                     is_busy = 0;
                     break;
                 default:
