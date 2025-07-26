@@ -121,10 +121,11 @@ void *uart_thread_func(void *arg) {
         // UPDATED: Added case 5 for Node2 reflash command to block UI
         int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6) || 
                        (local_node_type == NODE_TYPE_2 && cmd == 5);  // ADDED: Block UI for Node2 reflash
-        if (block_ui)
+        if (block_ui){
             pthread_mutex_lock(&command_mutex);
             is_busy = 1;  // Block UI when handling these commands
             pthread_mutex_unlock(&command_mutex);
+        }
 
         unsigned char *resp = NULL;
         int t1_val = 0, t2_val = 0, t3_val = 0;
@@ -171,8 +172,8 @@ void *uart_thread_func(void *arg) {
                     write_init(115200);
                     break;
                 case 9:  // CMD_REFLASH
-                    is_busy = 1;  // Block UI
                     pthread_mutex_lock(&command_mutex);
+                     is_busy = 1;  // Block UI
                     snprintf(status_response, sizeof(status_response), "Flashing firmware...");
                     status_color = 4;
                     pthread_mutex_unlock(&command_mutex);
@@ -181,7 +182,9 @@ void *uart_thread_func(void *arg) {
                                  "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
                                  "deactivate'");
                     Clear_Startup_UART(uart_fd, 10000);  // Clear UART buffer after flashing
+                    pthread_mutex_lock(&command_mutex);
                     is_busy = 0;
+                    pthread_mutex_unlock(&command_mutex);
                     break;
                 default:
                     break;
