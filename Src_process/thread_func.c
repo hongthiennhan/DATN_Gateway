@@ -18,6 +18,9 @@ shared_data_t command_data = {
 };
 
 // Helper functions for command_data operations
+
+// Set the command code and notify waiting threads
+
 void set_command_code(int new_code) { // use only for setting command code
     pthread_mutex_lock(&command_data.mutex);
     *(int*)command_data.data = new_code;
@@ -25,12 +28,17 @@ void set_command_code(int new_code) { // use only for setting command code
     pthread_mutex_unlock(&command_data.mutex);
 }
 
+// Get the current command code
+
 int get_command_code() { // use only for getting command code
     pthread_mutex_lock(&command_data.mutex);
     int code = *(int*)command_data.data;
     pthread_mutex_unlock(&command_data.mutex);
     return code;
 }
+
+// Wait for command change with timeout
+// Returns the command code if signaled, or -1 if timeout occurs
 
 int wait_for_command_change(int timeout_ms) {
     pthread_mutex_lock(&command_data.mutex);
@@ -70,8 +78,7 @@ static const char *node2_menu_items[] = {
     "1. LED On",
     "2. LED Off",
     "3. Read Single",
-    "4. Read Continuous",
-    "5. Re-flash firmware",  // ADDED: New reflash option for Node2
+    "4. Re-flash firmware",  // ADDED: New reflash option for Node2
     "0. Exit"
 };
 
@@ -100,7 +107,7 @@ void *uart_thread_func(void *arg) {
 
         if (!pending) {
             // MODIFIED: Use notification wait instead of constant polling
-            int new_cmd = wait_for_command_change(100); // Wait 100ms for command
+            int new_cmd = wait_for_command_change(1000); // Wait 100ms for command
             if (new_cmd == -1) {
                 continue; // Timeout, try again
             }

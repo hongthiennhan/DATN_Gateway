@@ -19,8 +19,7 @@ typedef enum {
 typedef enum {
     CMD2_LED_ON          = 0xA1,
     CMD2_LED_OFF         = 0xA2,
-    CMD2_READ_SINGLE     = 0xA3,
-    CMD2_READ_CONTINUOUS = 0xA4
+    CMD2_READ_SINGLE     = 0xA3
 } Command_2;
 
 extern int uart_fd;  
