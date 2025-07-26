@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     // Main waits for threads to finish (does nothing else)
     pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
-    pthread_join(mqtt_thread, NULL);
+    //pthread_join(mqtt_thread, NULL);
 
     close(uart_fd);
     free(command_data.data);
