@@ -459,7 +459,7 @@ void *ui_thread_func(void *arg) {
                     endwin();
                     printf("Exiting...\n");
                     close(uart_fd);
-                    exit(0);
+                    pthread_exit(NULL); // Exit UI thread
                 }
                 break;
         }

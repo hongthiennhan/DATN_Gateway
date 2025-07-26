@@ -6,16 +6,6 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-void cleanup_on_exit(void) {
-    close(uart_fd);
-    if (command_data.data) {
-        free(command_data.data);
-    }
-    pthread_mutex_destroy(&command_data.mutex);
-    pthread_cond_destroy(&command_data.cond);
-    printf("Cleanup completed via atexit()\n");
-}
-
 // ==================== MAIN FUNCTION ====================
 int main(int argc, char **argv) {
     uint32_t baudrate = 115200;
@@ -66,6 +56,10 @@ int main(int argc, char **argv) {
     pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
-    atexit(cleanup_on_exit);
+
+    close(uart_fd);
+    free(command_data.data);
+    pthread_mutex_destroy(&command_data.mutex);
+    pthread_cond_destroy(&command_data.cond);
     return 0;
 }
