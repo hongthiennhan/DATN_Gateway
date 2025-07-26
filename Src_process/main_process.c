@@ -11,7 +11,13 @@ int main(int argc, char **argv) {
     uint32_t baudrate = 115200;
     char *device = "/dev/ttyUSB0";
     int opt, option_index = 0;
-
+    // Initialize command_data with a pointer to an int
+    command_data.data = malloc(sizeof(int));
+    if (command_data.data == NULL) {
+        fprintf(stderr, "Failed to allocate memory for command data\n");
+        return -1;
+    }
+    *(int*)command_data.data = -1;  // Initialize to -1
     // Parse command line arguments
     while ((opt = getopt_long(argc, argv, "B:d:", long_options, &option_index)) != -1) {
         switch (opt) {
@@ -50,5 +56,8 @@ int main(int argc, char **argv) {
     pthread_join(ui_thread, NULL);
 
     close(uart_fd);
+    free(command_data.data);
+    pthread_mutex_destroy(&command_data.mutex);
+    pthread_cond_destroy(&command_data.cond);
     return 0;
 }

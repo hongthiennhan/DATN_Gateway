@@ -12,7 +12,7 @@ unsigned char save_data[512] = {0};
 int shared_node_type = 0;  // Initialize to 0 (no node selected yet)
 
 shared_data_t command_data = {
-    .data = malloc(sizeof(int)),  // Allocate memory for int
+    .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
 };
