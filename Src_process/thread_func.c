@@ -269,17 +269,12 @@ void *uart_thread_func(void *arg) {
                 snprintf(receive_data, sizeof(receive_data), "ADC: %d", adc_value);
                 status_color = 2;
             }
-            else if (cmd == 4) {  // Continuous mode handled above
-                snprintf(status_response, sizeof(status_response), "Node2 Continuous mode ended");
-                snprintf(receive_data, sizeof(receive_data), "Last ADC: %d", adc_value);
-                status_color = 2;
-            }
             else if (resp_len == 0 && (cmd == 1 || cmd == 2)) {  // LED commands with no response
                 snprintf(status_response, sizeof(status_response), "Node2 LED command %d executed", cmd);
                 snprintf(receive_data, sizeof(receive_data), "No response expected for Node2 LED command %d", cmd);
                 status_color = 2;
             }
-            else if (cmd == 5) {  // Re-flash firmware for Node2
+            else if (cmd == 4) {  // Re-flash firmware for Node2
                 if (ret == 0) {
                     snprintf(status_response, sizeof(status_response), "Node2 firmware flashed successfully.");
                     snprintf(receive_data, sizeof(receive_data), "Node2 esptool executed successfully.");
