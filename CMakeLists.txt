@@ -17,6 +17,11 @@ message(STATUS "NCURSES include dirs: ${NCURSES_INCLUDE_DIRS}")
 message(STATUS "NCURSES library dirs: ${NCURSES_LIBRARY_DIRS}")
 message(STATUS "NCURSES libraries: ${NCURSES_LIBRARIES}")
 
+# Find mosquitto using pkg-config
+pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
+message(STATUS "MOSQUITTO include dirs: ${MOSQUITTO_INCLUDE_DIRS}")
+message(STATUS "MOSQUITTO library dirs: ${MOSQUITTO_LIBRARY_DIRS}")
+message(STATUS "MOSQUITTO libraries: ${MOSQUITTO_LIBRARIES}")
 
 # Include directories
 set(INCLUDE_DIRS
