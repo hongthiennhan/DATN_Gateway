@@ -17,8 +17,7 @@ shared_data_t command_data = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-// Helper functions for command_data operations
-
+// Helper functions for command_data operations:
 // Set the command code and notify waiting threads
 
 void set_command_code(int new_code) { // use only for setting command code
@@ -201,6 +200,7 @@ void *uart_thread_func(void *arg) {
                 snprintf(status_response, sizeof(status_response), "Node1 Status command executed");
                 snprintf(receive_data, sizeof(receive_data), "T1:%d,T2:%d,T3:%d", t1_val, t2_val, t3_val);
                 status_color = 2;
+                set_mqtt_data_n1(t1_val, t2_val, t3_val);
             }
             else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {  // Commands with no response
                 snprintf(status_response, sizeof(status_response), "Node1 Command %d executed", cmd);
@@ -271,6 +271,7 @@ void *uart_thread_func(void *arg) {
                 snprintf(status_response, sizeof(status_response), "Node2 Single read command executed");
                 snprintf(receive_data, sizeof(receive_data), "ADC: %d", adc_value);
                 status_color = 2;
+                set_mqtt_data_n2(adc_value);
             }
             else if (resp_len == 0 && (cmd == 1 || cmd == 2)) {  // LED commands with no response
                 snprintf(status_response, sizeof(status_response), "Node2 LED command %d executed", cmd);
