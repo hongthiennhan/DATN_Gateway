@@ -97,8 +97,6 @@ void *uart_thread_func(void *arg) {
         command_pending = 0;  // Mark as handled
         int local_node_type = shared_node_type;  // Read shared node type safely
 
-        pthread_mutex_unlock(&command_mutex);
-
         // Wait if node type not selected yet
         if (local_node_type == 0) {
             usleep(100 * 1000);  // Sleep and retry to avoid CPU spin
@@ -114,13 +112,8 @@ void *uart_thread_func(void *arg) {
             cmd = new_cmd;
             
             // Check if there's a pending command
-            pthread_mutex_lock(&command_mutex);
-            if (!command_pending) {
-                pthread_mutex_unlock(&command_mutex);
-                continue;
-            }
+            if (!command_pending) continue;
             command_pending = 0;
-            pthread_mutex_unlock(&command_mutex);
         }
 
         // UPDATED: Added case 5 for Node2 reflash command to block UI
@@ -133,6 +126,7 @@ void *uart_thread_func(void *arg) {
         int t1_val = 0, t2_val = 0, t3_val = 0;
         uint16_t adc_value = 0;  // For Node2 ADC readings
         uint8_t ret = 0;
+        pthread_mutex_unlock(&command_mutex);
 
         // Handle commands based on selected_node_type
         if (local_node_type == NODE_TYPE_1) {
@@ -173,12 +167,11 @@ void *uart_thread_func(void *arg) {
                     write_init(115200);
                     break;
                 case 9:  // CMD_REFLASH
-                    is_busy = 1;
+                    is_busy = 1;  // Block UI
                     pthread_mutex_lock(&command_mutex);
                     snprintf(status_response, sizeof(status_response), "Flashing firmware...");
                     status_color = 4;
                     pthread_mutex_unlock(&command_mutex);
-
                     // Run shell command to flash
                     ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
                                  "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
@@ -241,42 +234,8 @@ void *uart_thread_func(void *arg) {
                         adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
                     }
                     break;
-                case 4:
-                    write_command(CMD2_READ_CONTINUOUS);
-                    // For continuous reading, keep reading until stopped
-                    while (local_node_type == NODE_TYPE_2) {
-                        resp = Read_Response(200, &resp_len);  // Expect 2 bytes every ~100ms
-                        if (resp && resp_len >= 2) {
-                            adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
-                            
-                            // Update display with new ADC value
-                            pthread_mutex_lock(&command_mutex);
-                            float voltage = (adc_value / 4095.0) * 3.3;  // Convert to voltage
-                            snprintf(status_response, sizeof(status_response), "Node2 Continuous reading");
-                            snprintf(receive_data, sizeof(receive_data), "ADC: %d (%.3fV)", adc_value, voltage);
-                            status_color = 2;
-                            pthread_mutex_unlock(&command_mutex);
-                            
-                            if (resp) {
-                                free(resp);
-                                resp = NULL;
-                            }
-                        }
-                        
-                        // Check if command changed (to exit continuous mode)
-                        pthread_mutex_lock(&command_mutex);
-                        int current_cmd = get_command_code();
-                        if (command_pending && current_cmd != 4) {
-                            pthread_mutex_unlock(&command_mutex);
-                            break;
-                        }
-                        pthread_mutex_unlock(&command_mutex);
-                        
-                        usleep(50 * 1000);  // Small delay between reads
-                    }
-                    break;
                 // ADDED: Reflash firmware case for Node2
-                case 5:  // ADDED: CMD_REFLASH for Node2
+                case 4:  // ADDED: CMD_REFLASH for Node2
                     is_busy = 1;
                     pthread_mutex_lock(&command_mutex);
                     snprintf(status_response, sizeof(status_response), "Flashing Node2 firmware...");
@@ -431,7 +390,7 @@ void *ui_thread_func(void *arg) {
         num_items = node2_menu_count;
     }
 
-    // ========== Notify UART thread of selected node type (via shared variable) ==========
+    // Use pthread mutex to safely set the shared node type (note the locking/unlocking)
     pthread_mutex_lock(&command_mutex);
     shared_node_type = selected_node_type;
     pthread_mutex_unlock(&command_mutex);
@@ -441,6 +400,7 @@ void *ui_thread_func(void *arg) {
     int key;
 
     while (1) {
+        pthread_mutex_lock(&command_mutex);
         clear();
         attron(COLOR_PAIR(4));
         mvprintw(0, 0, "=== COMMAND SELECTION MENU ===");
@@ -458,14 +418,12 @@ void *ui_thread_func(void *arg) {
                 attroff(COLOR_PAIR(1));
         }
 
-        pthread_mutex_lock(&command_mutex);
         attron(COLOR_PAIR(status_color));
         mvprintw(5 + num_items + 2, 0, "Status: %s", status_response);
         attroff(COLOR_PAIR(status_color));
         attron(COLOR_PAIR(5)); // Received Data Color
         mvprintw(5 + num_items + 3, 0, "Received Data: %s", receive_data);
         attroff(COLOR_PAIR(5));
-
         pthread_mutex_unlock(&command_mutex);
 
         refresh();
@@ -480,13 +438,15 @@ void *ui_thread_func(void *arg) {
                 break;
             case 10: // Enter
                 if (is_busy) {
+                    pthread_mutex_lock(&command_mutex);
                     snprintf(status_response, sizeof(status_response), "Busy: Please wait for command to finish");
                     status_color = 3;
+                    pthread_mutex_unlock(&command_mutex);
                     break;
                 }
-                pthread_mutex_lock(&command_mutex);
                 command_code = highlight + 1;
                 set_command_code(command_code);
+                pthread_mutex_lock(&command_mutex);
                 command_pending = 1;
                 pthread_mutex_unlock(&command_mutex);
 
