@@ -258,7 +258,8 @@ void *uart_thread_func(void *arg) {
                         
                         // Check if command changed (to exit continuous mode)
                         pthread_mutex_lock(&command_mutex);
-                        if (command_pending && command_code != 4) {
+                        int current_cmd = get_command_code();
+                        if (command_pending && current_cmd != 4) {
                             pthread_mutex_unlock(&command_mutex);
                             break;
                         }
