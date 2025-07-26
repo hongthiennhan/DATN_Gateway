@@ -5,12 +5,51 @@ volatile uint8_t is_busy = 0;
 
 pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
 int command_pending = 0;
-int command_code = -1;
 char status_response[100] = "Waiting for command...";
 int status_color = 2;
 unsigned char receive_data[512] = {0};
 unsigned char save_data[512] = {0};
 int shared_node_type = 0;  // Initialize to 0 (no node selected yet)
+
+shared_data_t command_data = {
+    .data = malloc(sizeof(int)),  // Allocate memory for int
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
+// Helper functions for command_data operations
+void set_command_code(int new_code) { // use only for setting command code
+    pthread_mutex_lock(&command_data.mutex);
+    *(int*)command_data.data = new_code;
+    pthread_cond_signal(&command_data.cond);  // Notify waiting threads
+    pthread_mutex_unlock(&command_data.mutex);
+}
+
+int get_command_code() { // use only for getting command code
+    pthread_mutex_lock(&command_data.mutex);
+    int code = *(int*)command_data.data;
+    pthread_mutex_unlock(&command_data.mutex);
+    return code;
+}
+
+int wait_for_command_change(int timeout_ms) {
+    pthread_mutex_lock(&command_data.mutex);
+    
+    struct timespec timeout;
+    clock_gettime(CLOCK_REALTIME, &timeout);
+    timeout.tv_sec += timeout_ms / 1000;
+    timeout.tv_nsec += (timeout_ms % 1000) * 1000000;
+    if (timeout.tv_nsec >= 1000000000) {
+        timeout.tv_sec += 1;
+        timeout.tv_nsec -= 1000000000;
+    }
+    
+    int result = pthread_cond_timedwait(&command_data.cond, &command_data.mutex, &timeout);
+    int code = *(int*)command_data.data;
+    
+    pthread_mutex_unlock(&command_data.mutex);
+    return (result == 0) ? code : -1; // Return code if signaled, -1 if timeout
+}
 
 // ========== Menu definitions for each node ==========
 static const char *node1_menu_items[] = {
@@ -45,10 +84,12 @@ void *uart_thread_func(void *arg) {
 
     while (1) {
         pthread_mutex_lock(&command_mutex);
-        int cmd = command_code;
+
+        int cmd = get_command_code();
         int pending = command_pending;
         command_pending = 0;  // Mark as handled
         int local_node_type = shared_node_type;  // Read shared node type safely
+
         pthread_mutex_unlock(&command_mutex);
 
         // Wait if node type not selected yet
@@ -58,8 +99,21 @@ void *uart_thread_func(void *arg) {
         }
 
         if (!pending) {
-            usleep(10 * 1000); // Avoid CPU spin
-            continue;
+            // MODIFIED: Use notification wait instead of constant polling
+            int new_cmd = wait_for_command_change(100); // Wait 100ms for command
+            if (new_cmd == -1) {
+                continue; // Timeout, try again
+            }
+            cmd = new_cmd;
+            
+            // Check if there's a pending command
+            pthread_mutex_lock(&command_mutex);
+            if (!command_pending) {
+                pthread_mutex_unlock(&command_mutex);
+                continue;
+            }
+            command_pending = 0;
+            pthread_mutex_unlock(&command_mutex);
         }
 
         // UPDATED: Added case 5 for Node2 reflash command to block UI
@@ -315,6 +369,7 @@ void *ui_thread_func(void *arg) {
     int node_menu_count = sizeof(node_menu) / sizeof(node_menu[0]);
     int node_key;
     bool node_selected = false;
+    int command_code = -1; // Initialize command code
 
     while (!node_selected) {
         clear();
@@ -423,6 +478,7 @@ void *ui_thread_func(void *arg) {
                 }
                 pthread_mutex_lock(&command_mutex);
                 command_code = highlight + 1;
+                set_command_code(command_code);
                 command_pending = 1;
                 pthread_mutex_unlock(&command_mutex);
 
@@ -442,5 +498,14 @@ void *ui_thread_func(void *arg) {
     }
 
     endwin();
+    return NULL;
+}
+
+void *mqtt_thread_func(void *arg) {
+    // Placeholder for MQTT thread functionality
+    // This can be implemented as needed for MQTT communication
+    while (1) {
+        usleep(100 * 1000); // Sleep to avoid busy waiting
+    }
     return NULL;
 }
