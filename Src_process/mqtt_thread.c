@@ -21,7 +21,6 @@ shared_data_t mqtt_data_n2 = { // adc value from Node2
 // ========== MQTT Data Helper Functions ==========
 
 // Node1 MQTT data helpers (3 int values: T1, T2, T3)
-
 void set_mqtt_data_n1(int t1, int t2, int t3) {
     pthread_mutex_lock(&mqtt_data_n1.mutex);
     if (mqtt_data_n1.data == NULL) {
@@ -67,7 +66,6 @@ uint16_t get_mqtt_data_n2() {
 }
 
 // Wait for MQTT data updates
-// Alternative: Wait for MQTT data by node type
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     shared_data_t *mqtt_data = NULL;
     
@@ -98,12 +96,9 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     return (result == 0) ? 1 : 0;
 }
 
-
-
 // Global MQTT variables
 struct mosquitto *mqtt_client = NULL;
 volatile int mqtt_connected = 0;
-volatile int program_should_exit = 0;  // Exit flag for all threads
 
 // MQTT Callbacks
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
@@ -159,7 +154,7 @@ void *mqtt_thread_func(void *arg) {
     
     // Wait for connection
     int connection_timeout = 50; // 5 seconds
-    while (!mqtt_connected && connection_timeout > 0 && !program_should_exit) {
+    while (!mqtt_connected && connection_timeout > 0) {
         usleep(100 * 1000); // 100ms
         connection_timeout--;
     }
@@ -178,7 +173,7 @@ void *mqtt_thread_func(void *arg) {
     time_t last_node1_publish = 0;
     time_t last_node2_publish = 0;
     
-    while (!program_should_exit) {
+    while (1) {  // Infinite loop instead of checking exit flag
         // Check for Node1 data updates
         if (wait_for_mqtt_data_by_node(NODE_TYPE_1, 500)) { // 500ms timeout
             time_t current_time = time(NULL);
@@ -255,7 +250,8 @@ void *mqtt_thread_func(void *arg) {
         }
     }
     
-    // Cleanup
+    // This cleanup code will never be reached with infinite loop
+    // But kept for completeness
     printf("MQTT Thread shutting down...\n");
     mosquitto_loop_stop(mqtt_client, true);
     mosquitto_destroy(mqtt_client);
