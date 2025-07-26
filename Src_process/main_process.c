@@ -13,7 +13,7 @@ void cleanup_on_exit(void) {
     }
     pthread_mutex_destroy(&command_data.mutex);
     pthread_cond_destroy(&command_data.cond);
-    sprintf("Cleanup completed via atexit()\n");
+    printf("Cleanup completed via atexit()\n");
 }
 
 
