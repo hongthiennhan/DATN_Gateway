@@ -180,7 +180,7 @@ void *uart_thread_func(void *arg) {
                     ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
                                  "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
                                  "deactivate'");
-                    Clear_Startup_UART(uart_fd, 10000);  // Clear UART buffer after flashing
+                    Clear_Startup_UART(uart_fd, 5000);  // Clear UART buffer after flashing
                     is_busy = 0;
                     break;
                 default:
@@ -250,7 +250,7 @@ void *uart_thread_func(void *arg) {
                     ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
                                  "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && "
                                  "deactivate'");
-                    Clear_Startup_UART(uart_fd, 10000);
+                    Clear_Startup_UART(uart_fd, 5000);
                     is_busy = 0;
                     break;
                 default:
@@ -265,9 +265,8 @@ void *uart_thread_func(void *arg) {
                 status_color = 2;
             }
             else if (resp && resp_len >= 2 && (cmd == 3)) {  // Single ADC read (2 bytes binary)
-                float voltage = (adc_value / 4095.0) * 3.3;  // Convert to voltage
                 snprintf(status_response, sizeof(status_response), "Node2 Single read command executed");
-                snprintf(receive_data, sizeof(receive_data), "ADC: %d (%.3fV)", adc_value, voltage);
+                snprintf(receive_data, sizeof(receive_data), "ADC: %d", adc_value);
                 status_color = 2;
             }
             else if (cmd == 4) {  // Continuous mode handled above

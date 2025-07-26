@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);
-    Clear_Startup_UART(uart_fd, 10000);
+    Clear_Startup_UART(uart_fd, 5000);
 
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
