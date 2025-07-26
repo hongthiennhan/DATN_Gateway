@@ -469,12 +469,3 @@ void *ui_thread_func(void *arg) {
     endwin();
     return NULL;
 }
-
-void *mqtt_thread_func(void *arg) {
-    // Placeholder for MQTT thread functionality
-    // This can be implemented as needed for MQTT communication
-    while (1) {
-        usleep(100 * 1000); // Sleep to avoid busy waiting
-    }
-    return NULL;
-}

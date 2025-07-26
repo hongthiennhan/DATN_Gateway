@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "control_command.h"
-
+#include <mosquitto.h>  // Include MQTT library header
 // ========== Node Types ==========
 typedef enum {
     NODE_TYPE_1 = 1,

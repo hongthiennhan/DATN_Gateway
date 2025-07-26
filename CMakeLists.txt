@@ -55,4 +55,4 @@ add_executable(main_app ${SOURCES_2})
 # Include directories for main_app
 target_include_directories(main_app PRIVATE ${INCLUDE_DIRS})
 
-target_link_libraries(main_app ${GPIOD_LIBRARIES} ${NCURSES_LIBRARIES})
+target_link_libraries(main_app ${GPIOD_LIBRARIES} ${NCURSES_LIBRARIES} ${MOSQUITTO_LIBRARIES})

@@ -1,4 +1,3 @@
-#include <mosquitto.h>  // Thêm MQTT library header
 #include "thread_func.h"
 // MQTT Configuration
 #define MQTT_BROKER_HOST "localhost"
