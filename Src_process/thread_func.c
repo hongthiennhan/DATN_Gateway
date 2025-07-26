@@ -400,7 +400,6 @@ void *ui_thread_func(void *arg) {
     int key;
 
     while (1) {
-        pthread_mutex_lock(&command_mutex);
         clear();
         attron(COLOR_PAIR(4));
         mvprintw(0, 0, "=== COMMAND SELECTION MENU ===");
@@ -417,7 +416,7 @@ void *ui_thread_func(void *arg) {
             if (i == highlight)
                 attroff(COLOR_PAIR(1));
         }
-
+        pthread_mutex_lock(&command_mutex);
         attron(COLOR_PAIR(status_color));
         mvprintw(5 + num_items + 2, 0, "Status: %s", status_response);
         attroff(COLOR_PAIR(status_color));
