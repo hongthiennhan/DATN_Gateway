@@ -6,16 +6,35 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 // Function to clean up resources on exit
-void cleanup_on_exit(void) {
+void cleanup_on_exit(void) { 
+    // Close UART
     close(uart_fd);
+    
+    // Cleanup command data
     if (command_data.data) {
         free(command_data.data);
     }
     pthread_mutex_destroy(&command_data.mutex);
     pthread_cond_destroy(&command_data.cond);
-    printf("Cleanup completed via atexit()\n");
+    
+    // Cleanup MQTT data
+    if (mqtt_data_n1.data) {
+        free(mqtt_data_n1.data);
+    }
+    pthread_mutex_destroy(&mqtt_data_n1.mutex);
+    pthread_cond_destroy(&mqtt_data_n1.cond);
+    
+    if (mqtt_data_n2.data) {
+        free(mqtt_data_n2.data);
+    }
+    pthread_mutex_destroy(&mqtt_data_n2.mutex);
+    pthread_cond_destroy(&mqtt_data_n2.cond);
+    
+    // Cleanup command mutex
+    pthread_mutex_destroy(&command_mutex);
+    
+    printf("Cleanup completed\n");
 }
-
 
 // ==================== MAIN FUNCTION ====================
 int main(int argc, char **argv) {
@@ -67,5 +86,6 @@ int main(int argc, char **argv) {
     // Main waits for threads to finish (does nothing else)
     pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
+    pthread_join(mqtt_thread, NULL);
     return 0;
 }
