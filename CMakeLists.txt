@@ -41,6 +41,7 @@ target_link_libraries(led_app ${GPIOD_LIBRARIES})
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
+    Src_process/mqtt_thread.c
     esp_command/control_command.c)
 
 # Add executable 2
