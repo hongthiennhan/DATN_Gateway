@@ -33,6 +33,6 @@ void *ui_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
 // ========== Macros for exit codes ==========
 #define NODE1_EXIT_CODE 10
-#define NODE2_EXIT_CODE 6
+#define NODE2_EXIT_CODE 5
 
 #endif // THREAD_FUNC_H
