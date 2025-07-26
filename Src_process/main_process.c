@@ -5,6 +5,17 @@
 static struct option long_options[] = {
     {0, 0, 0, 0}
 };
+// Function to clean up resources on exit
+void cleanup_on_exit(void) {
+    close(uart_fd);
+    if (command_data.data) {
+        free(command_data.data);
+    }
+    pthread_mutex_destroy(&command_data.mutex);
+    pthread_cond_destroy(&command_data.cond);
+    printf("Cleanup completed via atexit()\n");
+}
+
 
 // ==================== MAIN FUNCTION ====================
 int main(int argc, char **argv) {
@@ -38,7 +49,7 @@ int main(int argc, char **argv) {
 
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);
-    Clear_Startup_UART(uart_fd, 5000);
+    Clear_Startup_UART(uart_fd, 10000);
 
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
@@ -55,11 +66,7 @@ int main(int argc, char **argv) {
     // Main waits for threads to finish (does nothing else)
     pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
-    //pthread_join(mqtt_thread, NULL);
-
-    close(uart_fd);
-    free(command_data.data);
-    pthread_mutex_destroy(&command_data.mutex);
-    pthread_cond_destroy(&command_data.cond);
+    
+    atexit(cleanup_on_exit);  // Register cleanup function to be called on exit
     return 0;
 }
