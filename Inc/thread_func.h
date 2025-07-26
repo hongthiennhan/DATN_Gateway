@@ -16,6 +16,10 @@ typedef struct {
     pthread_cond_t cond;
 } shared_data_t;
 
+typedef struct {
+    int t1, t2, t3;
+} node1_data_t;
+
 // ========== External declarations for shared state ==========
 extern volatile uint8_t is_busy;
 

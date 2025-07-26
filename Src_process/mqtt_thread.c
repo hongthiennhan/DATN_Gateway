@@ -22,9 +22,6 @@ shared_data_t mqtt_data_n2 = { // adc value from Node2
 // ========== MQTT Data Helper Functions ==========
 
 // Node1 MQTT data helpers (3 int values: T1, T2, T3)
-typedef struct {
-    int t1, t2, t3;
-} node1_data_t;
 
 void set_mqtt_data_n1(int t1, int t2, int t3) {
     pthread_mutex_lock(&mqtt_data_n1.mutex);
