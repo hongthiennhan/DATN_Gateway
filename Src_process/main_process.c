@@ -13,12 +13,13 @@ void cleanup_on_exit(void) {
     }
     pthread_mutex_destroy(&command_data.mutex);
     pthread_cond_destroy(&command_data.cond);
-    printf("Cleanup completed via atexit()\n");
+    sprintf("Cleanup completed via atexit()\n");
 }
 
 
 // ==================== MAIN FUNCTION ====================
 int main(int argc, char **argv) {
+    atexit(cleanup_on_exit);  // Register cleanup function to be called on exit
     uint32_t baudrate = 115200;
     char *device = "/dev/ttyUSB0";
     int opt, option_index = 0;
@@ -66,7 +67,5 @@ int main(int argc, char **argv) {
     // Main waits for threads to finish (does nothing else)
     pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
-    
-    atexit(cleanup_on_exit);  // Register cleanup function to be called on exit
     return 0;
 }
