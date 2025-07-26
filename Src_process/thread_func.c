@@ -91,11 +91,11 @@ void *uart_thread_func(void *arg) {
 
     while (1) {
         pthread_mutex_lock(&command_mutex);
-
         int cmd = get_command_code();
         int pending = command_pending;
         command_pending = 0;  // Mark as handled
         int local_node_type = shared_node_type;  // Read shared node type safely
+        pthread_mutex_unlock(&command_mutex);
 
         // Wait if node type not selected yet
         if (local_node_type == 0) {
@@ -112,15 +112,19 @@ void *uart_thread_func(void *arg) {
             cmd = new_cmd;
             
             // Check if there's a pending command
+            pthread_mutex_lock(&command_mutex);
             if (!command_pending) continue;
             command_pending = 0;
+            pthread_mutex_unlock(&command_mutex);
         }
 
         // UPDATED: Added case 5 for Node2 reflash command to block UI
         int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6) || 
                        (local_node_type == NODE_TYPE_2 && cmd == 5);  // ADDED: Block UI for Node2 reflash
         if (block_ui)
+            pthread_mutex_lock(&command_mutex);
             is_busy = 1;  // Block UI when handling these commands
+            pthread_mutex_unlock(&command_mutex);
 
         unsigned char *resp = NULL;
         int t1_val = 0, t2_val = 0, t3_val = 0;
