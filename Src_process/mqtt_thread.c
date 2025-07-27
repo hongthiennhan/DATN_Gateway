@@ -1,18 +1,55 @@
 #include "thread_func.h"
-// MQTT Configuration
-#define MQTT_BROKER_HOST "localhost"
+
+// MQTT Configuration for ThingsBoard
+#define MQTT_BROKER_HOST "demo.thingsboard.io"  // ThingsBoard server
+// #define MQTT_BROKER_HOST "your-thingsboard-server.com"  // Hoặc server riêng
 #define MQTT_BROKER_PORT 1883
 #define MQTT_CLIENT_ID "gateway_device"
-#define MQTT_TOPIC_NODE1 "gateway/node1/status"
-#define MQTT_TOPIC_NODE2 "gateway/node2/adc"
+#define MQTT_USERNAME "zu4938tt6t2tpaum9g32"  // ThingsBoard access token
+#define MQTT_PASSWORD ""  // Để trống cho ThingsBoard
+
+// ThingsBoard Topics
+#define MQTT_TOPIC_TELEMETRY "v1/devices/me/telemetry"
+#define MQTT_TOPIC_ATTRIBUTES "v1/devices/me/attributes"
 #define MQTT_QOS 1
 
-shared_data_t mqtt_data_n1 = { // array of 3 int values 1, 2, 3 sended from Node1
+// Function to get local IP address
+char* get_local_ip() {
+    static char ip_str[INET_ADDRSTRLEN];
+    struct ifaddrs *ifaddrs_ptr, *ifa;
+    
+    if (getifaddrs(&ifaddrs_ptr) == -1) {
+        strcpy(ip_str, "127.0.0.1");
+        return ip_str;
+    }
+    
+    for (ifa = ifaddrs_ptr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL) continue;
+        
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            struct sockaddr_in* addr_in = (struct sockaddr_in*)ifa->ifa_addr;
+            char *addr_str = inet_ntoa(addr_in->sin_addr);
+            
+            if (strncmp(addr_str, "127.", 4) != 0 && 
+                strncmp(addr_str, "169.254.", 8) != 0) {
+                strcpy(ip_str, addr_str);
+                freeifaddrs(ifaddrs_ptr);
+                return ip_str;
+            }
+        }
+    }
+    
+    freeifaddrs(ifaddrs_ptr);
+    strcpy(ip_str, "127.0.0.1");
+    return ip_str;
+}
+
+shared_data_t mqtt_data_n1 = {
     .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
 };
-shared_data_t mqtt_data_n2 = { // adc value from Node2
+shared_data_t mqtt_data_n2 = {
     .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
@@ -20,7 +57,6 @@ shared_data_t mqtt_data_n2 = { // adc value from Node2
 
 // ========== MQTT Data Helper Functions ==========
 
-// Node1 MQTT data helpers (3 int values: T1, T2, T3)
 void set_mqtt_data_n1(int t1, int t2, int t3) {
     pthread_mutex_lock(&mqtt_data_n1.mutex);
     if (mqtt_data_n1.data == NULL) {
@@ -30,7 +66,7 @@ void set_mqtt_data_n1(int t1, int t2, int t3) {
     data->t1 = t1;
     data->t2 = t2;
     data->t3 = t3;
-    pthread_cond_signal(&mqtt_data_n1.cond);  // Notify MQTT thread
+    pthread_cond_signal(&mqtt_data_n1.cond);
     pthread_mutex_unlock(&mqtt_data_n1.mutex);
 }
 
@@ -44,14 +80,13 @@ node1_data_t get_mqtt_data_n1() {
     return result;
 }
 
-// Node2 MQTT data helpers (ADC value)
 void set_mqtt_data_n2(uint16_t adc_value) {
     pthread_mutex_lock(&mqtt_data_n2.mutex);
     if (mqtt_data_n2.data == NULL) {
         mqtt_data_n2.data = malloc(sizeof(uint16_t));
     }
     *(uint16_t*)mqtt_data_n2.data = adc_value;
-    pthread_cond_signal(&mqtt_data_n2.cond);  // Notify MQTT thread
+    pthread_cond_signal(&mqtt_data_n2.cond);
     pthread_mutex_unlock(&mqtt_data_n2.mutex);
 }
 
@@ -65,7 +100,6 @@ uint16_t get_mqtt_data_n2() {
     return result;
 }
 
-// Wait for MQTT data updates
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     shared_data_t *mqtt_data = NULL;
     
@@ -77,7 +111,7 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
             mqtt_data = &mqtt_data_n2;
             break;
         default:
-            return 0; // Invalid node type
+            return 0;
     }
     
     pthread_mutex_lock(&mqtt_data->mutex);
@@ -104,159 +138,122 @@ volatile int mqtt_connected = 0;
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     if (result == 0) {
         mqtt_connected = 1;
-        printf("MQTT Connected to broker\n");
+        
+        // Send device attributes to ThingsBoard
+        char attributes[256];
+        snprintf(attributes, sizeof(attributes),
+            "{"
+            "\"gateway_ip\":\"%s\","
+            "\"firmware_version\":\"1.0.0\","
+            "\"device_type\":\"IoT Gateway\","
+            "\"node_count\":2"
+            "}", get_local_ip());
+        
+        mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_ATTRIBUTES,
+                         strlen(attributes), attributes, MQTT_QOS, false);
     } else {
         mqtt_connected = 0;
-        printf("MQTT Connection failed: %s\n", mosquitto_strerror(result));
     }
 }
 
 void on_mqtt_disconnect(struct mosquitto *mosq, void *userdata, int result) {
     mqtt_connected = 0;
-    printf("MQTT Disconnected from broker\n");
 }
 
 void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
-    printf("MQTT Message published (mid: %d)\n", mid);
+    // Message published successfully
 }
 
 // ==================== MQTT THREAD ====================
 void *mqtt_thread_func(void *arg) {
-    printf("MQTT Thread started\n");
-    
-    // Initialize mosquitto library
     mosquitto_lib_init();
     
-    // Create MQTT client
     mqtt_client = mosquitto_new(MQTT_CLIENT_ID, true, NULL);
     if (!mqtt_client) {
-        printf("MQTT: Failed to create client\n");
         return NULL;
     }
+    
+    // Set username (access token) for ThingsBoard authentication
+    mosquitto_username_pw_set(mqtt_client, MQTT_USERNAME, MQTT_PASSWORD);
     
     // Set callbacks
     mosquitto_connect_callback_set(mqtt_client, on_mqtt_connect);
     mosquitto_disconnect_callback_set(mqtt_client, on_mqtt_disconnect);
     mosquitto_publish_callback_set(mqtt_client, on_mqtt_publish);
     
-    // Connect to broker
-    printf("MQTT: Connecting to broker %s:%d\n", MQTT_BROKER_HOST, MQTT_BROKER_PORT);
+    // Connect to ThingsBoard server
     int rc = mosquitto_connect(mqtt_client, MQTT_BROKER_HOST, MQTT_BROKER_PORT, 60);
     if (rc != MOSQ_ERR_SUCCESS) {
-        printf("MQTT: Connect failed: %s\n", mosquitto_strerror(rc));
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
         return NULL;
     }
     
-    // Start network loop in non-blocking mode
     mosquitto_loop_start(mqtt_client);
     
-    // Wait for connection
-    int connection_timeout = 50; // 5 seconds
+    // Wait for connection  
+    int connection_timeout = 50;
     while (!mqtt_connected && connection_timeout > 0) {
-        usleep(100 * 1000); // 100ms
+        usleep(100 * 1000);
         connection_timeout--;
     }
     
     if (!mqtt_connected) {
-        printf("MQTT: Connection timeout\n");
         mosquitto_loop_stop(mqtt_client, true);
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
         return NULL;
     }
     
-    printf("MQTT Thread ready - waiting for data...\n");
-    
     // Main MQTT loop
-    time_t last_node1_publish = 0;
-    time_t last_node2_publish = 0;
+    time_t last_publish = 0;
     
-    while (1) {  // Infinite loop instead of checking exit flag
-        // Check for Node1 data updates
-        if (wait_for_mqtt_data_by_node(NODE_TYPE_1, 500)) { // 500ms timeout
-            time_t current_time = time(NULL);
+    while (1) {
+        time_t current_time = time(NULL);
+        
+        // Combine and send telemetry data every second
+        if (current_time - last_publish >= 1) {
+            char telemetry_payload[1024];
             
-            // Publish Node1 data (with rate limiting - max once per second)
-            if (current_time - last_node1_publish >= 1) {
-                node1_data_t data = get_mqtt_data_n1();
-                
-                char json_payload[256];
-                snprintf(json_payload, sizeof(json_payload),
-                    "{"
-                    "\"timestamp\":%ld,"
-                    "\"node_id\":1,"
-                    "\"node_type\":\"motor_controller\","
-                    "\"data\":{"
-                        "\"t1\":%d,"
-                        "\"t2\":%d,"
-                        "\"t3\":%d"
-                    "}"
-                    "}", current_time, data.t1, data.t2, data.t3);
-                
-                rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_NODE1, 
-                                     strlen(json_payload), json_payload, MQTT_QOS, false);
-                
-                if (rc == MOSQ_ERR_SUCCESS) {
-                    printf("MQTT: Published Node1 data - T1:%d, T2:%d, T3:%d\n", 
-                           data.t1, data.t2, data.t3);
-                    last_node1_publish = current_time;
-                } else {
-                    printf("MQTT: Publish failed for Node1: %s\n", mosquitto_strerror(rc));
-                }
+            // Get data from both nodes
+            node1_data_t node1_data = get_mqtt_data_n1();
+            uint16_t node2_adc = get_mqtt_data_n2();
+            float voltage = (node2_adc / 4095.0) * 3.3;
+            
+            // ThingsBoard telemetry format
+            snprintf(telemetry_payload, sizeof(telemetry_payload),
+                "{"
+                "\"timestamp\":%ld000,"  // ThingsBoard expects milliseconds
+                "\"node1_t1\":%d,"
+                "\"node1_t2\":%d,"
+                "\"node1_t3\":%d,"
+                "\"node2_adc\":%d,"
+                "\"node2_voltage\":%.3f,"
+                "\"gateway_ip\":\"%s\","
+                "\"data_source\":\"gateway_device\""
+                "}", current_time, node1_data.t1, node1_data.t2, node1_data.t3,
+                node2_adc, voltage, get_local_ip());
+            
+            rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_TELEMETRY,
+                                 strlen(telemetry_payload), telemetry_payload, MQTT_QOS, false);
+            
+            if (rc == MOSQ_ERR_SUCCESS) {
+                last_publish = current_time;
             }
         }
         
-        // Check for Node2 data updates
-        if (wait_for_mqtt_data_by_node(NODE_TYPE_2, 500)) { // 500ms timeout
-            time_t current_time = time(NULL);
-            
-            // Publish Node2 data (with rate limiting - max once per second)
-            if (current_time - last_node2_publish >= 1) {
-                uint16_t adc_value = get_mqtt_data_n2();
-                float voltage = (adc_value / 4095.0) * 3.3; // Convert to voltage
-                
-                char json_payload[256];
-                snprintf(json_payload, sizeof(json_payload),
-                    "{"
-                    "\"timestamp\":%ld,"
-                    "\"node_id\":2,"
-                    "\"node_type\":\"sensor_board\","
-                    "\"data\":{"
-                        "\"adc_raw\":%d,"
-                        "\"voltage\":%.3f"
-                    "}"
-                    "}", current_time, adc_value, voltage);
-                
-                rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_NODE2, 
-                                     strlen(json_payload), json_payload, MQTT_QOS, false);
-                
-                if (rc == MOSQ_ERR_SUCCESS) {
-                    printf("MQTT: Published Node2 data - ADC:%d (%.3fV)\n", 
-                           adc_value, voltage);
-                    last_node2_publish = current_time;
-                } else {
-                    printf("MQTT: Publish failed for Node2: %s\n", mosquitto_strerror(rc));
-                }
-            }
-        }
-        
-        // Reconnect if connection lost
+        // Check connection and reconnect if needed
         if (!mqtt_connected) {
-            printf("MQTT: Attempting to reconnect...\n");
             mosquitto_reconnect(mqtt_client);
-            usleep(1000 * 1000); // Wait 1 second before retry
+            usleep(1000 * 1000);
         }
+        
+        usleep(100 * 1000); // 100ms delay
     }
     
-    // This cleanup code will never be reached with infinite loop
-    // But kept for completeness
-    printf("MQTT Thread shutting down...\n");
     mosquitto_loop_stop(mqtt_client, true);
     mosquitto_destroy(mqtt_client);
     mosquitto_lib_cleanup();
     
-    printf("MQTT Thread exited\n");
     return NULL;
 }

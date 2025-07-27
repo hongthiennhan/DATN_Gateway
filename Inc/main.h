@@ -16,4 +16,11 @@
 #include <ncurses.h> // For ncurses library
 #include <sys/time.h>
 
+// Include necessary lib for MQTT
+#include <mosquitto.h>  // Include MQTT library header
+#include <sys/socket.h>
+#include <netdb.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+
 #endif
