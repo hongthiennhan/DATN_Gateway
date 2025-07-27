@@ -381,6 +381,7 @@ void *ui_thread_func(void *arg) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
+    timeout(0);  // Non-blocking input
 
     // ========== Node selection menu in ncurses ==========
     int selected_node_type = 0;
