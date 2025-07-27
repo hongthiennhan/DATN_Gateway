@@ -33,6 +33,21 @@ int load_nodes_config(const char *config_file) {
             node_registry.startup_clear_duration = json_object_get_int(startup_clear_obj);
     }
     
+    // NEW: Parse system_info config
+    json_object *system_info_obj;
+    if (json_object_object_get_ex(root, "system_info", &system_info_obj)) {
+        json_object *firmware_obj, *device_type_obj, *manufacturer_obj, *model_obj;
+        
+        if (json_object_object_get_ex(system_info_obj, "firmware_version", &firmware_obj))
+            strcpy(node_registry.system_info.firmware_version, json_object_get_string(firmware_obj));
+        if (json_object_object_get_ex(system_info_obj, "device_type", &device_type_obj))
+            strcpy(node_registry.system_info.device_type, json_object_get_string(device_type_obj));
+        if (json_object_object_get_ex(system_info_obj, "manufacturer", &manufacturer_obj))
+            strcpy(node_registry.system_info.manufacturer, json_object_get_string(manufacturer_obj));
+        if (json_object_object_get_ex(system_info_obj, "model", &model_obj))
+            strcpy(node_registry.system_info.model, json_object_get_string(model_obj));
+    }
+    
     // Parse UART config
     json_object *uart_config_obj;
     if (json_object_object_get_ex(root, "uart_config", &uart_config_obj)) {
@@ -82,11 +97,13 @@ int load_nodes_config(const char *config_file) {
         }
     }
     
-    // Parse MQTT config
+    // UPDATED: Parse MQTT config with new fields
     json_object *mqtt_config_obj;
     if (json_object_object_get_ex(root, "mqtt_config", &mqtt_config_obj)) {
         json_object *broker_host_obj, *broker_port_obj, *client_id_obj, *username_obj, *password_obj;
         json_object *topic_telemetry_obj, *topic_attributes_obj, *qos_obj, *publish_interval_obj;
+        json_object *connection_timeout_obj, *reconnect_delay_obj, *loop_interval_obj;
+        json_object *payload_buffer_obj, *attributes_buffer_obj, *system_fields_obj;
         
         if (json_object_object_get_ex(mqtt_config_obj, "broker_host", &broker_host_obj))
             strcpy(node_registry.mqtt_config.broker_host, json_object_get_string(broker_host_obj));
@@ -106,6 +123,32 @@ int load_nodes_config(const char *config_file) {
             node_registry.mqtt_config.qos = json_object_get_int(qos_obj);
         if (json_object_object_get_ex(mqtt_config_obj, "publish_interval", &publish_interval_obj))
             node_registry.mqtt_config.publish_interval = json_object_get_int(publish_interval_obj);
+        
+        // NEW: Parse additional MQTT config fields
+        if (json_object_object_get_ex(mqtt_config_obj, "connection_timeout", &connection_timeout_obj))
+            node_registry.mqtt_config.connection_timeout = json_object_get_int(connection_timeout_obj);
+        if (json_object_object_get_ex(mqtt_config_obj, "reconnect_delay_ms", &reconnect_delay_obj))
+            node_registry.mqtt_config.reconnect_delay_ms = json_object_get_int(reconnect_delay_obj);
+        if (json_object_object_get_ex(mqtt_config_obj, "loop_interval_ms", &loop_interval_obj))
+            node_registry.mqtt_config.loop_interval_ms = json_object_get_int(loop_interval_obj);
+        if (json_object_object_get_ex(mqtt_config_obj, "payload_buffer_size", &payload_buffer_obj))
+            node_registry.mqtt_config.payload_buffer_size = json_object_get_int(payload_buffer_obj);
+        if (json_object_object_get_ex(mqtt_config_obj, "attributes_buffer_size", &attributes_buffer_obj))
+            node_registry.mqtt_config.attributes_buffer_size = json_object_get_int(attributes_buffer_obj);
+        
+        // Parse system_fields
+        if (json_object_object_get_ex(mqtt_config_obj, "system_fields", &system_fields_obj)) {
+            json_object *data_source_obj, *include_timestamp_obj, *include_gateway_ip_obj, *include_node_count_obj;
+            
+            if (json_object_object_get_ex(system_fields_obj, "data_source", &data_source_obj))
+                strcpy(node_registry.mqtt_config.system_fields.data_source, json_object_get_string(data_source_obj));
+            if (json_object_object_get_ex(system_fields_obj, "include_timestamp", &include_timestamp_obj))
+                node_registry.mqtt_config.system_fields.include_timestamp = json_object_get_boolean(include_timestamp_obj);
+            if (json_object_object_get_ex(system_fields_obj, "include_gateway_ip", &include_gateway_ip_obj))
+                node_registry.mqtt_config.system_fields.include_gateway_ip = json_object_get_boolean(include_gateway_ip_obj);
+            if (json_object_object_get_ex(system_fields_obj, "include_node_count", &include_node_count_obj))
+                node_registry.mqtt_config.system_fields.include_node_count = json_object_get_boolean(include_node_count_obj);
+        }
     }
     
     json_object *nodes_array;
@@ -129,6 +172,7 @@ int load_nodes_config(const char *config_file) {
         // Parse basic node info
         json_object *id_obj, *name_obj, *type_obj, *auto_read_cmd_obj, *auto_read_interval_obj;
         json_object *mqtt_topic_obj, *data_structure_obj, *reflash_script_obj;
+        json_object *expected_data_length_obj, *data_format_obj; // NEW
         
         json_object_object_get_ex(node_obj, "id", &id_obj);
         json_object_object_get_ex(node_obj, "name", &name_obj);
@@ -138,6 +182,8 @@ int load_nodes_config(const char *config_file) {
         json_object_object_get_ex(node_obj, "mqtt_topic", &mqtt_topic_obj);
         json_object_object_get_ex(node_obj, "data_structure", &data_structure_obj);
         json_object_object_get_ex(node_obj, "reflash_script", &reflash_script_obj);
+        json_object_object_get_ex(node_obj, "expected_data_length", &expected_data_length_obj); // NEW
+        json_object_object_get_ex(node_obj, "data_format", &data_format_obj); // NEW
         
         node->node_id = json_object_get_int(id_obj);
         strcpy(node->name, json_object_get_string(name_obj));
@@ -147,6 +193,17 @@ int load_nodes_config(const char *config_file) {
         strcpy(node->mqtt_topic, json_object_get_string(mqtt_topic_obj));
         strcpy(node->data_structure, json_object_get_string(data_structure_obj));
         strcpy(node->reflash_script, json_object_get_string(reflash_script_obj));
+        
+        // NEW: Parse raw data fields
+        if (expected_data_length_obj)
+            node->expected_data_length = json_object_get_int(expected_data_length_obj);
+        else
+            node->expected_data_length = 0;
+            
+        if (data_format_obj)
+            strcpy(node->data_format, json_object_get_string(data_format_obj));
+        else
+            strcpy(node->data_format, "hex");
         
         // Parse menu items
         json_object *menu_array;
@@ -188,6 +245,7 @@ int load_nodes_config(const char *config_file) {
     return 0;
 }
 
+// Existing functions remain the same
 node_config_t* get_node_by_id(int node_id) {
     for (int i = 0; i < node_registry.count; i++) {
         if (node_registry.nodes[i].node_id == node_id) {
@@ -246,6 +304,11 @@ const char* get_default_device(void) {
 
 int get_startup_clear_duration(void) {
     return node_registry.startup_clear_duration;
+}
+
+// NEW: System info getters
+system_info_t* get_system_info(void) {
+    return &node_registry.system_info;
 }
 
 // UART config getters

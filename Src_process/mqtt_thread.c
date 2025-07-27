@@ -1,7 +1,6 @@
 #include "thread_func.h"
 #include "node_config.h"
 
-// Function to get local IP address (unchanged)
 char* get_local_ip() {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
@@ -32,76 +31,20 @@ char* get_local_ip() {
     return ip_str;
 }
 
-// Shared MQTT data structures (unchanged)
-shared_data_t mqtt_data_n1 = {
-    .data = NULL,
-    .mutex = PTHREAD_MUTEX_INITIALIZER,
-    .cond = PTHREAD_COND_INITIALIZER
-};
+// REMOVED: All specific data structures and helper functions
+// No more mqtt_data_n1, mqtt_data_n2, set_mqtt_data_n1, etc.
 
-shared_data_t mqtt_data_n2 = {
-    .data = NULL,
-    .mutex = PTHREAD_MUTEX_INITIALIZER,
-    .cond = PTHREAD_COND_INITIALIZER
-};
+// Global MQTT variables
+struct mosquitto *mqtt_client = NULL;
+volatile int mqtt_connected = 0;
 
-// ========== MQTT Data Helper Functions ==========
-void set_mqtt_data_n1(int t1, int t2, int t3) {
-    pthread_mutex_lock(&mqtt_data_n1.mutex);
-    if (mqtt_data_n1.data == NULL) {
-        mqtt_data_n1.data = malloc(sizeof(node1_data_t));
-    }
-    node1_data_t *data = (node1_data_t*)mqtt_data_n1.data;
-    data->t1 = t1;
-    data->t2 = t2;
-    data->t3 = t3;
-    pthread_cond_signal(&mqtt_data_n1.cond);
-    pthread_mutex_unlock(&mqtt_data_n1.mutex);
-}
-
-node1_data_t get_mqtt_data_n1() {
-    pthread_mutex_lock(&mqtt_data_n1.mutex);
-    node1_data_t result = {0, 0, 0};
-    if (mqtt_data_n1.data != NULL) {
-        result = *(node1_data_t*)mqtt_data_n1.data;
-    }
-    pthread_mutex_unlock(&mqtt_data_n1.mutex);
-    return result;
-}
-
-void set_mqtt_data_n2(uint16_t adc_value) {
-    pthread_mutex_lock(&mqtt_data_n2.mutex);
-    if (mqtt_data_n2.data == NULL) {
-        mqtt_data_n2.data = malloc(sizeof(uint16_t));
-    }
-    *(uint16_t*)mqtt_data_n2.data = adc_value;
-    pthread_cond_signal(&mqtt_data_n2.cond);
-    pthread_mutex_unlock(&mqtt_data_n2.mutex);
-}
-
-uint16_t get_mqtt_data_n2() {
-    pthread_mutex_lock(&mqtt_data_n2.mutex);
-    uint16_t result = 0;
-    if (mqtt_data_n2.data != NULL) {
-        result = *(uint16_t*)mqtt_data_n2.data;
-    }
-    pthread_mutex_unlock(&mqtt_data_n2.mutex);
-    return result;
-}
+// REMOVED: set_mqtt_data_n1, get_mqtt_data_n1, set_mqtt_data_n2, get_mqtt_data_n2 functions
 
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
-    shared_data_t *mqtt_data = NULL;
+    node_config_t *node = get_node_by_id(node_type);
+    if (!node || !node->mqtt_data) return 0;
     
-    // Use node_id instead of hard-coded NODE_TYPE constants
-    if (node_type == 1) {  // Node1
-        mqtt_data = &mqtt_data_n1;
-    } else if (node_type == 2) {  // Node2
-        mqtt_data = &mqtt_data_n2;
-    } else {
-        return 0;
-    }
-    
-    pthread_mutex_lock(&mqtt_data->mutex);
+    pthread_mutex_lock(&node->mqtt_data->mutex);
     
     struct timespec timeout;
     clock_gettime(CLOCK_REALTIME, &timeout);
@@ -112,34 +55,51 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
         timeout.tv_nsec -= 1000000000;
     }
     
-    int result = pthread_cond_timedwait(&mqtt_data->cond, &mqtt_data->mutex, &timeout);
-    pthread_mutex_unlock(&mqtt_data->mutex);
+    int result = pthread_cond_timedwait(&node->mqtt_data->cond, &node->mqtt_data->mutex, &timeout);
+    pthread_mutex_unlock(&node->mqtt_data->mutex);
     return (result == 0) ? 1 : 0;
 }
 
-// Global MQTT variables
-struct mosquitto *mqtt_client = NULL;
-volatile int mqtt_connected = 0;
+// Helper function to convert raw data to hex string
+void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int hex_str_size) {
+    hex_str[0] = '\0';
+    for (int i = 0; i < length && strlen(hex_str) + 3 < hex_str_size; i++) {
+        sprintf(hex_str + strlen(hex_str), "%02X", data[i]);
+    }
+}
 
-// MQTT Callbacks using config
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     if (result == 0) {
         mqtt_connected = 1;
         
         mqtt_config_t *config = get_mqtt_config();
+        system_info_t *sys_info = get_system_info();
         
-        // Send device attributes to ThingsBoard
-        char attributes[512];
-        snprintf(attributes, sizeof(attributes),
+        if (!config || !sys_info) return;
+        
+        char *attributes = malloc(config->attributes_buffer_size);
+        if (!attributes) return;
+        
+        snprintf(attributes, config->attributes_buffer_size,
                 "{"
                 "\"gateway_ip\":\"%s\","
-                "\"firmware_version\":\"1.0.0\","
-                "\"device_type\":\"IoT Gateway\","
+                "\"firmware_version\":\"%s\","
+                "\"device_type\":\"%s\","
+                "\"manufacturer\":\"%s\","
+                "\"model\":\"%s\","
                 "\"node_count\":%d"
-                "}", get_local_ip(), get_node_count());
+                "}", 
+                get_local_ip(), 
+                sys_info->firmware_version,
+                sys_info->device_type, 
+                sys_info->manufacturer,
+                sys_info->model,
+                get_node_count());
 
         mosquitto_publish(mqtt_client, NULL, config->topic_attributes,
                           strlen(attributes), attributes, config->qos, false);
+        
+        free(attributes);
     } else {
         mqtt_connected = 0;
     }
@@ -153,76 +113,84 @@ void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
     // Message published successfully
 }
 
-// Helper function to build telemetry payload dynamically
+// UPDATED: Build telemetry payload with raw data as hex strings
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp) {
-    char temp_buffer[512];
+    mqtt_config_t *config = get_mqtt_config();
+    if (!config) return;
     
-    // Start JSON
-    snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);
+    char *temp_buffer = malloc(1024);
+    if (!temp_buffer) return;
+    
+    // Start JSON with timestamp if configured
+    if (config->system_fields.include_timestamp) {
+        snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);
+    } else {
+        snprintf(payload, payload_size, "{");
+    }
 
-    // Add data from all configured nodes
+    // Add RAW data from all configured nodes
     for (int i = 0; i < get_node_count(); i++) {
         node_config_t *node = get_node_by_index(i);
         if (!node || !node->mqtt_data) continue;
 
         pthread_mutex_lock(&node->mqtt_data->mutex);
         if (node->mqtt_data->data) {
-            if (strcmp(node->data_structure, "node1_data_t") == 0) {
-                node1_data_t *data = (node1_data_t*)node->mqtt_data->data;
-                snprintf(temp_buffer, sizeof(temp_buffer),
-                         ",\"node%d_t1\":%d,\"node%d_t2\":%d,\"node%d_t3\":%d",
-                         node->node_id, data->t1, node->node_id, data->t2, node->node_id, data->t3);
-                strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+            raw_data_t *raw_data = (raw_data_t*)node->mqtt_data->data;
+            
+            if (raw_data && raw_data->data && raw_data->length > 0) {
+                // Convert raw data to hex string
+                char *hex_str = malloc(raw_data->length * 2 + 1);
+                if (hex_str) {
+                    raw_data_to_hex_string(raw_data->data, raw_data->length, hex_str, raw_data->length * 2 + 1);
+                    
+                    // Send raw data as hex string
+                    snprintf(temp_buffer, 1024, ",\"node%d_raw_data\":\"%s\",\"node%d_data_length\":%d", 
+                             node->node_id, hex_str, node->node_id, raw_data->length);
+                    
+                    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+                    free(hex_str);
+                }
             }
-            else if (strcmp(node->data_structure, "node2_data_t") == 0) {
-                uint16_t *adc_data = (uint16_t*)node->mqtt_data->data;
-                snprintf(temp_buffer, sizeof(temp_buffer),
-                         ",\"node%d_adc\":%d", node->node_id, *adc_data);
-                strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-            }
-            // Additional node types can be easily added here by extending JSON config
         }
         pthread_mutex_unlock(&node->mqtt_data->mutex);
     }
 
-    // Add system info
-    snprintf(temp_buffer, sizeof(temp_buffer),
-             ",\"gateway_ip\":\"%s\",\"data_source\":\"gateway_device\",\"node_count\":%d}",
-             get_local_ip(), get_node_count());
-    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-}
-
-// ==================== MQTT THREAD (Fully Config-driven) ====================
-void *mqtt_thread_func(void *arg) {
-    // Get MQTT configuration from JSON config
-    mqtt_config_t *config = get_mqtt_config();
-    
-    if (!config) {
-        printf("Error: MQTT configuration not found\n");
-        return NULL;
+    // Add system info based on config
+    if (config->system_fields.include_gateway_ip) {
+        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", get_local_ip());
+        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
     }
     
-    printf("MQTT Config: Host=%s, Port=%d, Client=%s, Username=%s\n", 
-           config->broker_host, config->broker_port, config->client_id, config->username);
+    if (config->system_fields.data_source[0] != '\0') {
+        snprintf(temp_buffer, 1024, ",\"data_source\":\"%s\"", config->system_fields.data_source);
+        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+    }
+    
+    if (config->system_fields.include_node_count) {
+        snprintf(temp_buffer, 1024, ",\"node_count\":%d", get_node_count());
+        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+    }
+    
+    strncat(payload, "}", payload_size - strlen(payload) - 1);
+    free(temp_buffer);
+}
+
+// ==================== MQTT THREAD (Raw Data Mode) ====================
+void *mqtt_thread_func(void *arg) {
+    mqtt_config_t *config = get_mqtt_config();
+    if (!config) return NULL;
     
     mosquitto_lib_init();
     mqtt_client = mosquitto_new(config->client_id, true, NULL);
-    if (!mqtt_client) {
-        printf("Error: Failed to create MQTT client\n");
-        return NULL;
-    }
+    if (!mqtt_client) return NULL;
 
-    // Set username and password from config
     mosquitto_username_pw_set(mqtt_client, config->username, config->password);
     mosquitto_connect_callback_set(mqtt_client, on_mqtt_connect);
     mosquitto_disconnect_callback_set(mqtt_client, on_mqtt_disconnect);
     mosquitto_publish_callback_set(mqtt_client, on_mqtt_publish);
 
-    // Connect using config values
     int rc = mosquitto_connect(mqtt_client, config->broker_host, config->broker_port, 60);
     if (rc != MOSQ_ERR_SUCCESS) {
-        printf("Error: Failed to connect to MQTT broker %s:%d (error: %d)\n", 
-               config->broker_host, config->broker_port, rc);
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
         return NULL;
@@ -230,59 +198,53 @@ void *mqtt_thread_func(void *arg) {
 
     mosquitto_loop_start(mqtt_client);
 
-    // Wait for connection
-    int connection_timeout = 50;
+    int connection_timeout = config->connection_timeout;
     while (!mqtt_connected && connection_timeout > 0) {
         usleep(100 * 1000);
         connection_timeout--;
     }
 
     if (!mqtt_connected) {
-        printf("Error: Failed to establish MQTT connection within timeout\n");
+        mosquitto_loop_stop(mqtt_client, true);
+        mosquitto_destroy(mqtt_client);
+        mosquitto_lib_cleanup();
+        return NULL;
+    }
+
+    time_t last_publish = 0;
+    char *telemetry_payload = malloc(config->payload_buffer_size);
+    if (!telemetry_payload) {
         mosquitto_loop_stop(mqtt_client, true);
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
         return NULL;
     }
     
-    printf("MQTT connected successfully to %s:%d\n", config->broker_host, config->broker_port);
-
-    // Main MQTT loop using config publish interval
-    time_t last_publish = 0;
     while (1) {
         time_t current_time = time(NULL);
         
-        // Send telemetry data based on config publish_interval
         if (current_time - last_publish >= config->publish_interval) {
-            char telemetry_payload[2048];
-            build_telemetry_payload(telemetry_payload, sizeof(telemetry_payload), current_time);
+            build_telemetry_payload(telemetry_payload, config->payload_buffer_size, current_time);
 
-            // Publish to topic from config
             rc = mosquitto_publish(mqtt_client, NULL, config->topic_telemetry,
                                    strlen(telemetry_payload), telemetry_payload, 
                                    config->qos, false);
             if (rc == MOSQ_ERR_SUCCESS) {
                 last_publish = current_time;
-                printf("MQTT telemetry published: %s\n", telemetry_payload);
-            } else {
-                printf("Error: Failed to publish MQTT message (error: %d)\n", rc);
             }
         }
 
-        // Check connection and reconnect if needed
         if (!mqtt_connected) {
-            printf("MQTT connection lost, attempting to reconnect...\n");
             mosquitto_reconnect(mqtt_client);
-            usleep(1000 * 1000);  // Wait 1 second before retry
+            usleep(config->reconnect_delay_ms * 1000);
         }
 
-        usleep(100 * 1000);  // 100ms loop interval
+        usleep(config->loop_interval_ms * 1000);
     }
 
-    // Cleanup
+    free(telemetry_payload);
     mosquitto_loop_stop(mqtt_client, true);
     mosquitto_destroy(mqtt_client);
     mosquitto_lib_cleanup();
-    printf("MQTT thread terminated\n");
     return NULL;
 }

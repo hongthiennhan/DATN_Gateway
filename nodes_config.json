@@ -20,6 +20,11 @@
       "auto_read_interval": 1,
       "mqtt_topic": "node1_data",
       "data_structure": "node1_data_t",
+      "data_fields": [
+        {"name": "t1", "type": "int32", "offset": 0},
+        {"name": "t2", "type": "int32", "offset": 4},
+        {"name": "t3", "type": "int32", "offset": 8}
+      ],
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && deactivate'"
     },
     {
@@ -37,6 +42,9 @@
       "auto_read_interval": 1,
       "mqtt_topic": "node2_data",
       "data_structure": "node2_data_t",
+      "data_fields": [
+        {"name": "adc", "type": "uint16", "offset": 0}
+      ],
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],
@@ -48,6 +56,12 @@
     "default_baudrate": 115200,
     "default_device": "/dev/ttyUSB0",
     "startup_clear_duration": 10000
+  },
+  "system_info": {
+    "firmware_version": "1.0.0",
+    "device_type": "IoT Gateway",
+    "manufacturer": "Your Company",
+    "model": "Gateway-v1"
   },
   "uart_config": {
     "config_file_path": "/tmp/uart_config.txt",
@@ -82,6 +96,17 @@
     "topic_telemetry": "v1/devices/me/telemetry",
     "topic_attributes": "v1/devices/me/attributes",
     "qos": 1,
-    "publish_interval": 1
+    "publish_interval": 1,
+    "connection_timeout": 50,
+    "reconnect_delay_ms": 1000,
+    "loop_interval_ms": 100,
+    "payload_buffer_size": 2048,
+    "attributes_buffer_size": 512,
+    "system_fields": {
+      "data_source": "gateway_device",
+      "include_timestamp": true,
+      "include_gateway_ip": true,
+      "include_node_count": true
+    }
   }
 }

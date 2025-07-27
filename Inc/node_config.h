@@ -21,6 +21,20 @@ typedef struct {
 } menu_item_t;
 
 typedef struct {
+    char firmware_version[32];
+    char device_type[64];
+    char manufacturer[64];
+    char model[32];
+} system_info_t;
+
+typedef struct {
+    char data_source[64];
+    int include_timestamp;
+    int include_gateway_ip;
+    int include_node_count;
+} system_fields_t;
+
+typedef struct {
     char broker_host[128];
     int broker_port;
     char client_id[64];
@@ -30,6 +44,12 @@ typedef struct {
     char topic_attributes[128];
     int qos;
     int publish_interval;
+    int connection_timeout;
+    int reconnect_delay_ms;
+    int loop_interval_ms;
+    int payload_buffer_size;
+    int attributes_buffer_size;
+    system_fields_t system_fields;
 } mqtt_config_t;
 
 typedef struct {
@@ -50,6 +70,12 @@ typedef struct {
     int default_baudrate_fallback;
 } uart_config_t;
 
+// Raw data structure to store binary data without parsing
+typedef struct {
+    unsigned char *data;
+    int length;
+} raw_data_t;
+
 typedef struct {
     int node_id;
     char name[128];
@@ -59,7 +85,9 @@ typedef struct {
     int auto_read_cmd;
     int auto_read_interval;
     char mqtt_topic[64];
-    char data_structure[64];
+    char data_structure[64];      // "raw_data" for raw mode
+    int expected_data_length;     // Expected raw data length
+    char data_format[16];         // "hex" or "base64"
     char reflash_script[512];
     
     // Runtime data
@@ -79,6 +107,9 @@ typedef struct {
     int default_baudrate;
     char default_device[256];
     int startup_clear_duration;
+    
+    // System info
+    system_info_t system_info;
     
     // UART config
     uart_config_t uart_config;
@@ -103,6 +134,9 @@ int get_uart_wait_timeout(void);
 int get_default_baudrate(void);
 const char* get_default_device(void);
 int get_startup_clear_duration(void);
+
+// System info getters
+system_info_t* get_system_info(void);
 
 // UART config getters
 uart_config_t* get_uart_config(void);
