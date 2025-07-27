@@ -91,7 +91,7 @@
     "broker_host": "demo.thingsboard.io",
     "broker_port": 1883,
     "client_id": "gateway_device",
-    "username": "iko2iokzzhdd5do5zqk3",
+    "username": "txg2524a0jho64ow0443",
     "password": "",
     "topic_telemetry": "v1/devices/me/telemetry",
     "topic_attributes": "v1/devices/me/attributes",
