@@ -6,9 +6,12 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 // Function to clean up resources on exit
-void cleanup_on_exit(void) { 
+void cleanup_on_exit(void) {
     // Close UART
     close(uart_fd);
+    
+    // Cleanup node config
+    cleanup_nodes_config();
     
     // Cleanup command data
     if (command_data.data) {
@@ -16,19 +19,6 @@ void cleanup_on_exit(void) {
     }
     pthread_mutex_destroy(&command_data.mutex);
     pthread_cond_destroy(&command_data.cond);
-    
-    // Cleanup MQTT data
-    if (mqtt_data_n1.data) {
-        free(mqtt_data_n1.data);
-    }
-    pthread_mutex_destroy(&mqtt_data_n1.mutex);
-    pthread_cond_destroy(&mqtt_data_n1.cond);
-    
-    if (mqtt_data_n2.data) {
-        free(mqtt_data_n2.data);
-    }
-    pthread_mutex_destroy(&mqtt_data_n2.mutex);
-    pthread_cond_destroy(&mqtt_data_n2.cond);
     
     // Cleanup command mutex
     pthread_mutex_destroy(&command_mutex);
@@ -39,6 +29,13 @@ void cleanup_on_exit(void) {
 // ==================== MAIN FUNCTION ====================
 int main(int argc, char **argv) {
     atexit(cleanup_on_exit);  // Register cleanup function to be called on exit
+
+    // load node configuration
+    if (load_nodes_config("nodes_config.json") != 0) {
+        fprintf(stderr, "Failed to load node configuration\n");
+        return -1;
+    }
+
     uint32_t baudrate = 115200;
     char *device = "/dev/ttyUSB0";
     int opt, option_index = 0;

@@ -5,23 +5,32 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GPIOD REQUIRED libgpiod)
 
+# Find required libraries
+pkg_check_modules(GPIOD REQUIRED libgpiod)
+pkg_check_modules(NCURSES REQUIRED ncurses)
+pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
+
+# NEW: Find json-c library
+pkg_check_modules(JSON_C REQUIRED json-c)
+
+# Debug output
 message(STATUS "GPIOD include dirs: ${GPIOD_INCLUDE_DIRS}")
 message(STATUS "GPIOD library dirs: ${GPIOD_LIBRARY_DIRS}")
 message(STATUS "GPIOD libraries: ${GPIOD_LIBRARIES}")
-
-pkg_check_modules(NCURSES REQUIRED ncurses)
 
 message(STATUS "NCURSES include dirs: ${NCURSES_INCLUDE_DIRS}")
 message(STATUS "NCURSES library dirs: ${NCURSES_LIBRARY_DIRS}")
 message(STATUS "NCURSES libraries: ${NCURSES_LIBRARIES}")
 
-# Find mosquitto using pkg-config
-pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
 message(STATUS "MOSQUITTO include dirs: ${MOSQUITTO_INCLUDE_DIRS}")
 message(STATUS "MOSQUITTO library dirs: ${MOSQUITTO_LIBRARY_DIRS}")
 message(STATUS "MOSQUITTO libraries: ${MOSQUITTO_LIBRARIES}")
+
+# NEW: Debug output for json-c
+message(STATUS "JSON_C include dirs: ${JSON_C_INCLUDE_DIRS}")
+message(STATUS "JSON_C library dirs: ${JSON_C_LIBRARY_DIRS}")
+message(STATUS "JSON_C libraries: ${JSON_C_LIBRARIES}")
 
 # Include directories
 set(INCLUDE_DIRS
@@ -29,30 +38,58 @@ set(INCLUDE_DIRS
     Inc
 )
 
-# Source files thread 1
+# Source files for LED application
 set(SOURCES_1
-    Src_process/led_process.c)
+    Src_process/led_process.c
+)
 
-# Add executable 1
+# Add LED executable
 add_executable(led_app ${SOURCES_1})
-
-# Include directories
 target_include_directories(led_app PRIVATE ${INCLUDE_DIRS})
-
-# Link libgpiod
 target_link_libraries(led_app ${GPIOD_LIBRARIES})
 
-# Source files thread 2
+# Source files for main application (UPDATED: Added node_config.c)
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
     Src_process/mqtt_thread.c
-    esp_command/control_command.c)
+    Src_process/node_config.c
+    esp_command/control_command.c
+)
 
-# Add executable 2
+# Add main executable
 add_executable(main_app ${SOURCES_2})
 
-# Include directories for main_app
-target_include_directories(main_app PRIVATE ${INCLUDE_DIRS})
+# Include directories for main_app (UPDATED: Added JSON_C include dirs)
+target_include_directories(main_app PRIVATE 
+    ${INCLUDE_DIRS}
+    ${GPIOD_INCLUDE_DIRS}
+    ${NCURSES_INCLUDE_DIRS}
+    ${MOSQUITTO_INCLUDE_DIRS}
+    ${JSON_C_INCLUDE_DIRS}
+)
 
-target_link_libraries(main_app ${GPIOD_LIBRARIES} ${NCURSES_LIBRARIES} ${MOSQUITTO_LIBRARIES})
+# Link libraries (UPDATED: Added JSON_C libraries)
+target_link_libraries(main_app 
+    ${GPIOD_LIBRARIES} 
+    ${NCURSES_LIBRARIES} 
+    ${MOSQUITTO_LIBRARIES}
+    ${JSON_C_LIBRARIES}
+    pthread
+    m
+)
+
+# NEW: Add compiler flags for all dependencies
+target_compile_options(main_app PRIVATE 
+    ${GPIOD_CFLAGS_OTHER}
+    ${NCURSES_CFLAGS_OTHER}
+    ${MOSQUITTO_CFLAGS_OTHER}
+    ${JSON_C_CFLAGS_OTHER}
+)
+
+# NEW: Copy config file to build directory
+configure_file(${CMAKE_SOURCE_DIR}/nodes_config.json ${CMAKE_BINARY_DIR}/nodes_config.json COPYONLY)
+
+# NEW: Install targets
+install(TARGETS main_app led_app DESTINATION bin)
+install(FILES nodes_config.json DESTINATION bin)

@@ -164,96 +164,130 @@ void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
     // Message published successfully
 }
 
-// ==================== MQTT THREAD ====================
+// Helper function to build telemetry payload dynamically
+void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp) {
+    char temp_buffer[512];
+    
+    // Start JSON
+    snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);
+
+    // Add data from all configured nodes
+    for (int i = 0; i < get_node_count(); i++) {
+        node_config_t *node = get_node_by_index(i);
+        if (!node || !node->mqtt_data) continue;
+
+        pthread_mutex_lock(&node->mqtt_data->mutex);
+        if (node->mqtt_data->data) {
+            if (strcmp(node->data_structure, "node1_data_t") == 0) {
+                node1_data_t *data = (node1_data_t*)node->mqtt_data->data;
+                snprintf(temp_buffer, sizeof(temp_buffer),
+                         ",\"node%d_t1\":%d,\"node%d_t2\":%d,\"node%d_t3\":%d",
+                         node->node_id, data->t1, node->node_id, data->t2, node->node_id, data->t3);
+                strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+            }
+            else if (strcmp(node->data_structure, "node2_data_t") == 0) {
+                uint16_t *adc_data = (uint16_t*)node->mqtt_data->data;
+                snprintf(temp_buffer, sizeof(temp_buffer),
+                         ",\"node%d_adc\":%d", node->node_id, *adc_data);
+                strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+            }
+        }
+        pthread_mutex_unlock(&node->mqtt_data->mutex);
+    }
+
+    // Add system info
+    snprintf(temp_buffer, sizeof(temp_buffer),
+             ",\"gateway_ip\":\"%s\",\"data_source\":\"gateway_device\",\"node_count\":%d}",
+             get_local_ip(), get_node_count());
+    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+}
+
+// Updated on_mqtt_connect to use dynamic node count
+void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
+    if (result == 0) {
+        mqtt_connected = 1;
+        
+        // Send device attributes to ThingsBoard
+        char attributes[512];
+        snprintf(attributes, sizeof(attributes),
+                "{"
+                "\"gateway_ip\":\"%s\","
+                "\"firmware_version\":\"1.0.0\","
+                "\"device_type\":\"IoT Gateway\","
+                "\"node_count\":%d"
+                "}", get_local_ip(), get_node_count());
+
+        mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_ATTRIBUTES,
+                          strlen(attributes), attributes, MQTT_QOS, false);
+    } else {
+        mqtt_connected = 0;
+    }
+}
+
+// ==================== MQTT THREAD (Config-driven) ====================
 void *mqtt_thread_func(void *arg) {
     mosquitto_lib_init();
-    
     mqtt_client = mosquitto_new(MQTT_CLIENT_ID, true, NULL);
     if (!mqtt_client) {
         return NULL;
     }
-    
-    // Set username (access token) for ThingsBoard authentication
+
     mosquitto_username_pw_set(mqtt_client, MQTT_USERNAME, MQTT_PASSWORD);
-    
-    // Set callbacks
     mosquitto_connect_callback_set(mqtt_client, on_mqtt_connect);
     mosquitto_disconnect_callback_set(mqtt_client, on_mqtt_disconnect);
     mosquitto_publish_callback_set(mqtt_client, on_mqtt_publish);
-    
-    // Connect to ThingsBoard server
+
     int rc = mosquitto_connect(mqtt_client, MQTT_BROKER_HOST, MQTT_BROKER_PORT, 60);
     if (rc != MOSQ_ERR_SUCCESS) {
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
         return NULL;
     }
-    
+
     mosquitto_loop_start(mqtt_client);
-    
-    // Wait for connection  
+
+    // Wait for connection
     int connection_timeout = 50;
     while (!mqtt_connected && connection_timeout > 0) {
         usleep(100 * 1000);
         connection_timeout--;
     }
-    
+
     if (!mqtt_connected) {
         mosquitto_loop_stop(mqtt_client, true);
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
         return NULL;
     }
-    
+
     // Main MQTT loop
     time_t last_publish = 0;
-    
     while (1) {
         time_t current_time = time(NULL);
-
-
         
-        // Combine and send telemetry data every second
+        // Send telemetry data every second
         if (current_time - last_publish >= 1) {
-            char telemetry_payload[1024];
-            
-            // Get data from both nodes
-            node1_data_t node1_data = get_mqtt_data_n1();
-            uint16_t node2_adc = get_mqtt_data_n2();
-            
-            // ThingsBoard telemetry format
-            snprintf(telemetry_payload, sizeof(telemetry_payload),
-                "{"
-                "\"timestamp\":%ld000,"  // ThingsBoard expects milliseconds
-                "\"node1_t1\":%d,"
-                "\"node1_t2\":%d,"
-                "\"node1_t3\":%d,"
-                "\"node2_adc\":%d,"
-                "\"gateway_ip\":\"%s\","
-                "\"data_source\":\"gateway_device\""
-                "}", current_time, node1_data.t1, node1_data.t2, node1_data.t3,
-                node2_adc, get_local_ip());
+            char telemetry_payload[2048];
+            build_telemetry_payload(telemetry_payload, sizeof(telemetry_payload), current_time);
 
             rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_TELEMETRY,
-                                 strlen(telemetry_payload), telemetry_payload, MQTT_QOS, false);
-            
+                                   strlen(telemetry_payload), telemetry_payload, MQTT_QOS, false);
             if (rc == MOSQ_ERR_SUCCESS) {
                 last_publish = current_time;
             }
         }
-        
+
         // Check connection and reconnect if needed
         if (!mqtt_connected) {
             mosquitto_reconnect(mqtt_client);
             usleep(1000 * 1000);
         }
-        
-        usleep(100 * 1000); // 100ms delay
+
+        usleep(100 * 1000);
     }
-    
+
     mosquitto_loop_stop(mqtt_client, true);
     mosquitto_destroy(mqtt_client);
     mosquitto_lib_cleanup();
-    
     return NULL;
 }
