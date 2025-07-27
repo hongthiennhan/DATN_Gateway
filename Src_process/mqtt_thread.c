@@ -168,10 +168,6 @@ void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
 void *mqtt_thread_func(void *arg) {
     mosquitto_lib_init();
 
-    pthread_mutex_lock(&command_mutex);
-    int local_node_type = shared_node_type;  // Read shared node type safely
-    pthread_mutex_unlock(&command_mutex);
-
     mqtt_client = mosquitto_new(MQTT_CLIENT_ID, true, NULL);
     if (!mqtt_client) {
         return NULL;
@@ -214,10 +210,10 @@ void *mqtt_thread_func(void *arg) {
     
     while (1) {
         // Send command to uart thread to get data
-        
         pthread_mutex_lock(&command_mutex);
-        local_node_type = shared_node_type;  // Read shared node type safely
         int local_node_type = shared_node_type;  // Read shared node type safely
+        pthread_mutex_unlock(&command_mutex);
+        pthread_mutex_lock(&command_mutex);
         if (!is_busy) {
             if( local_node_type == NODE_TYPE_1) {
                 set_command_code(6); // Command to get Node1 data
