@@ -26,6 +26,32 @@ int load_nodes_config(const char *config_file) {
             node_registry.uart_wait_timeout = json_object_get_int(uart_wait_obj);
     }
     
+    // Parse MQTT config
+    json_object *mqtt_config_obj;
+    if (json_object_object_get_ex(root, "mqtt_config", &mqtt_config_obj)) {
+        json_object *broker_host_obj, *broker_port_obj, *client_id_obj, *username_obj, *password_obj;
+        json_object *topic_telemetry_obj, *topic_attributes_obj, *qos_obj, *publish_interval_obj;
+        
+        if (json_object_object_get_ex(mqtt_config_obj, "broker_host", &broker_host_obj))
+            strcpy(node_registry.mqtt_config.broker_host, json_object_get_string(broker_host_obj));
+        if (json_object_object_get_ex(mqtt_config_obj, "broker_port", &broker_port_obj))
+            node_registry.mqtt_config.broker_port = json_object_get_int(broker_port_obj);
+        if (json_object_object_get_ex(mqtt_config_obj, "client_id", &client_id_obj))
+            strcpy(node_registry.mqtt_config.client_id, json_object_get_string(client_id_obj));
+        if (json_object_object_get_ex(mqtt_config_obj, "username", &username_obj))
+            strcpy(node_registry.mqtt_config.username, json_object_get_string(username_obj));
+        if (json_object_object_get_ex(mqtt_config_obj, "password", &password_obj))
+            strcpy(node_registry.mqtt_config.password, json_object_get_string(password_obj));
+        if (json_object_object_get_ex(mqtt_config_obj, "topic_telemetry", &topic_telemetry_obj))
+            strcpy(node_registry.mqtt_config.topic_telemetry, json_object_get_string(topic_telemetry_obj));
+        if (json_object_object_get_ex(mqtt_config_obj, "topic_attributes", &topic_attributes_obj))
+            strcpy(node_registry.mqtt_config.topic_attributes, json_object_get_string(topic_attributes_obj));
+        if (json_object_object_get_ex(mqtt_config_obj, "qos", &qos_obj))
+            node_registry.mqtt_config.qos = json_object_get_int(qos_obj);
+        if (json_object_object_get_ex(mqtt_config_obj, "publish_interval", &publish_interval_obj))
+            node_registry.mqtt_config.publish_interval = json_object_get_int(publish_interval_obj);
+    }
+    
     json_object *nodes_array;
     if (!json_object_object_get_ex(root, "nodes", &nodes_array)) {
         printf("Error: No 'nodes' array found in config\n");
@@ -78,15 +104,17 @@ int load_nodes_config(const char *config_file) {
             json_object *menu_item_obj = json_object_array_get_idx(menu_array, j);
             menu_item_t *menu_item = &node->menu_items[j];
             
-            json_object *cmd_obj, *label_obj, *uart_cmd_obj, *timeout_obj;
+            json_object *cmd_obj, *label_obj, *uart_cmd_obj, *hex_value_obj, *timeout_obj;
             json_object_object_get_ex(menu_item_obj, "cmd", &cmd_obj);
             json_object_object_get_ex(menu_item_obj, "label", &label_obj);
             json_object_object_get_ex(menu_item_obj, "uart_cmd", &uart_cmd_obj);
+            json_object_object_get_ex(menu_item_obj, "hex_value", &hex_value_obj);
             json_object_object_get_ex(menu_item_obj, "timeout_ms", &timeout_obj);
             
             menu_item->cmd = json_object_get_int(cmd_obj);
             strcpy(menu_item->label, json_object_get_string(label_obj));
             strcpy(menu_item->uart_cmd, json_object_get_string(uart_cmd_obj));
+            strcpy(menu_item->hex_value, json_object_get_string(hex_value_obj));  // NEW
             menu_item->timeout_ms = json_object_get_int(timeout_obj);
         }
         
@@ -150,6 +178,24 @@ int get_ui_refresh_delay(void) {
 
 int get_uart_wait_timeout(void) {
     return node_registry.uart_wait_timeout;
+}
+
+// MQTT config getter
+mqtt_config_t* get_mqtt_config(void) {
+    return &node_registry.mqtt_config;
+}
+
+// Utility function to convert hex string to integer
+uint32_t hex_string_to_int(const char *hex_str) {
+    if (!hex_str || strlen(hex_str) == 0) return 0;
+    
+    uint32_t result = 0;
+    if (strncmp(hex_str, "0x", 2) == 0 || strncmp(hex_str, "0X", 2) == 0) {
+        sscanf(hex_str, "%x", &result);
+    } else {
+        sscanf(hex_str, "%x", &result);
+    }
+    return result;
 }
 
 void cleanup_nodes_config(void) {

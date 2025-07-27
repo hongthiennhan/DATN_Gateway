@@ -3,27 +3,13 @@
 
 #include "main.h"
 
-#define CONFIG_FILE "/tmp/uart_config.txt" 
+#define CONFIG_FILE "/tmp/uart_config.txt"
 
-typedef enum {
-    CMD_DIRECTION_1  = 0xA1,
-    CMD_DIRECTION_2  = 0xA2,
-    CMD_DIRECTION_3  = 0xA3,
-    CMD_LED_ON       = 0xA4,
-    CMD_LED_OFF      = 0xA5,
-    CMD_SEND_STATUS  = 0xA6,
-    CMD_STOP_SYSTEM  = 0xA7,
-    CMD_INIT         = 0xFF
-} Command;
+// Remove all enum definitions - now use config
 
-typedef enum {
-    CMD2_LED_ON          = 0xA1,
-    CMD2_LED_OFF         = 0xA2,
-    CMD2_READ_SINGLE     = 0xA3
-} Command_2;
-
-extern int uart_fd;  
+extern int uart_fd;
 extern sem_t *uart_sem;
+
 void Uart_Init(speed_t baudrate, char *device);
 void write_command(uint8_t cmd);
 void write_init(uint32_t baudrate);

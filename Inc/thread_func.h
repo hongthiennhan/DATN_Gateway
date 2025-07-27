@@ -39,7 +39,7 @@ void *mqtt_thread_func(void *arg);
 
 // Config-driven function declarations
 void execute_uart_command(struct node_config_s *node, struct menu_item_s *menu_item, unsigned char **resp, uint16_t *resp_len, int silent);
-uint32_t get_uart_command_from_string(const char *cmd_str);
+uint32_t get_uart_command_from_hex(const char *hex_str);  // Changed from get_uart_command_from_string
 void process_uart_response(struct node_config_s *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent);
 void format_response_data(struct node_config_s *node, unsigned char *resp, uint16_t resp_len);
 void update_mqtt_data_from_response(struct node_config_s *node, unsigned char *resp, uint16_t resp_len);
@@ -54,9 +54,5 @@ node1_data_t get_mqtt_data_n1();
 void set_mqtt_data_n2(uint16_t adc_value);
 uint16_t get_mqtt_data_n2();
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms);
-
-// ========== Macros for exit codes ==========
-#define NODE1_EXIT_CODE 10
-#define NODE2_EXIT_CODE 5
 
 #endif // THREAD_FUNC_H

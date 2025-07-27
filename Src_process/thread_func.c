@@ -13,11 +13,6 @@ unsigned char receive_data[512] = {0};
 unsigned char save_data[512] = {0};
 int shared_node_type = 0;  // Initialize to 0 (no node selected yet)
 
-// ADDED: Auto read functionality
-#define AUTO_READ_COMMAND 100  // Special command code for auto read
-volatile time_t last_user_interaction = 0;  // Track last user interaction time
-#define AUTO_READ_INTERVAL 1  // Auto read every 1 second
-
 shared_data_t command_data = {
     .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -25,19 +20,17 @@ shared_data_t command_data = {
 };
 
 // Helper functions for command_data operations:
-// Set the command code and notify waiting threads
-void set_command_code(int new_code) { // use only for setting command code
+void set_command_code(int new_code) {
     pthread_mutex_lock(&command_data.mutex);
     if (command_data.data == NULL) {
         command_data.data = malloc(sizeof(int));
     }
     *(int*)command_data.data = new_code;
-    pthread_cond_signal(&command_data.cond);  // Notify waiting threads
+    pthread_cond_signal(&command_data.cond);
     pthread_mutex_unlock(&command_data.mutex);
 }
 
-// Get the current command code
-int get_command_code() { // use only for getting command code
+int get_command_code() {
     pthread_mutex_lock(&command_data.mutex);
     int code = 0;
     if (command_data.data != NULL) {
@@ -47,8 +40,6 @@ int get_command_code() { // use only for getting command code
     return code;
 }
 
-// Wait for command change with timeout
-// Returns the command code if signaled, or -1 if timeout occurs
 int wait_for_command_change(int timeout_ms) {
     pthread_mutex_lock(&command_data.mutex);
     
@@ -68,7 +59,7 @@ int wait_for_command_change(int timeout_ms) {
     }
     
     pthread_mutex_unlock(&command_data.mutex);
-    return (result == 0) ? code : -1; // Return code if signaled, -1 if timeout
+    return (result == 0) ? code : -1;
 }
 
 // ==================== UART THREAD (Config-driven) ====================
@@ -90,7 +81,7 @@ void *uart_thread_func(void *arg) {
         }
 
         if (!pending) {
-            int new_cmd = wait_for_command_change(1000);
+            int new_cmd = wait_for_command_change(get_uart_wait_timeout());
             if (new_cmd == -1) {
                 continue;
             }
@@ -137,8 +128,8 @@ void *uart_thread_func(void *arg) {
         if (is_auto_read) {
             // Send auto read command for current node
             menu_item_t *auto_read_item = get_menu_item_by_cmd(current_node, current_node->auto_read_cmd);
-            if (auto_read_item && strlen(auto_read_item->uart_cmd) > 0) {
-                // Execute auto read command
+            if (auto_read_item && strlen(auto_read_item->hex_value) > 0) {
+                // Execute auto read command using hex_value
                 execute_uart_command(current_node, auto_read_item, &resp, &resp_len, 1); // silent=1
             }
             goto cleanup;
@@ -146,11 +137,11 @@ void *uart_thread_func(void *arg) {
 
         // Handle regular commands
         if (menu_item) {
-            if (strlen(menu_item->uart_cmd) > 0) {
-                // Regular UART command
+            if (strlen(menu_item->hex_value) > 0) {
+                // Regular UART command using hex_value
                 execute_uart_command(current_node, menu_item, &resp, &resp_len, 0); // silent=0
-            } else if (strcmp(menu_item->uart_cmd, "CMD_REFLASH") == 0 || cmd == 9 || cmd == 4) {
-                // Handle reflash command
+            } else if (cmd == 9 || cmd == 4) {
+                // Handle reflash command (empty hex_value indicates special command)
                 pthread_mutex_lock(&command_mutex);
                 is_busy = 1;
                 snprintf(status_response, sizeof(status_response), "Flashing %s firmware...", current_node->name);
@@ -192,42 +183,25 @@ cleanup:
     return NULL;
 }
 
-// Helper function to execute UART commands
+// Helper function to execute UART commands using hex from config
 void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent) {
     *resp = NULL;
     *resp_len = 0;
     
-    // Convert string command to actual command
-    uint32_t uart_cmd = get_uart_command_from_string(menu_item->uart_cmd);
+    // Get hex command from config and convert to integer
+    uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
     if (uart_cmd == 0) return;
     
     // Send command
-    write_command(uart_cmd);
+    write_command((uint8_t)uart_cmd);
     
     // Read response if timeout > 0
     if (menu_item->timeout_ms > 0) {
         *resp = Read_Response(menu_item->timeout_ms, resp_len);
     }
     
-    // Process response based on node type
+    // Process response
     process_uart_response(node, menu_item->cmd, *resp, *resp_len, silent);
-}
-
-// Helper function to convert string command to UART command
-uint32_t get_uart_command_from_string(const char *cmd_str) {
-    if (strcmp(cmd_str, "CMD_DIRECTION_1") == 0) return CMD_DIRECTION_1;
-    if (strcmp(cmd_str, "CMD_DIRECTION_2") == 0) return CMD_DIRECTION_2;
-    if (strcmp(cmd_str, "CMD_DIRECTION_3") == 0) return CMD_DIRECTION_3;
-    if (strcmp(cmd_str, "CMD_LED_ON") == 0) return CMD_LED_ON;
-    if (strcmp(cmd_str, "CMD_LED_OFF") == 0) return CMD_LED_OFF;
-    if (strcmp(cmd_str, "CMD_SEND_STATUS") == 0) return CMD_SEND_STATUS;
-    if (strcmp(cmd_str, "CMD_STOP_SYSTEM") == 0) return CMD_STOP_SYSTEM;
-    if (strcmp(cmd_str, "CMD_INIT") == 0) return CMD_INIT;
-    if (strcmp(cmd_str, "CMD2_LED_ON") == 0) return CMD2_LED_ON;
-    if (strcmp(cmd_str, "CMD2_LED_OFF") == 0) return CMD2_LED_OFF;
-    if (strcmp(cmd_str, "CMD2_READ_SINGLE") == 0) return CMD2_READ_SINGLE;
-    // Add more commands as needed
-    return 0;
 }
 
 // Helper function to process UART response
@@ -310,9 +284,10 @@ void *ui_thread_func(void *arg) {
     uint32_t baudrate = *(uint32_t *)((void **)arg)[0];
     char *device = (char *)((void **)arg)[1];
     
-    // Load config at startup
-    if (load_nodes_config("nodes_config.json") != 0) {
-        printf("Failed to load nodes configuration. Exiting UI thread.\n");
+    // Config already loaded in main, no need to load again
+    // Just verify it's loaded
+    if (get_node_count() == 0) {
+        printf("No nodes configuration found. Exiting UI thread.\n");
         return NULL;
     }
     
@@ -392,7 +367,6 @@ void *ui_thread_func(void *arg) {
                 case 'q':
                 case 'Q':
                     endwin();
-                    cleanup_nodes_config();
                     printf("Exiting...\n");
                     exit(0);
                     break;
@@ -520,7 +494,6 @@ void *ui_thread_func(void *arg) {
             case 'q':
             case 'Q':
                 endwin();
-                cleanup_nodes_config();
                 printf("Exiting...\n");
                 close(uart_fd);
                 exit(0);
@@ -531,6 +504,5 @@ void *ui_thread_func(void *arg) {
     }
     
     endwin();
-    cleanup_nodes_config();
     return NULL;
 }

@@ -15,8 +15,21 @@ typedef struct {
     int cmd;
     char label[64];
     char uart_cmd[32];
+    char hex_value[16];  // NEW: Store hex value as string
     int timeout_ms;
 } menu_item_t;
+
+typedef struct {
+    char broker_host[128];
+    int broker_port;
+    char client_id[64];
+    char username[128];
+    char password[128];
+    char topic_telemetry[128];
+    char topic_attributes[128];
+    int qos;
+    int publish_interval;
+} mqtt_config_t;
 
 typedef struct {
     int node_id;
@@ -44,6 +57,9 @@ typedef struct {
     int uart_clear_timeout;
     int ui_refresh_delay;
     int uart_wait_timeout;
+    
+    // MQTT config
+    mqtt_config_t mqtt_config;
 } node_registry_t;
 
 // API functions
@@ -59,5 +75,11 @@ int get_auto_read_command_id(void);
 int get_uart_clear_timeout(void);
 int get_ui_refresh_delay(void);
 int get_uart_wait_timeout(void);
+
+// MQTT config getters
+mqtt_config_t* get_mqtt_config(void);
+
+// Utility function
+uint32_t hex_string_to_int(const char *hex_str);
 
 #endif
