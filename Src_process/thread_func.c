@@ -1,4 +1,5 @@
 #include "thread_func.h"
+#include <time.h>
 
 // ========== Shared state between threads ==========
 volatile uint8_t is_busy = 0;
@@ -11,6 +12,11 @@ unsigned char receive_data[512] = {0};
 unsigned char save_data[512] = {0};
 int shared_node_type = 0;  // Initialize to 0 (no node selected yet)
 
+// ADDED: Auto read functionality
+#define AUTO_READ_COMMAND 100  // Special command code for auto read
+volatile time_t last_user_interaction = 0;  // Track last user interaction time
+#define AUTO_READ_INTERVAL 1  // Auto read every 1 second
+
 shared_data_t command_data = {
     .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -19,26 +25,29 @@ shared_data_t command_data = {
 
 // Helper functions for command_data operations:
 // Set the command code and notify waiting threads
-
 void set_command_code(int new_code) { // use only for setting command code
     pthread_mutex_lock(&command_data.mutex);
+    if (command_data.data == NULL) {
+        command_data.data = malloc(sizeof(int));
+    }
     *(int*)command_data.data = new_code;
     pthread_cond_signal(&command_data.cond);  // Notify waiting threads
     pthread_mutex_unlock(&command_data.mutex);
 }
 
 // Get the current command code
-
 int get_command_code() { // use only for getting command code
     pthread_mutex_lock(&command_data.mutex);
-    int code = *(int*)command_data.data;
+    int code = 0;
+    if (command_data.data != NULL) {
+        code = *(int*)command_data.data;
+    }
     pthread_mutex_unlock(&command_data.mutex);
     return code;
 }
 
 // Wait for command change with timeout
 // Returns the command code if signaled, or -1 if timeout occurs
-
 int wait_for_command_change(int timeout_ms) {
     pthread_mutex_lock(&command_data.mutex);
     
@@ -52,7 +61,10 @@ int wait_for_command_change(int timeout_ms) {
     }
     
     int result = pthread_cond_timedwait(&command_data.cond, &command_data.mutex, &timeout);
-    int code = *(int*)command_data.data;
+    int code = 0;
+    if (command_data.data != NULL) {
+        code = *(int*)command_data.data;
+    }
     
     pthread_mutex_unlock(&command_data.mutex);
     return (result == 0) ? code : -1; // Return code if signaled, -1 if timeout
@@ -104,7 +116,7 @@ void *uart_thread_func(void *arg) {
 
         if (!pending) {
             // MODIFIED: Use notification wait instead of constant polling
-            int new_cmd = wait_for_command_change(1000); // Wait 100ms for command
+            int new_cmd = wait_for_command_change(1000); // Wait 1000ms for command
             if (new_cmd == -1) {
                 continue; // Timeout, try again
             }
@@ -117,10 +129,16 @@ void *uart_thread_func(void *arg) {
             pthread_mutex_unlock(&command_mutex);
         }
 
-        // UPDATED: Added case 5 for Node2 reflash command to block UI
+        // UPDATED: Auto read command should not block UI
         int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6) || 
-                       (local_node_type == NODE_TYPE_2 && cmd == 5);  // ADDED: Block UI for Node2 reflash
-        if (block_ui){
+                       (local_node_type == NODE_TYPE_2 && cmd == 4);  // UPDATED: Node2 reflash is cmd 4
+        
+        // Auto read command doesn't block UI
+        if (cmd == AUTO_READ_COMMAND) {
+            block_ui = 0;
+        }
+        
+        if (block_ui) {
             pthread_mutex_lock(&command_mutex);
             is_busy = 1;  // Block UI when handling these commands
             pthread_mutex_unlock(&command_mutex);
@@ -130,66 +148,85 @@ void *uart_thread_func(void *arg) {
         int t1_val = 0, t2_val = 0, t3_val = 0;
         uint16_t adc_value = 0;  // For Node2 ADC readings
         uint8_t ret = 0;
-        pthread_mutex_unlock(&command_mutex);
+        int is_auto_read = (cmd == AUTO_READ_COMMAND);
 
         // Handle commands based on selected_node_type
         if (local_node_type == NODE_TYPE_1) {
-            switch (cmd) {
-                case 1:
-                    write_command(CMD_DIRECTION_1);
-                    resp = Read_Response(10000, &resp_len);
-                    break;
-                case 2:
-                    write_command(CMD_DIRECTION_2);
-                    resp = Read_Response(5000, &resp_len);
-                    break;
-                case 3:
-                    write_command(CMD_DIRECTION_3);
-                    resp = Read_Response(10000, &resp_len);
-                    break;
-                case 4:
-                    write_command(CMD_LED_ON);
-                    break;
-                case 5:
-                    write_command(CMD_LED_OFF);
-                    break;
-                case 6:
-                    write_command(CMD_SEND_STATUS);
-                    resp = Read_Response(100, &resp_len);
+            // ADDED: Handle auto read for Node1
+            if (is_auto_read) {
+                // SILENT auto read: send status command
+                write_command(CMD_SEND_STATUS);
+                resp = Read_Response(100, &resp_len);
+                if (resp && resp_len >= 12) {
                     // Parse 12 byte binary data (3 x u32 little-endian)
-                    if (resp && resp_len >= 12) {
-                        // Convert little-endian bytes to u32 values
-                        t1_val = resp[0] | (resp[1] << 8) | (resp[2] << 16) | (resp[3] << 24);
-                        t2_val = resp[4] | (resp[5] << 8) | (resp[6] << 16) | (resp[7] << 24);
-                        t3_val = resp[8] | (resp[9] << 8) | (resp[10] << 16) | (resp[11] << 24);
-                    }
-                    break;
-                case 7:
-                    write_command(CMD_STOP_SYSTEM);
-                    break;
-                case 8:
-                    write_init(115200);
-                    break;
-                case 9:  // CMD_REFLASH
-                    pthread_mutex_lock(&command_mutex);
-                     is_busy = 1;  // Block UI
-                    snprintf(status_response, sizeof(status_response), "Flashing firmware...");
-                    status_color = 4;
-                    pthread_mutex_unlock(&command_mutex);
-                    // Run shell command to flash
-                    ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
-                                 "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
-                                 "deactivate'");
-                    Clear_Startup_UART(uart_fd, 10000);  // Clear UART buffer after flashing
-                    pthread_mutex_lock(&command_mutex);
-                    is_busy = 0;
-                    pthread_mutex_unlock(&command_mutex);
-                    break;
-                default:
-                    break;
+                    t1_val = resp[0] | (resp[1] << 8) | (resp[2] << 16) | (resp[3] << 24);
+                    t2_val = resp[4] | (resp[5] << 8) | (resp[6] << 16) | (resp[7] << 24);
+                    t3_val = resp[8] | (resp[9] << 8) | (resp[10] << 16) | (resp[11] << 24);
+                    
+                    // ONLY update MQTT data, no UI status update
+                    set_mqtt_data_n1(t1_val, t2_val, t3_val);
+                }
+                // Skip UI status update for auto read
+                goto cleanup;
+            } else {
+                // Normal manual commands
+                switch (cmd) {
+                    case 1:
+                        write_command(CMD_DIRECTION_1);
+                        resp = Read_Response(10000, &resp_len);
+                        break;
+                    case 2:
+                        write_command(CMD_DIRECTION_2);
+                        resp = Read_Response(5000, &resp_len);
+                        break;
+                    case 3:
+                        write_command(CMD_DIRECTION_3);
+                        resp = Read_Response(10000, &resp_len);
+                        break;
+                    case 4:
+                        write_command(CMD_LED_ON);
+                        break;
+                    case 5:
+                        write_command(CMD_LED_OFF);
+                        break;
+                    case 6:
+                        write_command(CMD_SEND_STATUS);
+                        resp = Read_Response(100, &resp_len);
+                        // Parse 12 byte binary data (3 x u32 little-endian)
+                        if (resp && resp_len >= 12) {
+                            // Convert little-endian bytes to u32 values
+                            t1_val = resp[0] | (resp[1] << 8) | (resp[2] << 16) | (resp[3] << 24);
+                            t2_val = resp[4] | (resp[5] << 8) | (resp[6] << 16) | (resp[7] << 24);
+                            t3_val = resp[8] | (resp[9] << 8) | (resp[10] << 16) | (resp[11] << 24);
+                        }
+                        break;
+                    case 7:
+                        write_command(CMD_STOP_SYSTEM);
+                        break;
+                    case 8:
+                        write_init(115200);
+                        break;
+                    case 9:  // CMD_REFLASH
+                        pthread_mutex_lock(&command_mutex);
+                        is_busy = 1;  // Block UI
+                        snprintf(status_response, sizeof(status_response), "Flashing firmware...");
+                        status_color = 4;
+                        pthread_mutex_unlock(&command_mutex);
+                        // Run shell command to flash
+                        ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
+                                     "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && "
+                                     "deactivate'");
+                        Clear_Startup_UART(uart_fd, 10000);  // Clear UART buffer after flashing
+                        pthread_mutex_lock(&command_mutex);
+                        is_busy = 0;
+                        pthread_mutex_unlock(&command_mutex);
+                        break;
+                    default:
+                        break;
+                }
             }
 
-            // ========== STATUS HANDLING FOR NODE1 (Motor Controller) ==========
+            // ========== STATUS HANDLING FOR NODE1 (Motor Controller) - Only manual commands ==========
             pthread_mutex_lock(&command_mutex);
             if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
                 snprintf(status_response, sizeof(status_response), "Node1 Command %d executed successfully", cmd);
@@ -226,41 +263,58 @@ void *uart_thread_func(void *arg) {
             pthread_mutex_unlock(&command_mutex);
         }
         else if (local_node_type == NODE_TYPE_2) {
-            switch (cmd) {
-                case 1:
-                    write_command(CMD2_LED_ON);  // Assume defined in control_command.h
-                    break;
-                case 2:
-                    write_command(CMD2_LED_OFF);
-                    break;
-                case 3:
-                    write_command(CMD2_READ_SINGLE);
-                    resp = Read_Response(2000, &resp_len);  // Expect 2 bytes
+            // ADDED: Handle auto read for Node2
+            if (is_auto_read) {
+                // SILENT auto read: send read single command
+                write_command(CMD2_READ_SINGLE);
+                resp = Read_Response(2000, &resp_len);  // Expect 2 bytes
+                if (resp && resp_len >= 2) {
                     // Parse 2 byte ADC data (u16 little-endian)
-                    if (resp && resp_len >= 2) {
-                        adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
-                    }
-                    break;
-                // ADDED: Reflash firmware case for Node2
-                case 4:  // ADDED: CMD_REFLASH for Node2
-                    is_busy = 1;
-                    pthread_mutex_lock(&command_mutex);
-                    snprintf(status_response, sizeof(status_response), "Flashing Node2 firmware...");
-                    status_color = 4;
-                    pthread_mutex_unlock(&command_mutex);
+                    adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
+                    
+                    // ONLY update MQTT data, no UI status update
+                    set_mqtt_data_n2(adc_value);
+                }
+                // Skip UI status update for auto read
+                goto cleanup;
+            } else {
+                // Normal manual commands
+                switch (cmd) {
+                    case 1:
+                        write_command(CMD2_LED_ON);  // Assume defined in control_command.h
+                        break;
+                    case 2:
+                        write_command(CMD2_LED_OFF);
+                        break;
+                    case 3:
+                        write_command(CMD2_READ_SINGLE);
+                        resp = Read_Response(2000, &resp_len);  // Expect 2 bytes
+                        // Parse 2 byte ADC data (u16 little-endian)
+                        if (resp && resp_len >= 2) {
+                            adc_value = resp[0] | (resp[1] << 8);  // Little-endian conversion
+                        }
+                        break;
+                    // ADDED: Reflash firmware case for Node2
+                    case 4:  // ADDED: CMD_REFLASH for Node2
+                        is_busy = 1;
+                        pthread_mutex_lock(&command_mutex);
+                        snprintf(status_response, sizeof(status_response), "Flashing Node2 firmware...");
+                        status_color = 4;
+                        pthread_mutex_unlock(&command_mutex);
 
-                    // ADDED: Run shell command to flash Node2 firmware
-                    ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
-                                 "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && "
-                                 "deactivate'");
-                    Clear_Startup_UART(uart_fd, 10000);
-                    is_busy = 0;
-                    break;
-                default:
-                    break;
+                        // ADDED: Run shell command to flash Node2 firmware
+                        ret = system("bash -c 'source ../../../esptool-env/bin/activate && "
+                                     "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && "
+                                     "deactivate'");
+                        Clear_Startup_UART(uart_fd, 10000);
+                        is_busy = 0;
+                        break;
+                    default:
+                        break;
+                }
             }
             
-            // ========== STATUS HANDLING FOR NODE2 (Sensor Board) ==========
+            // ========== STATUS HANDLING FOR NODE2 (Sensor Board) - Only manual commands ==========
             pthread_mutex_lock(&command_mutex);
             if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
                 snprintf(status_response, sizeof(status_response), "Node2 Command %d executed successfully", cmd);
@@ -297,6 +351,7 @@ void *uart_thread_func(void *arg) {
             pthread_mutex_unlock(&command_mutex);
         }
 
+cleanup:
         if (resp) {
             free(resp);
             resp_len = 0; // Reset response length
@@ -397,6 +452,9 @@ void *ui_thread_func(void *arg) {
     shared_node_type = selected_node_type;
     pthread_mutex_unlock(&command_mutex);
 
+    // ADDED: Initialize auto read timer
+    last_user_interaction = time(NULL);
+
     // ========== Main UI LOOP ==========
     int highlight = 0;
     int key;
@@ -410,26 +468,53 @@ void *ui_thread_func(void *arg) {
         mvprintw(1, 0, "Current Baudrate: %u", baudrate);
         mvprintw(2, 0, "Current Device: %s", device);
         mvprintw(3, 0, "Current Node: %d", selected_node_type);  // Display selected node
+        
+        // ADDED: Display auto read status
+        time_t current_time = time(NULL);
+        int time_since_interaction = (int)(current_time - last_user_interaction);
+        attron(COLOR_PAIR(5));
+        mvprintw(4, 0, "Auto data collection: %s", 
+                 time_since_interaction >= AUTO_READ_INTERVAL ? "ACTIVE" : "IDLE");
+        attroff(COLOR_PAIR(5));
 
         for (int i = 0; i < num_items; i++) {
             if (i == highlight)
                 attron(COLOR_PAIR(1));
-            mvprintw(5 + i, 0, "%s", menu_items[i]);
+            mvprintw(6 + i, 0, "%s", menu_items[i]);
             if (i == highlight)
                 attroff(COLOR_PAIR(1));
         }
+        
         pthread_mutex_lock(&command_mutex);
         attron(COLOR_PAIR(status_color));
-        mvprintw(5 + num_items + 2, 0, "Status: %s", status_response);
+        mvprintw(6 + num_items + 2, 0, "Status: %s", status_response);
         attroff(COLOR_PAIR(status_color));
         attron(COLOR_PAIR(5)); // Received Data Color
-        mvprintw(5 + num_items + 3, 0, "Received Data: %s", receive_data);
+        mvprintw(6 + num_items + 3, 0, "Received Data: %s", receive_data);
         attroff(COLOR_PAIR(5));
         pthread_mutex_unlock(&command_mutex);
 
         refresh();
 
         key = getch();
+        
+        // ADDED: Check for auto read timeout
+        current_time = time(NULL);
+        if (key == ERR) { // No key pressed (timeout)
+            if (current_time - last_user_interaction >= AUTO_READ_INTERVAL) {
+                // SILENT auto read - only send command, no UI notification
+                set_command_code(AUTO_READ_COMMAND);
+                pthread_mutex_lock(&command_mutex);
+                command_pending = 1;
+                pthread_mutex_unlock(&command_mutex);
+                last_user_interaction = current_time; // Reset timer
+            }
+            continue;
+        }
+
+        // ADDED: Update last interaction time on any key press
+        last_user_interaction = current_time;
+
         switch (key) {
             case KEY_UP:
                 highlight = (highlight == 0) ? num_items - 1 : highlight - 1;
@@ -452,9 +537,8 @@ void *ui_thread_func(void *arg) {
                 pthread_mutex_unlock(&command_mutex);
 
                 // UPDATED: Handle exit based on node with updated exit codes
-                // Node2 now has 6 items (1-5 + 0), so exit is still command 6 (0-based index 5 + 1)
                 if ((selected_node_type == NODE_TYPE_1 && command_code == NODE1_EXIT_CODE) ||
-                    (selected_node_type == NODE_TYPE_2 && command_code == NODE2_EXIT_CODE)) {  // UPDATED: Node2 exit code is now 6
+                    (selected_node_type == NODE_TYPE_2 && command_code == NODE2_EXIT_CODE)) {
                     endwin();
                     printf("Exiting...\n");
                     close(uart_fd);
