@@ -457,6 +457,7 @@ void *ui_thread_func(void *arg) {
     // ========== Main UI LOOP ==========
     int highlight = 0;
     int key;
+    uint8_t auto_read_active = 0;  // Track auto read status
 
     while (1) {
         clear();
@@ -471,9 +472,16 @@ void *ui_thread_func(void *arg) {
         // ADDED: Display auto read status
         time_t current_time = time(NULL);
         int time_since_interaction = (int)(current_time - last_user_interaction);
+        
+        // Logic sửa: ACTIVE khi đã qua thời gian interval, IDLE khi vừa có tương tác
+        if (time_since_interaction >= AUTO_READ_INTERVAL) {
+            auto_read_active = 1;
+        }
+        
         attron(COLOR_PAIR(5));
-        mvprintw(4, 0, "Auto data collection: %s", 
-                 time_since_interaction >= AUTO_READ_INTERVAL ? "ACTIVE" : "IDLE");
+        mvprintw(4, 0, "Auto data collection: %s (last: %ds ago)", 
+                 auto_read_active ? "ACTIVE" : "IDLE", 
+                 time_since_interaction);
         attroff(COLOR_PAIR(5));
 
         for (int i = 0; i < num_items; i++) {
@@ -506,9 +514,12 @@ void *ui_thread_func(void *arg) {
                 pthread_mutex_lock(&command_mutex);
                 command_pending = 1;
                 pthread_mutex_unlock(&command_mutex);
-                last_user_interaction = current_time; // Reset timer
             }
             continue;
+        }
+        else if (key != ERR) {
+            last_user_interaction = current_time;
+            auto_read_active = 0;  // Reset về IDLE khi có tương tác
         }
 
         // ADDED: Update last interaction time on any key press
