@@ -44,7 +44,34 @@
     "auto_read_command_id": 100,
     "uart_clear_timeout": 10000,
     "ui_refresh_delay": 50000,
-    "uart_wait_timeout": 1000
+    "uart_wait_timeout": 1000,
+    "default_baudrate": 115200,
+    "default_device": "/dev/ttyUSB0",
+    "startup_clear_duration": 10000
+  },
+  "uart_config": {
+    "config_file_path": "/tmp/uart_config.txt",
+    "buffer_sizes": {
+      "response_buffer": 2048,
+      "temp_buffer": 256,
+      "error_message_buffer": 100
+    },
+    "timing": {
+      "poll_interval_ms": 20,
+      "flush_interval_ms": 50,
+      "select_timeout_ms": 50
+    },
+    "supported_baudrates": [
+      {"rate": 9600, "speed_code": "B9600"},
+      {"rate": 19200, "speed_code": "B19200"},
+      {"rate": 38400, "speed_code": "B38400"},
+      {"rate": 57600, "speed_code": "B57600"},
+      {"rate": 115200, "speed_code": "B115200"},
+      {"rate": 230400, "speed_code": "B230400"},
+      {"rate": 460800, "speed_code": "B460800"},
+      {"rate": 921600, "speed_code": "B921600"}
+    ],
+    "default_baudrate_fallback": 115200
   },
   "mqtt_config": {
     "broker_host": "demo.thingsboard.io",

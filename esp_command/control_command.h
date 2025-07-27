@@ -3,9 +3,7 @@
 
 #include "main.h"
 
-#define CONFIG_FILE "/tmp/uart_config.txt"
-
-// Remove all enum definitions - now use config
+// Remove hard-coded CONFIG_FILE - now get from config
 
 extern int uart_fd;
 extern sem_t *uart_sem;

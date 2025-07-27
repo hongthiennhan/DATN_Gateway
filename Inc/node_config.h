@@ -7,6 +7,7 @@
 #define MAX_NODES 10
 #define MAX_MENU_ITEMS 20
 #define MAX_NODE_TYPES 10
+#define MAX_BAUDRATES 20
 
 // Forward declaration
 typedef struct shared_data_s shared_data_t;
@@ -15,7 +16,7 @@ typedef struct {
     int cmd;
     char label[64];
     char uart_cmd[32];
-    char hex_value[16];  // NEW: Store hex value as string
+    char hex_value[16];
     int timeout_ms;
 } menu_item_t;
 
@@ -30,6 +31,24 @@ typedef struct {
     int qos;
     int publish_interval;
 } mqtt_config_t;
+
+typedef struct {
+    int rate;
+    char speed_code[16];
+} baudrate_mapping_t;
+
+typedef struct {
+    char config_file_path[256];
+    int response_buffer_size;
+    int temp_buffer_size;
+    int error_message_buffer_size;
+    int poll_interval_ms;
+    int flush_interval_ms;
+    int select_timeout_ms;
+    baudrate_mapping_t *supported_baudrates;
+    int baudrate_count;
+    int default_baudrate_fallback;
+} uart_config_t;
 
 typedef struct {
     int node_id;
@@ -57,6 +76,12 @@ typedef struct {
     int uart_clear_timeout;
     int ui_refresh_delay;
     int uart_wait_timeout;
+    int default_baudrate;
+    char default_device[256];
+    int startup_clear_duration;
+    
+    // UART config
+    uart_config_t uart_config;
     
     // MQTT config
     mqtt_config_t mqtt_config;
@@ -75,6 +100,13 @@ int get_auto_read_command_id(void);
 int get_uart_clear_timeout(void);
 int get_ui_refresh_delay(void);
 int get_uart_wait_timeout(void);
+int get_default_baudrate(void);
+const char* get_default_device(void);
+int get_startup_clear_duration(void);
+
+// UART config getters
+uart_config_t* get_uart_config(void);
+const char* get_uart_config_file_path(void);
 
 // MQTT config getters
 mqtt_config_t* get_mqtt_config(void);
