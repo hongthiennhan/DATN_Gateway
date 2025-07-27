@@ -245,20 +245,8 @@ void *mqtt_thread_func(void *arg) {
         // Check connection and reconnect if needed
         if (!mqtt_connected) {
             mosquitto_reconnect(mqtt_client);
-            usleep(2000 * 1000);
+            usleep(1000 * 1000);
         }
-
-        pthread_mutex_lock(&command_mutex);
-        if (!is_busy) {
-            if( shared_node_type == NODE_TYPE_1) {
-                set_command_code(6); // Command to get Node1 data
-            } 
-            else if (shared_node_type == NODE_TYPE_2) {
-                set_command_code(3); // Command to get Node2 ADC value
-            }
-            command_pending = 1;
-        }
-        pthread_mutex_unlock(&command_mutex);
         
         usleep(100 * 1000); // 100ms delay
     }
