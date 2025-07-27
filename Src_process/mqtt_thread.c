@@ -62,10 +62,13 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
 
 // Helper function to convert raw data to hex string
 void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int hex_str_size) {
-    hex_str[0] = '\0';
-    for (int i = 0; i < length && strlen(hex_str) + 3 < hex_str_size; i++) {
-        sprintf(hex_str + strlen(hex_str), "%02X", data[i]);
+    if (hex_str_size < 1) return;
+    int pos = 0;
+    for (int i = 0; i < length && pos + 3 <= hex_str_size; i++) {
+        sprintf(hex_str + pos, "%02X", data[i]);
+        pos += 2;
     }
+    hex_str[pos] = '\0';
 }
 
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
