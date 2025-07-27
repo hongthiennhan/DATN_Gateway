@@ -33,6 +33,7 @@ extern pthread_cond_t cond;
 extern  shared_data_t command_data;
 extern shared_data_t mqtt_data_n1;
 extern shared_data_t mqtt_data_n2;
+extern int shared_node_type;  // Shared node type across threads
 // ========== Function prototypes ==========
 void *uart_thread_func(void *arg);
 void *ui_thread_func(void *arg);
