@@ -167,7 +167,7 @@ void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
 // ==================== MQTT THREAD ====================
 void *mqtt_thread_func(void *arg) {
     mosquitto_lib_init();
-
+    
     mqtt_client = mosquitto_new(MQTT_CLIENT_ID, true, NULL);
     if (!mqtt_client) {
         return NULL;
@@ -209,17 +209,6 @@ void *mqtt_thread_func(void *arg) {
     time_t last_publish = 0;
     
     while (1) {
-        // // Send command to uart thread to get data
-        // if (!is_busy) {
-        //     if( shared_node_type == NODE_TYPE_1) {
-        //         set_command_code(6); // Command to get Node1 data
-        //     } 
-        //     else if (shared_node_type == NODE_TYPE_2) {
-        //         set_command_code(3); // Command to get Node2 ADC value
-        //     }
-        //     command_pending = 1;
-        // }
-
         time_t current_time = time(NULL);
         
         // Combine and send telemetry data every second
