@@ -211,14 +211,11 @@ void *mqtt_thread_func(void *arg) {
     while (1) {
         // Send command to uart thread to get data
         pthread_mutex_lock(&command_mutex);
-        int local_node_type = shared_node_type;  // Read shared node type safely
-        pthread_mutex_unlock(&command_mutex);
-        pthread_mutex_lock(&command_mutex);
         if (!is_busy) {
-            if( local_node_type == NODE_TYPE_1) {
+            if( shared_node_type == NODE_TYPE_1) {
                 set_command_code(6); // Command to get Node1 data
             } 
-            else if (local_node_type == NODE_TYPE_2) {
+            else if (shared_node_type == NODE_TYPE_2) {
                 set_command_code(3); // Command to get Node2 ADC value
             }
             command_pending = 1;
