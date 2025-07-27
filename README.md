@@ -228,3 +228,64 @@ stateDiagram-v2
     ExecuteCommand --> UpdateStatus: Update UI status
     UpdateStatus --> WaitCommand: Continue loop
 ```
+
+### MQTT Send to thingsboard Thread State Machine:
+```mermaid
+stateDiagram-v2
+    [*] --> Initialize: Setup MQTT client
+    Initialize --> Connect: Connect to ThingsBoard
+    Connect --> WaitConnection: Wait for connection (5s timeout)
+    
+    WaitConnection --> Connected: Connection successful
+    WaitConnection --> Failed: Connection timeout/failed
+    
+    Connected --> PublishLoop: Enter main loop
+    
+    state PublishLoop {
+        [*] --> CheckTime: Check if 1 second elapsed
+        CheckTime --> CollectAndPublish: Time to publish
+        CheckTime --> Sleep: Not time yet
+        
+        CollectAndPublish --> GetData: Get Node1 & Node2 data
+        GetData --> SendTelemetry: Publish to ThingsBoard
+        SendTelemetry --> Sleep: Data sent
+        
+        Sleep --> CheckConnection: Sleep 100ms
+        CheckConnection --> CheckTime: Still connected
+        CheckConnection --> Reconnect: Connection lost
+        
+        Reconnect --> ReconnectAttempt: Try mosquitto_reconnect()
+        ReconnectAttempt --> ReconnectSleep: Sleep 1000ms
+        ReconnectSleep --> CheckTime: Continue loop
+    }
+    
+    Failed --> Cleanup: Clean up resources
+    Cleanup --> [*]: Thread exit
+    
+    note right of Connected
+        Callbacks run asynchronously:
+        - on_connect: Set mqtt_connected=1, publish attributes
+        - on_disconnect: Set mqtt_connected=0
+        - on_publish: Message sent confirmation
+    end note
+```
+### Bản đơn giản:
+```mermaid
+stateDiagram-v2
+    [*] --> Initialize: Setup MQTT client & callbacks
+    Initialize --> Connect: Connect to ThingsBoard
+    Connect --> WaitConnection: Wait for connection
+    WaitConnection --> Connected: Connection successful
+    WaitConnection --> Timeout: Connection timeout
+    
+    Connected --> PublishLoop: Enter main publishing loop
+    PublishLoop --> CollectData: Get Node1 & Node2 data
+    CollectData --> PublishTelemetry: Send to ThingsBoard
+    PublishTelemetry --> CheckConnection: Verify connection status
+    CheckConnection --> PublishLoop: Continue if connected
+    CheckConnection --> Reconnect: Try reconnect if disconnected
+    Reconnect --> PublishLoop: Return to main loop
+    
+    Timeout --> Cleanup: Clean up resources
+    Cleanup --> [*]: Thread exit
+```
