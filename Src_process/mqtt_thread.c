@@ -5,7 +5,7 @@
 // #define MQTT_BROKER_HOST "your-thingsboard-server.com"  // Hoặc server riêng
 #define MQTT_BROKER_PORT 1883
 #define MQTT_CLIENT_ID "gateway_device"
-#define MQTT_USERNAME "zu4938tt6t2tpaum9g32"  // ThingsBoard access token
+#define MQTT_USERNAME "iko2iokzzhdd5do5zqk3"  // ThingsBoard access token
 #define MQTT_PASSWORD ""  // Để trống cho ThingsBoard
 
 // ThingsBoard Topics
