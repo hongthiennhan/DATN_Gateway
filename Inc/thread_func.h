@@ -3,10 +3,7 @@
 
 #include "main.h"
 #include "control_command.h"
-
-// Forward declaration
-struct node_config_s;
-struct menu_item_s;
+#include "node_config.h"  // Include này để có node_config_t và menu_item_t types
 
 typedef struct shared_data_s {
     void* data;
@@ -37,12 +34,11 @@ void *uart_thread_func(void *arg);
 void *ui_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
 
-// Config-driven function declarations
-void execute_uart_command(struct node_config_s *node, struct menu_item_s *menu_item, unsigned char **resp, uint16_t *resp_len, int silent);
-uint32_t get_uart_command_from_hex(const char *hex_str);  // Changed from get_uart_command_from_string
-void process_uart_response(struct node_config_s *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent);
-void format_response_data(struct node_config_s *node, unsigned char *resp, uint16_t resp_len);
-void update_mqtt_data_from_response(struct node_config_s *node, unsigned char *resp, uint16_t resp_len);
+// Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
+void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent);
+void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent);
+void format_response_data(node_config_t *node, unsigned char *resp, uint16_t resp_len);
+void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp);
 
 // ========== Helper Functions ==========
