@@ -218,7 +218,6 @@ void *mqtt_thread_func(void *arg) {
             // Get data from both nodes
             node1_data_t node1_data = get_mqtt_data_n1();
             uint16_t node2_adc = get_mqtt_data_n2();
-            float voltage = (node2_adc / 4095.0) * 3.3;
             
             // ThingsBoard telemetry format
             snprintf(telemetry_payload, sizeof(telemetry_payload),
@@ -228,12 +227,11 @@ void *mqtt_thread_func(void *arg) {
                 "\"node1_t2\":%d,"
                 "\"node1_t3\":%d,"
                 "\"node2_adc\":%d,"
-                "\"node2_voltage\":%.3f,"
                 "\"gateway_ip\":\"%s\","
                 "\"data_source\":\"gateway_device\""
                 "}", current_time, node1_data.t1, node1_data.t2, node1_data.t3,
-                node2_adc, voltage, get_local_ip());
-            
+                node2_adc, get_local_ip());
+
             rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_TELEMETRY,
                                  strlen(telemetry_payload), telemetry_payload, MQTT_QOS, false);
             
