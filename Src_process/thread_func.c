@@ -103,7 +103,7 @@ void format_raw_data_display(unsigned char *data, int length, char *display_buff
     }
 }
 
-// ==================== FIXED UART THREAD ====================
+// ==================== FIXED UART THREAD (unchanged) ====================
 void *uart_thread_func(void *arg) {
     uint16_t resp_len = 0;
 
@@ -371,9 +371,8 @@ cleanup:
     return NULL;
 }
 
-// ==================== UI THREAD (unchanged) ====================
+// ==================== FIXED UI THREAD với Busy Timer Pause ====================
 void *ui_thread_func(void *arg) {
-    // UI code remains exactly the same as original
     uint32_t baudrate = *(uint32_t *)((void **)arg)[0];
     char *device = (char *)((void **)arg)[1];
 
@@ -399,6 +398,11 @@ void *ui_thread_func(void *arg) {
     int node_key;
     bool node_selected = false;
     int command_code = -1;
+    
+    // ========== ADDED: Busy state tracking variables ==========
+    volatile time_t busy_start_time = 0;  // Track when busy started
+    uint8_t auto_read_active = 0;
+    uint8_t was_busy = 0;  // Track previous busy state
 
     while (!node_selected) {
         clear();
@@ -458,7 +462,6 @@ void *ui_thread_func(void *arg) {
 
     int highlight = 0;
     int key;
-    uint8_t auto_read_active = 0;
 
     while (1) {
         clear();
@@ -471,16 +474,50 @@ void *ui_thread_func(void *arg) {
         mvprintw(3, 0, "Current Node: %d", selected_node_type);
         
         time_t current_time = time(NULL);
-        int time_since_interaction = (int)(current_time - last_user_interaction);
         
-        if (time_since_interaction >= AUTO_READ_INTERVAL) {
-            auto_read_active = 1;
+        // ========== FIXED: Busy state tracking và timer pause ==========
+        pthread_mutex_lock(&command_mutex);
+        uint8_t current_busy = is_busy;
+        pthread_mutex_unlock(&command_mutex);
+        
+        // ADDED: Handle busy state transitions
+        if (current_busy && !was_busy) {
+            // Just became busy - record start time
+            busy_start_time = current_time;
+            auto_read_active = 0;  // Force IDLE when busy
+        } else if (!current_busy && was_busy) {
+            // Just finished being busy - extend interaction time
+            time_t busy_duration = current_time - busy_start_time;
+            last_user_interaction += busy_duration;  // Add busy time to interaction timer
+            auto_read_active = 0;  // Reset to IDLE
         }
         
+        was_busy = current_busy;  // Update previous state
+        
+        // FIXED: Only calculate time and check auto-read when NOT busy
+        int time_since_interaction = 0;
+        if (!current_busy) {
+            time_since_interaction = (int)(current_time - last_user_interaction);
+            
+            // Only activate auto-read when not busy and interval passed
+            if (time_since_interaction >= AUTO_READ_INTERVAL) {
+                auto_read_active = 1;
+            }
+        } else {
+            // When busy, show time as 0 and force IDLE
+            time_since_interaction = 0;
+            auto_read_active = 0;
+        }
+        
+        // UPDATED: Display auto-read status with busy indication
         attron(COLOR_PAIR(5));
-        mvprintw(4, 0, "Auto data collection: %s (last: %ds ago)", 
-                 auto_read_active ? "ACTIVE" : "IDLE", 
-                 time_since_interaction);
+        if (current_busy) {
+            mvprintw(4, 0, "Auto data collection: IDLE (SYSTEM BUSY - timer paused)");
+        } else {
+            mvprintw(4, 0, "Auto data collection: %s (last: %ds ago)", 
+                     auto_read_active ? "ACTIVE" : "IDLE", 
+                     time_since_interaction);
+        }
         attroff(COLOR_PAIR(5));
 
         for (int i = 0; i < num_items; i++) {
@@ -505,8 +542,9 @@ void *ui_thread_func(void *arg) {
         key = getch();
         
         current_time = time(NULL);
-        if (key == ERR && is_busy == 0) {
-            if (current_time - last_user_interaction >= AUTO_READ_INTERVAL) {
+        if (key == ERR) {
+            // FIXED: Only trigger auto-read when NOT busy AND active
+            if (!current_busy && auto_read_active) {
                 set_command_code(AUTO_READ_COMMAND);
                 pthread_mutex_lock(&command_mutex);
                 command_pending = 1;
@@ -516,7 +554,7 @@ void *ui_thread_func(void *arg) {
         }
         else if (key != ERR) {
             last_user_interaction = current_time;
-            auto_read_active = 0;
+            auto_read_active = 0;  // Reset auto-read on user interaction
         }
 
         last_user_interaction = current_time;
@@ -529,13 +567,19 @@ void *ui_thread_func(void *arg) {
                 highlight = (highlight == num_items - 1) ? 0 : highlight + 1;
                 break;
             case 10: // Enter
-                if (is_busy) {
+                // FIXED: Check busy state safely
+                pthread_mutex_lock(&command_mutex);
+                uint8_t busy_state = is_busy;
+                pthread_mutex_unlock(&command_mutex);
+                
+                if (busy_state) {
                     pthread_mutex_lock(&command_mutex);
                     snprintf(status_response, sizeof(status_response), "Busy: Please wait for command to finish");
                     status_color = 3;
                     pthread_mutex_unlock(&command_mutex);
                     break;
                 }
+                
                 command_code = highlight + 1;
                 set_command_code(command_code);
                 pthread_mutex_lock(&command_mutex);
