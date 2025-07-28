@@ -4,7 +4,7 @@
 #define MQTT_BROKER_HOST "demo.thingsboard.io"
 #define MQTT_BROKER_PORT 1883
 #define MQTT_CLIENT_ID "gateway_device"
-#define MQTT_USERNAME "iko2iokzzhdd5do5zqk3"
+#define MQTT_USERNAME "t7gsjo00dj3ca0ocyb1f"
 #define MQTT_PASSWORD ""
 
 // ThingsBoard Topics
