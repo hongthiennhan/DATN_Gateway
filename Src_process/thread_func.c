@@ -505,7 +505,7 @@ void *ui_thread_func(void *arg) {
         key = getch();
         
         current_time = time(NULL);
-        if (key == ERR) {
+        if (key == ERR && is_busy == 0) {
             if (current_time - last_user_interaction >= AUTO_READ_INTERVAL) {
                 set_command_code(AUTO_READ_COMMAND);
                 pthread_mutex_lock(&command_mutex);
