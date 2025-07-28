@@ -404,7 +404,7 @@ void *ui_thread_func(void *arg) {
         int key = getch();
         
         current_time = time(NULL);
-        if (key == ERR) {
+        if (key == ERR && is_busy == 0) {
             if (current_time - last_user_interaction >= selected_node->auto_read_interval) {
                 set_command_code(get_auto_read_command_id());
                 pthread_mutex_lock(&command_mutex);
