@@ -1,19 +1,18 @@
 #include "thread_func.h"
 
 // MQTT Configuration for ThingsBoard
-#define MQTT_BROKER_HOST "demo.thingsboard.io"  // ThingsBoard server
-// #define MQTT_BROKER_HOST "your-thingsboard-server.com"  // Hoặc server riêng
+#define MQTT_BROKER_HOST "demo.thingsboard.io"
 #define MQTT_BROKER_PORT 1883
 #define MQTT_CLIENT_ID "gateway_device"
-#define MQTT_USERNAME "iko2iokzzhdd5do5zqk3"  // ThingsBoard access token
-#define MQTT_PASSWORD ""  // Để trống cho ThingsBoard
+#define MQTT_USERNAME "iko2iokzzhdd5do5zqk3"
+#define MQTT_PASSWORD ""
 
 // ThingsBoard Topics
 #define MQTT_TOPIC_TELEMETRY "v1/devices/me/telemetry"
 #define MQTT_TOPIC_ATTRIBUTES "v1/devices/me/attributes"
 #define MQTT_QOS 1
 
-// Function to get local IP address
+// Function to get local IP address (unchanged)
 char* get_local_ip() {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
@@ -44,60 +43,127 @@ char* get_local_ip() {
     return ip_str;
 }
 
+// UPDATED: Raw data structures instead of parsed data
 shared_data_t mqtt_data_n1 = {
     .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
 };
+
 shared_data_t mqtt_data_n2 = {
     .data = NULL,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-// ========== MQTT Data Helper Functions ==========
+// ========== RAW DATA Helper Functions ==========
 
-void set_mqtt_data_n1(int t1, int t2, int t3) {
+// UPDATED: Store raw data for Node1 (12 bytes)
+void set_mqtt_data_n1_raw(unsigned char *raw_bytes, int length) {
     pthread_mutex_lock(&mqtt_data_n1.mutex);
-    if (mqtt_data_n1.data == NULL) {
-        mqtt_data_n1.data = malloc(sizeof(node1_data_t));
+    
+    // Free old data if exists
+    if (mqtt_data_n1.data) {
+        raw_data_t *old_data = (raw_data_t*)mqtt_data_n1.data;
+        if (old_data->data) free(old_data->data);
+        free(old_data);
     }
-    node1_data_t *data = (node1_data_t*)mqtt_data_n1.data;
-    data->t1 = t1;
-    data->t2 = t2;
-    data->t3 = t3;
-    pthread_cond_signal(&mqtt_data_n1.cond);
+    
+    // Store new raw data
+    raw_data_t *new_data = malloc(sizeof(raw_data_t));
+    if (new_data) {
+        new_data->length = length;
+        new_data->data = malloc(length);
+        if (new_data->data) {
+            memcpy(new_data->data, raw_bytes, length);
+            mqtt_data_n1.data = new_data;
+            pthread_cond_signal(&mqtt_data_n1.cond);
+        } else {
+            free(new_data);
+        }
+    }
+    
     pthread_mutex_unlock(&mqtt_data_n1.mutex);
 }
 
-node1_data_t get_mqtt_data_n1() {
-    pthread_mutex_lock(&mqtt_data_n1.mutex);
-    node1_data_t result = {0, 0, 0};
-    if (mqtt_data_n1.data != NULL) {
-        result = *(node1_data_t*)mqtt_data_n1.data;
+// UPDATED: Store raw data for Node2 (2 bytes)
+void set_mqtt_data_n2_raw(unsigned char *raw_bytes, int length) {
+    pthread_mutex_lock(&mqtt_data_n2.mutex);
+    
+    // Free old data if exists
+    if (mqtt_data_n2.data) {
+        raw_data_t *old_data = (raw_data_t*)mqtt_data_n2.data;
+        if (old_data->data) free(old_data->data);
+        free(old_data);
     }
+    
+    // Store new raw data
+    raw_data_t *new_data = malloc(sizeof(raw_data_t));
+    if (new_data) {
+        new_data->length = length;
+        new_data->data = malloc(length);
+        if (new_data->data) {
+            memcpy(new_data->data, raw_bytes, length);
+            mqtt_data_n2.data = new_data;
+            pthread_cond_signal(&mqtt_data_n2.cond);
+        } else {
+            free(new_data);
+        }
+    }
+    
+    pthread_mutex_unlock(&mqtt_data_n2.mutex);
+}
+
+// UPDATED: Get raw data for Node1
+raw_data_t get_mqtt_data_n1_raw() {
+    pthread_mutex_lock(&mqtt_data_n1.mutex);
+    raw_data_t result = {NULL, 0};
+    
+    if (mqtt_data_n1.data) {
+        raw_data_t *stored_data = (raw_data_t*)mqtt_data_n1.data;
+        if (stored_data->data && stored_data->length > 0) {
+            result.length = stored_data->length;
+            result.data = malloc(result.length);
+            if (result.data) {
+                memcpy(result.data, stored_data->data, result.length);
+            }
+        }
+    }
+    
     pthread_mutex_unlock(&mqtt_data_n1.mutex);
     return result;
 }
 
-void set_mqtt_data_n2(uint16_t adc_value) {
+// UPDATED: Get raw data for Node2
+raw_data_t get_mqtt_data_n2_raw() {
     pthread_mutex_lock(&mqtt_data_n2.mutex);
-    if (mqtt_data_n2.data == NULL) {
-        mqtt_data_n2.data = malloc(sizeof(uint16_t));
+    raw_data_t result = {NULL, 0};
+    
+    if (mqtt_data_n2.data) {
+        raw_data_t *stored_data = (raw_data_t*)mqtt_data_n2.data;
+        if (stored_data->data && stored_data->length > 0) {
+            result.length = stored_data->length;
+            result.data = malloc(result.length);
+            if (result.data) {
+                memcpy(result.data, stored_data->data, result.length);
+            }
+        }
     }
-    *(uint16_t*)mqtt_data_n2.data = adc_value;
-    pthread_cond_signal(&mqtt_data_n2.cond);
-    pthread_mutex_unlock(&mqtt_data_n2.mutex);
-}
-
-uint16_t get_mqtt_data_n2() {
-    pthread_mutex_lock(&mqtt_data_n2.mutex);
-    uint16_t result = 0;
-    if (mqtt_data_n2.data != NULL) {
-        result = *(uint16_t*)mqtt_data_n2.data;
-    }
+    
     pthread_mutex_unlock(&mqtt_data_n2.mutex);
     return result;
+}
+
+// FIXED: Raw data to hex string conversion (fix from previous conversation)
+void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int hex_str_size) {
+    if (hex_str_size < 1) return;
+    
+    int pos = 0;
+    for (int i = 0; i < length && pos + 3 <= hex_str_size; i++) {
+        sprintf(hex_str + pos, "%02X", data[i]);
+        pos += 2;
+    }
+    hex_str[pos] = '\0';
 }
 
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
@@ -134,7 +200,7 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
 struct mosquitto *mqtt_client = NULL;
 volatile int mqtt_connected = 0;
 
-// MQTT Callbacks
+// MQTT Callbacks (unchanged)
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     if (result == 0) {
         mqtt_connected = 1;
@@ -164,7 +230,7 @@ void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
     // Message published successfully
 }
 
-// ==================== MQTT THREAD ====================
+// ==================== MQTT THREAD (RAW DATA MODE) ====================
 void *mqtt_thread_func(void *arg) {
     mosquitto_lib_init();
     
@@ -173,15 +239,11 @@ void *mqtt_thread_func(void *arg) {
         return NULL;
     }
     
-    // Set username (access token) for ThingsBoard authentication
     mosquitto_username_pw_set(mqtt_client, MQTT_USERNAME, MQTT_PASSWORD);
-    
-    // Set callbacks
     mosquitto_connect_callback_set(mqtt_client, on_mqtt_connect);
     mosquitto_disconnect_callback_set(mqtt_client, on_mqtt_disconnect);
     mosquitto_publish_callback_set(mqtt_client, on_mqtt_publish);
     
-    // Connect to ThingsBoard server
     int rc = mosquitto_connect(mqtt_client, MQTT_BROKER_HOST, MQTT_BROKER_PORT, 60);
     if (rc != MOSQ_ERR_SUCCESS) {
         mosquitto_destroy(mqtt_client);
@@ -205,34 +267,47 @@ void *mqtt_thread_func(void *arg) {
         return NULL;
     }
     
-    // Main MQTT loop
+    // Main MQTT loop - UPDATED for raw data
     time_t last_publish = 0;
     
     while (1) {
         time_t current_time = time(NULL);
-
-
         
-        // Combine and send telemetry data every second
+        // Send raw telemetry data every second
         if (current_time - last_publish >= 1) {
-            char telemetry_payload[1024];
+            char telemetry_payload[2048];
             
-            // Get data from both nodes
-            node1_data_t node1_data = get_mqtt_data_n1();
-            uint16_t node2_adc = get_mqtt_data_n2();
+            // Get raw data from both nodes
+            raw_data_t node1_raw = get_mqtt_data_n1_raw();
+            raw_data_t node2_raw = get_mqtt_data_n2_raw();
             
-            // ThingsBoard telemetry format
+            // Convert raw data to hex strings
+            char node1_hex[256] = "";
+            char node2_hex[64] = "";
+            
+            if (node1_raw.data && node1_raw.length > 0) {
+                raw_data_to_hex_string(node1_raw.data, node1_raw.length, node1_hex, sizeof(node1_hex));
+            }
+            
+            if (node2_raw.data && node2_raw.length > 0) {
+                raw_data_to_hex_string(node2_raw.data, node2_raw.length, node2_hex, sizeof(node2_hex));
+            }
+            
+            // UPDATED: ThingsBoard raw data format
             snprintf(telemetry_payload, sizeof(telemetry_payload),
                 "{"
-                "\"timestamp\":%ld000,"  // ThingsBoard expects milliseconds
-                "\"node1_t1\":%d,"
-                "\"node1_t2\":%d,"
-                "\"node1_t3\":%d,"
-                "\"node2_adc\":%d,"
+                "\"timestamp\":%ld000,"
+                "\"node1_raw_data\":\"%s\","
+                "\"node1_data_length\":%d,"
+                "\"node2_raw_data\":\"%s\","
+                "\"node2_data_length\":%d,"
                 "\"gateway_ip\":\"%s\","
                 "\"data_source\":\"gateway_device\""
-                "}", current_time, node1_data.t1, node1_data.t2, node1_data.t3,
-                node2_adc, get_local_ip());
+                "}", 
+                current_time, 
+                node1_hex, node1_raw.length,
+                node2_hex, node2_raw.length,
+                get_local_ip());
 
             rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_TELEMETRY,
                                  strlen(telemetry_payload), telemetry_payload, MQTT_QOS, false);
@@ -240,6 +315,10 @@ void *mqtt_thread_func(void *arg) {
             if (rc == MOSQ_ERR_SUCCESS) {
                 last_publish = current_time;
             }
+            
+            // Clean up allocated memory
+            if (node1_raw.data) free(node1_raw.data);
+            if (node2_raw.data) free(node2_raw.data);
         }
         
         // Check connection and reconnect if needed
