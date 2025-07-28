@@ -1,7 +1,8 @@
 #include "thread_func.h"
 #include <time.h>
+#include <string.h>  // Add missing include
 
-// ========== Shared state between threads (unchanged) ==========
+// ========== Shared state between threads ==========
 volatile uint8_t is_busy = 0;
 
 pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -78,7 +79,7 @@ static const char *node2_menu_items[] = {
 static int node1_menu_count = sizeof(node1_menu_items) / sizeof(node1_menu_items[0]);
 static int node2_menu_count = sizeof(node2_menu_items) / sizeof(node2_menu_items[0]);
 
-// UPDATED: Display raw data as hex string
+// Display raw data as hex string
 void format_raw_data_display(unsigned char *data, int length, char *display_buffer, int buffer_size) {
     if (!data || length == 0) {
         strncpy(display_buffer, "No data", buffer_size - 1);
@@ -87,7 +88,7 @@ void format_raw_data_display(unsigned char *data, int length, char *display_buff
     }
     
     char hex_str[512];
-    int max_display_bytes = (buffer_size - 50) / 3; // Reserve space for format
+    int max_display_bytes = (buffer_size - 50) / 3;
     int display_length = (length > max_display_bytes) ? max_display_bytes : length;
     
     hex_str[0] = '\0';
@@ -102,36 +103,53 @@ void format_raw_data_display(unsigned char *data, int length, char *display_buff
     }
 }
 
-// ==================== UART THREAD (UPDATED for Raw Data) ====================
+// ==================== FIXED UART THREAD ====================
 void *uart_thread_func(void *arg) {
     uint16_t resp_len = 0;
 
     while (1) {
+        // FIXED: Better command handling logic
+        int cmd = 0;
+        int pending = 0;
+        int local_node_type = 0;
+        
+        // Get current state safely
         pthread_mutex_lock(&command_mutex);
-        int cmd = get_command_code();
-        int pending = command_pending;
-        command_pending = 0;
-        int local_node_type = shared_node_type;
+        cmd = get_command_code();
+        pending = command_pending;
+        local_node_type = shared_node_type;
         pthread_mutex_unlock(&command_mutex);
 
+        // Wait if node type not selected yet
         if (local_node_type == 0) {
             usleep(100 * 1000);
             continue;
         }
 
+        // FIXED: Proper command waiting logic
         if (!pending) {
             int new_cmd = wait_for_command_change(1000);
             if (new_cmd == -1) {
-                continue;
+                continue; // Timeout, try again
             }
             cmd = new_cmd;
             
+            // FIXED: Check and clear pending flag safely
             pthread_mutex_lock(&command_mutex);
-            if (!command_pending) continue;
+            if (!command_pending) {
+                pthread_mutex_unlock(&command_mutex); // ← FIX: Unlock before continue
+                continue;
+            }
+            command_pending = 0;
+            pthread_mutex_unlock(&command_mutex);
+        } else {
+            // FIXED: Clear pending flag for existing commands
+            pthread_mutex_lock(&command_mutex);
             command_pending = 0;
             pthread_mutex_unlock(&command_mutex);
         }
 
+        // Determine if UI should be blocked
         int block_ui = (cmd == 1 || cmd == 2 || cmd == 3 || cmd == 6) || 
                        (local_node_type == NODE_TYPE_2 && cmd == 4);
         
@@ -139,6 +157,7 @@ void *uart_thread_func(void *arg) {
             block_ui = 0;
         }
         
+        // FIXED: Set busy flag safely
         if (block_ui) {
             pthread_mutex_lock(&command_mutex);
             is_busy = 1;
@@ -149,14 +168,13 @@ void *uart_thread_func(void *arg) {
         uint8_t ret = 0;
         int is_auto_read = (cmd == AUTO_READ_COMMAND);
 
-        // UPDATED: Handle commands for raw data storage
+        // FIXED: Handle commands for raw data storage
         if (local_node_type == NODE_TYPE_1) {
             if (is_auto_read) {
                 // Auto read: send status command and store raw data
                 write_command(CMD_SEND_STATUS);
                 resp = Read_Response(100, &resp_len);
                 if (resp && resp_len >= 12) {
-                    // Store raw 12 bytes directly (no parsing)
                     set_mqtt_data_n1_raw(resp, resp_len);
                 }
                 goto cleanup;
@@ -184,7 +202,6 @@ void *uart_thread_func(void *arg) {
                     case 6:
                         write_command(CMD_SEND_STATUS);
                         resp = Read_Response(100, &resp_len);
-                        // Store 12 bytes raw data directly
                         if (resp && resp_len >= 12) {
                             set_mqtt_data_n1_raw(resp, resp_len);
                         }
@@ -216,40 +233,42 @@ void *uart_thread_func(void *arg) {
                 }
             }
 
-            // UPDATED: Status handling for Node1 - show raw data
-            pthread_mutex_lock(&command_mutex);
-            if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
-                snprintf(status_response, sizeof(status_response), "Node1 Command %d executed successfully", cmd);
-                snprintf(receive_data, sizeof(receive_data), "OK");
-                status_color = 2;
-            } 
-            else if (resp && resp_len >= 12 && cmd == 6) {
-                snprintf(status_response, sizeof(status_response), "Node1 Status command executed");
-                format_raw_data_display(resp, resp_len, receive_data, sizeof(receive_data));
-                status_color = 2;
-            }
-            else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
-                snprintf(status_response, sizeof(status_response), "Node1 Command %d executed", cmd);
-                snprintf(receive_data, sizeof(receive_data), "No response expected for Node1 command %d", cmd);
-                status_color = 2;
-            }
-            else if (cmd == 9) {
-                if (ret == 0) {
-                    snprintf(status_response, sizeof(status_response), "Node1 firmware flashed successfully.");
-                    snprintf(receive_data, sizeof(receive_data), "Node1 esptool executed successfully.");
+            // FIXED: Status handling for Node1 - avoid double locking
+            if (!is_auto_read) {
+                pthread_mutex_lock(&command_mutex);
+                if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
+                    snprintf(status_response, sizeof(status_response), "Node1 Command %d executed successfully", cmd);
+                    snprintf(receive_data, sizeof(receive_data), "OK");
                     status_color = 2;
-                } else {
-                    snprintf(status_response, sizeof(status_response), "Node1 flashing failed!");
-                    snprintf(receive_data, sizeof(receive_data), "Node1 esptool error: return %d", ret);
+                } 
+                else if (resp && resp_len >= 12 && cmd == 6) {
+                    snprintf(status_response, sizeof(status_response), "Node1 Status command executed");
+                    format_raw_data_display(resp, resp_len, receive_data, sizeof(receive_data));
+                    status_color = 2;
+                }
+                else if (resp_len == 0 && (cmd == 4 || cmd == 5 || cmd == 7 || cmd == 8)) {
+                    snprintf(status_response, sizeof(status_response), "Node1 Command %d executed", cmd);
+                    snprintf(receive_data, sizeof(receive_data), "No response expected for Node1 command %d", cmd);
+                    status_color = 2;
+                }
+                else if (cmd == 9) {
+                    if (ret == 0) {
+                        snprintf(status_response, sizeof(status_response), "Node1 firmware flashed successfully.");
+                        snprintf(receive_data, sizeof(receive_data), "Node1 esptool executed successfully.");
+                        status_color = 2;
+                    } else {
+                        snprintf(status_response, sizeof(status_response), "Node1 flashing failed!");
+                        snprintf(receive_data, sizeof(receive_data), "Node1 esptool error: return %d", ret);
+                        status_color = 3;
+                    }
+                }
+                else {
+                    snprintf(status_response, sizeof(status_response), "Node1 Command %d failed", cmd);
+                    snprintf(receive_data, sizeof(receive_data), "Node1 no response or error for command %d", cmd);
                     status_color = 3;
                 }
+                pthread_mutex_unlock(&command_mutex);
             }
-            else {
-                snprintf(status_response, sizeof(status_response), "Node1 Command %d failed", cmd);
-                snprintf(receive_data, sizeof(receive_data), "Node1 no response or error for command %d", cmd);
-                status_color = 3;
-            }
-            pthread_mutex_unlock(&command_mutex);
         }
         else if (local_node_type == NODE_TYPE_2) {
             if (is_auto_read) {
@@ -257,7 +276,6 @@ void *uart_thread_func(void *arg) {
                 write_command(CMD2_READ_SINGLE);
                 resp = Read_Response(2000, &resp_len);
                 if (resp && resp_len >= 2) {
-                    // Store raw 2 bytes directly (no parsing)
                     set_mqtt_data_n2_raw(resp, resp_len);
                 }
                 goto cleanup;
@@ -273,14 +291,13 @@ void *uart_thread_func(void *arg) {
                     case 3:
                         write_command(CMD2_READ_SINGLE);
                         resp = Read_Response(2000, &resp_len);
-                        // Store 2 bytes raw data directly
                         if (resp && resp_len >= 2) {
                             set_mqtt_data_n2_raw(resp, resp_len);
                         }
                         break;
                     case 4:  // Re-flash firmware
-                        is_busy = 1;
                         pthread_mutex_lock(&command_mutex);
+                        is_busy = 1;
                         snprintf(status_response, sizeof(status_response), "Flashing Node2 firmware...");
                         status_color = 4;
                         pthread_mutex_unlock(&command_mutex);
@@ -289,47 +306,52 @@ void *uart_thread_func(void *arg) {
                                      "esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && "
                                      "deactivate'");
                         Clear_Startup_UART(uart_fd, 10000);
+                        
+                        pthread_mutex_lock(&command_mutex);
                         is_busy = 0;
+                        pthread_mutex_unlock(&command_mutex);
                         break;
                     default:
                         break;
                 }
             }
             
-            // UPDATED: Status handling for Node2 - show raw data
-            pthread_mutex_lock(&command_mutex);
-            if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
-                snprintf(status_response, sizeof(status_response), "Node2 Command %d executed successfully", cmd);
-                snprintf(receive_data, sizeof(receive_data), "OK");
-                status_color = 2;
-            }
-            else if (resp && resp_len >= 2 && (cmd == 3)) {
-                snprintf(status_response, sizeof(status_response), "Node2 Single read command executed");
-                format_raw_data_display(resp, resp_len, receive_data, sizeof(receive_data));
-                status_color = 2;
-            }
-            else if (resp_len == 0 && (cmd == 1 || cmd == 2)) {
-                snprintf(status_response, sizeof(status_response), "Node2 LED command %d executed", cmd);
-                snprintf(receive_data, sizeof(receive_data), "No response expected for Node2 LED command %d", cmd);
-                status_color = 2;
-            }
-            else if (cmd == 4) {
-                if (ret == 0) {
-                    snprintf(status_response, sizeof(status_response), "Node2 firmware flashed successfully.");
-                    snprintf(receive_data, sizeof(receive_data), "Node2 esptool executed successfully.");
+            // FIXED: Status handling for Node2 - avoid double locking
+            if (!is_auto_read) {
+                pthread_mutex_lock(&command_mutex);
+                if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
+                    snprintf(status_response, sizeof(status_response), "Node2 Command %d executed successfully", cmd);
+                    snprintf(receive_data, sizeof(receive_data), "OK");
                     status_color = 2;
-                } else {
-                    snprintf(status_response, sizeof(status_response), "Node2 flashing failed!");
-                    snprintf(receive_data, sizeof(receive_data), "Node2 esptool error: return %d", ret);
+                }
+                else if (resp && resp_len >= 2 && (cmd == 3)) {
+                    snprintf(status_response, sizeof(status_response), "Node2 Single read command executed");
+                    format_raw_data_display(resp, resp_len, receive_data, sizeof(receive_data));
+                    status_color = 2;
+                }
+                else if (resp_len == 0 && (cmd == 1 || cmd == 2)) {
+                    snprintf(status_response, sizeof(status_response), "Node2 LED command %d executed", cmd);
+                    snprintf(receive_data, sizeof(receive_data), "No response expected for Node2 LED command %d", cmd);
+                    status_color = 2;
+                }
+                else if (cmd == 4) {
+                    if (ret == 0) {
+                        snprintf(status_response, sizeof(status_response), "Node2 firmware flashed successfully.");
+                        snprintf(receive_data, sizeof(receive_data), "Node2 esptool executed successfully.");
+                        status_color = 2;
+                    } else {
+                        snprintf(status_response, sizeof(status_response), "Node2 flashing failed!");
+                        snprintf(receive_data, sizeof(receive_data), "Node2 esptool error: return %d", ret);
+                        status_color = 3;
+                    }
+                }
+                else {
+                    snprintf(status_response, sizeof(status_response), "Node2 Command %d failed", cmd);
+                    snprintf(receive_data, sizeof(receive_data), "Node2 no response or error for command %d", cmd);
                     status_color = 3;
                 }
+                pthread_mutex_unlock(&command_mutex);
             }
-            else {
-                snprintf(status_response, sizeof(status_response), "Node2 Command %d failed", cmd);
-                snprintf(receive_data, sizeof(receive_data), "Node2 no response or error for command %d", cmd);
-                status_color = 3;
-            }
-            pthread_mutex_unlock(&command_mutex);
         }
 
 cleanup:
@@ -338,8 +360,12 @@ cleanup:
             resp_len = 0;
         }
 
-        if (block_ui)
+        // FIXED: Clear busy flag safely
+        if (block_ui) {
+            pthread_mutex_lock(&command_mutex);
             is_busy = 0;
+            pthread_mutex_unlock(&command_mutex);
+        }
     }
 
     return NULL;
