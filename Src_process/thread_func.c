@@ -183,15 +183,15 @@ void *uart_thread_func(void *arg) {
                 switch (cmd) {
                     case 1:
                         write_command(CMD_DIRECTION_1);
-                        resp = Read_Response(15000, &resp_len);
+                        resp = Read_Response(20000, &resp_len);
                         break;
                     case 2:
                         write_command(CMD_DIRECTION_2);
-                        resp = Read_Response(5000, &resp_len);
+                        resp = Read_Response(15000, &resp_len);
                         break;
                     case 3:
                         write_command(CMD_DIRECTION_3);
-                        resp = Read_Response(15000, &resp_len);
+                        resp = Read_Response(20000, &resp_len);
                         break;
                     case 4:
                         write_command(CMD_LED_ON);
