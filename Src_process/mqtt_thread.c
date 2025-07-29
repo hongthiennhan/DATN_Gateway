@@ -1,6 +1,7 @@
 #include "thread_func.h"
 #include "node_config.h"
 
+// Get local IP address, excluding loopback and link-local addresses
 char* get_local_ip() {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
@@ -31,15 +32,12 @@ char* get_local_ip() {
     return ip_str;
 }
 
-// REMOVED: All specific data structures and helper functions
-// No more mqtt_data_n1, mqtt_data_n2, set_mqtt_data_n1, etc.
-
 // Global MQTT variables
 struct mosquitto *mqtt_client = NULL;
 volatile int mqtt_connected = 0;
 
-// REMOVED: set_mqtt_data_n1, get_mqtt_data_n1, set_mqtt_data_n2, get_mqtt_data_n2 functions
 
+// Wait for MQTT data from specified node with timeout
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     node_config_t *node = get_node_by_id(node_type);
     if (!node || !node->mqtt_data) return 0;
@@ -60,7 +58,7 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     return (result == 0) ? 1 : 0;
 }
 
-// Helper function to convert raw data to hex string
+// Convert binary data to uppercase hex string (e.g., 0xAB -> "AB")
 void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int hex_str_size) {
     if (hex_str_size < 1) return;
     int pos = 0;
@@ -71,6 +69,7 @@ void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int 
     hex_str[pos] = '\0';
 }
 
+// MQTT connection established callback - publishes device attributes
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     if (result == 0) {
         mqtt_connected = 1;
@@ -108,15 +107,17 @@ void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     }
 }
 
+// MQTT connection lost callback - sets disconnected flag
 void on_mqtt_disconnect(struct mosquitto *mosq, void *userdata, int result) {
     mqtt_connected = 0;
 }
 
+// MQTT message publish confirmation callback
 void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
     // Message published successfully
 }
 
-// UPDATED: Build telemetry payload with raw data as hex strings
+// Build JSON telemetry payload with raw data from all nodes
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp) {
     mqtt_config_t *config = get_mqtt_config();
     if (!config) return;
@@ -178,7 +179,7 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
     free(temp_buffer);
 }
 
-// ==================== MQTT THREAD (Raw Data Mode) ====================
+// Main MQTT thread - handles connection, publishing telemetry data
 void *mqtt_thread_func(void *arg) {
     mqtt_config_t *config = get_mqtt_config();
     if (!config) return NULL;
