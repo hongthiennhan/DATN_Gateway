@@ -9,8 +9,8 @@ typedef enum {
     CMD_DIRECTION_1  = 0xA1,
     CMD_DIRECTION_2  = 0xA2,
     CMD_DIRECTION_3  = 0xA3,
-    CMD_LED_ON       = 0xA4,
-    CMD_LED_OFF      = 0xA5,
+    CMD_SYS_ON       = 0xA4,
+    CMD_SYS_OFF      = 0xA5,
     CMD_SEND_STATUS  = 0xA6,
     CMD_STOP_SYSTEM  = 0xA7,
     CMD_INIT         = 0xFF

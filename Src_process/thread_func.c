@@ -68,7 +68,7 @@ int wait_for_command_change(int timeout_ms) {
 
 // Menu definitions (unchanged)
 static const char *node1_menu_items[] = {
-    "1. Direction1", "2. Direction2", "3. Direction3", "4. Led_On", "5. Led_Off",
+    "1. Direction1", "2. Direction2", "3. Direction3", "4. Sys_On", "5. Sys_Off",
     "6. Send_Status", "7. Stop_System", "8. Init", "9. Re-flash firmware", "0. Exit program"
 };
 
@@ -194,10 +194,10 @@ void *uart_thread_func(void *arg) {
                         resp = Read_Response(20000, &resp_len);
                         break;
                     case 4:
-                        write_command(CMD_LED_ON);
+                        write_command(CMD_SYS_ON);
                         break;
                     case 5:
-                        write_command(CMD_LED_OFF);
+                        write_command(CMD_SYS_OFF);
                         break;
                     case 6:
                         write_command(CMD_SEND_STATUS);
