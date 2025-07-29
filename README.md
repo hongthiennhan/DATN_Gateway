@@ -15,15 +15,6 @@ stateDiagram-v2
     WaitThreads --> Cleanup: Close UART and cleanup
     Cleanup --> [*]: Program exit
 ```
-#### Bản đơn giản:
-```mermaid
-stateDiagram-v2
-    [*] --> Init: Initialize system
-    Init --> CreateThreads: Create UI & UART threads
-    CreateThreads --> Wait: Wait for threads
-    Wait --> Cleanup: Cleanup resources
-    Cleanup --> [*]: Exit
-```
 
 ### UI (Controller / Configarator) Thread State Machine
 ```mermaid
