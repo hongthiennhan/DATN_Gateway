@@ -368,13 +368,13 @@ void *ui_thread_func(void *arg) {
         time_t current_time = time(NULL);
         int time_since_interaction = (int)(current_time - last_user_interaction);
         
-        if (time_since_interaction >= selected_node->auto_read_interval) {
+        if (time_since_interaction >= selected_node->auto_read_interval && !is_busy) {
             auto_read_active = 1;
         }
         
         attron(COLOR_PAIR(5));
         mvprintw(4, 0, "Auto data collection: %s (last: %ds ago)",
-                auto_read_active ? "ACTIVE" : "IDLE",
+                auto_read_active  ? "ACTIVE" : "IDLE",
                 time_since_interaction);
         attroff(COLOR_PAIR(5));
         
