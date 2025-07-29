@@ -221,7 +221,6 @@ void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, ui
     pthread_mutex_unlock(&command_mutex);
 }
 
-// REMOVED: All hard-coded data parsing
 void format_response_data(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
     // Just show raw hex data, no parsing
     char hex_str[1024] = {0};
@@ -238,7 +237,6 @@ void format_response_data(node_config_t *node, unsigned char *resp, uint16_t res
     snprintf(receive_data, sizeof(receive_data), "Raw[%d bytes]: %s", resp_len, hex_str);
 }
 
-// UPDATED: Store raw data without parsing
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
     if (!node || !node->mqtt_data || !resp || resp_len == 0) return;
     
@@ -269,9 +267,6 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
     
     pthread_mutex_unlock(&node->mqtt_data->mutex);
 }
-
-// REMOVED: Specific data type setters/getters (set_mqtt_data_n1, set_mqtt_data_n2, etc.)
-// Now everything uses raw_data_t through update_mqtt_data_from_response()
 
 // ==================== UI THREAD (Config-driven) ====================
 void *ui_thread_func(void *arg) {
