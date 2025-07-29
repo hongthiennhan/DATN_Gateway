@@ -20,27 +20,32 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> InitUI: Setup ncurses, timeout(100)
-    InitUI --> SelectNode: Choose Node1/Node2
+    InitUI --> SelectNode: Choose from configured nodes
     SelectNode --> InitAutoRead: Setup auto-read timer
     InitAutoRead --> MainLoop: Enter main UI loop
     
     state MainLoop {
         [*] --> ShowMenu: Display command menu
-        ShowMenu --> HandleInput: Process user input
+        ShowMenu --> HandleInput: Process user input (100ms timeout)
         
-        HandleInput --> AutoRead: Timeout + auto-read trigger
+        HandleInput --> CheckSystemState: Check busy/waiting flags
         HandleInput --> Navigate: UP/DOWN keys
         HandleInput --> SendCommand: ENTER key
         
+        CheckSystemState --> AutoRead: System idle + timer expired
+        CheckSystemState --> PauseTimer: System busy or waiting response
+        CheckSystemState --> ShowMenu: System idle but timer not expired
+        
+        PauseTimer --> ShowMenu: Display "timer paused" message
         AutoRead --> ShowMenu: Silent data collection
         Navigate --> UpdateHighlight: Change menu selection
         UpdateHighlight --> ShowMenu: Redraw menu
         
-        SendCommand --> CheckBusy: System busy?
-        CheckBusy --> ShowBusy: Display busy message
-        CheckBusy --> ExecuteCommand: Send to UART thread
+        SendCommand --> CheckBusyWaiting: System busy or waiting?
+        CheckBusyWaiting --> ShowBusyMessage: Display busy/waiting message
+        CheckBusyWaiting --> ExecuteCommand: Send to UART thread
         
-        ShowBusy --> ShowMenu: Continue loop
+        ShowBusyMessage --> ShowMenu: Continue loop
         ExecuteCommand --> CheckExit: Exit command?
         CheckExit --> ShowMenu: Continue loop
         CheckExit --> [*]: Exit selected
@@ -51,12 +56,12 @@ stateDiagram-v2
     
     note right of MainLoop
         Key Features:
-        - Auto-read triggers every 1 second when idle
-        - Non-blocking input with 100ms timeout
-        - Dynamic menu for Node1/Node2 commands
-        - Real-time status updates from UART thread
-        - Thread-safe communication via command_data
-        - Busy flag prevents command overlap
+        - Auto-read pauses during BUSY state
+        - Auto-read pauses during WAITING_RESPONSE state
+        - Timer compensation after busy/wait periods
+        - Real-time status: IDLE/ACTIVE/BUSY/WAITING
+        - Config-driven node selection and menus
+        - Thread-safe state tracking with transitions
     end note
 ```
 
@@ -142,7 +147,7 @@ stateDiagram-v2
         - Publish every 1 second
         - Auto-reconnect on connection loss
         - Callbacks: on_connect, on_disconnect, on_publish
-        - Data from: mqtt_data_n1 (T1,T2,T3), mqtt_data_n2 (ADC)
+        - Data from: Raw data as hex strings in JSON
     end note
 
 ```
