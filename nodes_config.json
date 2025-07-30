@@ -34,7 +34,7 @@
       "menu_items": [
         {"cmd": 1, "label": "LED On", "uart_cmd": "CMD2_LED_ON", "hex_value": "0xA1", "timeout_ms": 0},
         {"cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA2", "timeout_ms": 0},
-        {"cmd": 3, "label": "Read Single", "uart_cmd": "CMD2_READ_SINGLE", "hex_value": "0xA3", "timeout_ms": 2000},
+        {"cmd": 3, "label": "Read Sensor", "uart_cmd": "CMD2_READ_SENSOR", "hex_value": "0xA3", "timeout_ms": 2000},
         {"cmd": 4, "label": "Re-flash firmware", "uart_cmd": "", "hex_value": "", "timeout_ms": 0},
         {"cmd": 0, "label": "Exit", "uart_cmd": "", "hex_value": "", "timeout_ms": 0}
       ],
