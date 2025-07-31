@@ -171,6 +171,7 @@ cleanup:
     return NULL;
 }
 
+// Execute a UART command for a specific node and menu item
 void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent) {
     *resp = NULL;
     *resp_len = 0;
@@ -187,6 +188,7 @@ void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned 
     process_uart_response(node, menu_item->cmd, *resp, *resp_len, silent);
 }
 
+// Process the UART response for a specific node and command
 void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent) {
     if (silent) {
         // Only update MQTT data for auto read, no UI update
@@ -237,6 +239,7 @@ void format_response_data(node_config_t *node, unsigned char *resp, uint16_t res
     snprintf(receive_data, sizeof(receive_data), "Raw[%d bytes]: %s", resp_len, hex_str);
 }
 
+// Update MQTT data from the response
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
     if (!node || !node->mqtt_data || !resp || resp_len == 0) return;
     
