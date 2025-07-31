@@ -171,7 +171,7 @@ int load_nodes_config(const char *config_file) {
         
         // Parse basic node info
         json_object *id_obj, *name_obj, *type_obj, *auto_read_cmd_obj, *auto_read_interval_obj;
-        json_object *mqtt_topic_obj, *data_structure_obj, *reflash_script_obj;
+        json_object *reflash_script_obj;
         json_object *expected_data_length_obj, *data_format_obj; // NEW
         
         json_object_object_get_ex(node_obj, "id", &id_obj);
@@ -179,8 +179,6 @@ int load_nodes_config(const char *config_file) {
         json_object_object_get_ex(node_obj, "type", &type_obj);
         json_object_object_get_ex(node_obj, "auto_read_cmd", &auto_read_cmd_obj);
         json_object_object_get_ex(node_obj, "auto_read_interval", &auto_read_interval_obj);
-        json_object_object_get_ex(node_obj, "mqtt_topic", &mqtt_topic_obj);
-        json_object_object_get_ex(node_obj, "data_structure", &data_structure_obj);
         json_object_object_get_ex(node_obj, "reflash_script", &reflash_script_obj);
         json_object_object_get_ex(node_obj, "expected_data_length", &expected_data_length_obj); // NEW
         json_object_object_get_ex(node_obj, "data_format", &data_format_obj); // NEW
@@ -189,9 +187,7 @@ int load_nodes_config(const char *config_file) {
         strcpy(node->name, json_object_get_string(name_obj));
         strcpy(node->type, json_object_get_string(type_obj));
         node->auto_read_cmd = json_object_get_int(auto_read_cmd_obj);
-        node->auto_read_interval = json_object_get_int(auto_read_interval_obj);
-        strcpy(node->mqtt_topic, json_object_get_string(mqtt_topic_obj));
-        strcpy(node->data_structure, json_object_get_string(data_structure_obj));
+        node->auto_read_interval = json_object_get_int(auto_read_interval_obj);\
         strcpy(node->reflash_script, json_object_get_string(reflash_script_obj));
         
         // NEW: Parse raw data fields

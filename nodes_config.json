@@ -18,13 +18,6 @@
       ],
       "auto_read_cmd": 6,
       "auto_read_interval": 1,
-      "mqtt_topic": "node1_data",
-      "data_structure": "node1_data_t",
-      "data_fields": [
-        {"name": "t1", "type": "int32", "offset": 0},
-        {"name": "t2", "type": "int32", "offset": 4},
-        {"name": "t3", "type": "int32", "offset": 8}
-      ],
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && deactivate'"
     },
     {
@@ -40,11 +33,6 @@
       ],
       "auto_read_cmd": 3,
       "auto_read_interval": 1,
-      "mqtt_topic": "node2_data",
-      "data_structure": "node2_data_t",
-      "data_fields": [
-        {"name": "adc", "type": "uint16", "offset": 0}
-      ],
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],

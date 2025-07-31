@@ -84,8 +84,6 @@ typedef struct {
     int menu_count;
     int auto_read_cmd;
     int auto_read_interval;
-    char mqtt_topic[64];
-    char data_structure[64];      // "raw_data" for raw mode
     int expected_data_length;     // Expected raw data length
     char data_format[16];         // "hex" or "base64"
     char reflash_script[512];
