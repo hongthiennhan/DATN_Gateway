@@ -381,7 +381,7 @@ void *ui_thread_func(void *arg) {
         for (int i = 0; i < selected_node->menu_count; i++) {
             if (i == highlight)
                 attron(COLOR_PAIR(1));
-            mvprintw(6 + i, 0, "%d. %s", 
+            mvprintw(7 + i, 0, "%d. %s", 
                     selected_node->menu_items[i].cmd,
                     selected_node->menu_items[i].label);
             if (i == highlight)
