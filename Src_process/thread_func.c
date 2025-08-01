@@ -362,7 +362,8 @@ void *ui_thread_func(void *arg) {
         mvprintw(1, 0, "Current Baudrate: %u", baudrate);
         mvprintw(2, 0, "Current Device: %s", device);
         mvprintw(3, 0, "Current Node: %s", selected_node->name);
-        
+        mvprintw(4, 0, "Press 'b' to go back, 'q' to quit");
+
         time_t current_time = time(NULL);
         int time_since_interaction = (int)(current_time - last_user_interaction);
         
