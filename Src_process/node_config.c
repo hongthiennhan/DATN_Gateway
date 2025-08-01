@@ -305,10 +305,6 @@ int get_startup_clear_duration(void) {
     return node_registry.startup_clear_duration;
 }
 
-int get_flash_command(void) {
-    return node_registry.flash_cmd;
-}
-
 // NEW: System info getters
 system_info_t* get_system_info(void) {
     return &node_registry.system_info;
