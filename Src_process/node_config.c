@@ -172,22 +172,25 @@ int load_nodes_config(const char *config_file) {
         // Parse basic node info
         json_object *id_obj, *name_obj, *type_obj, *auto_read_cmd_obj, *auto_read_interval_obj;
         json_object *reflash_script_obj;
-        json_object *expected_data_length_obj, *data_format_obj; // NEW
+        json_object *flash_cmd_obj;
+        json_object *expected_data_length_obj, *data_format_obj;
         
         json_object_object_get_ex(node_obj, "id", &id_obj);
         json_object_object_get_ex(node_obj, "name", &name_obj);
         json_object_object_get_ex(node_obj, "type", &type_obj);
         json_object_object_get_ex(node_obj, "auto_read_cmd", &auto_read_cmd_obj);
         json_object_object_get_ex(node_obj, "auto_read_interval", &auto_read_interval_obj);
+        json_object_object_get_ex(node_obj, "flash_cmd", &flash_cmd_obj);
         json_object_object_get_ex(node_obj, "reflash_script", &reflash_script_obj);
-        json_object_object_get_ex(node_obj, "expected_data_length", &expected_data_length_obj); // NEW
-        json_object_object_get_ex(node_obj, "data_format", &data_format_obj); // NEW
+        json_object_object_get_ex(node_obj, "expected_data_length", &expected_data_length_obj);
+        json_object_object_get_ex(node_obj, "data_format", &data_format_obj);
         
         node->node_id = json_object_get_int(id_obj);
         strcpy(node->name, json_object_get_string(name_obj));
         strcpy(node->type, json_object_get_string(type_obj));
         node->auto_read_cmd = json_object_get_int(auto_read_cmd_obj);
-        node->auto_read_interval = json_object_get_int(auto_read_interval_obj);\
+        node->auto_read_interval = json_object_get_int(auto_read_interval_obj);
+        node->flash_cmd = json_object_get_int(flash_cmd_obj);
         strcpy(node->reflash_script, json_object_get_string(reflash_script_obj));
         
         // NEW: Parse raw data fields
@@ -300,6 +303,10 @@ const char* get_default_device(void) {
 
 int get_startup_clear_duration(void) {
     return node_registry.startup_clear_duration;
+}
+
+int get_flash_command(void) {
+    return node_registry.flash_cmd;
 }
 
 // NEW: System info getters

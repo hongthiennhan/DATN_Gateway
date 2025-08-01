@@ -1,12 +1,8 @@
 #!/bin/bash
 
-# Default values
-BAUDRATE=${1:-115200}
-DEVICE=${2:-/dev/ttyUSB0}
-
 # Init UART
-echo "Initializing UART with baudrate $BAUDRATE on $DEVICE..."
-./main_app -B$BAUDRATE -d$DEVICE
+echo "Start Application"
+./main_app
 
 # # Loop to send commands
 # while true; do

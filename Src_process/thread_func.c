@@ -20,7 +20,7 @@ shared_data_t command_data = {
 };
 
 // Helper functions for command_data operations
-void set_command_code(int new_code) {
+void    set_command_code(int new_code) {
     pthread_mutex_lock(&command_data.mutex);
     if (command_data.data == NULL) {
         command_data.data = malloc(sizeof(int));
@@ -130,7 +130,7 @@ void *uart_thread_func(void *arg) {
         if (menu_item) {
             if (strlen(menu_item->hex_value) > 0) {
                 execute_uart_command(current_node, menu_item, &resp, &resp_len, 0);
-            } else if (cmd == 9 || cmd == 4) {
+            } else if (cmd == current_node->flash_cmd) {
                 pthread_mutex_lock(&command_mutex);
                 is_busy = 1;
                 snprintf(status_response, sizeof(status_response), "Flashing %s firmware...", current_node->name);
@@ -425,7 +425,8 @@ void *ui_thread_func(void *arg) {
                 highlight = (highlight == selected_node->menu_count - 1) ? 0 : highlight + 1;
                 break;
             case 10:
-                if (is_busy) {
+                command_code = selected_node->menu_items[highlight].cmd;
+                if (is_busy && command_code != 0) {
                     pthread_mutex_lock(&command_mutex);
                     snprintf(status_response, sizeof(status_response), "Busy: Please wait for command to finish");
                     status_color = 3;
@@ -434,7 +435,6 @@ void *ui_thread_func(void *arg) {
                 }
                 
                 if (highlight < selected_node->menu_count) {
-                    command_code = selected_node->menu_items[highlight].cmd;
                     set_command_code(command_code);
                     
                     pthread_mutex_lock(&command_mutex);

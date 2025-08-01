@@ -17,6 +17,7 @@
         {"cmd": 0, "label": "Exit program", "uart_cmd": "", "hex_value": "", "timeout_ms": 0}
       ],
       "auto_read_cmd": 6,
+      "flash_cmd": 9,
       "auto_read_interval": 1,
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../dcs-test.bin && deactivate'"
     },
@@ -32,6 +33,7 @@
         {"cmd": 0, "label": "Exit", "uart_cmd": "", "hex_value": "", "timeout_ms": 0}
       ],
       "auto_read_cmd": 3,
+      "flash_cmd": 4,
       "auto_read_interval": 1,
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }

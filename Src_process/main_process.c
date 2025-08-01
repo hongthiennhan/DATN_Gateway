@@ -29,7 +29,7 @@ void cleanup_on_exit(void) {
 }
 
 // ==================== MAIN FUNCTION ====================
-int main(int argc, char **argv) {
+int main(void) {
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
 
     // Load node configuration FIRST
@@ -51,27 +51,6 @@ int main(int argc, char **argv) {
     }
 
     *(int*)command_data.data = -1; // Initialize to -1
-
-    // Parse command line arguments
-    while ((opt = getopt_long(argc, argv, "B:d:", long_options, &option_index)) != -1) {
-        switch (opt) {
-            case 'B':
-                baudrate = atoi(optarg);
-                if (map_to_speed(baudrate) == B0) {
-                    baudrate = get_default_baudrate(); // Use config default instead of hard-coded
-                }
-                break;
-            case 'd':
-                free(device); // Free the duplicated string
-                device = strdup(optarg); // Make a new copy
-                break;
-            case '?':
-                fprintf(stderr, "Usage: %s [-B baudrate] [-d device]\n", argv[0]);
-                exit(1);
-            default:
-                break;
-        }
-    }
 
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);

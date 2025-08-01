@@ -83,6 +83,7 @@ typedef struct {
     menu_item_t *menu_items;
     int menu_count;
     int auto_read_cmd;
+    int flash_cmd;
     int auto_read_interval;
     int expected_data_length;     // Expected raw data length
     char data_format[16];         // "hex" or "base64"
