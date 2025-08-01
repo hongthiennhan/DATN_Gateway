@@ -372,7 +372,7 @@ void *ui_thread_func(void *arg) {
         }
         
         attron(COLOR_PAIR(5));
-        mvprintw(4, 0, "Auto data collection: %s (last: %ds ago)",
+        mvprintw(5, 0, "Auto data collection: %s (last: %ds ago)",
                 auto_read_active  ? "ACTIVE" : "IDLE",
                 time_since_interaction);
         attroff(COLOR_PAIR(5));
