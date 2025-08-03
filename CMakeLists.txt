@@ -75,5 +75,5 @@ target_compile_options(main_app PRIVATE
 configure_file(${CMAKE_SOURCE_DIR}/nodes_config.json ${CMAKE_BINARY_DIR}/nodes_config.json COPYONLY)
 
 # NEW: Install targets
-install(TARGETS main_app led_app DESTINATION bin)
+install(TARGETS main_app DESTINATION bin)
 install(FILES nodes_config.json DESTINATION bin)
