@@ -5,12 +5,6 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GPIOD REQUIRED libgpiod)
-
-message(STATUS "GPIOD include dirs: ${GPIOD_INCLUDE_DIRS}")
-message(STATUS "GPIOD library dirs: ${GPIOD_LIBRARY_DIRS}")
-message(STATUS "GPIOD libraries: ${GPIOD_LIBRARIES}")
-
 pkg_check_modules(NCURSES REQUIRED ncurses)
 
 message(STATUS "NCURSES include dirs: ${NCURSES_INCLUDE_DIRS}")
@@ -29,20 +23,7 @@ set(INCLUDE_DIRS
     Inc
 )
 
-# Source files thread 1
-set(SOURCES_1
-    Src_process/led_process.c)
-
-# Add executable 1
-add_executable(led_app ${SOURCES_1})
-
-# Include directories
-target_include_directories(led_app PRIVATE ${INCLUDE_DIRS})
-
-# Link libgpiod
-target_link_libraries(led_app ${GPIOD_LIBRARIES})
-
-# Source files thread 2
+# Source files
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
@@ -55,4 +36,4 @@ add_executable(main_app ${SOURCES_2})
 # Include directories for main_app
 target_include_directories(main_app PRIVATE ${INCLUDE_DIRS})
 
-target_link_libraries(main_app ${GPIOD_LIBRARIES} ${NCURSES_LIBRARIES} ${MOSQUITTO_LIBRARIES})
+target_link_libraries(main_app ${NCURSES_LIBRARIES} ${MOSQUITTO_LIBRARIES})
