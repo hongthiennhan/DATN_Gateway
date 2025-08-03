@@ -56,7 +56,7 @@ stateDiagram-v2
         - Real-time status updates from UART thread
         - Thread-safe communication via command_data
         - Busy flag prevents command overlap
-    end note
+    end note 
 ```
 
 ### Communication Thread State Machine
