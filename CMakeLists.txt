@@ -7,17 +7,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 find_package(PkgConfig REQUIRED)
 
 # Find required libraries
-pkg_check_modules(GPIOD REQUIRED libgpiod)
 pkg_check_modules(NCURSES REQUIRED ncurses)
 pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
 
 # NEW: Find json-c library
 pkg_check_modules(JSON_C REQUIRED json-c)
-
-# Debug output
-message(STATUS "GPIOD include dirs: ${GPIOD_INCLUDE_DIRS}")
-message(STATUS "GPIOD library dirs: ${GPIOD_LIBRARY_DIRS}")
-message(STATUS "GPIOD libraries: ${GPIOD_LIBRARIES}")
 
 message(STATUS "NCURSES include dirs: ${NCURSES_INCLUDE_DIRS}")
 message(STATUS "NCURSES library dirs: ${NCURSES_LIBRARY_DIRS}")
@@ -37,16 +31,6 @@ set(INCLUDE_DIRS
     esp_command
     Inc
 )
-
-# Source files for LED application
-set(SOURCES_1
-    Src_process/led_process.c
-)
-
-# Add LED executable
-add_executable(led_app ${SOURCES_1})
-target_include_directories(led_app PRIVATE ${INCLUDE_DIRS})
-target_link_libraries(led_app ${GPIOD_LIBRARIES})
 
 # Source files for main application (UPDATED: Added node_config.c)
 set(SOURCES_2
