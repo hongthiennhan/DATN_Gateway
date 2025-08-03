@@ -7,12 +7,13 @@
 ```mermaid
 stateDiagram-v2
     [*] --> ParseArgs: Parse command line arguments
-    ParseArgs --> LoadConfig: Load configuration
-    LoadConfig --> InitUART: Initialize UART connection
+    ParseArgs --> LoadNodeConfig: Load configuration
+    LoadNodeConfig --> InitUART: Initialize UART connection
     InitUART --> CreateUIThread: Create UI Thread
     CreateUIThread --> CreateUARTThread: Create UART Thread
-    CreateUARTThread --> WaitThreads: Wait for threads to finish
-    WaitThreads --> Cleanup: Close UART and cleanup
+    CreateUARTThread --> MQTTThread: Create MQTT Thread
+    MQTTThread --> WaitThread: Wait for threads to finish
+    WaitThread --> Cleanup: Close UART and cleanup
     Cleanup --> [*]: Program exit
 ```
 
