@@ -66,8 +66,8 @@ int main(void) {
     pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
 
     // Start UI thread
-    pthread_t ui_thread;
-    pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
+    // pthread_t ui_thread;
+    // pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
 
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
