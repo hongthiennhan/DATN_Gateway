@@ -25,4 +25,11 @@
 // NEW: Add json-c include
 #include <json-c/json.h>
 
+// ===== ADDITIONAL HEADERS FOR ROBUST FILE OPERATIONS =====
+#include <sys/stat.h>     // for stat(), mkdir()
+#include <fcntl.h>        // for open(), O_* flags  
+#include <errno.h>        // for errno, EEXIST
+#include <unistd.h>       // for fsync(), close()
+
+
 #endif

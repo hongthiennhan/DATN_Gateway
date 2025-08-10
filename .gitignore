@@ -34,3 +34,6 @@
 # Ignore output files
 # *.pdf
 main.synctex(busy)
+
+# Ignore configuration files
+config.json

@@ -1,14 +1,8 @@
 #include "thread_func.h"
 #include "node_config.h"
 
-// ===== ADDITIONAL HEADERS FOR ROBUST FILE OPERATIONS =====
-#include <sys/stat.h>     // for stat(), mkdir()
-#include <fcntl.h>        // for open(), O_* flags  
-#include <errno.h>        // for errno, EEXIST
-#include <unistd.h>       // for fsync(), close()
-
 // ===== JSON CONFIG DOWNLOAD CONFIGURATION =====
-#define CONFIG_DIR  "/home/pi/config"
+#define CONFIG_DIR  " /home/trieunguyen/Linux_worldspace/DATN_Gateway_Task1/Config_Node_Files"
 #define CONFIG_FILE "config.json"
 #define MAX_JSON_SIZE (1024 * 1024)  // 1MB limit
 
@@ -363,7 +357,7 @@ void on_mqtt_disconnect(struct mosquitto *mosq, void *userdata, int result) {
  * @param mid: Message ID of the published message
  */
 void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
-    // Message published successfully - can add logging here if needed
+    // Message published successfully
 }
 
 // ===== ROBUST MQTT MESSAGE HANDLER WITH COMPREHENSIVE ERROR HANDLING =====
