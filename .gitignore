@@ -37,3 +37,6 @@ main.synctex(busy)
 
 # Ignore configuration files
 # config.json
+
+# Ignore build directories
+build/
