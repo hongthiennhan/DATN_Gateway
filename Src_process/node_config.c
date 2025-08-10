@@ -11,9 +11,27 @@ int load_nodes_config(const char *config_file) {
         return -1;
     }
     
+    // ===== ADD: unwrap ThingsBoard response format if present =====
+    // Support both:
+    // 1) Direct config: {"nodes": ..., "system_config": ..., "mqtt_config": ...}
+    // 2) Wrapped config: {"shared": {"config": { ... direct config here ... }}}
+    json_object *effective_root = root;
+    json_object *shared_obj = NULL, *config_obj = NULL;
+    if (json_object_object_get_ex(root, "shared", &shared_obj) &&
+        json_object_is_type(shared_obj, json_type_object) &&
+        json_object_object_get_ex(shared_obj, "config", &config_obj) &&
+        json_object_is_type(config_obj, json_type_object)) {
+        // Use shared.config as the actual config root
+        effective_root = config_obj;
+        printf("Detected ThingsBoard wrapper format, using shared.config as root\n");
+    } else {
+        printf("Using direct config format\n");
+    }
+    // ===== END ADD =====
+    
     // Parse system config
     json_object *system_config_obj;
-    if (json_object_object_get_ex(root, "system_config", &system_config_obj)) {
+    if (json_object_object_get_ex(effective_root, "system_config", &system_config_obj)) {
         json_object *auto_read_cmd_obj, *uart_clear_obj, *ui_refresh_obj, *uart_wait_obj;
         json_object *default_baudrate_obj, *default_device_obj, *startup_clear_obj;
         
@@ -35,7 +53,7 @@ int load_nodes_config(const char *config_file) {
     
     // NEW: Parse system_info config
     json_object *system_info_obj;
-    if (json_object_object_get_ex(root, "system_info", &system_info_obj)) {
+    if (json_object_object_get_ex(effective_root, "system_info", &system_info_obj)) {
         json_object *firmware_obj, *device_type_obj, *manufacturer_obj, *model_obj;
         
         if (json_object_object_get_ex(system_info_obj, "firmware_version", &firmware_obj))
@@ -50,7 +68,7 @@ int load_nodes_config(const char *config_file) {
     
     // Parse UART config
     json_object *uart_config_obj;
-    if (json_object_object_get_ex(root, "uart_config", &uart_config_obj)) {
+    if (json_object_object_get_ex(effective_root, "uart_config", &uart_config_obj)) {
         json_object *config_file_obj, *buffer_sizes_obj, *timing_obj, *supported_baudrates_obj, *fallback_obj;
         
         if (json_object_object_get_ex(uart_config_obj, "config_file_path", &config_file_obj))
@@ -99,7 +117,7 @@ int load_nodes_config(const char *config_file) {
     
     // UPDATED: Parse MQTT config with new fields
     json_object *mqtt_config_obj;
-    if (json_object_object_get_ex(root, "mqtt_config", &mqtt_config_obj)) {
+    if (json_object_object_get_ex(effective_root, "mqtt_config", &mqtt_config_obj)) {
         json_object *broker_host_obj, *broker_port_obj, *client_id_obj, *username_obj, *password_obj;
         json_object *topic_telemetry_obj, *topic_attributes_obj, *qos_obj, *publish_interval_obj;
         json_object *connection_timeout_obj, *reconnect_delay_obj, *loop_interval_obj;
@@ -151,11 +169,19 @@ int load_nodes_config(const char *config_file) {
         }
     }
     
+    // Parse nodes array with fallback for "node" vs "nodes"
     json_object *nodes_array;
-    if (!json_object_object_get_ex(root, "nodes", &nodes_array)) {
-        printf("Error: No 'nodes' array found in config\n");
-        json_object_put(root);
-        return -1;
+    if (!json_object_object_get_ex(effective_root, "nodes", &nodes_array)) {
+        // Fallback: try "node" key (singular) in case of inconsistent naming
+        if (!json_object_object_get_ex(effective_root, "node", &nodes_array)) {
+            printf("Error: No 'nodes' or 'node' array found in config\n");
+            json_object_put(root);
+            return -1;
+        } else {
+            printf("Found 'node' array (using singular form)\n");
+        }
+    } else {
+        printf("Found 'nodes' array (using plural form)\n");
     }
     
     int array_len = json_object_array_length(nodes_array);
