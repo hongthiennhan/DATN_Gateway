@@ -33,7 +33,7 @@ int main(void) {
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
 
     // Load node configuration FIRST
-    if (load_nodes_config("config.json") != 0) {
+    if (load_nodes_config("nodes_config.json") != 0) {
         fprintf(stderr, "Failed to load node configuration\n");
         return -1;
     }
