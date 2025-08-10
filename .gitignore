@@ -36,4 +36,4 @@
 main.synctex(busy)
 
 # Ignore configuration files
-config.json
+# config.json
