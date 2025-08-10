@@ -10,45 +10,25 @@ int load_nodes_config(const char *config_file) {
         printf("Error: Cannot load config file %s\n", config_file);
         return -1;
     }
-    // DEBUG: In ra keys ở root level
-    printf("=== DEBUG: Root level keys ===\n");
-    json_object_object_foreach(root, key, val) {
-        printf("Root key: '%s', type: %s\n", key, json_type_to_name(json_object_get_type(val)));
-    }
     
-    // FIXED: Unwrap logic với debug
+    // ===== ADD: unwrap ThingsBoard response format if present =====
+    // Support both:
+    // 1) Direct config: {"nodes": ..., "system_config": ..., "mqtt_config": ...}
+    // 2) Wrapped config: {"shared": {"config": { ... direct config here ... }}}
     json_object *effective_root = root;
     json_object *shared_obj = NULL, *config_obj = NULL;
-    
-    printf("=== DEBUG: Checking for ThingsBoard wrapper ===\n");
-    if (json_object_object_get_ex(root, "shared", &shared_obj)) {
-        printf("✓ Found 'shared' key\n");
-        if (json_object_is_type(shared_obj, json_type_object)) {
-            printf("✓ 'shared' is object type\n");
-            if (json_object_object_get_ex(shared_obj, "config", &config_obj)) {
-                printf("✓ Found 'config' key inside shared\n");
-                if (json_object_is_type(config_obj, json_type_object)) {
-                    printf("✓ 'config' is object type - using as effective root\n");
-                    effective_root = config_obj;
-                    
-                    // DEBUG: In ra keys trong config
-                    printf("=== DEBUG: Config level keys ===\n");
-                    json_object_object_foreach(config_obj, key, val) {
-                        printf("Config key: '%s', type: %s\n", key, json_type_to_name(json_object_get_type(val)));
-                    }
-                } else {
-                    printf("✗ 'config' is not object type\n");
-                }
-            } else {
-                printf("✗ No 'config' key found inside shared\n");
-            }
-        } else {
-            printf("✗ 'shared' is not object type\n");
-        }
+    if (json_object_object_get_ex(root, "shared", &shared_obj) &&
+        json_object_is_type(shared_obj, json_type_object) &&
+        json_object_object_get_ex(shared_obj, "config", &config_obj) &&
+        json_object_is_type(config_obj, json_type_object)) {
+        // Use shared.config as the actual config root
+        effective_root = config_obj;
+        printf("Detected ThingsBoard wrapper format, using shared.config as root\n");
     } else {
-        printf("✗ No 'shared' key found at root\n");
         printf("Using direct config format\n");
     }
+    // ===== END ADD =====
+    
     // Parse system config
     json_object *system_config_obj;
     if (json_object_object_get_ex(effective_root, "system_config", &system_config_obj)) {
