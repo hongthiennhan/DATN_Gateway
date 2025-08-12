@@ -31,12 +31,12 @@ void cleanup_on_exit(void) {
 // ==================== MAIN FUNCTION ====================
 int main(void) {
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
-    uint8_t load_try = 1;
+    uint8_t load_try = 0;
     // Load node configuration FIRST
-    // if (load_nodes_config("../config.json") != 0) {
-    //     fprintf(stderr, "Failed to load node configuration\n");
-    //     load_try = 1;
-    // }
+    if (load_nodes_config("../config.json") != 0) {
+        fprintf(stderr, "Failed to load node configuration\n");
+        load_try = 1;
+    }
     // If first load failed, try fallback config
     if(load_try == 1) {
         if (load_nodes_config("nodes_config.json") != 0) {
