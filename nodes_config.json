@@ -36,6 +36,22 @@
       "flash_cmd": 4,
       "auto_read_interval": 1,
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
+    },
+    {
+      "id": 3,
+      "name": "Node3 - Display Unit",
+      "type": "display_unit",
+      "menu_items": [
+        {"cmd": 1, "label": "Display On", "uart_cmd": "CMD3_DISPLAY_ON", "hex_value": "0xA1", "timeout_ms": 0},
+        {"cmd": 2, "label": "Display Off", "uart_cmd": "CMD3_DISPLAY_OFF", "hex_value": "0xA2", "timeout_ms": 0},
+        {"cmd": 3, "label": "Update Display", "uart_cmd": "CMD3_UPDATE_DISPLAY", "hex_value": "0xA3", "timeout_ms": 1000},
+        {"cmd": 4, "label": "Re-flash firmware", "uart_cmd": "", "hex_value": "", "timeout_ms": 0},
+        {"cmd": 0, "label": "Exit", "uart_cmd": "", "hex_value": "", "timeout_ms": 0}
+      ],
+      "auto_read_cmd": 3,
+      "flash_cmd": 4,
+      "auto_read_interval": 1,
+      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],
   "system_config": {
