@@ -617,6 +617,7 @@ void *mqtt_thread_func(void *arg) {
         fprintf(stderr, "Config request failed, continuing with default config\n");
     }
     printf("=== Config download setup completed ===\n");
+    uint8_t load_try = 0;
     // Load node configuration FIRST
     if (load_nodes_config("../config.json") != 0) {
         fprintf(stderr, "Failed to load node configuration\n");
