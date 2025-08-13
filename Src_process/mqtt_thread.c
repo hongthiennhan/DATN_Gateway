@@ -2,9 +2,13 @@
 #include "node_config.h"
 
 // ===== JSON CONFIG DOWNLOAD CONFIGURATION =====
-#define CONFIG_DIR  "/home/trieunguyen/Linux_worldspace/DATN_Gateway_Task1"
+#define CONFIG_DIR "/home/trieunguyen/Linux_worldspace/DATN_Gateway_Task1"
 #define CONFIG_FILE "config.json"
-#define MAX_JSON_SIZE (1024 * 1024)  // 1MB limit
+#define MAX_JSON_SIZE (1024 * 1024) // 1MB limit
+
+// ===== Config update tracking =====
+static volatile int config_updated = 0;
+static pthread_mutex_t config_update_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * Get local IP address, excluding loopback and link-local addresses
@@ -31,7 +35,7 @@ char* get_local_ip() {
             char *addr_str = inet_ntoa(addr_in->sin_addr);
             
             // Skip loopback (127.x.x.x) and link-local (169.254.x.x) addresses
-            if (strncmp(addr_str, "127.", 4) != 0 && 
+            if (strncmp(addr_str, "127.", 4) != 0 &&
                 strncmp(addr_str, "169.254.", 8) != 0) {
                 strcpy(ip_str, addr_str);
                 freeifaddrs(ifaddrs_ptr);
@@ -47,8 +51,8 @@ char* get_local_ip() {
 }
 
 // ===== GLOBAL MQTT VARIABLES =====
-struct mosquitto *mqtt_client = NULL;    // Main MQTT client instance
-volatile int mqtt_connected = 0;         // Connection status flag (thread-safe)
+struct mosquitto *mqtt_client = NULL; // Main MQTT client instance
+volatile int mqtt_connected = 0; // Connection status flag (thread-safe)
 
 // ===== ROBUST DIRECTORY CREATION WITH ERROR HANDLING =====
 /**
@@ -64,17 +68,17 @@ static int ensure_directory_exists(const char *dir) {
     if (stat(dir, &st) == 0) {
         // Path exists, verify it's a directory
         if (S_ISDIR(st.st_mode)) {
-            return 0;  // SUCCESS: It's a directory
+            return 0; // SUCCESS: It's a directory
         } else {
             fprintf(stderr, "ERROR: %s exists but is not a directory\n", dir);
-            return -1;  // ERROR: It's a file, not directory
+            return -1; // ERROR: It's a file, not directory
         }
     }
     
     // Step 2: Path doesn't exist, try to create it
     if (mkdir(dir, 0755) == 0) {
         printf("Created directory: %s\n", dir);
-        return 0;  // SUCCESS: Directory created
+        return 0; // SUCCESS: Directory created
     }
     
     // Step 3: Handle race condition - another thread might have created it
@@ -123,9 +127,9 @@ static int validate_json_basic(const void *data, size_t size) {
         if (json_str[i] == '}') {
             found_closing = 1;
             break;
-        } else if (json_str[i] != ' ' && json_str[i] != '\n' && 
+        } else if (json_str[i] != ' ' && json_str[i] != '\n' &&
                    json_str[i] != '\t' && json_str[i] != '\0') {
-            break;  // Found non-whitespace character before '}'
+            break; // Found non-whitespace character before '}'
         }
     }
     
@@ -135,7 +139,7 @@ static int validate_json_basic(const void *data, size_t size) {
     }
     
     printf("JSON validation passed: %zu bytes\n", size);
-    return 1;  // VALID
+    return 1; // VALID
 }
 
 // ===== ATOMIC FILE WRITE WITH FULL DURABILITY GUARANTEES =====
@@ -183,15 +187,14 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     while (total_written < size) {
         ssize_t written = write(fd, (const char*)data + total_written, size - total_written);
         if (written < 0) {
-            if (errno == EINTR) continue;  // Interrupted system call - retry
+            if (errno == EINTR) continue; // Interrupted system call - retry
             fprintf(stderr, "ERROR: Write failed: %s\n", strerror(errno));
             close(fd);
-            unlink(tmp_path);  // Clean up partial file
+            unlink(tmp_path); // Clean up partial file
             return -1;
         }
         total_written += written;
     }
-    
     printf("Written %zu bytes to tmp file\n", total_written);
     
     // Step 5: Force data to physical storage (durability)
@@ -201,7 +204,6 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         unlink(tmp_path);
         return -1;
     }
-    
     printf("fsync completed for tmp file\n");
     
     // Step 6: Close temporary file
@@ -218,7 +220,6 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         unlink(tmp_path);
         return -1;
     }
-    
     printf("Atomic rename completed: %s\n", final_path);
     
     // Step 8: Sync directory metadata to ensure rename is durable
@@ -266,6 +267,7 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     // Wait for condition signal or timeout
     int result = pthread_cond_timedwait(&node->mqtt_data->cond, &node->mqtt_data->mutex, &timeout);
     pthread_mutex_unlock(&node->mqtt_data->mutex);
+    
     return (result == 0) ? 1 : 0;
 }
 
@@ -279,14 +281,14 @@ int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
  */
 void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int hex_str_size) {
     if (hex_str_size < 1) return;
-    int pos = 0;
     
+    int pos = 0;
     // Convert each byte to two hex characters
     for (int i = 0; i < length && pos + 3 <= hex_str_size; i++) {
         sprintf(hex_str + pos, "%02X", data[i]);
         pos += 2;
     }
-    hex_str[pos] = '\0';  // Null terminate the string
+    hex_str[pos] = '\0'; // Null terminate the string
 }
 
 /**
@@ -299,12 +301,11 @@ void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int 
  */
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     if (result == 0) {
-        mqtt_connected = 1;  // Set connection flag
+        mqtt_connected = 1; // Set connection flag
         
         // Get configuration and system information
         mqtt_config_t *config = get_mqtt_config();
         system_info_t *sys_info = get_system_info();
-        
         if (!config || !sys_info) return;
         
         // Allocate buffer for attributes JSON
@@ -314,27 +315,27 @@ void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
         // Build device attributes JSON with gateway information
         snprintf(attributes, config->attributes_buffer_size,
                 "{"
-                "\"gateway_ip\":\"%s\","           // Current IP address
-                "\"firmware_version\":\"%s\","     // Firmware version
-                "\"device_type\":\"%s\","          // Type of device
-                "\"manufacturer\":\"%s\","         // Device manufacturer
-                "\"model\":\"%s\","                // Device model
-                "\"node_count\":%d"                // Number of connected nodes
-                "}", 
-                get_local_ip(), 
+                "\"gateway_ip\":\"%s\"," // Current IP address
+                "\"firmware_version\":\"%s\"," // Firmware version
+                "\"device_type\":\"%s\"," // Type of device
+                "\"manufacturer\":\"%s\"," // Device manufacturer
+                "\"model\":\"%s\"," // Device model
+                "\"node_count\":%d" // Number of connected nodes
+                "}",
+                get_local_ip(),
                 sys_info->firmware_version,
-                sys_info->device_type, 
+                sys_info->device_type,
                 sys_info->manufacturer,
                 sys_info->model,
                 get_node_count());
-
+        
         // Publish attributes to ThingsBoard
         mosquitto_publish(mqtt_client, NULL, config->topic_attributes,
-                          strlen(attributes), attributes, config->qos, false);
+                         strlen(attributes), attributes, config->qos, false);
         
         free(attributes);
     } else {
-        mqtt_connected = 0;  // Connection failed
+        mqtt_connected = 0; // Connection failed
     }
 }
 
@@ -346,7 +347,7 @@ void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
  * @param result: Disconnection reason code
  */
 void on_mqtt_disconnect(struct mosquitto *mosq, void *userdata, int result) {
-    mqtt_connected = 0;  // Clear connection flag
+    mqtt_connected = 0; // Clear connection flag
 }
 
 /**
@@ -374,7 +375,7 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
         fprintf(stderr, "ERROR: Invalid MQTT message\n");
         return;
     }
-    
+
     printf("Received MQTT message on topic: %s\n", message->topic);
     
     // Handle JSON config from ThingsBoard attributes response
@@ -389,23 +390,29 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
             fprintf(stderr, "ERROR: JSON validation failed\n");
             return;
         }
-        
+
         // Step 2: Log preview of received data for debugging
         size_t preview_len = payload_size > 200 ? 200 : payload_size;
-        printf("JSON preview (%zu/%zu bytes): %.*s%s\n", 
+        printf("JSON preview (%zu/%zu bytes): %.*s%s\n",
                preview_len, payload_size,
                (int)preview_len, (char*)payload,
                payload_size > preview_len ? "..." : "");
-        
+
         // Step 3: Atomic write with comprehensive error handling
         int result = atomic_write_json_file(CONFIG_DIR, CONFIG_FILE, payload, payload_size);
         if (result == 0) {
             printf("✓ Config JSON successfully saved and ready to use\n");
+            
+            //  Set flag to indicate config update
+            pthread_mutex_lock(&config_update_mutex);
+            config_updated = 1;
+            pthread_mutex_unlock(&config_update_mutex);
+            
         } else {
             fprintf(stderr, "✗ Failed to save config JSON\n");
         }
     }
-    // Handle push updates from shared attributes
+    // Handle push updates from shared attributes  
     else if (strcmp(message->topic, "v1/devices/me/attributes") == 0) {
         const void *payload = message->payload;
         size_t payload_size = (size_t)message->payloadlen;
@@ -413,7 +420,13 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
         if (payload_size > 0 && payload != NULL && payload_size <= MAX_JSON_SIZE) {
             printf("Received shared attributes update, saving to config...\n");
             if (validate_json_basic(payload, payload_size)) {
-                atomic_write_json_file(CONFIG_DIR, CONFIG_FILE, payload, payload_size);
+                int result = atomic_write_json_file(CONFIG_DIR, CONFIG_FILE, payload, payload_size);
+                if (result == 0) {
+                    //  Set flag to indicate config update
+                    pthread_mutex_lock(&config_update_mutex);
+                    config_updated = 1;
+                    pthread_mutex_unlock(&config_update_mutex);
+                }
             }
         }
     }
@@ -421,6 +434,46 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
     else {
         printf("Ignoring message from topic: %s\n", message->topic);
     }
+}
+
+// =====  Config reload functions =====
+/**
+ * Check if config was updated and reload if needed
+ * @return: 1 if config was reloaded, 0 if no reload needed, -1 on error
+ */
+int check_and_reload_config(void) {
+    pthread_mutex_lock(&config_update_mutex);
+    int should_reload = config_updated;
+    if (should_reload) {
+        config_updated = 0; // Reset flag
+    }
+    pthread_mutex_unlock(&config_update_mutex);
+    
+    if (should_reload) {
+        printf("=== Reloading config after ThingsBoard update ===\n");
+        
+        // Cleanup old config
+        cleanup_nodes_config();
+        
+        // Reload new config
+        char config_path[512];
+        snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
+        
+        if (load_nodes_config(config_path) == 0) {
+            printf("✓ Successfully reloaded config from ThingsBoard\n");
+            return 1; // Config reloaded successfully
+        } else {
+            fprintf(stderr, "✗ Failed to reload new config, trying fallback\n");
+            // Try fallback configs
+            if (load_nodes_config("../config.json") != 0) {
+                if (load_nodes_config("nodes_config.json") != 0) {
+                    fprintf(stderr, "ERROR: All config loading failed\n");
+                    return -1;
+                }
+            }
+        }
+    }
+    return 0; // No reload needed
 }
 
 /**
@@ -472,7 +525,7 @@ int request_config_json_robust(void) {
     // Step 4: Send request for config data
     const char *request_payload = "{\"sharedKeys\":\"config\"}";
     rc = mosquitto_publish(mqtt_client, NULL, "v1/devices/me/attributes/request/1",
-                           (int)strlen(request_payload), request_payload, cfg->qos, false);
+                          (int)strlen(request_payload), request_payload, cfg->qos, false);
     if (rc != MOSQ_ERR_SUCCESS) {
         fprintf(stderr, "ERROR: Publish request failed: %s\n", mosquitto_strerror(rc));
         return 0;
@@ -500,21 +553,20 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
     
     // Start JSON object with optional timestamp
     if (config->system_fields.include_timestamp) {
-        snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);  // Milliseconds
+        snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp); // Milliseconds
     } else {
         snprintf(payload, payload_size, "{");
     }
-
+    
     // Add raw data from all configured nodes
     for (int i = 0; i < get_node_count(); i++) {
         node_config_t *node = get_node_by_index(i);
         if (!node || !node->mqtt_data) continue;
-
+        
         // Lock node data to safely access it
         pthread_mutex_lock(&node->mqtt_data->mutex);
         if (node->mqtt_data->data) {
             raw_data_t *raw_data = (raw_data_t*)node->mqtt_data->data;
-            
             if (raw_data && raw_data->data && raw_data->length > 0) {
                 // Convert raw binary data to hex string representation
                 char *hex_str = malloc(raw_data->length * 2 + 1);
@@ -522,17 +574,17 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
                     raw_data_to_hex_string(raw_data->data, raw_data->length, hex_str, raw_data->length * 2 + 1);
                     
                     // Add node data to JSON payload
-                    snprintf(temp_buffer, 1024, ",\"node%d_raw_data\":\"%s\",\"node%d_data_length\":%d", 
-                             node->node_id, hex_str, node->node_id, raw_data->length);
-                    
+                    snprintf(temp_buffer, 1024, ",\"node%d_raw_data\":\"%s\",\"node%d_data_length\":%d",
+                            node->node_id, hex_str, node->node_id, raw_data->length);
                     strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+                    
                     free(hex_str);
                 }
             }
         }
         pthread_mutex_unlock(&node->mqtt_data->mutex);
     }
-
+    
     // Add optional system information fields based on configuration
     if (config->system_fields.include_gateway_ip) {
         snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", get_local_ip());
@@ -551,6 +603,7 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
     
     // Close JSON object
     strncat(payload, "}", payload_size - strlen(payload) - 1);
+    
     free(temp_buffer);
 }
 
@@ -565,7 +618,7 @@ void *mqtt_thread_func(void *arg) {
     // Get MQTT configuration from loaded config file
     mqtt_config_t *config = get_mqtt_config();
     if (!config) return NULL;
-    
+
     // Initialize mosquitto library
     mosquitto_lib_init();
     
@@ -575,7 +628,7 @@ void *mqtt_thread_func(void *arg) {
 
     // Set authentication credentials (username/password or access token)
     mosquitto_username_pw_set(mqtt_client, config->username, config->password);
-    
+
     // Set callback functions for MQTT events
     mosquitto_connect_callback_set(mqtt_client, on_mqtt_connect);
     mosquitto_disconnect_callback_set(mqtt_client, on_mqtt_disconnect);
@@ -595,7 +648,7 @@ void *mqtt_thread_func(void *arg) {
     // Wait for connection establishment with timeout
     int connection_timeout = config->connection_timeout;
     while (!mqtt_connected && connection_timeout > 0) {
-        usleep(100 * 1000);  // Sleep 100ms
+        usleep(100 * 1000); // Sleep 100ms
         connection_timeout--;
     }
 
@@ -611,23 +664,30 @@ void *mqtt_thread_func(void *arg) {
     printf("=== Starting robust config JSON download ===\n");
     if (request_config_json_robust()) {
         printf("Config request initiated successfully\n");
-        // Optional: wait a moment for response to arrive
-        // sleep(2);
+        // Wait a moment for response to arrive
+        sleep(3); //Increase timeout to allow for slower connections
     } else {
         fprintf(stderr, "Config request failed, continuing with default config\n");
     }
+
     printf("=== Config download setup completed ===\n");
-    uint8_t load_try = 0;
-    // Load node configuration FIRST
-    if (load_nodes_config("../config.json") != 0) {
-        fprintf(stderr, "Failed to load node configuration\n");
-        load_try = 1;
-    }
-    // If first load failed, try fallback config
-    if(load_try == 1) {
-        if (load_nodes_config("nodes_config.json") != 0) {
-            fprintf(stderr, "Failed to load node configuration from fallback\n");
-            return -1;
+    
+    // Check if we got new config from ThingsBoard and reload if needed
+    int reload_result = check_and_reload_config();
+    if (reload_result == -1) {
+        // Config reload failed completely
+        mosquitto_loop_stop(mqtt_client, true);
+        mosquitto_destroy(mqtt_client);
+        mosquitto_lib_cleanup();
+        return NULL;
+    } else if (reload_result == 1) {
+        // Config was reloaded, update our config pointer
+        config = get_mqtt_config();
+        if (!config) {
+            mosquitto_loop_stop(mqtt_client, true);
+            mosquitto_destroy(mqtt_client);
+            mosquitto_lib_cleanup();
+            return NULL;
         }
     }
 
@@ -640,20 +700,23 @@ void *mqtt_thread_func(void *arg) {
         mosquitto_lib_cleanup();
         return NULL;
     }
-    
+
     // Main loop - publishes telemetry data at configured intervals
     while (1) {
         time_t current_time = time(NULL);
+        
+        //  Periodically check for config updates
+        check_and_reload_config();
         
         // Check if it's time to publish telemetry data
         if (current_time - last_publish >= config->publish_interval) {
             // Build JSON payload with current node data
             build_telemetry_payload(telemetry_payload, config->payload_buffer_size, current_time);
-
+            
             // Publish telemetry data to ThingsBoard
             rc = mosquitto_publish(mqtt_client, NULL, config->topic_telemetry,
-                                   strlen(telemetry_payload), telemetry_payload, 
-                                   config->qos, false);
+                                 strlen(telemetry_payload), telemetry_payload,
+                                 config->qos, false);
             if (rc == MOSQ_ERR_SUCCESS) {
                 last_publish = current_time;
             }
