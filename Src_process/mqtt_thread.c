@@ -617,6 +617,18 @@ void *mqtt_thread_func(void *arg) {
         fprintf(stderr, "Config request failed, continuing with default config\n");
     }
     printf("=== Config download setup completed ===\n");
+    // Load node configuration FIRST
+    if (load_nodes_config("../config.json") != 0) {
+        fprintf(stderr, "Failed to load node configuration\n");
+        load_try = 1;
+    }
+    // If first load failed, try fallback config
+    if(load_try == 1) {
+        if (load_nodes_config("nodes_config.json") != 0) {
+            fprintf(stderr, "Failed to load node configuration from fallback\n");
+            return -1;
+        }
+    }
 
     // Initialize telemetry publishing variables
     time_t last_publish = 0;
