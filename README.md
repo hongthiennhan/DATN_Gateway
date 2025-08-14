@@ -152,3 +152,11 @@ stateDiagram-v2
     end note
 
 ```
+---
+
+Nháp:
+Cần: setup một menu để config theo đúng nghĩa, không phải kiểu lấy dữ liệu và gửi lại như trên
+Dữ liệu điều khiển node lấy từ server, kg lấy từ gateway
+Thread uart chỉ nhận dữ liệu uart
+node actuator phải tự hoạt động ở các direct, còn lại thì gửi command từ server xuống
+Setup lại thread UI đơn giản, nếu cần config, chọn config, kg thì thôi
