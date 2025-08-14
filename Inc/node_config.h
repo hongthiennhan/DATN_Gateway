@@ -2,15 +2,42 @@
 #define NODE_CONFIG_H
 
 #include <pthread.h>
+#include <stdint.h>
 #include <time.h>
 
 #define MAX_NODES 10
 #define MAX_MENU_ITEMS 20
-#define MAX_NODE_TYPES 10
-#define MAX_BAUDRATES 20
+#define MAX_DETECTION_COMMANDS 10
 
 // Forward declaration
 typedef struct shared_data_s shared_data_t;
+
+// Node detection command structure
+typedef struct {
+    uint8_t command;           // UART command to send
+    char expected_response[64]; // Expected response pattern
+    int timeout_ms;            // Command timeout
+    char description[128];     // Command description
+} detection_cmd_t;
+
+// Control command from server
+typedef struct {
+    int node_id;
+    int cmd_id;
+    char params[256];
+    time_t timestamp;
+    int processed;
+} server_control_cmd_t;
+
+// Control command queue
+typedef struct {
+    server_control_cmd_t commands[100];
+    int head;
+    int tail;
+    int count;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+} control_queue_t;
 
 typedef struct {
     int cmd;
@@ -18,6 +45,7 @@ typedef struct {
     char uart_cmd[32];
     char hex_value[16];
     int timeout_ms;
+    int is_direct;             // 1 for direct actuator commands, 0 for server commands
 } menu_item_t;
 
 typedef struct {
@@ -42,6 +70,8 @@ typedef struct {
     char password[128];
     char topic_telemetry[128];
     char topic_attributes[128];
+    char topic_control[128];   // Control topic from server
+    char topic_status[128];    // Status topic to server
     int qos;
     int publish_interval;
     int connection_timeout;
@@ -85,9 +115,16 @@ typedef struct {
     int auto_read_cmd;
     int flash_cmd;
     int auto_read_interval;
-    int expected_data_length;     // Expected raw data length
-    char data_format[16];         // "hex" or "base64"
+    int expected_data_length;
+    char data_format[16];
     char reflash_script[512];
+    int is_actuator;
+    
+    // NEW: Node detection commands
+    detection_cmd_t *detection_commands;
+    int detection_count;
+    int detected;              // 1 if node detected, 0 otherwise
+    time_t last_detection;     // Last detection attempt timestamp
     
     // Runtime data
     shared_data_t *mqtt_data;
@@ -107,6 +144,10 @@ typedef struct {
     char default_device[256];
     int startup_clear_duration;
     
+    // NEW: Node detection config
+    int detection_interval;    // Seconds between detection attempts
+    int detection_timeout;     // Max time for detection sequence
+    
     // System info
     system_info_t system_info;
     
@@ -115,6 +156,13 @@ typedef struct {
     
     // MQTT config
     mqtt_config_t mqtt_config;
+    
+    // Control queue
+    control_queue_t control_queue;
+    
+    // Config mode flag
+    int config_mode;
+    
 } node_registry_t;
 
 // API functions
@@ -134,6 +182,12 @@ int get_default_baudrate(void);
 const char* get_default_device(void);
 int get_startup_clear_duration(void);
 
+// NEW: Node detection functions
+int get_detection_interval(void);
+int get_detection_timeout(void);
+int start_node_detection(void);
+int detect_node_type(node_config_t *node);
+
 // System info getters
 system_info_t* get_system_info(void);
 
@@ -143,6 +197,15 @@ const char* get_uart_config_file_path(void);
 
 // MQTT config getters
 mqtt_config_t* get_mqtt_config(void);
+
+// Control queue functions
+int add_control_command(int node_id, int cmd_id, const char *params);
+int get_control_command(server_control_cmd_t *cmd);
+control_queue_t* get_control_queue(void);
+
+// Config mode functions
+void set_config_mode(int enabled);
+int get_config_mode(void);
 
 // Utility function
 uint32_t hex_string_to_int(const char *hex_str);

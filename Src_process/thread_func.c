@@ -1,16 +1,14 @@
 #include "thread_func.h"
-#include <time.h>
+#include <ncurses.h>
 #include "node_config.h"
 
-// ========== Shared state between threads ==========
+// Shared state between threads
 volatile uint8_t is_busy = 0;
-
 pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
 int command_pending = 0;
-char status_response[100] = "Waiting for command...";
+char status_response[100] = "System ready";
 int status_color = 2;
 unsigned char receive_data[512] = {0};
-unsigned char save_data[512] = {0};
 int shared_node_type = 0;
 
 shared_data_t command_data = {
@@ -19,8 +17,8 @@ shared_data_t command_data = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-// Helper functions for command_data operations
-void    set_command_code(int new_code) {
+// Helper functions for command data
+void set_command_code(int new_code) {
     pthread_mutex_lock(&command_data.mutex);
     if (command_data.data == NULL) {
         command_data.data = malloc(sizeof(int));
@@ -40,211 +38,136 @@ int get_command_code() {
     return code;
 }
 
-int wait_for_command_change(int timeout_ms) {
-    pthread_mutex_lock(&command_data.mutex);
-    
-    struct timespec timeout;
-    clock_gettime(CLOCK_REALTIME, &timeout);
-    timeout.tv_sec += timeout_ms / 1000;
-    timeout.tv_nsec += (timeout_ms % 1000) * 1000000;
-    if (timeout.tv_nsec >= 1000000000) {
-        timeout.tv_sec += 1;
-        timeout.tv_nsec -= 1000000000;
-    }
-    
-    int result = pthread_cond_timedwait(&command_data.cond, &command_data.mutex, &timeout);
-    int code = 0;
-    if (command_data.data != NULL) {
-        code = *(int*)command_data.data;
-    }
-    
-    pthread_mutex_unlock(&command_data.mutex);
-    return (result == 0) ? code : -1;
-}
-
-// ==================== UART THREAD (Config-driven) ====================
+// ==================== UART THREAD - Data receive + Server commands ====================
 void *uart_thread_func(void *arg) {
+    printf("UART thread started - data receive mode\n");
+    
     uint16_t resp_len = 0;
+    unsigned char *resp = NULL;
+    server_control_cmd_t control_cmd;
+    time_t last_detection = 0;
     
     while (1) {
-        pthread_mutex_lock(&command_mutex);
-        int cmd = get_command_code();
-        int pending = command_pending;
-        command_pending = 0;
-        int local_node_type = shared_node_type;
-        pthread_mutex_unlock(&command_mutex);
-
-        if (local_node_type == 0) {
-            usleep(100 * 1000);
-            continue;
-        }
-
-        if (!pending) {
-            int new_cmd = wait_for_command_change(get_uart_wait_timeout());
-            if (new_cmd == -1) {
-                continue;
-            }
-            cmd = new_cmd;
-            
-            pthread_mutex_lock(&command_mutex);
-            if (!command_pending) continue;
-            command_pending = 0;
-            pthread_mutex_unlock(&command_mutex);
-        }
-
-        node_config_t *current_node = get_node_by_id(local_node_type);
-        if (!current_node) {
-            usleep(100 * 1000);
-            continue;
-        }
-
-        menu_item_t *menu_item = get_menu_item_by_cmd(current_node, cmd);
-        int is_auto_read = (cmd == get_auto_read_command_id());
+        time_t current_time = time(NULL);
         
-        int block_ui = 0;
-        if (menu_item && menu_item->timeout_ms > 0) {
-            block_ui = 1;
-        }
-        
-        if (is_auto_read) {
-            block_ui = 0;
-        }
-
-        if (block_ui) {
-            pthread_mutex_lock(&command_mutex);
-            is_busy = 1;
-            pthread_mutex_unlock(&command_mutex);
-        }
-
-        unsigned char *resp = NULL;
-        uint8_t ret = 0;
-
-        if (is_auto_read) {
-            menu_item_t *auto_read_item = get_menu_item_by_cmd(current_node, current_node->auto_read_cmd);
-            if (auto_read_item && strlen(auto_read_item->hex_value) > 0) {
-                execute_uart_command(current_node, auto_read_item, &resp, &resp_len, 1);
-            }
-            goto cleanup;
-        }
-
-        if (menu_item) {
-            if (strlen(menu_item->hex_value) > 0) {
-                execute_uart_command(current_node, menu_item, &resp, &resp_len, 0);
-            } else if (cmd == current_node->flash_cmd) {
-                pthread_mutex_lock(&command_mutex);
-                is_busy = 1;
-                snprintf(status_response, sizeof(status_response), "Flashing %s firmware...", current_node->name);
-                status_color = 4;
-                pthread_mutex_unlock(&command_mutex);
-
-                ret = system(current_node->reflash_script);
-                Clear_Startup_UART(uart_fd, get_uart_clear_timeout());
-
-                pthread_mutex_lock(&command_mutex);
-                if (ret == 0) {
-                    snprintf(status_response, sizeof(status_response), "%s firmware flashed successfully.", current_node->name);
-                    snprintf(receive_data, sizeof(receive_data), "%s esptool executed successfully.", current_node->name);
-                    status_color = 2;
-                } else {
-                    snprintf(status_response, sizeof(status_response), "%s flashing failed!", current_node->name);
-                    snprintf(receive_data, sizeof(receive_data), "%s esptool error: return %d", current_node->name, ret);
-                    status_color = 3;
+        // Execute server control commands
+        if (get_control_command(&control_cmd) == 0) {
+            node_config_t *node = get_node_by_id(control_cmd.node_id);
+            if (node) {
+                menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
+                if (menu_item) {
+                    printf("Executing server command: node=%d, cmd=%d\n", 
+                           control_cmd.node_id, control_cmd.cmd_id);
+                    
+                    execute_uart_command(node, menu_item, &resp, &resp_len, 0);
+                    
+                    if (resp) {
+                        free(resp);
+                        resp = NULL;
+                        resp_len = 0;
+                    }
                 }
-                is_busy = 0;
-                pthread_mutex_unlock(&command_mutex);
             }
-        }
-
-cleanup:
-        if (resp) {
-            free(resp);
-            resp_len = 0;
+            continue;
         }
         
-        if (block_ui) {
-            pthread_mutex_lock(&command_mutex);
-            is_busy = 0;
-            pthread_mutex_unlock(&command_mutex);
+        // Periodic node detection
+        int detection_interval = get_detection_interval();
+        if (detection_interval > 0 && (current_time - last_detection) >= detection_interval) {
+            printf("Starting periodic node detection\n");
+            start_node_detection();
+            last_detection = current_time;
         }
+        
+        // Auto-read from detected nodes
+        for (int i = 0; i < get_node_count(); i++) {
+            node_config_t *node = get_node_by_index(i);
+            if (node && node->detected && node->auto_read_interval > 0) {
+                time_t last_read = (node->mqtt_data && node->mqtt_data->data) ? 
+                                   ((raw_data_t*)node->mqtt_data->data)->length : 0;
+                
+                if ((current_time - last_read) >= node->auto_read_interval) {
+                    menu_item_t *auto_read_item = get_menu_item_by_cmd(node, node->auto_read_cmd);
+                    if (auto_read_item) {
+                        execute_uart_command(node, auto_read_item, &resp, &resp_len, 1);
+                        if (resp) {
+                            free(resp);
+                            resp = NULL;
+                            resp_len = 0;
+                        }
+                    }
+                }
+            }
+        }
+        
+        usleep(1000 * 1000); // 1 second sleep
     }
-    
     return NULL;
 }
 
-// Execute a UART command for a specific node and menu item
+/**
+ * Execute UART command for node
+ */
 void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent) {
     *resp = NULL;
     *resp_len = 0;
-    
+
     uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
     if (uart_cmd == 0) return;
-    
+
     write_command((uint8_t)uart_cmd);
-    
+
     if (menu_item->timeout_ms > 0) {
         *resp = Read_Response(menu_item->timeout_ms, resp_len);
     }
-    
+
     process_uart_response(node, menu_item->cmd, *resp, *resp_len, silent);
 }
 
-// Process the UART response for a specific node and command
+/**
+ * Process UART response from node
+ */
 void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent) {
     if (silent) {
-        // Only update MQTT data for auto read, no UI update
+        // Only update MQTT data, no UI update
         update_mqtt_data_from_response(node, resp, resp_len);
         return;
     }
-    
+
     pthread_mutex_lock(&command_mutex);
-    
-    if (resp && resp_len >= 2 && strncmp((char *)resp, "OK", 2) == 0) {
-        snprintf(status_response, sizeof(status_response), "%s Command %d executed successfully", node->name, cmd);
-        snprintf(receive_data, sizeof(receive_data), "OK");
-        status_color = 2;
-    }
-    else if (resp && resp_len > 0) {
-        snprintf(status_response, sizeof(status_response), "%s Command %d executed", node->name, cmd);
-        format_response_data(node, resp, resp_len);
+    if (resp && resp_len > 0) {
+        snprintf(status_response, sizeof(status_response), 
+                "Node %s: Command %d executed", node->name, cmd);
+        
+        // Format response for display
+        char hex_str[256] = {0};
+        int max_display = (resp_len > 50) ? 50 : resp_len;
+        for (int i = 0; i < max_display; i++) {
+            sprintf(hex_str + strlen(hex_str), "%02X ", resp[i]);
+        }
+        
+        snprintf(receive_data, sizeof(receive_data), "Data[%d bytes]: %s%s", 
+                resp_len, hex_str, (resp_len > 50) ? "..." : "");
+        
         status_color = 2;
         update_mqtt_data_from_response(node, resp, resp_len);
-    }
-    else if (resp_len == 0) {
-        snprintf(status_response, sizeof(status_response), "%s Command %d executed", node->name, cmd);
-        snprintf(receive_data, sizeof(receive_data), "No response expected for %s command %d", node->name, cmd);
-        status_color = 2;
-    }
-    else {
-        snprintf(status_response, sizeof(status_response), "%s Command %d failed", node->name, cmd);
-        snprintf(receive_data, sizeof(receive_data), "%s no response or error for command %d", node->name, cmd);
+    } else {
+        snprintf(status_response, sizeof(status_response), 
+                "Node %s: Command %d - no response", node->name, cmd);
+        snprintf(receive_data, sizeof(receive_data), "No data received");
         status_color = 3;
     }
-    
     pthread_mutex_unlock(&command_mutex);
 }
 
-void format_response_data(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
-    // Just show raw hex data, no parsing
-    char hex_str[1024] = {0};
-    int max_display = (resp_len > 100) ? 100 : resp_len;
-    
-    for (int i = 0; i < max_display; i++) {
-        sprintf(hex_str + strlen(hex_str), "%02X ", resp[i]);
-    }
-    
-    if (resp_len > 100) {
-        strcat(hex_str, "...");
-    }
-    
-    snprintf(receive_data, sizeof(receive_data), "Raw[%d bytes]: %s", resp_len, hex_str);
-}
-
-// Update MQTT data from the response
+/**
+ * Update MQTT data with received response
+ */
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
     if (!node || !node->mqtt_data || !resp || resp_len == 0) return;
-    
+
     pthread_mutex_lock(&node->mqtt_data->mutex);
-    
+
     // Free old data if exists
     if (node->mqtt_data->data) {
         raw_data_t *old_data = (raw_data_t*)node->mqtt_data->data;
@@ -253,8 +176,8 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
         }
         free(old_data);
     }
-    
-    // Store raw data
+
+    // Store new raw data
     raw_data_t *raw_data = malloc(sizeof(raw_data_t));
     if (raw_data) {
         raw_data->length = resp_len;
@@ -267,210 +190,199 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
             free(raw_data);
         }
     }
-    
     pthread_mutex_unlock(&node->mqtt_data->mutex);
 }
 
-// ==================== UI THREAD (Config-driven) ====================
+// ==================== UI THREAD - Simple config menu ====================
 void *ui_thread_func(void *arg) {
     uint32_t baudrate = *(uint32_t *)((void **)arg)[0];
     char *device = (char *)((void **)arg)[1];
     
-    if (get_node_count() == 0) {
-        return NULL;
-    }
-    
+    // Initialize ncurses
     initscr();
     start_color();
-    init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_RED, COLOR_BLACK);
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(5, COLOR_CYAN, COLOR_BLACK);
+    init_pair(1, COLOR_BLACK, COLOR_WHITE);  // Highlight
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);  // Success
+    init_pair(3, COLOR_RED, COLOR_BLACK);    // Error
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Warning
+    init_pair(5, COLOR_CYAN, COLOR_BLACK);   // Info
+
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-    timeout(100);
+    timeout(1000); // 1 second timeout for refresh
 
-    int selected_node_id = 0;
-    node_config_t *selected_node = NULL;
-    int node_highlight = 0;
-    int node_key;
-    bool node_selected = false;
-    int command_code = -1;
+    int highlight = 0;
     
-    volatile time_t last_user_interaction = 0;
-    uint8_t auto_read_active = 0;
-    
-    last_user_interaction = time(NULL);
-
     while (1) {
-        if (!node_selected) {
-            clear();
-            attron(COLOR_PAIR(4));
-            mvprintw(0, 0, "===== Select Node Type =====");
-            attroff(COLOR_PAIR(4));
-            
-            for (int i = 0; i < get_node_count(); i++) {
-                node_config_t *node = get_node_by_index(i);
-                if (i == node_highlight)
-                    attron(COLOR_PAIR(1));
-                mvprintw(2 + i, 0, "%d. %s", node->node_id, node->name);
-                if (i == node_highlight)
-                    attroff(COLOR_PAIR(1));
-            }
-            
-            refresh();
-            node_key = getch();
-            
-            switch (node_key) {
-                case KEY_UP:
-                    node_highlight = (node_highlight == 0) ? get_node_count() - 1 : node_highlight - 1;
-                    break;
-                case KEY_DOWN:
-                    node_highlight = (node_highlight == get_node_count() - 1) ? 0 : node_highlight + 1;
-                    break;
-                case 10:
-                    selected_node = get_node_by_index(node_highlight);
-                    if (selected_node) {
-                        selected_node_id = selected_node->node_id;
-                        node_selected = true;
-                        
-                        pthread_mutex_lock(&command_mutex);
-                        shared_node_type = selected_node_id;
-                        pthread_mutex_unlock(&command_mutex);
-                        
-                        last_user_interaction = time(NULL);
-                    }
-                    break;
-                case 'q':
-                case 'Q':
-                    endwin();
-                    exit(0);
-                    break;
-            }
-            
-            usleep(get_ui_refresh_delay());
-            continue;
-        }
-
         clear();
+        
+        // Header
         attron(COLOR_PAIR(4));
-        mvprintw(0, 0, "=== COMMAND SELECTION MENU ===");
+        mvprintw(0, 0, "===== IoT Gateway Configuration Menu =====");
         attroff(COLOR_PAIR(4));
         
-        mvprintw(1, 0, "Current Baudrate: %u", baudrate);
-        mvprintw(2, 0, "Current Device: %s", device);
-        mvprintw(3, 0, "Current Node: %s", selected_node->name);
-        mvprintw(4, 0, "Press 'b' to go back, 'q' to quit");
-
-        time_t current_time = time(NULL);
-        int time_since_interaction = (int)(current_time - last_user_interaction);
-        
-        if (time_since_interaction >= selected_node->auto_read_interval && !is_busy) {
-            auto_read_active = 1;
-        }
-        
-        attron(COLOR_PAIR(5));
-        mvprintw(5, 0, "Auto data collection: %s (last: %ds ago)",
-                auto_read_active  ? "ACTIVE" : "IDLE",
-                time_since_interaction);
-        attroff(COLOR_PAIR(5));
-        
-        static int highlight = 0;
-        for (int i = 0; i < selected_node->menu_count; i++) {
-            if (i == highlight)
-                attron(COLOR_PAIR(1));
-            mvprintw(7 + i, 0, "%d. %s", 
-                    selected_node->menu_items[i].cmd,
-                    selected_node->menu_items[i].label);
-            if (i == highlight)
-                attroff(COLOR_PAIR(1));
-        }
+        // System info
+        mvprintw(2, 0, "UART: %s @ %u baud", device, baudrate);
+        mvprintw(3, 0, "Nodes detected: %d", get_node_count());
         
         pthread_mutex_lock(&command_mutex);
         attron(COLOR_PAIR(status_color));
-        mvprintw(6 + selected_node->menu_count + 2, 0, "Status: %s", status_response);
+        mvprintw(4, 0, "Status: %s", status_response);
         attroff(COLOR_PAIR(status_color));
         
-        attron(COLOR_PAIR(5));
-        mvprintw(6 + selected_node->menu_count + 3, 0, "Received Data: %s", receive_data);
-        attroff(COLOR_PAIR(5));
+        if (strlen(receive_data) > 0) {
+            attron(COLOR_PAIR(5));
+            mvprintw(5, 0, "Last data: %s", receive_data);
+            attroff(COLOR_PAIR(5));
+        }
         pthread_mutex_unlock(&command_mutex);
+        
+        // Menu options
+        const char *menu_options[] = {
+            "View System Status",
+            "View MQTT Configuration", 
+            "Reload Configuration",
+            "View Node Configuration",
+            "Exit"
+        };
+        int num_options = sizeof(menu_options) / sizeof(menu_options[0]);
+        
+        mvprintw(7, 0, "Configuration Options:");
+        for (int i = 0; i < num_options; i++) {
+            if (i == highlight) {
+                attron(COLOR_PAIR(1));
+            }
+            mvprintw(9 + i, 2, "%d. %s", i + 1, menu_options[i]);
+            if (i == highlight) {
+                attroff(COLOR_PAIR(1));
+            }
+        }
+        
+        // Instructions
+        attron(COLOR_PAIR(5));
+        mvprintw(9 + num_options + 2, 0, "Use UP/DOWN arrows and ENTER to select");
+        mvprintw(9 + num_options + 3, 0, "Press 'q' to quit, 'r' to refresh");
+        attroff(COLOR_PAIR(5));
         
         refresh();
         
         int key = getch();
-        
-        current_time = time(NULL);
-        if (key == ERR && is_busy == 0) {
-            if (current_time - last_user_interaction >= selected_node->auto_read_interval) {
-                set_command_code(get_auto_read_command_id());
-                pthread_mutex_lock(&command_mutex);
-                command_pending = 1;
-                pthread_mutex_unlock(&command_mutex);
-            }
-            continue;
-        }
-        
-        if (key != ERR) {
-            last_user_interaction = current_time;
-            auto_read_active = 0;
-        }
-        
         switch (key) {
             case KEY_UP:
-                highlight = (highlight == 0) ? selected_node->menu_count - 1 : highlight - 1;
+                highlight = (highlight == 0) ? num_options - 1 : highlight - 1;
                 break;
             case KEY_DOWN:
-                highlight = (highlight == selected_node->menu_count - 1) ? 0 : highlight + 1;
+                highlight = (highlight == num_options - 1) ? 0 : highlight + 1;
                 break;
-            case 10:
-                command_code = selected_node->menu_items[highlight].cmd;
-                if (is_busy && command_code != 0) {
-                    pthread_mutex_lock(&command_mutex);
-                    snprintf(status_response, sizeof(status_response), "Busy: Please wait for command to finish");
-                    status_color = 3;
-                    pthread_mutex_unlock(&command_mutex);
-                    break;
+            case 10: // ENTER
+                switch (highlight) {
+                    case 0: // View System Status
+                        clear();
+                        system_info_t *sys_info = get_system_info();
+                        if (sys_info) {
+                            mvprintw(1, 0, "=== System Status ===");
+                            mvprintw(3, 0, "Firmware: %s", sys_info->firmware_version);
+                            mvprintw(4, 0, "Device Type: %s", sys_info->device_type);
+                            mvprintw(5, 0, "Manufacturer: %s", sys_info->manufacturer);
+                            mvprintw(6, 0, "Model: %s", sys_info->model);
+                            mvprintw(8, 0, "UART Device: %s", device);
+                            mvprintw(9, 0, "Baudrate: %u", baudrate);
+                            mvprintw(10, 0, "Detected Nodes: %d", get_node_count());
+                        }
+                        mvprintw(LINES - 2, 0, "Press any key to continue...");
+                        refresh();
+                        getch();
+                        break;
+                        
+                    case 1: // View MQTT Configuration
+                        clear();
+                        mqtt_config_t *mqtt_cfg = get_mqtt_config();
+                        if (mqtt_cfg) {
+                            mvprintw(1, 0, "=== MQTT Configuration ===");
+                            mvprintw(3, 0, "Broker: %s:%d", mqtt_cfg->broker_host, mqtt_cfg->broker_port);
+                            mvprintw(4, 0, "Client ID: %s", mqtt_cfg->client_id);
+                            mvprintw(5, 0, "Username: %s", mqtt_cfg->username);
+                            mvprintw(6, 0, "Topic Telemetry: %s", mqtt_cfg->topic_telemetry);
+                            mvprintw(7, 0, "Topic Control: %s", mqtt_cfg->topic_control);
+                            mvprintw(8, 0, "Topic Status: %s", mqtt_cfg->topic_status);
+                            mvprintw(9, 0, "QoS: %d", mqtt_cfg->qos);
+                            mvprintw(10, 0, "Publish Interval: %d sec", mqtt_cfg->publish_interval);
+                        }
+                        mvprintw(LINES - 2, 0, "Press any key to continue...");
+                        refresh();
+                        getch();
+                        break;
+                        
+                    case 2: // Reload Configuration
+                        clear();
+                        mvprintw(1, 0, "Reloading configuration...");
+                        refresh();
+                        
+                        cleanup_nodes_config();
+                        int load_result = 0;
+                        if (load_nodes_config("../config.json") == 0) {
+                            load_result = 1;
+                        } else if (load_nodes_config("nodes_config.json") == 0) {
+                            load_result = 1;
+                        }
+                        
+                        if (load_result) {
+                            attron(COLOR_PAIR(2));
+                            mvprintw(3, 0, "Configuration reloaded successfully!");
+                            mvprintw(4, 0, "Loaded %d nodes", get_node_count());
+                            attroff(COLOR_PAIR(2));
+                        } else {
+                            attron(COLOR_PAIR(3));
+                            mvprintw(3, 0, "Failed to reload configuration!");
+                            attroff(COLOR_PAIR(3));
+                        }
+                        mvprintw(LINES - 2, 0, "Press any key to continue...");
+                        refresh();
+                        getch();
+                        break;
+                        
+                    case 3: // View Node Configuration
+                        clear();
+                        mvprintw(1, 0, "=== Node Configuration ===");
+                        int node_count = get_node_count();
+                        if (node_count > 0) {
+                            for (int i = 0; i < node_count; i++) {
+                                node_config_t *node = get_node_by_index(i);
+                                if (node) {
+                                    attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
+                                    mvprintw(3 + i, 0, "Node %d: %s (%s) - %s", 
+                                            node->node_id, node->name, node->type,
+                                            node->detected ? "DETECTED" : "NOT DETECTED");
+                                    attroff(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
+                                }
+                            }
+                        } else {
+                            mvprintw(3, 0, "No nodes configured");
+                        }
+                        mvprintw(LINES - 2, 0, "Press any key to continue...");
+                        refresh();
+                        getch();
+                        break;
+                        
+                    case 4: // Exit
+                        endwin();
+                        exit(0);
+                        break;
                 }
-                
-                if (highlight < selected_node->menu_count) {
-                    set_command_code(command_code);
-                    
-                    pthread_mutex_lock(&command_mutex);
-                    command_pending = 1;
-                    pthread_mutex_unlock(&command_mutex);
-                    
-                    if (command_code == 0) {
-                        node_selected = false;
-                        selected_node_id = 0;
-                        selected_node = NULL;
-                        shared_node_type = 0;
-                        highlight = 0;
-                        continue;
-                    }
-                }
-                break;
-            case 'b':
-            case 'B':
-                node_selected = false;
-                selected_node_id = 0;
-                selected_node = NULL;
-                shared_node_type = 0;
-                highlight = 0;
                 break;
             case 'q':
             case 'Q':
                 endwin();
-                close(uart_fd);
                 exit(0);
                 break;
+            case 'r':
+            case 'R':
+                // Refresh - do nothing, will update on next loop
+                break;
         }
-        
-        usleep(get_ui_refresh_delay());
     }
-    
+
     endwin();
     return NULL;
 }

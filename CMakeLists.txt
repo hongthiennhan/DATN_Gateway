@@ -28,7 +28,7 @@ message(STATUS "JSON_C libraries: ${JSON_C_LIBRARIES}")
 
 # Include directories
 set(INCLUDE_DIRS
-    esp_command
+    e_command
     Inc
 )
 
@@ -38,7 +38,7 @@ set(SOURCES_2
     Src_process/thread_func.c
     Src_process/mqtt_thread.c
     Src_process/node_config.c
-    esp_command/control_command.c
+    uart_command/control_command.c
 )
 
 # Add main executable
@@ -59,8 +59,6 @@ target_link_libraries(main_app
     ${NCURSES_LIBRARIES} 
     ${MOSQUITTO_LIBRARIES}
     ${JSON_C_LIBRARIES}
-    pthread
-    m
 )
 
 # NEW: Add compiler flags for all dependencies

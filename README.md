@@ -158,5 +158,18 @@ Nháp:
 Cần: setup một menu để config theo đúng nghĩa, không phải kiểu lấy dữ liệu và gửi lại như trên
 Dữ liệu điều khiển node lấy từ server, kg lấy từ gateway
 Thread uart chỉ nhận dữ liệu uart
-node actuator phải tự hoạt động ở các direct, còn lại thì gửi command từ server xuống
+còn lại thì gửi command từ server xuống:
+Menu như sau:
+menu UI đơn giản chỉ chọn:
+View System Status
+View MQTT Configuration
+Reload Configuration
+View Node Configuration
+Exit,
+với tương tác các node, gửi lệnh các lệnh cụ thể  qua UART để xác định loại node và thực hiện nhận dữ liệu từ node đó (lệnh đc định nghĩa thông qua config, gửi lần lượt các lệnh để xác định loại node )
+
 Setup lại thread UI đơn giản, nếu cần config, chọn config, kg thì thôi
+config chọn loại giao tiếp server (trước hết chỉ để MQTT, thông qua ethernet) các loại giao tiếp với node (trước hết chỉ để là UART có trước)
+giả sử dữ liệu ở thingsboard / server khác bất kỳ có thay đổi ở file config thì cập nhật lại liền.
+nhận dữ liệu điều khiển ở thingsboard / server khác, gửi xuống node để control
+
