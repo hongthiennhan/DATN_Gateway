@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": 1,
-      "name": "Node2 - Sensor Board", 
+      "name": "Node1 - Sensor Board", 
       "type": "sensor_board",
       "is_actuator": 0,
       "detection_commands": [
@@ -29,7 +29,7 @@
     },
     {
       "id": 2,
-      "name": "Node3 - Display Unit",
+      "name": "Node2 - Display Unit",
       "type": "display_unit",
       "is_actuator": 1,
       "detection_commands": [
@@ -56,7 +56,7 @@
     },
     {
       "id": 3,
-      "name": "Node4 - New Device",
+      "name": "Node3 - New Device",
       "type": "new_device",
       "is_actuator": 0,
       "detection_commands": [

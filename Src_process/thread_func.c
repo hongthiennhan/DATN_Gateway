@@ -17,27 +17,6 @@ shared_data_t command_data = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-// Helper functions for command data
-void set_command_code(int new_code) {
-    pthread_mutex_lock(&command_data.mutex);
-    if (command_data.data == NULL) {
-        command_data.data = malloc(sizeof(int));
-    }
-    *(int*)command_data.data = new_code;
-    pthread_cond_signal(&command_data.cond);
-    pthread_mutex_unlock(&command_data.mutex);
-}
-
-int get_command_code() {
-    pthread_mutex_lock(&command_data.mutex);
-    int code = 0;
-    if (command_data.data != NULL) {
-        code = *(int*)command_data.data;
-    }
-    pthread_mutex_unlock(&command_data.mutex);
-    return code;
-}
-
 // ==================== UART THREAD - Data receive + Server commands ====================
 void *uart_thread_func(void *arg) {
     printf("UART thread started - data receive mode\n");

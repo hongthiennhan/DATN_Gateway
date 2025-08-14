@@ -157,7 +157,7 @@ static int parse_node_config(json_object *node_obj, node_config_t *node) {
     memset(node, 0, sizeof(node_config_t));
     
     // Parse basic node info
-    if (json_object_object_get_ex(node_obj, "node_id", &temp_obj)) {
+    if (json_object_object_get_ex(node_obj, "id", &temp_obj)) {
         node->node_id = json_object_get_int(temp_obj);
     }
     if (json_object_object_get_ex(node_obj, "name", &temp_obj)) {

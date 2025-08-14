@@ -41,14 +41,5 @@ void format_response_data(node_config_t *node, unsigned char *resp, uint16_t res
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp);
 
-// ========== Helper Functions ==========
-void set_command_code(int new_code);
-int get_command_code();
-int wait_for_command_change(int timeout_ms);
-void set_mqtt_data_n1(int t1, int t2, int t3);
-node1_data_t get_mqtt_data_n1();
-void set_mqtt_data_n2(uint16_t adc_value);
-uint16_t get_mqtt_data_n2();
-int wait_for_mqtt_data_by_node(int node_type, int timeout_ms);
 
 #endif // THREAD_FUNC_H
