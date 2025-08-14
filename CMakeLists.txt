@@ -28,7 +28,7 @@ message(STATUS "JSON_C libraries: ${JSON_C_LIBRARIES}")
 
 # Include directories
 set(INCLUDE_DIRS
-    control_command
+    uart_command
     Inc
 )
 
