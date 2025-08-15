@@ -8,7 +8,7 @@ pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
 int command_pending = 0;
 char status_response[100] = "System ready";
 int status_color = 2;
-unsigned char receive_data = {0};
+unsigned char receive_data[512] = {0};
 int shared_node_type = 0;
 
 shared_data_t command_data = {
