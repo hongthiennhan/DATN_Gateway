@@ -211,7 +211,7 @@ void *ui_thread_func(void *arg) {
     timeout(100); // 1 second timeout for refresh
     
     int highlight = 0;
-    
+    int key_check;
     while (1) {
         clear();
         
@@ -294,7 +294,7 @@ void *ui_thread_func(void *arg) {
                         }
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        int key_check = getch();
+                        key_check = getch();
                         while (key_check == ERR) {
                             key_check = getch(); // Wait for any key
                         }
@@ -324,7 +324,7 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        int key_check = getch();
+                        key_check = getch();
                         while (key_check == ERR) {
                             key_check = getch(); // Wait for any key
                         }
@@ -427,7 +427,7 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        int key_check = getch();
+                        key_check = getch();
                         while (key_check == ERR) {
                             key_check = getch(); // Wait for any key
                         }
@@ -461,7 +461,7 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        int key_check = getch();
+                        key_check = getch();
                         while (key_check == ERR) {
                             key_check = getch(); // Wait for any key
                         }
