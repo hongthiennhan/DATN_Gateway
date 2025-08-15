@@ -1,8 +1,8 @@
 #include "main.h"
 #include "node_config.h"
-#include <json-c/json.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 // Global node registry
@@ -16,15 +16,26 @@ typedef struct shared_data_s {
 } shared_data_t;
 
 /**
+ * Safe string copy with guaranteed null termination
+ */
+static void safe_strncpy(char *dest, const char *src, size_t dest_size) {
+    if (!dest || !src || dest_size == 0) return;
+    
+    size_t len = strlen(src);
+    if (len >= dest_size) len = dest_size - 1;
+    
+    memcpy(dest, src, len);
+    dest[len] = '\0';  // Ensure null terminator
+}
+
+/**
  * Convert hex string to integer
  */
 uint32_t hex_string_to_int(const char *hex_str) {
     if (!hex_str) return 0;
-    
     if (strncmp(hex_str, "0x", 2) == 0 || strncmp(hex_str, "0X", 2) == 0) {
         hex_str += 2;
     }
-    
     return (uint32_t)strtoul(hex_str, NULL, 16);
 }
 
@@ -40,11 +51,13 @@ static shared_data_t* allocate_shared_data(void) {
         free(shared);
         return NULL;
     }
+    
     if (pthread_cond_init(&shared->cond, NULL) != 0) {
         pthread_mutex_destroy(&shared->mutex);
         free(shared);
         return NULL;
     }
+    
     return shared;
 }
 
@@ -86,16 +99,19 @@ static int parse_detection_commands(json_object *detection_array, node_config_t 
         if (json_object_object_get_ex(cmd_obj, "command", &temp_obj)) {
             cmd->command = (uint8_t)json_object_get_int(temp_obj);
         }
+        
         if (json_object_object_get_ex(cmd_obj, "expected_response", &temp_obj)) {
-            strncpy(cmd->expected_response, json_object_get_string(temp_obj), 
-                   sizeof(cmd->expected_response) - 1);
+            safe_strncpy(cmd->expected_response, json_object_get_string(temp_obj),
+                        sizeof(cmd->expected_response));
         }
+        
         if (json_object_object_get_ex(cmd_obj, "timeout_ms", &temp_obj)) {
             cmd->timeout_ms = json_object_get_int(temp_obj);
         }
+        
         if (json_object_object_get_ex(cmd_obj, "description", &temp_obj)) {
-            strncpy(cmd->description, json_object_get_string(temp_obj), 
-                   sizeof(cmd->description) - 1);
+            safe_strncpy(cmd->description, json_object_get_string(temp_obj),
+                        sizeof(cmd->description));
         }
     }
     
@@ -126,18 +142,23 @@ static int parse_menu_items(json_object *menu_array, node_config_t *node) {
         if (json_object_object_get_ex(item_obj, "cmd", &temp_obj)) {
             item->cmd = json_object_get_int(temp_obj);
         }
+        
         if (json_object_object_get_ex(item_obj, "label", &temp_obj)) {
-            strncpy(item->label, json_object_get_string(temp_obj), sizeof(item->label) - 1);
+            safe_strncpy(item->label, json_object_get_string(temp_obj), sizeof(item->label));
         }
+        
         if (json_object_object_get_ex(item_obj, "uart_cmd", &temp_obj)) {
-            strncpy(item->uart_cmd, json_object_get_string(temp_obj), sizeof(item->uart_cmd) - 1);
+            safe_strncpy(item->uart_cmd, json_object_get_string(temp_obj), sizeof(item->uart_cmd));
         }
+        
         if (json_object_object_get_ex(item_obj, "hex_value", &temp_obj)) {
-            strncpy(item->hex_value, json_object_get_string(temp_obj), sizeof(item->hex_value) - 1);
+            safe_strncpy(item->hex_value, json_object_get_string(temp_obj), sizeof(item->hex_value));
         }
+        
         if (json_object_object_get_ex(item_obj, "timeout_ms", &temp_obj)) {
             item->timeout_ms = json_object_get_int(temp_obj);
         }
+        
         if (json_object_object_get_ex(item_obj, "is_direct", &temp_obj)) {
             item->is_direct = json_object_get_boolean(temp_obj);
         }
@@ -153,37 +174,45 @@ static int parse_node_config(json_object *node_obj, node_config_t *node) {
     if (!node_obj || !node) return -1;
     
     json_object *temp_obj;
-    
     memset(node, 0, sizeof(node_config_t));
     
     // Parse basic node info
     if (json_object_object_get_ex(node_obj, "id", &temp_obj)) {
         node->node_id = json_object_get_int(temp_obj);
     }
+    
     if (json_object_object_get_ex(node_obj, "name", &temp_obj)) {
-        strncpy(node->name, json_object_get_string(temp_obj), sizeof(node->name) - 1);
+        safe_strncpy(node->name, json_object_get_string(temp_obj), sizeof(node->name));
     }
+    
     if (json_object_object_get_ex(node_obj, "type", &temp_obj)) {
-        strncpy(node->type, json_object_get_string(temp_obj), sizeof(node->type) - 1);
+        safe_strncpy(node->type, json_object_get_string(temp_obj), sizeof(node->type));
     }
+    
     if (json_object_object_get_ex(node_obj, "auto_read_cmd", &temp_obj)) {
         node->auto_read_cmd = json_object_get_int(temp_obj);
     }
+    
     if (json_object_object_get_ex(node_obj, "flash_cmd", &temp_obj)) {
         node->flash_cmd = json_object_get_int(temp_obj);
     }
+    
     if (json_object_object_get_ex(node_obj, "auto_read_interval", &temp_obj)) {
         node->auto_read_interval = json_object_get_int(temp_obj);
     }
+    
     if (json_object_object_get_ex(node_obj, "expected_data_length", &temp_obj)) {
         node->expected_data_length = json_object_get_int(temp_obj);
     }
+    
     if (json_object_object_get_ex(node_obj, "data_format", &temp_obj)) {
-        strncpy(node->data_format, json_object_get_string(temp_obj), sizeof(node->data_format) - 1);
+        safe_strncpy(node->data_format, json_object_get_string(temp_obj), sizeof(node->data_format));
     }
+    
     if (json_object_object_get_ex(node_obj, "reflash_script", &temp_obj)) {
-        strncpy(node->reflash_script, json_object_get_string(temp_obj), sizeof(node->reflash_script) - 1);
+        safe_strncpy(node->reflash_script, json_object_get_string(temp_obj), sizeof(node->reflash_script));
     }
+    
     if (json_object_object_get_ex(node_obj, "is_actuator", &temp_obj)) {
         node->is_actuator = json_object_get_boolean(temp_obj);
     }
@@ -219,8 +248,8 @@ int load_nodes_config(const char *config_file) {
         printf("Error: Cannot load config file %s\n", config_file);
         return -1;
     }
-    
-    // Initialize registry
+
+    // Initialize registry - ZERO OUT ALL MEMORY
     memset(&node_registry, 0, sizeof(node_registry));
     
     // Initialize control queue
@@ -239,7 +268,7 @@ int load_nodes_config(const char *config_file) {
         effective_root = config_obj;
         printf("Using ThingsBoard wrapper format\n");
     }
-    
+
     // Parse system configuration
     json_object *system_obj;
     if (json_object_object_get_ex(effective_root, "system_config", &system_obj)) {
@@ -247,84 +276,158 @@ int load_nodes_config(const char *config_file) {
         
         if (json_object_object_get_ex(system_obj, "auto_read_command_id", &temp_obj))
             node_registry.auto_read_command_id = json_object_get_int(temp_obj);
+            
         if (json_object_object_get_ex(system_obj, "uart_clear_timeout", &temp_obj))
             node_registry.uart_clear_timeout = json_object_get_int(temp_obj);
+            
         if (json_object_object_get_ex(system_obj, "ui_refresh_delay", &temp_obj))
             node_registry.ui_refresh_delay = json_object_get_int(temp_obj);
+            
         if (json_object_object_get_ex(system_obj, "uart_wait_timeout", &temp_obj))
             node_registry.uart_wait_timeout = json_object_get_int(temp_obj);
+            
         if (json_object_object_get_ex(system_obj, "default_baudrate", &temp_obj))
             node_registry.default_baudrate = json_object_get_int(temp_obj);
-        if (json_object_object_get_ex(system_obj, "default_device", &temp_obj))
-            strncpy(node_registry.default_device, json_object_get_string(temp_obj),
-                   sizeof(node_registry.default_device) - 1);
+            
+        if (json_object_object_get_ex(system_obj, "default_device", &temp_obj)) {
+            safe_strncpy(node_registry.default_device, json_object_get_string(temp_obj),
+                        sizeof(node_registry.default_device));
+        }
+        
         if (json_object_object_get_ex(system_obj, "startup_clear_duration", &temp_obj))
             node_registry.startup_clear_duration = json_object_get_int(temp_obj);
-        
+            
         // Parse detection settings
         if (json_object_object_get_ex(system_obj, "detection_interval", &temp_obj))
             node_registry.detection_interval = json_object_get_int(temp_obj);
+            
         if (json_object_object_get_ex(system_obj, "detection_timeout", &temp_obj))
             node_registry.detection_timeout = json_object_get_int(temp_obj);
     }
-    
+
     // Parse system info
     json_object *system_info_obj;
     if (json_object_object_get_ex(effective_root, "system_info", &system_info_obj)) {
         json_object *temp_obj;
         
-        if (json_object_object_get_ex(system_info_obj, "firmware_version", &temp_obj))
-            strncpy(node_registry.system_info.firmware_version, json_object_get_string(temp_obj),
-                   sizeof(node_registry.system_info.firmware_version) - 1);
-        if (json_object_object_get_ex(system_info_obj, "device_type", &temp_obj))
-            strncpy(node_registry.system_info.device_type, json_object_get_string(temp_obj),
-                   sizeof(node_registry.system_info.device_type) - 1);
-        if (json_object_object_get_ex(system_info_obj, "manufacturer", &temp_obj))
-            strncpy(node_registry.system_info.manufacturer, json_object_get_string(temp_obj),
-                   sizeof(node_registry.system_info.manufacturer) - 1);
-        if (json_object_object_get_ex(system_info_obj, "model", &temp_obj))
-            strncpy(node_registry.system_info.model, json_object_get_string(temp_obj),
-                   sizeof(node_registry.system_info.model) - 1);
+        if (json_object_object_get_ex(system_info_obj, "firmware_version", &temp_obj)) {
+            safe_strncpy(node_registry.system_info.firmware_version,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.system_info.firmware_version));
+        }
+        
+        if (json_object_object_get_ex(system_info_obj, "device_type", &temp_obj)) {
+            safe_strncpy(node_registry.system_info.device_type,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.system_info.device_type));
+        }
+        
+        if (json_object_object_get_ex(system_info_obj, "manufacturer", &temp_obj)) {
+            safe_strncpy(node_registry.system_info.manufacturer,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.system_info.manufacturer));
+        }
+        
+        if (json_object_object_get_ex(system_info_obj, "model", &temp_obj)) {
+            safe_strncpy(node_registry.system_info.model,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.system_info.model));
+        }
     }
-    
-    // Parse UART config (abbreviated for space)
+
+    // Parse UART config
     json_object *uart_obj;
     if (json_object_object_get_ex(effective_root, "uart_config", &uart_obj)) {
-        // Parse UART configuration similar to previous version...
-        // Omitted for brevity
+        json_object *temp_obj;
+        
+        if (json_object_object_get_ex(uart_obj, "config_file_path", &temp_obj)) {
+            safe_strncpy(node_registry.uart_config.config_file_path,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.uart_config.config_file_path));
+        }
+        
+        // Parse nested buffer_sizes
+        json_object *buffer_sizes_obj;
+        if (json_object_object_get_ex(uart_obj, "buffer_sizes", &buffer_sizes_obj)) {
+            if (json_object_object_get_ex(buffer_sizes_obj, "response_buffer", &temp_obj))
+                node_registry.uart_config.response_buffer_size = json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "temp_buffer", &temp_obj))
+                node_registry.uart_config.temp_buffer_size = json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "error_message_buffer", &temp_obj))
+                node_registry.uart_config.error_message_buffer_size = json_object_get_int(temp_obj);
+        }
+        
+        // Parse nested timing
+        json_object *timing_obj;
+        if (json_object_object_get_ex(uart_obj, "timing", &timing_obj)) {
+            if (json_object_object_get_ex(timing_obj, "poll_interval_ms", &temp_obj))
+                node_registry.uart_config.poll_interval_ms = json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(timing_obj, "flush_interval_ms", &temp_obj))
+                node_registry.uart_config.flush_interval_ms = json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(timing_obj, "select_timeout_ms", &temp_obj))
+                node_registry.uart_config.select_timeout_ms = json_object_get_int(temp_obj);
+        }
+        
+        if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
+            node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
-    
-    // Parse MQTT config
+
+    // Parse MQTT config - SAFE VERSION
     json_object *mqtt_obj;
     if (json_object_object_get_ex(effective_root, "mqtt_config", &mqtt_obj)) {
         json_object *temp_obj;
         
-        if (json_object_object_get_ex(mqtt_obj, "broker_host", &temp_obj))
-            strncpy(node_registry.mqtt_config.broker_host, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.broker_host) - 1);
+        if (json_object_object_get_ex(mqtt_obj, "broker_host", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.broker_host,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.broker_host));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "client_id", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.client_id,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.client_id));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "username", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.username,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.username));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "password", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.password,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.password));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "topic_telemetry", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.topic_telemetry,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.topic_telemetry));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "topic_attributes", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.topic_attributes,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.topic_attributes));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "topic_control", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.topic_control,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.topic_control));
+        }
+        
+        if (json_object_object_get_ex(mqtt_obj, "topic_status", &temp_obj)) {
+            safe_strncpy(node_registry.mqtt_config.topic_status,
+                        json_object_get_string(temp_obj),
+                        sizeof(node_registry.mqtt_config.topic_status));
+        }
+        
+        // Integer fields
         if (json_object_object_get_ex(mqtt_obj, "broker_port", &temp_obj))
             node_registry.mqtt_config.broker_port = json_object_get_int(temp_obj);
-        if (json_object_object_get_ex(mqtt_obj, "client_id", &temp_obj))
-            strncpy(node_registry.mqtt_config.client_id, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.client_id) - 1);
-        if (json_object_object_get_ex(mqtt_obj, "username", &temp_obj))
-            strncpy(node_registry.mqtt_config.username, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.username) - 1);
-        if (json_object_object_get_ex(mqtt_obj, "password", &temp_obj))
-            strncpy(node_registry.mqtt_config.password, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.password) - 1);
-        if (json_object_object_get_ex(mqtt_obj, "topic_telemetry", &temp_obj))
-            strncpy(node_registry.mqtt_config.topic_telemetry, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.topic_telemetry) - 1);
-        if (json_object_object_get_ex(mqtt_obj, "topic_attributes", &temp_obj))
-            strncpy(node_registry.mqtt_config.topic_attributes, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.topic_attributes) - 1);
-        if (json_object_object_get_ex(mqtt_obj, "topic_control", &temp_obj))
-            strncpy(node_registry.mqtt_config.topic_control, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.topic_control) - 1);
-        if (json_object_object_get_ex(mqtt_obj, "topic_status", &temp_obj))
-            strncpy(node_registry.mqtt_config.topic_status, json_object_get_string(temp_obj),
-                   sizeof(node_registry.mqtt_config.topic_status) - 1);
         if (json_object_object_get_ex(mqtt_obj, "qos", &temp_obj))
             node_registry.mqtt_config.qos = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(mqtt_obj, "publish_interval", &temp_obj))
@@ -339,33 +442,29 @@ int load_nodes_config(const char *config_file) {
             node_registry.mqtt_config.payload_buffer_size = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(mqtt_obj, "attributes_buffer_size", &temp_obj))
             node_registry.mqtt_config.attributes_buffer_size = json_object_get_int(temp_obj);
-        
+            
         // Parse system fields
         json_object *system_fields_obj;
         if (json_object_object_get_ex(mqtt_obj, "system_fields", &system_fields_obj)) {
-            if (json_object_object_get_ex(system_fields_obj, "data_source", &temp_obj))
-                strncpy(node_registry.mqtt_config.system_fields.data_source, 
-                       json_object_get_string(temp_obj),
-                       sizeof(node_registry.mqtt_config.system_fields.data_source) - 1);
+            if (json_object_object_get_ex(system_fields_obj, "data_source", &temp_obj)) {
+                safe_strncpy(node_registry.mqtt_config.system_fields.data_source,
+                            json_object_get_string(temp_obj),
+                            sizeof(node_registry.mqtt_config.system_fields.data_source));
+            }
             if (json_object_object_get_ex(system_fields_obj, "include_timestamp", &temp_obj))
-                node_registry.mqtt_config.system_fields.include_timestamp = 
-                json_object_get_boolean(temp_obj);
+                node_registry.mqtt_config.system_fields.include_timestamp = json_object_get_boolean(temp_obj);
             if (json_object_object_get_ex(system_fields_obj, "include_gateway_ip", &temp_obj))
-                node_registry.mqtt_config.system_fields.include_gateway_ip = 
-                json_object_get_boolean(temp_obj);
+                node_registry.mqtt_config.system_fields.include_gateway_ip = json_object_get_boolean(temp_obj);
             if (json_object_object_get_ex(system_fields_obj, "include_node_count", &temp_obj))
-                node_registry.mqtt_config.system_fields.include_node_count = 
-                json_object_get_boolean(temp_obj);
+                node_registry.mqtt_config.system_fields.include_node_count = json_object_get_boolean(temp_obj);
         }
     }
-    
+
     // Parse nodes array
     json_object *nodes_array;
     if (json_object_object_get_ex(effective_root, "nodes", &nodes_array) ||
         json_object_object_get_ex(effective_root, "node", &nodes_array)) {
-        
         int array_len = json_object_array_length(nodes_array);
-        
         if (array_len > 0) {
             node_registry.nodes = malloc(sizeof(node_config_t) * array_len);
             if (!node_registry.nodes) {
@@ -387,12 +486,18 @@ int load_nodes_config(const char *config_file) {
             }
         }
     }
-    
+
     json_object_put(root);
     
     printf("Configuration loaded: %d nodes\n", node_registry.count);
     printf("Detection interval: %d seconds\n", node_registry.detection_interval);
-    printf("MQTT broker: %s:%d\n", node_registry.mqtt_config.broker_host, 
+    
+    // DEBUG: Validate broker_host after parsing
+    printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n", 
+           node_registry.mqtt_config.broker_host, 
+           strlen(node_registry.mqtt_config.broker_host));
+    
+    printf("MQTT broker: %s:%d\n", node_registry.mqtt_config.broker_host,
            node_registry.mqtt_config.broker_port);
     
     return 0;
@@ -406,6 +511,7 @@ int start_node_detection(void) {
     
     for (int i = 0; i < node_registry.count; i++) {
         node_config_t *node = &node_registry.nodes[i];
+        
         if (detect_node_type(node) == 0) {
             node->detected = 1;
             node->last_detection = time(NULL);
@@ -427,7 +533,7 @@ int detect_node_type(node_config_t *node) {
         return -1;
     }
     
-    printf("Detecting node %d (%s) with %d commands\n", 
+    printf("Detecting node %d (%s) with %d commands\n",
            node->node_id, node->name, node->detection_count);
     
     for (int i = 0; i < node->detection_count; i++) {
@@ -468,6 +574,7 @@ int get_node_count(void) {
 
 menu_item_t* get_menu_item_by_cmd(node_config_t *node, int cmd) {
     if (!node) return NULL;
+    
     for (int i = 0; i < node->menu_count; i++) {
         if (node->menu_items[i].cmd == cmd) {
             return &node->menu_items[i];
@@ -485,7 +592,7 @@ int get_default_baudrate(void) { return node_registry.default_baudrate; }
 const char* get_default_device(void) { return node_registry.default_device; }
 int get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
 
-// NEW: Detection getters
+// Detection getters
 int get_detection_interval(void) { return node_registry.detection_interval; }
 int get_detection_timeout(void) { return node_registry.detection_timeout; }
 
@@ -507,12 +614,13 @@ int add_control_command(int node_id, int cmd_id, const char *params) {
     server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
     cmd->node_id = node_id;
     cmd->cmd_id = cmd_id;
+    
     if (params) {
-        strncpy(cmd->params, params, sizeof(cmd->params) - 1);
-        cmd->params[sizeof(cmd->params) - 1] = '\0';
+        safe_strncpy(cmd->params, params, sizeof(cmd->params));
     } else {
         cmd->params[0] = '\0';
     }
+    
     cmd->timestamp = time(NULL);
     cmd->processed = 0;
     
@@ -540,6 +648,7 @@ int get_control_command(server_control_cmd_t *cmd) {
     node_registry.control_queue.count--;
     
     pthread_mutex_unlock(&node_registry.control_queue.mutex);
+    
     return 0;
 }
 

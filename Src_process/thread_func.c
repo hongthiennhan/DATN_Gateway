@@ -8,7 +8,7 @@ pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
 int command_pending = 0;
 char status_response[100] = "System ready";
 int status_color = 2;
-unsigned char receive_data[512] = {0};
+unsigned char receive_data = {0};
 int shared_node_type = 0;
 
 shared_data_t command_data = {
@@ -35,11 +35,9 @@ void *uart_thread_func(void *arg) {
             if (node) {
                 menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
                 if (menu_item) {
-                    printf("Executing server command: node=%d, cmd=%d\n", 
+                    printf("Executing server command: node=%d, cmd=%d\n",
                            control_cmd.node_id, control_cmd.cmd_id);
-                    
                     execute_uart_command(node, menu_item, &resp, &resp_len, 0);
-                    
                     if (resp) {
                         free(resp);
                         resp = NULL;
@@ -62,9 +60,9 @@ void *uart_thread_func(void *arg) {
         for (int i = 0; i < get_node_count(); i++) {
             node_config_t *node = get_node_by_index(i);
             if (node && node->detected && node->auto_read_interval > 0) {
-                time_t last_read = (node->mqtt_data && node->mqtt_data->data) ? 
+                time_t last_read = (node->mqtt_data && node->mqtt_data->data) ?
                                    ((raw_data_t*)node->mqtt_data->data)->length : 0;
-                
+                                   
                 if ((current_time - last_read) >= node->auto_read_interval) {
                     menu_item_t *auto_read_item = get_menu_item_by_cmd(node, node->auto_read_cmd);
                     if (auto_read_item) {
@@ -81,6 +79,7 @@ void *uart_thread_func(void *arg) {
         
         usleep(1000 * 1000); // 1 second sleep
     }
+    
     return NULL;
 }
 
@@ -90,16 +89,16 @@ void *uart_thread_func(void *arg) {
 void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent) {
     *resp = NULL;
     *resp_len = 0;
-
+    
     uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
     if (uart_cmd == 0) return;
-
+    
     write_command((uint8_t)uart_cmd);
-
+    
     if (menu_item->timeout_ms > 0) {
         *resp = Read_Response(menu_item->timeout_ms, resp_len);
     }
-
+    
     process_uart_response(node, menu_item->cmd, *resp, *resp_len, silent);
 }
 
@@ -112,30 +111,33 @@ void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, ui
         update_mqtt_data_from_response(node, resp, resp_len);
         return;
     }
-
+    
     pthread_mutex_lock(&command_mutex);
+    
     if (resp && resp_len > 0) {
-        snprintf(status_response, sizeof(status_response), 
-                "Node %s: Command %d executed", node->name, cmd);
+        snprintf(status_response, sizeof(status_response),
+                 "Node %s: Command %d executed", node->name, cmd);
         
         // Format response for display
         char hex_str[256] = {0};
         int max_display = (resp_len > 50) ? 50 : resp_len;
+        
         for (int i = 0; i < max_display; i++) {
             sprintf(hex_str + strlen(hex_str), "%02X ", resp[i]);
         }
         
-        snprintf(receive_data, sizeof(receive_data), "Data[%d bytes]: %s%s", 
-                resp_len, hex_str, (resp_len > 50) ? "..." : "");
-        
+        snprintf((char*)receive_data, sizeof(receive_data), "Data[%d bytes]: %s%s",
+                 resp_len, hex_str, (resp_len > 50) ? "..." : "");
         status_color = 2;
+        
         update_mqtt_data_from_response(node, resp, resp_len);
     } else {
-        snprintf(status_response, sizeof(status_response), 
-                "Node %s: Command %d - no response", node->name, cmd);
-        snprintf(receive_data, sizeof(receive_data), "No data received");
+        snprintf(status_response, sizeof(status_response),
+                 "Node %s: Command %d - no response", node->name, cmd);
+        snprintf((char*)receive_data, sizeof(receive_data), "No data received");
         status_color = 3;
     }
+    
     pthread_mutex_unlock(&command_mutex);
 }
 
@@ -144,9 +146,9 @@ void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, ui
  */
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
     if (!node || !node->mqtt_data || !resp || resp_len == 0) return;
-
+    
     pthread_mutex_lock(&node->mqtt_data->mutex);
-
+    
     // Free old data if exists
     if (node->mqtt_data->data) {
         raw_data_t *old_data = (raw_data_t*)node->mqtt_data->data;
@@ -155,7 +157,7 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
         }
         free(old_data);
     }
-
+    
     // Store new raw data
     raw_data_t *raw_data = malloc(sizeof(raw_data_t));
     if (raw_data) {
@@ -169,6 +171,7 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
             free(raw_data);
         }
     }
+    
     pthread_mutex_unlock(&node->mqtt_data->mutex);
 }
 
@@ -180,17 +183,17 @@ void *ui_thread_func(void *arg) {
     // Initialize ncurses
     initscr();
     start_color();
-    init_pair(1, COLOR_BLACK, COLOR_WHITE);  // Highlight
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);  // Success
-    init_pair(3, COLOR_RED, COLOR_BLACK);    // Error
+    init_pair(1, COLOR_BLACK, COLOR_WHITE); // Highlight
+    init_pair(2, COLOR_GREEN, COLOR_BLACK); // Success
+    init_pair(3, COLOR_RED, COLOR_BLACK);   // Error
     init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Warning
     init_pair(5, COLOR_CYAN, COLOR_BLACK);   // Info
-
+    
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
     timeout(1000); // 1 second timeout for refresh
-
+    
     int highlight = 0;
     
     while (1) {
@@ -210,7 +213,7 @@ void *ui_thread_func(void *arg) {
         mvprintw(4, 0, "Status: %s", status_response);
         attroff(COLOR_PAIR(status_color));
         
-        if (strlen(receive_data) > 0) {
+        if (strlen((char*)receive_data) > 0) {
             attron(COLOR_PAIR(5));
             mvprintw(5, 0, "Last data: %s", receive_data);
             attroff(COLOR_PAIR(5));
@@ -225,9 +228,10 @@ void *ui_thread_func(void *arg) {
             "View Node Configuration",
             "Exit"
         };
-        int num_options = sizeof(menu_options) / sizeof(menu_options[0]);
         
+        int num_options = sizeof(menu_options) / sizeof(menu_options[0]);
         mvprintw(7, 0, "Configuration Options:");
+        
         for (int i = 0; i < num_options; i++) {
             if (i == highlight) {
                 attron(COLOR_PAIR(1));
@@ -316,6 +320,7 @@ void *ui_thread_func(void *arg) {
                             mvprintw(3, 0, "Failed to reload configuration!");
                             attroff(COLOR_PAIR(3));
                         }
+                        
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
                         getch();
@@ -330,15 +335,16 @@ void *ui_thread_func(void *arg) {
                                 node_config_t *node = get_node_by_index(i);
                                 if (node) {
                                     attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
-                                    mvprintw(3 + i, 0, "Node %d: %s (%s) - %s", 
-                                            node->node_id, node->name, node->type,
-                                            node->detected ? "DETECTED" : "NOT DETECTED");
+                                    mvprintw(3 + i, 0, "Node %d: %s (%s) - %s",
+                                             node->node_id, node->name, node->type,
+                                             node->detected ? "DETECTED" : "NOT DETECTED");
                                     attroff(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
                                 }
                             }
                         } else {
                             mvprintw(3, 0, "No nodes configured");
                         }
+                        
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
                         getch();
@@ -350,18 +356,20 @@ void *ui_thread_func(void *arg) {
                         break;
                 }
                 break;
+                
             case 'q':
             case 'Q':
                 endwin();
                 exit(0);
                 break;
+                
             case 'r':
             case 'R':
                 // Refresh - do nothing, will update on next loop
                 break;
         }
     }
-
+    
     endwin();
     return NULL;
 }

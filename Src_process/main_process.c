@@ -3,6 +3,13 @@
 #include "thread_func.h"
 #include "node_config.h"
 
+// UART extern declarations
+extern int uart_fd;
+extern void load_config(uint32_t *baudrate, char **device);
+extern int Uart_Init(speed_t baudrate, const char *device);
+extern speed_t map_to_speed(uint32_t baudrate);
+extern void Clear_Startup_UART(int fd, int duration);
+
 static struct option long_options[] = {
     {0, 0, 0, 0}
 };
@@ -10,7 +17,9 @@ static struct option long_options[] = {
 // Function to clean up resources on exit
 void cleanup_on_exit(void) {
     // Close UART
-    close(uart_fd);
+    if (uart_fd >= 0) {
+        close(uart_fd);
+    }
     
     // Cleanup node config
     cleanup_nodes_config();
@@ -19,6 +28,7 @@ void cleanup_on_exit(void) {
     if (command_data.data) {
         free(command_data.data);
     }
+    
     pthread_mutex_destroy(&command_data.mutex);
     pthread_cond_destroy(&command_data.cond);
     
@@ -31,12 +41,15 @@ void cleanup_on_exit(void) {
 // ==================== MAIN FUNCTION ====================
 int main(void) {
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
+    
     uint8_t load_try = 0;
+    
     // Load node configuration FIRST
     if (load_nodes_config("../config.json") != 0) {
         fprintf(stderr, "Failed to load node configuration\n");
         load_try = 1;
     }
+    
     // If first load failed, try fallback config
     if(load_try == 1) {
         if (load_nodes_config("nodes_config.json") != 0) {
@@ -44,47 +57,46 @@ int main(void) {
             return -1;
         }
     }
-
+    
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
     char *device = strdup(get_default_device()); // Make a copy since it might be modified
-    int opt, option_index = 0;
-
+    
     // Initialize command_data with a pointer to an int
     command_data.data = malloc(sizeof(int));
     if (command_data.data == NULL) {
         fprintf(stderr, "Failed to allocate memory for command data\n");
         return -1;
     }
-
     *(int*)command_data.data = -1; // Initialize to -1
-
+    
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);
     
     // Use config value instead of hard-coded timeout
     Clear_Startup_UART(uart_fd, get_startup_clear_duration());
-
+    
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
-    fprintf(stderr, "Init Success!\n");
+    
     // Start UART thread (no arg needed, it will wait for shared_node_type)
     pthread_t uart_thread;
     pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
-
+    
     // Start UI thread
     pthread_t ui_thread;
     pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
-
+    
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
-
+    
     // Main waits for threads to finish (does nothing else)
     pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
-
+    
     // Cleanup the device string
     free(device);
+    
     return 0;
 }

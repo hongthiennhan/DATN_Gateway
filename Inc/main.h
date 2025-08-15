@@ -14,6 +14,8 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include <time.h>
+#include <sys/time.h>      // ADDED
+#include <stdint.h>        // ADDED
 
 // Include necessary lib for MQTT
 #include <mosquitto.h>
