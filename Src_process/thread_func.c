@@ -294,7 +294,10 @@ void *ui_thread_func(void *arg) {
                         }
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        getch();
+                        int key_check = getch();
+                        while (key_check == ERR) {
+                            key_check = getch(); // Wait for any key
+                        }
                         break;
                         
                     case 1: // View Communication Config - UPDATED
@@ -321,7 +324,10 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        getch();
+                        int key_check = getch();
+                        while (key_check == ERR) {
+                            key_check = getch(); // Wait for any key
+                        }
                         break;
                         
                     case 2: // NEW: Select Communication Type
@@ -421,7 +427,10 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        getch();
+                        int key_check = getch();
+                        while (key_check == ERR) {
+                            key_check = getch(); // Wait for any key
+                        }
                         break;
                         
                     case 4: // View Node Configuration - UPDATED with last data time
@@ -452,7 +461,10 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        getch();
+                        int key_check = getch();
+                        while (key_check == ERR) {
+                            key_check = getch(); // Wait for any key
+                        }
                         break;
                         
                     case 5: // Exit
