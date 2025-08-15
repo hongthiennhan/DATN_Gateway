@@ -3,13 +3,6 @@
 #include "thread_func.h"
 #include "node_config.h"
 
-// UART extern declarations
-extern int uart_fd;
-extern void load_config(uint32_t *baudrate, char **device);
-extern int Uart_Init(speed_t baudrate, const char *device);
-extern speed_t map_to_speed(uint32_t baudrate);
-extern void Clear_Startup_UART(int fd, int duration);
-
 static struct option long_options[] = {
     {0, 0, 0, 0}
 };
@@ -70,11 +63,17 @@ int main(void) {
     }
     *(int*)command_data.data = -1; // Initialize to -1
     
-    load_config(&baudrate, &device);
+    // Fixed: load_config now returns uint8_t
+    uint8_t config_result = load_config(&baudrate, &device);
+    if (config_result != 0) {
+        printf("Warning: load_config returned %d\n", config_result);
+    }
+    
     Uart_Init(map_to_speed(baudrate), device);
     
     // Use config value instead of hard-coded timeout
-    Clear_Startup_UART(uart_fd, get_startup_clear_duration());
+    // Fixed: Clear_Startup_UART with uint32_t parameter
+    Clear_Startup_UART(uart_fd, (uint32_t)get_startup_clear_duration());
     
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
