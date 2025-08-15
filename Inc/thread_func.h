@@ -33,7 +33,7 @@ extern int shared_node_type;
 void *uart_thread_func(void *arg);
 void *ui_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
-void process_uart_data(unsigned char *data, uint16_t data_len)
+void process_uart_data(unsigned char *data, uint16_t data_len);
 
 // Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
 void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent);
