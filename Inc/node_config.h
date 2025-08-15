@@ -17,11 +17,11 @@ typedef enum {
     COMM_TYPE_COUNT
 } communication_type_t;
 
-// Add to raw_data_t struct - track when data was received:
+// Raw data structure for communication
 typedef struct {
     unsigned char *data;
     int length;
-    time_t timestamp; // ADD THIS LINE - timestamp when data was received
+    time_t timestamp; // Timestamp when data was received
 } raw_data_t;
 
 // Forward declaration
@@ -114,12 +114,6 @@ typedef struct {
     int baudrate_count;
     int default_baudrate_fallback;
 } uart_config_t;
-
-// Raw data structure to store binary data without parsing
-typedef struct {
-    unsigned char *data;
-    int length;
-} raw_data_t;
 
 typedef struct {
     int node_id;
