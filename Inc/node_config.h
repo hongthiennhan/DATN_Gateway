@@ -9,6 +9,21 @@
 #define MAX_MENU_ITEMS 20
 #define MAX_DETECTION_COMMANDS 10
 
+typedef enum {
+    COMM_TYPE_MQTT = 0,
+    COMM_TYPE_HTTP,     // For HTTP communication (not implemented yet)
+    COMM_TYPE_WEBSOCKET, // For WebSocket communication (not implemented yet)
+    COMM_TYPE_TCP,      // For direct TCP communication (not implemented yet)
+    COMM_TYPE_COUNT
+} communication_type_t;
+
+// Add to raw_data_t struct - track when data was received:
+typedef struct {
+    unsigned char *data;
+    int length;
+    time_t timestamp; // ADD THIS LINE - timestamp when data was received
+} raw_data_t;
+
 // Forward declaration
 typedef struct shared_data_s shared_data_t;
 
@@ -125,7 +140,8 @@ typedef struct {
     int detection_count;
     int detected;              // 1 if node detected, 0 otherwise
     time_t last_detection;     // Last detection attempt timestamp
-    
+    time_t last_data_received; // when node last sent data
+
     // Runtime data
     shared_data_t *mqtt_data;
 } node_config_t;
@@ -147,7 +163,10 @@ typedef struct {
     // NEW: Node detection config
     int detection_interval;    // Seconds between detection attempts
     int detection_timeout;     // Max time for detection sequence
-    
+
+    // Communication type
+    communication_type_t communication_type;
+
     // System info
     system_info_t system_info;
     
@@ -210,4 +229,8 @@ int get_config_mode(void);
 // Utility function
 uint32_t hex_string_to_int(const char *hex_str);
 
+//Communication type functions
+communication_type_t get_communication_type(void);
+void set_communication_type(communication_type_t type);
+const char* get_communication_type_name(communication_type_t type);
 #endif

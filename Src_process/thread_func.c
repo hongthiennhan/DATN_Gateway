@@ -17,36 +17,16 @@ shared_data_t command_data = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-// ==================== UART THREAD - Data receive + Server commands ====================
+// ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
-    printf("UART thread started - data receive mode\n");
+    printf("UART thread started - listening for automatic node data\n");
     
-    uint16_t resp_len = 0;
-    unsigned char *resp = NULL;
-    server_control_cmd_t control_cmd;
+    uint16_t data_len = 0;
+    unsigned char *data_buffer = NULL;
     time_t last_detection = 0;
     
     while (1) {
         time_t current_time = time(NULL);
-        
-        // Execute server control commands
-        if (get_control_command(&control_cmd) == 0) {
-            node_config_t *node = get_node_by_id(control_cmd.node_id);
-            if (node) {
-                menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
-                if (menu_item) {
-                    printf("Executing server command: node=%d, cmd=%d\n",
-                           control_cmd.node_id, control_cmd.cmd_id);
-                    execute_uart_command(node, menu_item, &resp, &resp_len, 0);
-                    if (resp) {
-                        free(resp);
-                        resp = NULL;
-                        resp_len = 0;
-                    }
-                }
-            }
-            continue;
-        }
         
         // Periodic node detection
         int detection_interval = get_detection_interval();
@@ -56,54 +36,89 @@ void *uart_thread_func(void *arg) {
             last_detection = current_time;
         }
         
-        // Auto-read from detected nodes
-        for (int i = 0; i < get_node_count(); i++) {
-            node_config_t *node = get_node_by_index(i);
-            if (node && node->detected && node->auto_read_interval > 0) {
-                time_t last_read = (node->mqtt_data && node->mqtt_data->data) ?
-                                   ((raw_data_t*)node->mqtt_data->data)->length : 0;
-                                   
-                if ((current_time - last_read) >= node->auto_read_interval) {
-                    menu_item_t *auto_read_item = get_menu_item_by_cmd(node, node->auto_read_cmd);
-                    if (auto_read_item) {
-                        execute_uart_command(node, auto_read_item, &resp, &resp_len, 1);
-                        if (resp) {
-                            free(resp);
-                            resp = NULL;
-                            resp_len = 0;
-                        }
+        // Check for data from UART (nodes send automatically)
+        if (Check_UART_Data_Available()) {
+            // Read automatic data from nodes
+            data_buffer = Read_Response(1000, &data_len); // 1 second timeout
+            
+            if (data_buffer && data_len > 0) {
+                printf("Received automatic data from node: %d bytes\n", data_len);
+                
+                // Process received data
+                process_uart_data(data_buffer, data_len);
+                
+                // Update status
+                pthread_mutex_lock(&command_mutex);
+                snprintf(status_response, sizeof(status_response),
+                         "Received data: %d bytes", data_len);
+                status_color = 2;
+                
+                // Format for display
+                char hex_str[256] = {0};
+                int max_display = (data_len > 50) ? 50 : data_len;
+                for (int i = 0; i < max_display; i++) {
+                    sprintf(hex_str + strlen(hex_str), "%02X ", data_buffer[i]);
+                }
+                snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
+                         data_len, hex_str, (data_len > 50) ? "..." : "");
+                pthread_mutex_unlock(&command_mutex);
+                
+                free(data_buffer);
+                data_buffer = NULL;
+                data_len = 0;
+            }
+        }
+        
+        // Handle server control commands (if any)
+        server_control_cmd_t control_cmd;
+        if (get_control_command(&control_cmd) == 0) {
+            node_config_t *node = get_node_by_id(control_cmd.node_id);
+            if (node) {
+                menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
+                if (menu_item) {
+                    printf("Executing server command: node=%d, cmd=%d\n",
+                           control_cmd.node_id, control_cmd.cmd_id);
+                    
+                    // Only send command, don't read response
+                    uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
+                    if (uart_cmd != 0) {
+                        write_command((uint8_t)uart_cmd);
                     }
                 }
             }
         }
         
-        usleep(1000 * 1000); // 1 second sleep
+        usleep(100 * 1000); // 100ms sleep to avoid CPU waste
     }
     
     return NULL;
 }
 
 /**
- * Execute UART command for node
+ * Assign received data to appropriate node
  */
-void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent) {
-    *resp = NULL;
-    *resp_len = 0;
+void process_uart_data(unsigned char *data, uint16_t data_len) {
+    if (!data || data_len == 0) return;
     
-    uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
-    if (uart_cmd == 0) return;
-    
-    write_command((uint8_t)uart_cmd);
-    
-    if (menu_item->timeout_ms > 0) {
-        *resp = Read_Response(menu_item->timeout_ms, resp_len);
+    // Find appropriate node based on data format or node ID
+    // Assume first detected node receives this data
+    for (int i = 0; i < get_node_count(); i++) {
+        node_config_t *node = get_node_by_index(i);
+        if (node && node->detected) {
+            // Update timestamp
+            node->last_data_received = time(NULL);
+            
+            // Update MQTT data
+            update_mqtt_data_from_response(node, data, data_len);
+            
+            printf("Data assigned to node %d (%s)\n", node->node_id, node->name);
+            break; // Only assign to first found node
+        }
     }
-    
-    process_uart_response(node, menu_item->cmd, *resp, *resp_len, silent);
 }
 
 /**
- * Process UART response from node
+ * Process UART response from node (legacy function, still used by server commands)
  */
 void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent) {
     if (silent) {
@@ -162,6 +177,7 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
     raw_data_t *raw_data = malloc(sizeof(raw_data_t));
     if (raw_data) {
         raw_data->length = resp_len;
+        raw_data->timestamp = time(NULL); // ADD timestamp
         raw_data->data = malloc(resp_len);
         if (raw_data->data) {
             memcpy(raw_data->data, resp, resp_len);
@@ -175,7 +191,7 @@ void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, ui
     pthread_mutex_unlock(&node->mqtt_data->mutex);
 }
 
-// ==================== UI THREAD - Simple config menu ====================
+// ==================== UI THREAD - Enhanced config menu ====================
 void *ui_thread_func(void *arg) {
     uint32_t baudrate = *(uint32_t *)((void **)arg)[0];
     char *device = (char *)((void **)arg)[1];
@@ -207,36 +223,38 @@ void *ui_thread_func(void *arg) {
         // System info
         mvprintw(2, 0, "UART: %s @ %u baud", device, baudrate);
         mvprintw(3, 0, "Nodes detected: %d", get_node_count());
+        mvprintw(4, 0, "Communication: %s", get_communication_type_name(get_communication_type())); // ADD communication type
         
         pthread_mutex_lock(&command_mutex);
         attron(COLOR_PAIR(status_color));
-        mvprintw(4, 0, "Status: %s", status_response);
+        mvprintw(5, 0, "Status: %s", status_response); // Move down due to new line
         attroff(COLOR_PAIR(status_color));
         
         if (strlen((char*)receive_data) > 0) {
             attron(COLOR_PAIR(5));
-            mvprintw(5, 0, "Last data: %s", receive_data);
+            mvprintw(6, 0, "Last data: %s", receive_data); // Move down due to new line
             attroff(COLOR_PAIR(5));
         }
         pthread_mutex_unlock(&command_mutex);
         
-        // Menu options
+        // Menu options - ADD new communication options
         const char *menu_options[] = {
             "View System Status",
-            "View MQTT Configuration", 
+            "View Communication Config", 
+            "Select Communication Type",  // NEW
             "Reload Configuration",
             "View Node Configuration",
             "Exit"
         };
         
         int num_options = sizeof(menu_options) / sizeof(menu_options[0]);
-        mvprintw(7, 0, "Configuration Options:");
+        mvprintw(8, 0, "Configuration Options:"); // Move down due to new lines
         
         for (int i = 0; i < num_options; i++) {
             if (i == highlight) {
                 attron(COLOR_PAIR(1));
             }
-            mvprintw(9 + i, 2, "%d. %s", i + 1, menu_options[i]);
+            mvprintw(10 + i, 2, "%d. %s", i + 1, menu_options[i]); // Move down due to new lines
             if (i == highlight) {
                 attroff(COLOR_PAIR(1));
             }
@@ -244,8 +262,8 @@ void *ui_thread_func(void *arg) {
         
         // Instructions
         attron(COLOR_PAIR(5));
-        mvprintw(9 + num_options + 2, 0, "Use UP/DOWN arrows and ENTER to select");
-        mvprintw(9 + num_options + 3, 0, "Press 'q' to quit, 'r' to refresh");
+        mvprintw(10 + num_options + 2, 0, "Use UP/DOWN arrows and ENTER to select");
+        mvprintw(10 + num_options + 3, 0, "Press 'q' to quit, 'r' to refresh");
         attroff(COLOR_PAIR(5));
         
         refresh();
@@ -272,32 +290,112 @@ void *ui_thread_func(void *arg) {
                             mvprintw(8, 0, "UART Device: %s", device);
                             mvprintw(9, 0, "Baudrate: %u", baudrate);
                             mvprintw(10, 0, "Detected Nodes: %d", get_node_count());
+                            mvprintw(11, 0, "Communication Type: %s", get_communication_type_name(get_communication_type())); // ADD
                         }
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
                         getch();
                         break;
                         
-                    case 1: // View MQTT Configuration
+                    case 1: // View Communication Config - UPDATED
                         clear();
-                        mqtt_config_t *mqtt_cfg = get_mqtt_config();
-                        if (mqtt_cfg) {
-                            mvprintw(1, 0, "=== MQTT Configuration ===");
-                            mvprintw(3, 0, "Broker: %s:%d", mqtt_cfg->broker_host, mqtt_cfg->broker_port);
-                            mvprintw(4, 0, "Client ID: %s", mqtt_cfg->client_id);
-                            mvprintw(5, 0, "Username: %s", mqtt_cfg->username);
-                            mvprintw(6, 0, "Topic Telemetry: %s", mqtt_cfg->topic_telemetry);
-                            mvprintw(7, 0, "Topic Control: %s", mqtt_cfg->topic_control);
-                            mvprintw(8, 0, "Topic Status: %s", mqtt_cfg->topic_status);
-                            mvprintw(9, 0, "QoS: %d", mqtt_cfg->qos);
-                            mvprintw(10, 0, "Publish Interval: %d sec", mqtt_cfg->publish_interval);
+                        communication_type_t comm_type = get_communication_type();
+                        mvprintw(1, 0, "=== Communication Configuration ===");
+                        mvprintw(3, 0, "Current Type: %s", get_communication_type_name(comm_type));
+                        
+                        if (comm_type == COMM_TYPE_MQTT) {
+                            mqtt_config_t *mqtt_cfg = get_mqtt_config();
+                            if (mqtt_cfg) {
+                                mvprintw(5, 0, "MQTT Configuration:");
+                                mvprintw(6, 0, "  Broker: %s:%d", mqtt_cfg->broker_host, mqtt_cfg->broker_port);
+                                mvprintw(7, 0, "  Client ID: %s", mqtt_cfg->client_id);
+                                mvprintw(8, 0, "  Username: %s", mqtt_cfg->username);
+                                mvprintw(9, 0, "  Topic Telemetry: %s", mqtt_cfg->topic_telemetry);
+                                mvprintw(10, 0, "  Topic Control: %s", mqtt_cfg->topic_control);
+                                mvprintw(11, 0, "  QoS: %d", mqtt_cfg->qos);
+                                mvprintw(12, 0, "  Publish Interval: %d sec", mqtt_cfg->publish_interval);
+                            }
+                        } else {
+                            mvprintw(5, 0, "Configuration: Not implemented yet");
                         }
+                        
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
                         getch();
                         break;
                         
-                    case 2: // Reload Configuration
+                    case 2: // NEW: Select Communication Type
+                        clear();
+                        mvprintw(1, 0, "=== Select Communication Type ===");
+                        mvprintw(3, 0, "Available Communication Types:");
+                        
+                        const char *comm_types[] = {
+                            "MQTT",
+                            "HTTP (Coming soon)",
+                            "WebSocket (Coming soon)",
+                            "TCP (Coming soon)"
+                        };
+                        
+                        int comm_highlight = (int)get_communication_type();
+                        int comm_selecting = 1;
+                        
+                        while (comm_selecting) {
+                            for (int i = 0; i < COMM_TYPE_COUNT; i++) {
+                                if (i == comm_highlight) {
+                                    attron(COLOR_PAIR(1));
+                                }
+                                if (i == 0) {
+                                    mvprintw(5 + i, 2, "%d. %s %s", i + 1, comm_types[i],
+                                            (i == (int)get_communication_type()) ? "[CURRENT]" : "");
+                                } else {
+                                    attron(COLOR_PAIR(3)); // Red for not implemented
+                                    mvprintw(5 + i, 2, "%d. %s", i + 1, comm_types[i]);
+                                    attroff(COLOR_PAIR(3));
+                                }
+                                if (i == comm_highlight) {
+                                    attroff(COLOR_PAIR(1));
+                                }
+                            }
+                            
+                            mvprintw(5 + COMM_TYPE_COUNT + 2, 0, "Use UP/DOWN to select, ENTER to confirm, ESC to cancel");
+                            refresh();
+                            
+                            int comm_key = getch();
+                            switch (comm_key) {
+                                case KEY_UP:
+                                    comm_highlight = (comm_highlight == 0) ? COMM_TYPE_COUNT - 1 : comm_highlight - 1;
+                                    break;
+                                case KEY_DOWN:
+                                    comm_highlight = (comm_highlight == COMM_TYPE_COUNT - 1) ? 0 : comm_highlight + 1;
+                                    break;
+                                case 10: // ENTER
+                                    if (comm_highlight == 0) { // Only MQTT implemented
+                                        set_communication_type((communication_type_t)comm_highlight);
+                                        mvprintw(5 + COMM_TYPE_COUNT + 4, 0, "Communication type changed to: %s", 
+                                                get_communication_type_name((communication_type_t)comm_highlight));
+                                        refresh();
+                                        sleep(1);
+                                    } else {
+                                        mvprintw(5 + COMM_TYPE_COUNT + 4, 0, "This type is not implemented yet!");
+                                        refresh();
+                                        sleep(1);
+                                    }
+                                    comm_selecting = 0;
+                                    break;
+                                case 27: // ESC
+                                    comm_selecting = 0;
+                                    break;
+                            }
+                            
+                            // Clear selection lines
+                            for (int i = 5; i < 5 + COMM_TYPE_COUNT + 6; i++) {
+                                move(i, 0);
+                                clrtoeol();
+                            }
+                        }
+                        break;
+                        
+                    case 3: // Reload Configuration
                         clear();
                         mvprintw(1, 0, "Reloading configuration...");
                         refresh();
@@ -326,7 +424,7 @@ void *ui_thread_func(void *arg) {
                         getch();
                         break;
                         
-                    case 3: // View Node Configuration
+                    case 4: // View Node Configuration - UPDATED with last data time
                         clear();
                         mvprintw(1, 0, "=== Node Configuration ===");
                         int node_count = get_node_count();
@@ -335,9 +433,16 @@ void *ui_thread_func(void *arg) {
                                 node_config_t *node = get_node_by_index(i);
                                 if (node) {
                                     attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
-                                    mvprintw(3 + i, 0, "Node %d: %s (%s) - %s",
+                                    mvprintw(3 + i * 2, 0, "Node %d: %s (%s) - %s",
                                              node->node_id, node->name, node->type,
                                              node->detected ? "DETECTED" : "NOT DETECTED");
+                                    
+                                    // ADD: Show last data received time
+                                    if (node->detected && node->last_data_received > 0) {
+                                        time_t now = time(NULL);
+                                        int sec_ago = (int)(now - node->last_data_received);
+                                        mvprintw(4 + i * 2, 2, "Last data: %d seconds ago", sec_ago);
+                                    }
                                     attroff(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
                                 }
                             }
@@ -350,7 +455,7 @@ void *ui_thread_func(void *arg) {
                         getch();
                         break;
                         
-                    case 4: // Exit
+                    case 5: // Exit
                         endwin();
                         exit(0);
                         break;

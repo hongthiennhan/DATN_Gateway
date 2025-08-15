@@ -277,3 +277,24 @@ void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
     // Ensure buffer is flushed at end
     tcflush(fd, TCIFLUSH);
 }
+
+// ADD function implementation - non-blocking UART data check:
+int Check_UART_Data_Available(void) {
+    fd_set readfds;
+    struct timeval timeout;
+    
+    FD_ZERO(&readfds);
+    FD_SET(uart_fd, &readfds);
+    
+    // Short timeout to avoid blocking
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 10000; // 10ms
+    
+    int result = select(uart_fd + 1, &readfds, NULL, NULL, &timeout);
+    
+    if (result > 0 && FD_ISSET(uart_fd, &readfds)) {
+        return 1; // Data available
+    }
+    
+    return 0; // No data
+}

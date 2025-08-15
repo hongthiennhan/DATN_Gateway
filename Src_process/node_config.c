@@ -253,6 +253,7 @@ int load_nodes_config(const char *config_file) {
     memset(&node_registry, 0, sizeof(node_registry));
     
     // Initialize control queue
+    node_registry.communication_type = COMM_TYPE_MQTT;
     node_registry.control_queue.head = 0;
     node_registry.control_queue.tail = 0;
     node_registry.control_queue.count = 0;
@@ -662,6 +663,31 @@ void set_config_mode(int enabled) {
 
 int get_config_mode(void) {
     return node_registry.config_mode;
+}
+
+communication_type_t get_communication_type(void) {
+    return node_registry.communication_type;
+}
+
+void set_communication_type(communication_type_t type) {
+    if (type >= 0 && type < COMM_TYPE_COUNT) {
+        node_registry.communication_type = type;
+    }
+}
+
+const char* get_communication_type_name(communication_type_t type) {
+    switch (type) {
+        case COMM_TYPE_MQTT:
+            return "MQTT";
+        case COMM_TYPE_HTTP:
+            return "HTTP";
+        case COMM_TYPE_WEBSOCKET:
+            return "WebSocket";
+        case COMM_TYPE_TCP:
+            return "TCP";
+        default:
+            return "Unknown";
+    }
 }
 
 /**
