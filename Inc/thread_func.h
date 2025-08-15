@@ -36,9 +36,7 @@ void *mqtt_thread_func(void *arg);
 void process_uart_data(unsigned char *data, uint16_t data_len);
 
 // Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
-void execute_uart_command(node_config_t *node, menu_item_t *menu_item, unsigned char **resp, uint16_t *resp_len, int silent);
 void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent);
-void format_response_data(node_config_t *node, unsigned char *resp, uint16_t resp_len);
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp);
 
