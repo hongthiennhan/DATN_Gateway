@@ -189,22 +189,6 @@ static int parse_node_config(json_object *node_obj, node_config_t *node) {
         safe_strncpy(node->type, json_object_get_string(temp_obj), sizeof(node->type));
     }
     
-    if (json_object_object_get_ex(node_obj, "auto_read_cmd", &temp_obj)) {
-        node->auto_read_cmd = json_object_get_int(temp_obj);
-    }
-    
-    if (json_object_object_get_ex(node_obj, "flash_cmd", &temp_obj)) {
-        node->flash_cmd = json_object_get_int(temp_obj);
-    }
-    
-    if (json_object_object_get_ex(node_obj, "auto_read_interval", &temp_obj)) {
-        node->auto_read_interval = json_object_get_int(temp_obj);
-    }
-    
-    if (json_object_object_get_ex(node_obj, "expected_data_length", &temp_obj)) {
-        node->expected_data_length = json_object_get_int(temp_obj);
-    }
-    
     if (json_object_object_get_ex(node_obj, "data_format", &temp_obj)) {
         safe_strncpy(node->data_format, json_object_get_string(temp_obj), sizeof(node->data_format));
     }
@@ -336,7 +320,7 @@ int load_nodes_config(const char *config_file) {
         }
     }
 
-    // Parse UART config
+    // Parse UART config (abbreviated for space)
     json_object *uart_obj;
     if (json_object_object_get_ex(effective_root, "uart_config", &uart_obj)) {
         json_object *temp_obj;
@@ -368,7 +352,7 @@ int load_nodes_config(const char *config_file) {
             if (json_object_object_get_ex(timing_obj, "select_timeout_ms", &temp_obj))
                 node_registry.uart_config.select_timeout_ms = json_object_get_int(temp_obj);
         }
-        
+
         if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
             node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }

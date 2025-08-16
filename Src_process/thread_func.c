@@ -208,8 +208,8 @@ void *ui_thread_func(void *arg) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-    timeout(100); // 1 second timeout for refresh
-    
+    timeout(get_ui_refresh_delay()); // 1 second timeout for refresh
+
     int highlight = 0;
     int key_check;
     while (1) {

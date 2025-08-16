@@ -121,10 +121,6 @@ typedef struct {
     char type[64];
     menu_item_t *menu_items;
     int menu_count;
-    int auto_read_cmd;
-    int flash_cmd;
-    int auto_read_interval;
-    int expected_data_length;
     char data_format[16];
     char reflash_script[512];
     int is_actuator;
