@@ -19,7 +19,9 @@ shared_data_t command_data = {
 
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
+#ifdef DEBUG
     printf("UART thread started - listening for automatic node data\n");
+#endif
     
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
@@ -31,7 +33,9 @@ void *uart_thread_func(void *arg) {
         // Periodic node detection
         int detection_interval = get_detection_interval();
         if (detection_interval > 0 && (current_time - last_detection) >= detection_interval) {
+#ifdef DEBUG
             printf("Starting periodic node detection\n");
+#endif
             start_node_detection();
             last_detection = current_time;
         }
@@ -42,7 +46,9 @@ void *uart_thread_func(void *arg) {
             data_buffer = Read_Response(1000, &data_len); // 1 second timeout
             
             if (data_buffer && data_len > 0) {
+#ifdef DEBUG
                 printf("Received automatic data from node: %d bytes\n", data_len);
+#endif
                 
                 // Process received data
                 process_uart_data(data_buffer, data_len);
@@ -76,8 +82,10 @@ void *uart_thread_func(void *arg) {
             if (node) {
                 menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
                 if (menu_item) {
+#ifdef DEBUG
                     printf("Executing server command: node=%d, cmd=%d\n",
                            control_cmd.node_id, control_cmd.cmd_id);
+#endif
                     
                     // Only send command, don't read response
                     uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
@@ -111,7 +119,9 @@ void process_uart_data(unsigned char *data, uint16_t data_len) {
             // Update MQTT data
             update_mqtt_data_from_response(node, data, data_len);
             
+#ifdef DEBUG
             printf("Data assigned to node %d (%s)\n", node->node_id, node->name);
+#endif
             break; // Only assign to first found node
         }
     }

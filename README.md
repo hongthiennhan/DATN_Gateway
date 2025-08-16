@@ -20,156 +20,150 @@ stateDiagram-v2
 ### UI (Controller / Configarator) Thread State Machine
 ```mermaid
 stateDiagram-v2
-    [*] --> InitUI: Setup ncurses, timeout(100)
-    InitUI --> SelectNode: Choose from configured nodes
-    SelectNode --> InitAutoRead: Setup auto-read timer
-    InitAutoRead --> MainLoop: Enter main UI loop
+    [*] --> InitUI: Initialize ncurses + setup colors
     
-    state MainLoop {
-        [*] --> ShowMenu: Display command menu
-        ShowMenu --> HandleInput: Process user input (100ms timeout)
+    InitUI --> MainMenuLoop: Enter main menu loop
+    
+    state MainMenuLoop {
+        [*] --> DrawScreen: Render header, system info, menu options
+        DrawScreen --> WaitKey: Wait for user input (timeout = refresh delay)
         
-        HandleInput --> CheckSystemState: Check busy/waiting flags
-        HandleInput --> Navigate: UP/DOWN keys
-        HandleInput --> SendCommand: ENTER key
+        WaitKey --> HandleKeyUp: KEY_UP pressed
+        WaitKey --> HandleKeyDown: KEY_DOWN pressed
+        WaitKey --> HandleEnter: ENTER pressed
+        WaitKey --> HandleQuit: 'q' or 'Q' pressed
+        WaitKey --> RefreshLoop: 'r' or 'R' pressed
+        WaitKey --> DrawScreen: Timeout, auto-refresh
         
-        CheckSystemState --> AutoRead: System idle + timer expired
-        CheckSystemState --> PauseTimer: System busy or waiting response
-        CheckSystemState --> ShowMenu: System idle but timer not expired
+        HandleKeyUp --> DrawScreen: Move highlight ↑
+        HandleKeyDown --> DrawScreen: Move highlight ↓
+        RefreshLoop --> DrawScreen: Redraw menu
         
-        PauseTimer --> ShowMenu: Display "timer paused" message
-        AutoRead --> ShowMenu: Silent data collection
-        Navigate --> UpdateHighlight: Change menu selection
-        UpdateHighlight --> ShowMenu: Redraw menu
+        state HandleEnter {
+            [*] --> CheckOption: Evaluate selected menu index
+            
+            CheckOption --> ViewSystem: Option 0
+            ViewSystem --> WaitKey: Show firmware, device info
+            
+            CheckOption --> ViewCommConfig: Option 1
+            ViewCommConfig --> WaitKey: Show MQTT config
+            
+            CheckOption --> SelectCommType: Option 2
+            SelectCommType --> ChangeCommMQTT: Select MQTT (implemented)
+            SelectCommType --> NotImplemented: Other types (HTTP/WebSocket/TCP)
+            ChangeCommMQTT --> WaitKey
+            NotImplemented --> WaitKey
+            
+            CheckOption --> ReloadConfig: Option 3
+            ReloadConfig --> WaitKey: Reload JSON configs
+            
+            CheckOption --> ViewNodeConfig: Option 4
+            ViewNodeConfig --> WaitKey: Show node list + last data time
+            
+            CheckOption --> Exit: Option 5
+            Exit --> [*]: End ncurses + exit program
+        }
         
-        SendCommand --> CheckBusyWaiting: System busy or waiting?
-        CheckBusyWaiting --> ShowBusyMessage: Display busy/waiting message
-        CheckBusyWaiting --> ExecuteCommand: Send to UART thread
-        
-        ShowBusyMessage --> ShowMenu: Continue loop
-        ExecuteCommand --> CheckExit: Exit command?
-        CheckExit --> ShowMenu: Continue loop
-        CheckExit --> [*]: Exit selected
+        HandleQuit --> [*]: End ncurses + exit program
     }
     
-    MainLoop --> Cleanup: Exit command received
-    Cleanup --> [*]: Close UI, cleanup resources
-    
-    note right of MainLoop
+    note right of MainMenuLoop
         Key Features:
-        - Auto-read pauses during BUSY state
-        - Auto-read pauses during WAITING_RESPONSE state
-        - Timer compensation after busy/wait periods
-        - Real-time status: IDLE/ACTIVE/BUSY/WAITING
-        - Config-driven node selection and menus
-        - Thread-safe state tracking with transitions
+        - ncurses UI with highlight colors
+        - Menu navigation (↑↓ ENTER)
+        - System info (UART, baudrate, comm type)
+        - Config reload from JSON
+        - Node status with last data received
+        - Select Communication Type (only MQTT implemented)
+        - Safe thread access (mutex on status/receive_data)
     end note
+
 ```
 
 ### Communication Thread State Machine
 ```mermaid
 stateDiagram-v2
-    [*] --> Initialize: Enter main loop
-    Initialize --> WaitNodeSelection: Check if node selected
-    
-    WaitNodeSelection --> NodeReady: Node type available
-    WaitNodeSelection --> SleepRetry: No node selected yet
-    SleepRetry --> WaitNodeSelection: Sleep 100ms, retry
-    
-    NodeReady --> MainLoop: Enter command processing loop
-    
-    state MainLoop {
-        [*] --> WaitCommand: Wait for command or timeout
-        WaitCommand --> CheckCommandType: Command received
-        WaitCommand --> WaitCommand: Timeout, retry
-        
-        CheckCommandType --> AutoRead: AUTO_READ_COMMAND
-        CheckCommandType --> ManualCommand: User command
-        
-        AutoRead --> SilentExecute: Execute quietly by node type
-        SilentExecute --> UpdateMQTT: Share data with MQTT thread
-        UpdateMQTT --> WaitCommand: Continue loop
-        
-        ManualCommand --> SetBusyFlag: Set is_busy if blocking command
-        SetBusyFlag --> ExecuteByNode: Process command by node type
-        ExecuteByNode --> UpdateUIStatus: Update status_response/receive_data
-        UpdateUIStatus --> ClearBusyFlag: Clear is_busy flag
-        ClearBusyFlag --> WaitCommand: Continue loop
-    }
-    
-    note right of MainLoop
-        Key Features:
-        - Auto-read: Silent data collection for MQTT
-        - Manual commands: Full UI feedback
-        - Node1: 9 commands (directions, LED, status, reflash)
-        - Node2: 4 commands (LED, read, reflash)
-        - Thread-safe: Mutex protection for shared data
-        - Non-blocking: Auto-read doesn't block UI
-    end note
+    [*] --> InitUART: UART thread started
+    InitUART --> UARTLoop: Enter UART listener loop
 
+    state UARTLoop {
+        [*] --> PeriodicDetection: Check periodic node detection
+        PeriodicDetection --> AutoDataCheck: Check UART data available
+
+        AutoDataCheck --> ReadAutoData: Data available
+        AutoDataCheck --> ControlCmdCheck: No data available
+
+        ReadAutoData --> ProcessData: Parse and process node data
+        ProcessData --> UpdateStatus: Update status + last data
+        UpdateStatus --> FreeBuffer: Free buffer
+        FreeBuffer --> ControlCmdCheck
+
+        ControlCmdCheck --> ExecuteCmd: Server control command pending
+        ControlCmdCheck --> SleepLoop: No command
+
+        ExecuteCmd --> SleepLoop: Send UART command (no response read)
+
+        SleepLoop --> PeriodicDetection: Sleep 100ms, retry
+    }
+
+    note right of UARTLoop
+        Key Features:
+        - Periodic node detection by interval
+        - Automatic UART data reception
+        - Data processing + status update
+        - Hex dump (max 50 bytes) for UI display
+        - Handle server-issued commands (non-blocking)
+        - Loop with 100ms sleep to reduce CPU usage
+    end note
 ```
 
 ### MQTT Send to thingsboard Thread State Machine:
 ```mermaid
 stateDiagram-v2
-    [*] --> Initialize: Setup MQTT client & callbacks
-    Initialize --> Connect: Connect to ThingsBoard
-    Connect --> WaitConnection: Wait for connection (5s timeout)
+    [*] --> InitMQTTConfig: Load MQTT config
+    InitMQTTConfig --> NoConfig: Config missing
+    InitMQTTConfig --> InitMQTT: Config available
     
-    WaitConnection --> Connected: Connection successful
-    WaitConnection --> Failed: Connection timeout/failed
+    NoConfig --> [*]: Exit thread
     
-    Connected --> MainLoop: Enter main publishing loop
+    InitMQTT --> CreateClient: mosquitto_new()
+    CreateClient --> SetCallbacks: Set username, password, callbacks
+    SetCallbacks --> ConnectBroker: Connect to MQTT broker
+    ConnectBroker --> ConnectFail: Connection failed
+    ConnectBroker --> WaitConnection: Connection success
+    
+    ConnectFail --> CleanupExit: Destroy client + cleanup
+    CleanupExit --> [*]
+    
+    WaitConnection --> ConnectionTimeout: Timeout expired
+    WaitConnection --> RequestInitialConfig: Connected
+    
+    ConnectionTimeout --> CleanupExit
+    
+    RequestInitialConfig --> ReloadConfig: Request config JSON
+    ReloadConfig --> MainLoop: Enter main publish loop
     
     state MainLoop {
-        [*] --> CheckTimer: Check if 1 second elapsed
-        CheckTimer --> CollectData: Time to publish
-        CheckTimer --> Sleep: Not time yet
+        [*] --> CheckConfig: Check config updates
+        CheckConfig --> PublishTelemetry: Time to publish telemetry
+        CheckConfig --> SendStatus: Time to send status
+        CheckConfig --> HandleReconnect: If disconnected
+        CheckConfig --> SleepLoop: Otherwise
         
-        CollectData --> GetNodeData: Get Node1 & Node2 data
-        GetNodeData --> PublishTelemetry: Send to ThingsBoard
-        PublishTelemetry --> VerifyConnection: Check connection status
-        
-        Sleep --> VerifyConnection: Sleep 100ms
-        
-        VerifyConnection --> CheckTimer: Still connected
-        VerifyConnection --> Reconnect: Connection lost
-        
-        Reconnect --> ReconnectAttempt: mosquitto_reconnect()
-        ReconnectAttempt --> ReconnectDelay: Sleep 1000ms
-        ReconnectDelay --> CheckTimer: Continue loop
+        PublishTelemetry --> CheckConfig
+        SendStatus --> CheckConfig
+        HandleReconnect --> CheckConfig
+        SleepLoop --> CheckConfig: Sleep loop_interval_ms
     }
-    
-    Failed --> Cleanup: Clean up resources
-    Cleanup --> [*]: Thread exit
     
     note right of MainLoop
         Key Features:
-        - Publish every 1 second
-        - Auto-reconnect on connection loss
-        - Callbacks: on_connect, on_disconnect, on_publish
-        - Data from: Raw data as hex strings in JSON
+        - MQTT telemetry publishing (config.publish_interval)
+        - Periodic status message (every 60s)
+        - Robust config reload
+        - Automatic reconnect on disconnection
+        - Loop with sleep interval (loop_interval_ms)
     end note
-
 ```
 ---
-
-Nháp:
-Cần: setup một menu để config theo đúng nghĩa, không phải kiểu lấy dữ liệu và gửi lại như trên
-Dữ liệu điều khiển node lấy từ server, kg lấy từ gateway
-Thread uart chỉ nhận dữ liệu uart
-còn lại thì gửi command từ server xuống:
-Menu như sau:
-menu UI đơn giản chỉ chọn:
-View System Status
-View MQTT Configuration
-Reload Configuration
-View Node Configuration
-Exit,
-với tương tác các node, gửi lệnh các lệnh cụ thể  qua UART để xác định loại node và thực hiện nhận dữ liệu từ node đó (lệnh đc định nghĩa thông qua config, gửi lần lượt các lệnh để xác định loại node )
-
-Setup lại thread UI đơn giản, nếu cần config, chọn config, kg thì thôi
-config chọn loại giao tiếp server (trước hết chỉ để MQTT, thông qua ethernet) các loại giao tiếp với node (trước hết chỉ để là UART có trước)
-giả sử dữ liệu ở thingsboard / server khác bất kỳ có thay đổi ở file config thì cập nhật lại liền.
-nhận dữ liệu điều khiển ở thingsboard / server khác, gửi xuống node để control
 
