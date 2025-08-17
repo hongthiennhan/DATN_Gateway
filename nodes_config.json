@@ -37,8 +37,8 @@
       ],
 
       "menu_items": [
-        { "cmd": 1, "label": "Display On", "uart_cmd": "CMD3_DISPLAY_ON", "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "Display Off", "uart_cmd": "CMD3_DISPLAY_OFF", "hex_value": "0xA2", "timeout_ms": 0 }
+        { "cmd": 1, "label": "Display On", "uart_cmd": "CMD3_DISPLAY_ON", "hex_value": "0xA3", "timeout_ms": 0 },
+        { "cmd": 2, "label": "Display Off", "uart_cmd": "CMD3_DISPLAY_OFF", "hex_value": "0xA4", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",
@@ -60,8 +60,8 @@
       ],
 
       "menu_items": [
-        { "cmd": 1, "label": "New Command 1", "uart_cmd": "CMD_NEW_1", "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "New Command 2", "uart_cmd": "CMD_NEW_2", "hex_value": "0xA2", "timeout_ms": 0 }
+        { "cmd": 1, "label": "New Command 1", "uart_cmd": "CMD_NEW_1", "hex_value": "0xA7", "timeout_ms": 0 },
+        { "cmd": 2, "label": "New Command 2", "uart_cmd": "CMD_NEW_2", "hex_value": "0xA8", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",
@@ -83,8 +83,8 @@
       ],
 
       "menu_items": [
-        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA2", "timeout_ms": 0 }
+        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA5", "timeout_ms": 0 },
+        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA6", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",
