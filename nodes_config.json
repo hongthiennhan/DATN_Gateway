@@ -66,6 +66,29 @@
 
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
+    },
+    {
+      "id": 4,
+      "name": "Node4 - Sensor Board 2",
+      "type": "sensor_board",
+      "is_actuator": 0,
+
+      "detection_commands": [
+        {
+          "command": 255,
+          "expected_response": "SENSOR_BOARD_OK",
+          "timeout_ms": 1000,
+          "description": "Sensor board identification"
+        }
+      ],
+
+      "menu_items": [
+        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA1", "timeout_ms": 0 },
+        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA2", "timeout_ms": 0 }
+      ],
+
+      "data_format": "hex",
+      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],
 
