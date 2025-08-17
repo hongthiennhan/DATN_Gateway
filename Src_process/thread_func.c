@@ -8,7 +8,7 @@ pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
 int command_pending = 0;
 char status_response[100] = "System ready";
 int status_color = 2;
-unsigned char receive_data = {0};
+unsigned char receive_data[512] = {0};
 int shared_node_type = 0;
 
 shared_data_t command_data = {
@@ -17,57 +17,7 @@ shared_data_t command_data = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-// **NEW: Node detection management**
-typedef struct {
-    time_t last_check_time;
-    int current_node_index;
-    int waiting_for_response;
-    time_t response_timeout;
-} node_detection_state_t;
-
-static node_detection_state_t detection_state = {0, 0, 0, 0};
-
-// **NEW: Check if response contains sensor node confirmation**
-int is_sensor_node_response(unsigned char *data, uint16_t data_len) {
-    if (!data || data_len == 0) return 0;
-    
-    // Convert to string for comparison
-    char response_str[512] = {0};
-    int max_len = (data_len < 511) ? data_len : 511;
-    memcpy(response_str, data, max_len);
-    response_str[max_len] = '\0';
-    
-    // Check if response contains "SENSOR_NODE_OK"
-    return (strstr(response_str, "SENSOR_NODE_OK") != NULL);
-}
-
-// **NEW: Send node detection command**
-void send_node_detection_command(int node_index) {
-    pthread_mutex_lock(&config_mutex);
-    if (!config_reloading) {
-        node_config_t *node = get_node_by_index(node_index);
-        if (node) {
-            #ifdef DEBUG
-            printf("Sending detection command to node %d (%s)\n", node->node_id, node->name);
-            #endif
-            
-            // Send detection command (0xFF for general node check)
-            write_command(0xFF);
-            
-            // Update detection state
-            detection_state.waiting_for_response = 1;
-            detection_state.response_timeout = time(NULL) + 3; // 3 second timeout
-            
-            pthread_mutex_lock(&command_mutex);
-            snprintf(status_response, sizeof(status_response), "Checking node %d...", node->node_id);
-            status_color = 4; // Yellow for checking
-            pthread_mutex_unlock(&command_mutex);
-        }
-    }
-    pthread_mutex_unlock(&config_mutex);
-}
-
-// ==================== UART THREAD - Enhanced with node detection ====================
+// ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
     #ifdef DEBUG
     printf("UART thread started - listening for automatic node data\n");
@@ -76,11 +26,6 @@ void *uart_thread_func(void *arg) {
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
     time_t last_detection = 0;
-    
-    // Initialize detection state
-    detection_state.last_check_time = time(NULL);
-    detection_state.current_node_index = 0;
-    detection_state.waiting_for_response = 0;
     
     while (1) {
         // Skip processing during config reload
@@ -91,51 +36,7 @@ void *uart_thread_func(void *arg) {
         
         time_t current_time = time(NULL);
         
-        // **NEW: Node detection every 11 seconds**
-        if ((current_time - detection_state.last_check_time) >= 11) {
-            int node_count = safe_get_node_count();
-            if (node_count > 0) {
-                // Cycle through nodes
-                if (detection_state.current_node_index >= node_count) {
-                    detection_state.current_node_index = 0;
-                }
-                
-                #ifdef DEBUG
-                printf("Starting node detection cycle - checking node %d\n", detection_state.current_node_index);
-                #endif
-                
-                send_node_detection_command(detection_state.current_node_index);
-                detection_state.last_check_time = current_time;
-            }
-        }
-        
-        // **NEW: Handle detection response timeout**
-        if (detection_state.waiting_for_response && 
-            current_time > detection_state.response_timeout) {
-            
-            pthread_mutex_lock(&config_mutex);
-            if (!config_reloading) {
-                node_config_t *node = get_node_by_index(detection_state.current_node_index);
-                if (node) {
-                    node->detected = 0; // Mark as not detected
-                    #ifdef DEBUG
-                    printf("Node %d detection timeout - marked as NOT DETECTED\n", node->node_id);
-                    #endif
-                    
-                    pthread_mutex_lock(&command_mutex);
-                    snprintf(status_response, sizeof(status_response), 
-                             "Node %d: No response (timeout)", node->node_id);
-                    status_color = 3; // Red for timeout
-                    pthread_mutex_unlock(&command_mutex);
-                }
-            }
-            pthread_mutex_unlock(&config_mutex);
-            
-            detection_state.waiting_for_response = 0;
-            detection_state.current_node_index++;
-        }
-        
-        // Periodic node detection (original)
+        // Periodic node detection
         int detection_interval = get_detection_interval();
         if (detection_interval > 0 && (current_time - last_detection) >= detection_interval) {
             #ifdef DEBUG
@@ -153,75 +54,24 @@ void *uart_thread_func(void *arg) {
                 printf("Received automatic data from node: %d bytes\n", data_len);
                 #endif
                 
-                // **NEW: Check if this is a detection response**
-                if (detection_state.waiting_for_response) {
-                    if (is_sensor_node_response(data_buffer, data_len)) {
-                        // Sensor node detected!
-                        pthread_mutex_lock(&config_mutex);
-                        if (!config_reloading) {
-                            node_config_t *node = get_node_by_index(detection_state.current_node_index);
-                            if (node) {
-                                node->detected = 1;
-                                node->last_detection = current_time;
-                                
-                                #ifdef DEBUG
-                                printf("Node %d DETECTED - received SENSOR_NODE_OK\n", node->node_id);
-                                #endif
-                                
-                                pthread_mutex_lock(&command_mutex);
-                                snprintf(status_response, sizeof(status_response), 
-                                         "Node %d: DETECTED (SENSOR_NODE_OK)", node->node_id);
-                                status_color = 2; // Green for success
-                                pthread_mutex_unlock(&command_mutex);
-                            }
-                        }
-                        pthread_mutex_unlock(&config_mutex);
-                    } else {
-                        // Wrong response or different node
-                        pthread_mutex_lock(&config_mutex);
-                        if (!config_reloading) {
-                            node_config_t *node = get_node_by_index(detection_state.current_node_index);
-                            if (node) {
-                                node->detected = 0;
-                                
-                                #ifdef DEBUG
-                                printf("Node %d NOT DETECTED - wrong response\n", node->node_id);
-                                #endif
-                                
-                                pthread_mutex_lock(&command_mutex);
-                                snprintf(status_response, sizeof(status_response), 
-                                         "Node %d: NOT DETECTED (wrong response)", node->node_id);
-                                status_color = 3; // Red for failure
-                                pthread_mutex_unlock(&command_mutex);
-                            }
-                        }
-                        pthread_mutex_unlock(&config_mutex);
-                    }
-                    
-                    detection_state.waiting_for_response = 0;
-                    detection_state.current_node_index++;
-                }
-                
-                // SAFE process received data (normal data processing)
+                // SAFE process received data
                 safe_process_uart_data(data_buffer, data_len);
                 
-                // Update status (if not detection response)
-                if (!detection_state.waiting_for_response) {
-                    pthread_mutex_lock(&command_mutex);
-                    snprintf(status_response, sizeof(status_response),
-                             "Received data: %d bytes", data_len);
-                    status_color = 2;
-                    
-                    // Format for display
-                    char hex_str[256] = {0};
-                    int max_display = (data_len > 50) ? 50 : data_len;
-                    for (int i = 0; i < max_display; i++) {
-                        sprintf(hex_str + strlen(hex_str), "%02X ", data_buffer[i]);
-                    }
-                    snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
-                             data_len, hex_str, (data_len > 50) ? "..." : "");
-                    pthread_mutex_unlock(&command_mutex);
+                // Update status
+                pthread_mutex_lock(&command_mutex);
+                snprintf(status_response, sizeof(status_response),
+                         "Received data: %d bytes", data_len);
+                status_color = 2;
+                
+                // Format for display
+                char hex_str[256] = {0};
+                int max_display = (data_len > 50) ? 50 : data_len;
+                for (int i = 0; i < max_display; i++) {
+                    sprintf(hex_str + strlen(hex_str), "%02X ", data_buffer[i]);
                 }
+                snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
+                         data_len, hex_str, (data_len > 50) ? "..." : "");
+                pthread_mutex_unlock(&command_mutex);
                 
                 free(data_buffer);
                 data_buffer = NULL;
@@ -593,7 +443,7 @@ void *ui_thread_func(void *arg) {
                         nodelay(stdscr, TRUE);
                         break;
                         
-                    case 4: // View Node Configuration - UPDATED with detection status
+                    case 4: // View Node Configuration - UPDATED with last data time
                         clear();
                         mvprintw(1, 0, "=== Node Configuration ===");
                         int node_count = get_node_count();
@@ -602,22 +452,15 @@ void *ui_thread_func(void *arg) {
                                 node_config_t *node = get_node_by_index(i);
                                 if (node) {
                                     attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
-                                    mvprintw(3 + i * 3, 0, "Node %d: %s (%s) - %s",
+                                    mvprintw(3 + i * 2, 0, "Node %d: %s (%s) - %s",
                                              node->node_id, node->name, node->type,
                                              node->detected ? "DETECTED" : "NOT DETECTED");
                                     
-                                    // Show last detection time
-                                    if (node->last_detection > 0) {
-                                        time_t now = time(NULL);
-                                        int sec_ago = (int)(now - node->last_detection);
-                                        mvprintw(4 + i * 3, 2, "Last detection: %d seconds ago", sec_ago);
-                                    }
-                                    
-                                    // Show last data received time
+                                    // ADD: Show last data received time
                                     if (node->detected && node->last_data_received > 0) {
                                         time_t now = time(NULL);
                                         int sec_ago = (int)(now - node->last_data_received);
-                                        mvprintw(5 + i * 3, 2, "Last data: %d seconds ago", sec_ago);
+                                        mvprintw(4 + i * 2, 2, "Last data: %d seconds ago", sec_ago);
                                     }
                                     attroff(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
                                 }
