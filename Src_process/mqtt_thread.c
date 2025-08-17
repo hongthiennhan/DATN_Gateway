@@ -268,13 +268,6 @@ void process_control_command(const char *payload)
             }
         }
     }
-    else if (strcmp(method, "detectNodes") == 0)
-    {
-#ifdef DEBUG
-        printf("Starting node detection sequence\n");
-#endif
-        start_node_detection();
-    }
     json_object_put(root);
 }
 
