@@ -20,7 +20,7 @@ shared_data_t command_data = {
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
     #ifdef DEBUG
-    printf("UART thread started - listening for automatic node data\n");
+    fprintf("UART thread started - listening for automatic node data\n");
     #endif
     
     uint16_t data_len = 0;
