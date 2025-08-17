@@ -35,7 +35,7 @@ void cleanup_on_exit(void)
 int main(void)
 {
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
-    uint8_t load_try = 1;
+    uint8_t load_try = 0;
     // Load node configuration FIRST
     if (load_nodes_config("../config.json") != 0)
     {
