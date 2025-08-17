@@ -86,12 +86,6 @@ void *uart_thread_func(void *arg) {
                                 printf("Node %d NOT DETECTED - wrong response: '%s'\n", 
                                        node->node_id, response_str);
                                 #endif
-                                
-                                pthread_mutex_lock(&command_mutex);
-                                snprintf(status_response, sizeof(status_response), 
-                                         "Node %d: WRONG RESPONSE", node->node_id);
-                                status_color = 3; // Red
-                                pthread_mutex_unlock(&command_mutex);
                             }
                             
                             free(data_buffer);
@@ -103,12 +97,6 @@ void *uart_thread_func(void *arg) {
                             #ifdef DEBUG
                             printf("Node %d NOT DETECTED - no response\n", node->node_id);
                             #endif
-                            
-                            pthread_mutex_lock(&command_mutex);
-                            snprintf(status_response, sizeof(status_response), 
-                                     "Node %d: NO RESPONSE", node->node_id);
-                            status_color = 3; // Red
-                            pthread_mutex_unlock(&command_mutex);
                         }
                         
                         // Small delay between nodes
