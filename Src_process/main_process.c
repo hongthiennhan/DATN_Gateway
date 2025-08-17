@@ -39,7 +39,7 @@ int main(void)
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
     uint8_t load_try = 0;
     // Load node configuration FIRST
-    if (load_nodes_config("../config.json") != 0)
+    if (safe_load_nodes_config("../config.json") != 0)
     {
 #ifdef DEBUG_MAIN
         fprintf(stderr, "Failed to load node configuration\n");
@@ -55,7 +55,7 @@ int main(void)
     // If first load failed, try fallback config
     if (load_try == 1)
     {
-        if (load_nodes_config("nodes_config.json") != 0)
+        if (safe_load_nodes_config("nodes_config.json") != 0)
         {
 #ifdef DEBUG_MAIN
             fprintf(stderr, "Failed to load node configuration from fallback\n");
@@ -77,15 +77,6 @@ int main(void)
         return -1;
     }
     *(int *)command_data.data = -1; // Initialize to -1
-
-    // Fixed: load_config now returns uint8_t
-    uint8_t config_result = load_config(&baudrate, &device);
-    if (config_result != 0)
-    {
-#ifdef DEBUG_MAIN
-        printf("Warning: load_config returned %d\n", config_result);
-#endif
-    }
 
     Uart_Init(map_to_speed(baudrate), device);
     // Use config value instead of hard-coded timeout

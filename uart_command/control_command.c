@@ -209,37 +209,6 @@ void save_config(uint32_t baud, const char *dev) {
     }
 }
 
-uint8_t load_config(uint32_t *baud, char **dev) {
-    const char *config_file = get_uart_config_file_path();
-    if (!config_file) {
-        config_file = "/tmp/uart_config.txt"; // fallback
-    }
-    
-    FILE *fp = fopen(config_file, "r");
-    if (!fp) return 0;
-
-    // Get buffer size from config
-    uart_config_t *config = get_uart_config();
-    int temp_buf_size = config ? config->temp_buffer_size : 256;
-    
-    char *buf = malloc(temp_buf_size);
-    if (!buf) {
-        fclose(fp);
-        return 0;
-    }
-    
-    if (fscanf(fp, "%u\n%s", baud, buf) != 2) {
-        fclose(fp);
-        free(buf);
-        return 0;
-    }
-
-    *dev = strdup(buf);
-    fclose(fp);
-    free(buf);
-    return 1;
-}
-
 void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
     uart_config_t *config = get_uart_config();
     int temp_buf_size = config ? config->temp_buffer_size : 256;
