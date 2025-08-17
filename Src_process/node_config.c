@@ -7,6 +7,9 @@
 
 // Global node registry
 static node_registry_t node_registry = {0};
+// Global config protection
+pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;
+volatile int config_reloading = 0;
 
 // Shared data structure for thread communication
 typedef struct shared_data_s
@@ -749,4 +752,69 @@ void cleanup_nodes_config(void)
 #ifdef DEBUG
     printf("Configuration cleanup completed\n");
 #endif
+}
+
+// Thread-safe config reload
+int safe_reload_config(void) {
+    #ifdef DEBUG
+    printf("Starting safe config reload\n");
+    #endif
+    
+    // Signal all threads that config is reloading
+    pthread_mutex_lock(&config_mutex);
+    config_reloading = 1;
+    
+    // Give other threads time to finish current operations
+    pthread_mutex_unlock(&config_mutex);
+    usleep(200 * 1000); // 200ms
+    
+    // Now acquire lock for full reload
+    pthread_mutex_lock(&config_mutex);
+    
+    #ifdef DEBUG
+    printf("Cleaning up old config\n");
+    #endif
+    cleanup_nodes_config();
+    
+    #ifdef DEBUG
+    printf("Loading new config\n");
+    #endif
+    int load_result = 0;
+    if (load_nodes_config("../config.json") == 0) {
+        load_result = 1;
+    } else if (load_nodes_config("nodes_config.json") == 0) {
+        load_result = 1;
+    }
+    
+    config_reloading = 0;
+    pthread_mutex_unlock(&config_mutex);
+    
+    #ifdef DEBUG
+    printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
+    #endif
+    
+    return load_result ? 0 : -1;
+}
+
+// Safe node access functions
+node_config_t *safe_get_node_by_index(int index) {
+    if (config_reloading) {
+        return NULL; // Skip during reload
+    }
+    
+    pthread_mutex_lock(&config_mutex);
+    node_config_t *node = get_node_by_index(index);
+    pthread_mutex_unlock(&config_mutex);
+    return node;
+}
+
+int safe_get_node_count(void) {
+    if (config_reloading) {
+        return 0; // Return 0 during reload
+    }
+    
+    pthread_mutex_lock(&config_mutex);
+    int count = get_node_count();
+    pthread_mutex_unlock(&config_mutex);
+    return count;
 }

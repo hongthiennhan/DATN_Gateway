@@ -23,7 +23,7 @@
     },
     {
       "id": 2,
-      "name": "Node2 - Display Unit 1",
+      "name": "Node2 - Display Unit",
       "type": "display_unit",
       "is_actuator": 1,
 
@@ -46,7 +46,7 @@
     },
     {
       "id": 3,
-      "name": "Node3 - New Device 1",
+      "name": "Node3 - New Device",
       "type": "new_device",
       "is_actuator": 0,
 

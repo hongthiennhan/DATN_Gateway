@@ -223,4 +223,10 @@ uint32_t hex_string_to_int(const char *hex_str);
 communication_type_t get_communication_type(void);
 void set_communication_type(communication_type_t type);
 const char* get_communication_type_name(communication_type_t type);
+
+// Mutex for config file:
+extern pthread_mutex_t config_mutex;
+extern volatile int config_reloading;
+
+
 #endif

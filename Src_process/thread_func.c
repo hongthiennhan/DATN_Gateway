@@ -19,39 +19,43 @@ shared_data_t command_data = {
 
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
-#ifdef DEBUG
+    #ifdef DEBUG
     printf("UART thread started - listening for automatic node data\n");
-#endif
+    #endif
     
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
     time_t last_detection = 0;
     
     while (1) {
+        // Skip processing during config reload
+        if (config_reloading) {
+            usleep(100 * 1000); // Wait 100ms during reload
+            continue;
+        }
+        
         time_t current_time = time(NULL);
         
         // Periodic node detection
         int detection_interval = get_detection_interval();
         if (detection_interval > 0 && (current_time - last_detection) >= detection_interval) {
-#ifdef DEBUG
+            #ifdef DEBUG
             printf("Starting periodic node detection\n");
-#endif
+            #endif
             start_node_detection();
             last_detection = current_time;
         }
         
-        // Check for data from UART (nodes send automatically)
+        // Check for data from UART
         if (Check_UART_Data_Available()) {
-            // Read automatic data from nodes
-            data_buffer = Read_Response(1000, &data_len); // 1 second timeout
-            
+            data_buffer = Read_Response(1000, &data_len);
             if (data_buffer && data_len > 0) {
-#ifdef DEBUG
+                #ifdef DEBUG
                 printf("Received automatic data from node: %d bytes\n", data_len);
-#endif
+                #endif
                 
-                // Process received data
-                process_uart_data(data_buffer, data_len);
+                // SAFE process received data
+                safe_process_uart_data(data_buffer, data_len);
                 
                 // Update status
                 pthread_mutex_lock(&command_mutex);
@@ -75,28 +79,31 @@ void *uart_thread_func(void *arg) {
             }
         }
         
-        // Handle server control commands (if any)
+        // Handle server control commands
         server_control_cmd_t control_cmd;
         if (get_control_command(&control_cmd) == 0) {
-            node_config_t *node = get_node_by_id(control_cmd.node_id);
-            if (node) {
-                menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
-                if (menu_item) {
-#ifdef DEBUG
-                    printf("Executing server command: node=%d, cmd=%d\n",
-                           control_cmd.node_id, control_cmd.cmd_id);
-#endif
-                    
-                    // Only send command, don't read response
-                    uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
-                    if (uart_cmd != 0) {
-                        write_command((uint8_t)uart_cmd);
+            pthread_mutex_lock(&config_mutex);
+            if (!config_reloading) {
+                node_config_t *node = get_node_by_id(control_cmd.node_id);
+                if (node) {
+                    menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
+                    if (menu_item) {
+                        #ifdef DEBUG
+                        printf("Executing server command: node=%d, cmd=%d\n",
+                               control_cmd.node_id, control_cmd.cmd_id);
+                        #endif
+                        
+                        uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
+                        if (uart_cmd != 0) {
+                            write_command((uint8_t)uart_cmd);
+                        }
                     }
                 }
             }
+            pthread_mutex_unlock(&config_mutex);
         }
         
-        usleep(100 * 1000); // 100ms sleep to avoid CPU waste
+        usleep(100 * 1000); // 100ms sleep
     }
     
     return NULL;
@@ -105,26 +112,25 @@ void *uart_thread_func(void *arg) {
 /**
  * Assign received data to appropriate node
  */
-void process_uart_data(unsigned char *data, uint16_t data_len) {
-    if (!data || data_len == 0) return;
+void safe_process_uart_data(unsigned char *data, uint16_t data_len) {
+    if (!data || data_len == 0 || config_reloading) return;
     
-    // Find appropriate node based on data format or node ID
-    // Assume first detected node receives this data
-    for (int i = 0; i < get_node_count(); i++) {
+    pthread_mutex_lock(&config_mutex);
+    int node_count = get_node_count();
+    for (int i = 0; i < node_count; i++) {
         node_config_t *node = get_node_by_index(i);
         if (node && node->detected) {
-            // Update timestamp
+            // Update last data received timestamp
             node->last_data_received = time(NULL);
-            
-            // Update MQTT data
+            // Update MQTT data with received response
             update_mqtt_data_from_response(node, data, data_len);
-            
-#ifdef DEBUG
+            #ifdef DEBUG
             printf("Data assigned to node %d (%s)\n", node->node_id, node->name);
-#endif
-            break; // Only assign to first found node
+            #endif
+            break;
         }
     }
+    pthread_mutex_unlock(&config_mutex);
 }
 
 /**
@@ -232,7 +238,7 @@ void *ui_thread_func(void *arg) {
         
         // System info
         mvprintw(2, 0, "UART: %s @ %u baud", device, baudrate);
-        mvprintw(3, 0, "Nodes detected: %d", get_node_count());
+        mvprintw(3, 0, "Nodes detected: %d", safe_get_node_count());
         mvprintw(4, 0, "Communication: %s", get_communication_type_name(get_communication_type())); // ADD communication type
         
         pthread_mutex_lock(&command_mutex);
@@ -299,7 +305,7 @@ void *ui_thread_func(void *arg) {
                             mvprintw(6, 0, "Model: %s", sys_info->model);
                             mvprintw(8, 0, "UART Device: %s", device);
                             mvprintw(9, 0, "Baudrate: %u", baudrate);
-                            mvprintw(10, 0, "Detected Nodes: %d", get_node_count());
+                            mvprintw(10, 0, "Detected Nodes: %d", safe_get_node_count());
                             mvprintw(11, 0, "Communication Type: %s", get_communication_type_name(get_communication_type())); // ADD
                         }
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
@@ -416,18 +422,12 @@ void *ui_thread_func(void *arg) {
                         mvprintw(1, 0, "Reloading configuration...");
                         refresh();
                         
-                        cleanup_nodes_config();
-                        int load_result = 0;
-                        if (load_nodes_config("../config.json") == 0) {
-                            load_result = 1;
-                        } else if (load_nodes_config("nodes_config.json") == 0) {
-                            load_result = 1;
-                        }
+                        int load_result = safe_reload_config();
                         
-                        if (load_result) {
+                        if (load_result == 0) {
                             attron(COLOR_PAIR(2));
                             mvprintw(3, 0, "Configuration reloaded successfully!");
-                            mvprintw(4, 0, "Loaded %d nodes", get_node_count());
+                            mvprintw(4, 0, "Loaded %d nodes", safe_get_node_count());
                             attroff(COLOR_PAIR(2));
                         } else {
                             attron(COLOR_PAIR(3));
@@ -437,10 +437,10 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
+                        
+                        nodelay(stdscr, FALSE);
                         key_check = getch();
-                        while (key_check == ERR) {
-                            key_check = getch(); // Wait for any key
-                        }
+                        nodelay(stdscr, TRUE);
                         break;
                         
                     case 4: // View Node Configuration - UPDATED with last data time
@@ -449,7 +449,7 @@ void *ui_thread_func(void *arg) {
                         int node_count = get_node_count();
                         if (node_count > 0) {
                             for (int i = 0; i < node_count; i++) {
-                                node_config_t *node = get_node_by_index(i);
+                                node_config_t *node = safe_get_node_by_index(i);
                                 if (node) {
                                     attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
                                     mvprintw(3 + i * 2, 0, "Node %d: %s (%s) - %s",
