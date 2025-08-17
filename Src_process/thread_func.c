@@ -25,7 +25,7 @@ void *uart_thread_func(void *arg) {
     
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
-    time_t last_detection = 0;
+    time_t last_11_second_detection = 0;  // Chỉ cần timer cho 11 giây detection
     
     while (1) {
         // Skip processing during config reload
@@ -36,17 +36,97 @@ void *uart_thread_func(void *arg) {
         
         time_t current_time = time(NULL);
         
-        // Periodic node detection
-        int detection_interval = get_detection_interval();
-        if (detection_interval > 0 && (current_time - last_detection) >= detection_interval) {
+        // ============= NODE DETECTION EVERY 11 SECONDS =============
+        if ((current_time - last_11_second_detection) >= 11) {
             #ifdef DEBUG
-            printf("Starting periodic node detection\n");
+            printf("Starting 11-second node detection cycle\n");
             #endif
-            start_node_detection();
-            last_detection = current_time;
+            
+            pthread_mutex_lock(&config_mutex);
+            if (!config_reloading) {
+                for (int i = 0; i < get_node_count(); i++) {
+                    node_config_t *node = get_node_by_index(i);
+                    if (node && node->detection_commands && node->detection_count > 0) {
+                        #ifdef DEBUG
+                        printf("Detecting node %d (%s), expecting '%s'\n", 
+                               node->node_id, node->name, node->detection_commands[0].expected_response);
+                        #endif
+                        
+                        // Send detection command từ JSON
+                        write_command(node->detection_commands[0].command);
+                        
+                        // Read response with timeout từ JSON
+                        int timeout_ms = node->detection_commands[0].timeout_ms;
+                        if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
+                        
+                        data_buffer = Read_Response(timeout_ms, &data_len);
+                        
+                        if (data_buffer && data_len > 0) {
+                            // Convert response to string for comparison
+                            char response_str[512] = {0};
+                            int max_len = (data_len < 511) ? data_len : 511;
+                            memcpy(response_str, data_buffer, max_len);
+                            response_str[max_len] = '\0';
+                            
+                            // Check if response contains expected_response
+                            if (strstr(response_str, node->detection_commands[0].expected_response) != NULL) {
+                                // Node detected successfully
+                                node->detected = 1;
+                                node->last_detection = current_time;
+                                
+                                #ifdef DEBUG
+                                printf("Node %d DETECTED - received '%s'\n", 
+                                       node->node_id, node->detection_commands[0].expected_response);
+                                #endif
+                            } else {
+                                // Wrong response
+                                node->detected = 0;
+                                
+                                #ifdef DEBUG
+                                printf("Node %d NOT DETECTED - wrong response: '%s'\n", 
+                                       node->node_id, response_str);
+                                #endif
+                                
+                                pthread_mutex_lock(&command_mutex);
+                                snprintf(status_response, sizeof(status_response), 
+                                         "Node %d: WRONG RESPONSE", node->node_id);
+                                status_color = 3; // Red
+                                pthread_mutex_unlock(&command_mutex);
+                            }
+                            
+                            free(data_buffer);
+                            data_buffer = NULL;
+                        } else {
+                            // No response - không detect được
+                            node->detected = 0;
+                            
+                            #ifdef DEBUG
+                            printf("Node %d NOT DETECTED - no response\n", node->node_id);
+                            #endif
+                            
+                            pthread_mutex_lock(&command_mutex);
+                            snprintf(status_response, sizeof(status_response), 
+                                     "Node %d: NO RESPONSE", node->node_id);
+                            status_color = 3; // Red
+                            pthread_mutex_unlock(&command_mutex);
+                        }
+                        
+                        // Small delay between nodes
+                        usleep(100 * 1000); // 100ms
+                    }
+                }
+            }
+            pthread_mutex_unlock(&config_mutex);
+            
+            last_11_second_detection = current_time;
+            
+            #ifdef DEBUG
+            printf("11-second detection cycle completed\n");
+            #endif
         }
+        // =======================================================
         
-        // Check for data from UART
+        // Check for data from UART (normal operation)
         if (Check_UART_Data_Available()) {
             data_buffer = Read_Response(1000, &data_len);
             if (data_buffer && data_len > 0) {

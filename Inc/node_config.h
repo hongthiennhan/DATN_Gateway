@@ -149,11 +149,6 @@ typedef struct {
     int default_baudrate;
     char default_device[256];
     int startup_clear_duration;
-    
-    // NEW: Node detection config
-    int detection_interval;    // Seconds between detection attempts
-    int detection_timeout;     // Max time for detection sequence
-
     // Communication type
     communication_type_t communication_type;
 
@@ -190,12 +185,6 @@ int get_uart_wait_timeout(void);
 int get_default_baudrate(void);
 const char* get_default_device(void);
 int get_startup_clear_duration(void);
-
-// NEW: Node detection functions
-int get_detection_interval(void);
-int get_detection_timeout(void);
-int start_node_detection(void);
-int detect_node_type(node_config_t *node);
 
 // System info getters
 system_info_t* get_system_info(void);

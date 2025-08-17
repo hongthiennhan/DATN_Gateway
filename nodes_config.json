@@ -99,9 +99,7 @@
     "uart_wait_timeout": 1000,
     "default_baudrate": 115200,
     "default_device": "/dev/ttyUSB0",
-    "startup_clear_duration": 10000,
-    "detection_interval": 60,
-    "detection_timeout": 30
+    "startup_clear_duration": 10000
   },
 
   "system_info": {

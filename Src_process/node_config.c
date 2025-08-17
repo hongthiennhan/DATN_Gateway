@@ -291,10 +291,6 @@ int load_nodes_config(const char *config_file)
         if (json_object_object_get_ex(system_obj, "startup_clear_duration", &temp_obj))
             node_registry.startup_clear_duration = json_object_get_int(temp_obj);
         // Parse detection settings
-        if (json_object_object_get_ex(system_obj, "detection_interval", &temp_obj))
-            node_registry.detection_interval = json_object_get_int(temp_obj);
-        if (json_object_object_get_ex(system_obj, "detection_timeout", &temp_obj))
-            node_registry.detection_timeout = json_object_get_int(temp_obj);
     }
 
     // Parse system info
@@ -496,7 +492,6 @@ int load_nodes_config(const char *config_file)
     json_object_put(root);
 #ifdef DEBUG
     printf("Configuration loaded: %d nodes\n", node_registry.count);
-    printf("Detection interval: %d seconds\n", node_registry.detection_interval);
     // DEBUG: Validate broker_host after parsing
     printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n",
            node_registry.mqtt_config.broker_host,
@@ -505,64 +500,6 @@ int load_nodes_config(const char *config_file)
            node_registry.mqtt_config.broker_port);
 #endif
     return 0;
-}
-
-/**
- * Start node detection sequence
- */
-int start_node_detection(void)
-{
-#ifdef DEBUG
-    printf("Starting node detection sequence\n");
-#endif
-    for (int i = 0; i < node_registry.count; i++)
-    {
-        node_config_t *node = &node_registry.nodes[i];
-        if (detect_node_type(node) == 0)
-        {
-            node->detected = 1;
-            node->last_detection = time(NULL);
-#ifdef DEBUG
-            printf("Node %d (%s) detected successfully\n", node->node_id, node->name);
-#endif
-        }
-        else
-        {
-            node->detected = 0;
-#ifdef DEBUG
-            printf("Node %d (%s) not detected\n", node->node_id, node->name);
-#endif
-        }
-    }
-    return 0;
-}
-
-/**
- * Detect specific node type using detection commands
- */
-int detect_node_type(node_config_t *node)
-{
-    if (!node || !node->detection_commands || node->detection_count == 0)
-    {
-        return -1;
-    }
-#ifdef DEBUG
-    printf("Detecting node %d (%s) with %d commands\n",
-           node->node_id, node->name, node->detection_count);
-#endif
-    for (int i = 0; i < node->detection_count; i++)
-    {
-        detection_cmd_t *cmd = &node->detection_commands[i];
-// Send detection command (would need access to UART functions)
-// This is a simplified version - actual implementation would use UART
-#ifdef DEBUG
-        printf("Sending detection command 0x%02X for %s\n", cmd->command, cmd->description);
-#endif
-        // For now, simulate successful detection
-        // In real implementation, this would send UART command and check response
-        usleep(cmd->timeout_ms * 1000);
-    }
-    return 0; // Assume detection successful for now
 }
 
 // Standard getter functions
@@ -616,8 +553,6 @@ const char *get_default_device(void) { return node_registry.default_device; }
 int get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
 
 // Detection getters
-int get_detection_interval(void) { return node_registry.detection_interval; }
-int get_detection_timeout(void) { return node_registry.detection_timeout; }
 system_info_t *get_system_info(void) { return &node_registry.system_info; }
 uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
 const char *get_uart_config_file_path(void) { return node_registry.uart_config.config_file_path; }
