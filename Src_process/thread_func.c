@@ -449,7 +449,7 @@ void *ui_thread_func(void *arg) {
                         int node_count = get_node_count();
                         if (node_count > 0) {
                             for (int i = 0; i < node_count; i++) {
-                                node_config_t *node = safe_get_node_by_index(i);
+                                node_config_t *node = get_node_by_index(i);
                                 if (node) {
                                     attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
                                     mvprintw(3 + i * 2, 0, "Node %d: %s (%s) - %s",
