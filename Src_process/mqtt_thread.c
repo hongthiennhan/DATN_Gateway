@@ -445,6 +445,7 @@ int check_and_reload_config(void)
 #ifdef DEBUG
         printf("Reloading config from server update\n");
 #endif
+        pthread_mutex_lock(&config_update_mutex);
         cleanup_nodes_config();
         char config_path[512];
         snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
@@ -453,6 +454,7 @@ int check_and_reload_config(void)
 #ifdef DEBUG
             printf("Config reloaded successfully\n");
 #endif
+            pthread_mutex_unlock(&config_update_mutex);
             return 1;
         }
         else
@@ -465,9 +467,11 @@ int check_and_reload_config(void)
             {
                 load_nodes_config("nodes_config.json");
             }
+            pthread_mutex_unlock(&config_update_mutex);
             return 0;
         }
     }
+    pthread_mutex_unlock(&config_update_mutex);
     return 0;
 }
 
@@ -476,12 +480,14 @@ int check_and_reload_config(void)
  */
 int request_config_json_robust(void)
 {
+    pthread_mutex_lock(&config_mutex);
     mqtt_config_t *cfg = get_mqtt_config();
     if (!cfg || !mqtt_client || !mqtt_connected)
     {
 #ifdef DEBUG
         fprintf(stderr, "ERROR: Cannot request config - MQTT not ready\n");
 #endif
+        pthread_mutex_unlock(&config_mutex);
         return 0;
     }
 #ifdef DEBUG
@@ -501,6 +507,7 @@ int request_config_json_robust(void)
 #ifdef DEBUG
         printf("Config request sent\n");
 #endif
+        pthread_mutex_unlock(&config_mutex);
         return 1;
     }
     else
@@ -508,6 +515,7 @@ int request_config_json_robust(void)
 #ifdef DEBUG
         fprintf(stderr, "Failed to send config request\n");
 #endif
+        
         return 0;
     }
 }
