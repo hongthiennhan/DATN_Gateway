@@ -69,7 +69,7 @@
     },
     {
       "id": 4,
-      "name": "Node4 - Sensor Board 2",
+      "name": "Node4 - Sensor 2",
       "type": "sensor_board",
       "is_actuator": 0,
 
