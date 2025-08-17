@@ -5,6 +5,7 @@
       "name": "Node1 - Sensor Board 1",
       "type": "sensor_board",
       "is_actuator": 0,
+      "data_format": "hex",
       "detection_commands": [
         {
           "command": 255,
@@ -14,11 +15,31 @@
         }
       ],
       "menu_items": [
-        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA2", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "LED On",
+          "uart_cmd": "CMD2_LED_ON",
+          "hex_value": "0xA1",
+          "timeout_ms": 0,
+          "is_direct": 1
+        },
+        {
+          "cmd": 2,
+          "label": "LED Off", 
+          "uart_cmd": "CMD2_LED_OFF",
+          "hex_value": "0xA2",
+          "timeout_ms": 0,
+          "is_direct": 1
+        },
+        {
+          "cmd": 3,
+          "label": "Read Sensor",
+          "uart_cmd": "CMD2_READ_SENSOR", 
+          "hex_value": "0xA3",
+          "timeout_ms": 2000,
+          "is_direct": 0
+        }
       ],
-
-      "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
     {
@@ -26,7 +47,7 @@
       "name": "Node2 - Display Unit 1",
       "type": "display_unit",
       "is_actuator": 1,
-
+      "data_format": "hex",
       "detection_commands": [
         {
           "command": 255,
@@ -35,13 +56,32 @@
           "description": "Display unit identification"
         }
       ],
-
       "menu_items": [
-        { "cmd": 1, "label": "Display On", "uart_cmd": "CMD3_DISPLAY_ON", "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "Display Off", "uart_cmd": "CMD3_DISPLAY_OFF", "hex_value": "0xA2", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "Display On",
+          "uart_cmd": "CMD3_DISPLAY_ON",
+          "hex_value": "0xA1",
+          "timeout_ms": 0,
+          "is_direct": 1
+        },
+        {
+          "cmd": 2,
+          "label": "Display Off",
+          "uart_cmd": "CMD3_DISPLAY_OFF",
+          "hex_value": "0xA2", 
+          "timeout_ms": 0,
+          "is_direct": 1
+        },
+        {
+          "cmd": 3,
+          "label": "Update Display",
+          "uart_cmd": "CMD3_UPDATE_DISPLAY",
+          "hex_value": "0xA3",
+          "timeout_ms": 1000,
+          "is_direct": 0
+        }
       ],
-
-      "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
     {
@@ -49,7 +89,7 @@
       "name": "Node3 - New Device 1",
       "type": "new_device",
       "is_actuator": 0,
-
+      "data_format": "hex",
       "detection_commands": [
         {
           "command": 255,
@@ -58,21 +98,31 @@
           "description": "New device identification"
         }
       ],
-
       "menu_items": [
-        { "cmd": 1, "label": "New Command 1", "uart_cmd": "CMD_NEW_1", "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "New Command 2", "uart_cmd": "CMD_NEW_2", "hex_value": "0xA2", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "New Command 1",
+          "uart_cmd": "CMD_NEW_1",
+          "hex_value": "0xA1",
+          "timeout_ms": 0,
+          "is_direct": 0
+        },
+        {
+          "cmd": 2,
+          "label": "New Command 2",
+          "uart_cmd": "CMD_NEW_2",
+          "hex_value": "0xA2",
+          "timeout_ms": 0,
+          "is_direct": 0
+        }
       ],
-
-      "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],
-
   "system_config": {
     "auto_read_command_id": 100,
     "uart_clear_timeout": 10000,
-    "ui_refresh_delay": 100,
+    "ui_refresh_delay": 1000,
     "uart_wait_timeout": 1000,
     "default_baudrate": 115200,
     "default_device": "/dev/ttyUSB0",
@@ -80,14 +130,12 @@
     "detection_interval": 60,
     "detection_timeout": 30
   },
-
   "system_info": {
     "firmware_version": "1.0.0",
     "device_type": "IoT Gateway",
     "manufacturer": "Your Company",
     "model": "Gateway-v1"
   },
-
   "uart_config": {
     "config_file_path": "/tmp/uart_config.txt",
     "buffer_sizes": {
@@ -101,10 +149,10 @@
       "select_timeout_ms": 50
     },
     "supported_baudrates": [
-      { "rate": 9600,   "speed_code": "B9600"   },
-      { "rate": 19200,  "speed_code": "B19200"  },
-      { "rate": 38400,  "speed_code": "B38400"  },
-      { "rate": 57600,  "speed_code": "B57600"  },
+      { "rate": 9600, "speed_code": "B9600" },
+      { "rate": 19200, "speed_code": "B19200" },
+      { "rate": 38400, "speed_code": "B38400" },
+      { "rate": 57600, "speed_code": "B57600" },
       { "rate": 115200, "speed_code": "B115200" },
       { "rate": 230400, "speed_code": "B230400" },
       { "rate": 460800, "speed_code": "B460800" },
@@ -112,7 +160,6 @@
     ],
     "default_baudrate_fallback": 115200
   },
-
   "mqtt_config": {
     "broker_host": "demo.thingsboard.io",
     "broker_port": 1883,

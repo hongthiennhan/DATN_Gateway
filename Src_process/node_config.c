@@ -165,6 +165,10 @@ static int parse_menu_items(json_object *menu_array, node_config_t *node)
         {
             item->timeout_ms = json_object_get_int(temp_obj);
         }
+        if (json_object_object_get_ex(item_obj, "is_direct", &temp_obj))
+        {
+            item->is_direct = json_object_get_boolean(temp_obj);
+        }
     }
     return 0;
 }
