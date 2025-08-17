@@ -3,6 +3,8 @@
 #include "thread_func.h"
 #include "node_config.h"
 
+#define DEBUG_MAIN
+
 static struct option long_options[] = {
     {0, 0, 0, 0}};
 
@@ -39,23 +41,23 @@ int main(void)
     // Load node configuration FIRST
     if (load_nodes_config("../config.json") != 0)
     {
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
         fprintf(stderr, "Failed to load node configuration\n");
 #endif
         load_try = 1;
     }
 
-//     // If first load failed, try fallback config
-//     if (load_try == 1)
-//     {
-//         if (load_nodes_config("nodes_config.json") != 0)
-//         {
-// #ifdef DEBUG
-//             fprintf(stderr, "Failed to load node configuration from fallback\n");
-// #endif
-//             return -1;
-//         }
-//     }
+    // If first load failed, try fallback config
+    if (load_try == 1)
+    {
+        if (load_nodes_config("nodes_config.json") != 0)
+        {
+#ifdef DEBUG_MAIN
+            fprintf(stderr, "Failed to load node configuration from fallback\n");
+#endif
+            return -1;
+        }
+    }
 
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
@@ -64,7 +66,7 @@ int main(void)
     command_data.data = malloc(sizeof(int));
     if (command_data.data == NULL)
     {
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
         fprintf(stderr, "Failed to allocate memory for command data\n");
 #endif
         return -1;
@@ -75,7 +77,7 @@ int main(void)
     uint8_t config_result = load_config(&baudrate, &device);
     if (config_result != 0)
     {
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
         printf("Warning: load_config returned %d\n", config_result);
 #endif
     }
