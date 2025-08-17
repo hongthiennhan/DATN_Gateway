@@ -46,6 +46,11 @@ int main(void)
 #endif
         load_try = 1;
     }
+    else {
+#ifdef DEBUG_MAIN
+        printf("Node configuration loaded successfully\n");
+#endif
+    }
 
     // If first load failed, try fallback config
     if (load_try == 1)
