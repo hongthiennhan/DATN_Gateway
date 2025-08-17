@@ -45,17 +45,17 @@ int main(void)
         load_try = 1;
     }
 
-    // If first load failed, try fallback config
-    if (load_try == 1)
-    {
-        if (load_nodes_config("nodes_config.json") != 0)
-        {
-#ifdef DEBUG
-            fprintf(stderr, "Failed to load node configuration from fallback\n");
-#endif
-            return -1;
-        }
-    }
+//     // If first load failed, try fallback config
+//     if (load_try == 1)
+//     {
+//         if (load_nodes_config("nodes_config.json") != 0)
+//         {
+// #ifdef DEBUG
+//             fprintf(stderr, "Failed to load node configuration from fallback\n");
+// #endif
+//             return -1;
+//         }
+//     }
 
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
