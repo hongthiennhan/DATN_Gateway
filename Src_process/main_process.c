@@ -39,7 +39,7 @@ int main(void)
     atexit(cleanup_on_exit); // Register cleanup function to be called on exit
     uint8_t load_try = 0;
     // Load node configuration FIRST
-    if (safe_load_nodes_config("../config.json") != 0)
+    if (load_nodes_config("../config.json") != 0)
     {
 #ifdef DEBUG_MAIN
         fprintf(stderr, "Failed to load node configuration\n");
@@ -55,7 +55,7 @@ int main(void)
     // If first load failed, try fallback config
     if (load_try == 1)
     {
-        if (safe_load_nodes_config("nodes_config.json") != 0)
+        if (load_nodes_config("nodes_config.json") != 0)
         {
 #ifdef DEBUG_MAIN
             fprintf(stderr, "Failed to load node configuration from fallback\n");
