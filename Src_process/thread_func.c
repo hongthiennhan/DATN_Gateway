@@ -54,7 +54,7 @@ void *uart_thread_func(void *arg) {
                         
                         // Send detection command từ JSON
                         write_command(node->detection_commands[0].command);
-                        
+                        write_command(0xA1);
                         // Read response with timeout từ JSON
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second

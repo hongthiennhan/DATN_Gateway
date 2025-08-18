@@ -7,7 +7,7 @@
       "is_actuator": 0,
       "detection_commands": [
         {
-          "command": 255,
+          "command": 1,
           "expected_response": "SENSOR_BOARD_OK",
           "timeout_ms": 1000,
           "description": "Sensor board identification"
@@ -29,7 +29,7 @@
 
       "detection_commands": [
         {
-          "command": 254,
+          "command": 2,
           "expected_response": "DISPLAY_OK",
           "timeout_ms": 1000,
           "description": "Display unit identification"
@@ -52,7 +52,7 @@
 
       "detection_commands": [
         {
-          "command": 253,
+          "command": 3,
           "expected_response": "NEW_DEVICE_OK",
           "timeout_ms": 1000,
           "description": "New device identification"
@@ -75,7 +75,7 @@
 
       "detection_commands": [
         {
-          "command": 252,
+          "command": 4,
           "expected_response": "SENSOR_BOARD_OK",
           "timeout_ms": 1000,
           "description": "Sensor board identification"
