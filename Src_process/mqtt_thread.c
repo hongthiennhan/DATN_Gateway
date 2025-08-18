@@ -15,6 +15,20 @@ struct mosquitto *mqtt_client = NULL;
 volatile int mqtt_connected = 0;
 
 /**
+ * Safe MQTT config access
+ */
+mqtt_config_t *safe_get_mqtt_config(void) {
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return NULL;
+    }
+    mqtt_config_t *config = get_mqtt_config();
+    pthread_mutex_unlock(&config_mutex);
+    return config;
+}
+
+/**
  * Get local IP address for gateway identification
  */
 char *get_local_ip()
@@ -433,40 +447,47 @@ int check_and_reload_config(void)
         config_updated = 0;
     }
     pthread_mutex_unlock(&config_update_mutex);
-    if (should_reload)
+    
+    if (!should_reload) return 0;
+    
+    pthread_mutex_lock(&config_mutex);
+    config_reloading = 1;
+    
+#ifdef DEBUG
+    printf("Reloading config from server update\n");
+#endif
+    
+    cleanup_nodes_config();
+    
+    char config_path[512];
+    snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
+    
+    int result = 0;
+    if (load_nodes_config(config_path) == 0)
     {
 #ifdef DEBUG
-        printf("Reloading config from server update\n");
+        printf("Config reloaded successfully\n");
 #endif
-        pthread_mutex_lock(&config_mutex);
-        cleanup_nodes_config();
-        char config_path[512];
-        snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
-        if (load_nodes_config(config_path) == 0)
-        {
+        result = 1;
+    }
+    else
+    {
 #ifdef DEBUG
-            printf("Config reloaded successfully\n");
+        fprintf(stderr, "Failed to reload config, using fallback\n");
 #endif
-            pthread_mutex_unlock(&config_mutex);
-            return 1;
-        }
-        else
+        // Try fallback configs
+        if (load_nodes_config("../config.json") != 0)
         {
-#ifdef DEBUG
-            fprintf(stderr, "Failed to reload config, using fallback\n");
-#endif
-            // Try fallback configs
-            if (load_nodes_config("../config.json") != 0)
-            {
-                load_nodes_config("nodes_config.json");
-            }
-            pthread_mutex_unlock(&config_mutex);
-            return 0;
+            load_nodes_config("nodes_config.json");
         }
     }
+    
+    config_reloading = 0;
     pthread_mutex_unlock(&config_mutex);
-    return 0;
+    
+    return result;
 }
+
 
 /**
  * Request config from ThingsBoard
@@ -516,14 +537,19 @@ int request_config_json_robust(void)
 /**
  * Build telemetry payload with node data
  */
+/**
+ * Build telemetry payload with node data
+ */
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
-    mqtt_config_t *config = get_mqtt_config();
+    mqtt_config_t *config = safe_get_mqtt_config();
     if (!config)
         return;
+        
     char *temp_buffer = malloc(1024);
     if (!temp_buffer)
         return;
+        
     // Start JSON with timestamp
     if (config->system_fields.include_timestamp)
     {
@@ -534,36 +560,43 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
         snprintf(payload, payload_size, "{");
     }
 
-    // Add data from detected nodes
-    for (int i = 0; i < get_node_count(); i++)
-    {
-        node_config_t *node = get_node_by_index(i);
-        if (!node || !node->mqtt_data || !node->detected)
-            continue;
-        pthread_mutex_lock(&node->mqtt_data->mutex);
-        if (node->mqtt_data->data)
+    // Add data from detected nodes - SAFE ACCESS
+    pthread_mutex_lock(&config_mutex);
+    if (!config_reloading) {
+        int node_count = safe_get_node_count();
+        for (int i = 0; i < node_count; i++)
         {
-            raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
-            if (raw_data && raw_data->data && raw_data->length > 0)
-            {
-                // Convert to hex string
-                char *hex_str = malloc(raw_data->length * 2 + 1);
-                if (hex_str)
+            node_config_t *node = get_node_by_index(i);
+            if (!node || !node->mqtt_data || !node->detected)
+                continue;
+                
+            if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0) {
+                if (node->mqtt_data->data)
                 {
-                    for (int j = 0; j < raw_data->length; j++)
+                    raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
+                    if (raw_data && raw_data->data && raw_data->length > 0)
                     {
-                        sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
+                        // Convert to hex string
+                        char *hex_str = malloc(raw_data->length * 2 + 1);
+                        if (hex_str)
+                        {
+                            for (int j = 0; j < raw_data->length; j++)
+                            {
+                                sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
+                            }
+                            hex_str[raw_data->length * 2] = '\0';
+                            snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
+                                   node->node_id, hex_str, node->node_id, node->type);
+                            strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+                            free(hex_str);
+                        }
                     }
-                    hex_str[raw_data->length * 2] = '\0';
-                    snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
-                             node->node_id, hex_str, node->node_id, node->type);
-                    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-                    free(hex_str);
                 }
+                pthread_mutex_unlock(&node->mqtt_data->mutex);
             }
         }
-        pthread_mutex_unlock(&node->mqtt_data->mutex);
     }
+    pthread_mutex_unlock(&config_mutex);
 
     // Add system info
     if (config->system_fields.include_gateway_ip)
@@ -571,14 +604,17 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
         snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", get_local_ip());
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
     }
+
     if (config->system_fields.include_node_count)
     {
-        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", get_node_count());
+        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", safe_get_node_count());
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
     }
+
     strncat(payload, "}", payload_size - strlen(payload) - 1);
     free(temp_buffer);
 }
+
 
 /**
  * Main MQTT thread function
@@ -671,18 +707,27 @@ void *mqtt_thread_func(void *arg)
         return NULL;
     }
 
-    while (1)
+        while (1)
     {
         time_t current_time = time(NULL);
+        
         // Check for config updates
         check_and_reload_config();
+        
+        // Get fresh config for each iteration
+        mqtt_config_t *current_config = safe_get_mqtt_config();
+        if (!current_config) {
+            usleep(100 * 1000);
+            continue;
+        }
+        
         // Publish telemetry data
-        if (current_time - last_publish >= config->publish_interval)
+        if (current_time - last_publish >= current_config->publish_interval)
         {
-            build_telemetry_payload(telemetry_payload, config->payload_buffer_size, current_time);
-            rc = mosquitto_publish(mqtt_client, NULL, config->topic_telemetry,
-                                   strlen(telemetry_payload), telemetry_payload,
-                                   config->qos, false);
+            build_telemetry_payload(telemetry_payload, current_config->payload_buffer_size, current_time);
+            rc = mosquitto_publish(mqtt_client, NULL, current_config->topic_telemetry,
+                                 strlen(telemetry_payload), telemetry_payload,
+                                 current_config->qos, false);
             if (rc == MOSQ_ERR_SUCCESS)
             {
                 last_publish = current_time;
@@ -690,13 +735,13 @@ void *mqtt_thread_func(void *arg)
         }
 
         // Send status update
-        if (strlen(config->topic_status) > 0 && (current_time - last_status) >= 60)
+        if (strlen(current_config->topic_status) > 0 && (current_time - last_status) >= 60)
         {
-            snprintf(status_payload, config->payload_buffer_size,
-                     "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
-                     current_time, get_node_count());
-            mosquitto_publish(mqtt_client, NULL, config->topic_status,
-                              strlen(status_payload), status_payload, config->qos, false);
+            snprintf(status_payload, current_config->payload_buffer_size,
+                    "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
+                    current_time, safe_get_node_count());
+            mosquitto_publish(mqtt_client, NULL, current_config->topic_status,
+                            strlen(status_payload), status_payload, current_config->qos, false);
             last_status = current_time;
         }
 
@@ -704,16 +749,9 @@ void *mqtt_thread_func(void *arg)
         if (!mqtt_connected)
         {
             mosquitto_reconnect(mqtt_client);
-            usleep(config->reconnect_delay_ms * 1000);
+            usleep(current_config->reconnect_delay_ms * 1000);
         }
-        usleep(config->loop_interval_ms * 1000);
-    }
 
-    // Cleanup
-    free(telemetry_payload);
-    free(status_payload);
-    mosquitto_loop_stop(mqtt_client, true);
-    mosquitto_destroy(mqtt_client);
-    mosquitto_lib_cleanup();
-    return NULL;
+        usleep(current_config->loop_interval_ms * 1000);
+    }
 }

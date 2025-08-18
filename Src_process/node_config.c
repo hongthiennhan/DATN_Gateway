@@ -733,22 +733,22 @@ int safe_reload_config(void) {
 
 // Safe node access functions
 node_config_t *safe_get_node_by_index(int index) {
-    if (config_reloading) {
-        return NULL; // Skip during reload
-    }
-    
     pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return NULL;
+    }
     node_config_t *node = get_node_by_index(index);
     pthread_mutex_unlock(&config_mutex);
     return node;
 }
 
 int safe_get_node_count(void) {
-    if (config_reloading) {
-        return 0; // Return 0 during reload
-    }
-    
     pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return 0;
+    }
     int count = get_node_count();
     pthread_mutex_unlock(&config_mutex);
     return count;
