@@ -168,15 +168,11 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     {
         return -1;
     }
-
-    /* fixed: new_path[512]  backup_path */
-    char current_path, new_path, backup_path;
-
+    char current_path[512], new_path[512], backup_path[512];
     snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
     snprintf(new_path,    sizeof(new_path),    "%s/%s.new",  dir, filename);
     snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
-
-    /* Step 1: Delete old config file if it exists */
+    /* Delete old config file if it exists */
     if (access(current_path, F_OK) == 0)
     {
         if (unlink(current_path) != 0)
@@ -192,7 +188,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 #endif
     }
 
-    /* Step 2: Create new file */
+    /* Create new file */
     int fd = open(new_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0)
     {
@@ -203,7 +199,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         return -1;
     }
 
-    /* Step 3: Write data to new file with partial-write handling */
+    /* Write data to new file with partial-write handling */
     size_t total_written = 0;
     while (total_written < size)
     {
@@ -225,7 +221,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         total_written += written;
     }
 
-    /* Step 4: Ensure data is flushed to storage */
+    /* Ensure data is flushed to storage */
     if (fsync(fd) != 0)
     {
 #ifdef DEBUG
@@ -237,7 +233,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     }
     close(fd);
 
-    /* Step 5: Atomically rename new file to current filename */
+    /* Atomically rename new file to current filename */
     if (rename(new_path, current_path) != 0)
     {
 #ifdef DEBUG
@@ -250,7 +246,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     printf("New config file created successfully: %s\n", current_path);
 #endif
 
-    /* Step 6: After saving new file, delete old backup (if any) */
+    /* After saving new file, delete old backup (if any) */
     if (access(backup_path, F_OK) == 0)
     {
         if (unlink(backup_path) != 0)
