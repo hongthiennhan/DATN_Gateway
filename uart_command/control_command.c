@@ -154,11 +154,11 @@ void write_init(uint32_t baudrate) {
     }
 
     uint8_t buffer[5];
-    buffer = 0xFF; // CMD_INIT hex value from config instead of hard-coded
+    buffer[0] = 0xFF; // CMD_INIT hex value from config instead of hard-coded
     buffer[1] = (uint8_t)(baudrate & 0xFF);
     buffer[2] = (uint8_t)((baudrate >> 8) & 0xFF);
-    buffer = (uint8_t)((baudrate >> 16) & 0xFF);
-    buffer = (uint8_t)((baudrate >> 24) & 0xFF);
+    buffer[3] = (uint8_t)((baudrate >> 16) & 0xFF);
+    buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF);
 
     ssize_t bytes_written = write(uart_fd, buffer, 5);
     if (bytes_written < 0) {
