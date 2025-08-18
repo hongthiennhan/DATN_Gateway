@@ -2,7 +2,7 @@
 #include "node_config.h"
 
 // Config download settings
-#define CONFIG_DIR "/home/trieunguyen/Linux_worldspace/DATN_Gateway_Task1"
+#define CONFIG_DIR "/home/trieunguyen/Linux_worldspace/DATN_Gateway"
 #define CONFIG_FILE "config.json"
 #define MAX_JSON_SIZE (1024 * 1024)
 
