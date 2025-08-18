@@ -297,7 +297,7 @@ void *ui_thread_func(void *arg) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-    timeout(100); // timeout for refresh
+    timeout(1000); // timeout for refresh
 
     int highlight = 0;
     int key_check;
