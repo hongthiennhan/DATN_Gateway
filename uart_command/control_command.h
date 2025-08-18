@@ -6,6 +6,7 @@
 // Remove hard-coded CONFIG_FILE - now get from config
 
 extern int uart_fd;
+extern sem_t *uart_sem;
 
 void Uart_Init(speed_t baudrate, char *device);
 void write_command(uint8_t cmd);
