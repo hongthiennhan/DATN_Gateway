@@ -165,124 +165,163 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     {
         return -1;
     }
-    char tmp_path[512], final_path[512];
-    snprintf(tmp_path, sizeof(tmp_path), "%s/%s.tmp", dir, filename);
-    snprintf(final_path, sizeof(final_path), "%s/%s", dir, filename);
-    int fd = open(tmp_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    char current_path[512], new_path, backup_path;
+    snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
+    snprintf(new_path,    sizeof(new_path),    "%s/%s.new",  dir, filename);
+    snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
+
+    /* Step 1: Delete old config file if it exists */
+    if (access(current_path, F_OK) == 0)
+    {
+        if (unlink(current_path) != 0)
+        {
+#ifdef DEBUG
+            fprintf(stderr, "ERROR: Cannot delete old config file %s: %s\n",
+                    current_path, strerror(errno));
+#endif
+            return -1;
+        }
+#ifdef DEBUG
+        printf("Deleted old config file: %s\n", current_path);
+#endif
+    }
+
+    /* Step 2: Create new file */
+    int fd = open(new_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0)
     {
 #ifdef DEBUG
-        fprintf(stderr, "ERROR: Cannot open %s: %s\n", tmp_path, strerror(errno));
+        fprintf(stderr, "ERROR: Cannot create new file %s: %s\n",
+                new_path, strerror(errno));
 #endif
         return -1;
     }
 
-    // Write data with partial write handling
+    /* Step 3: Write data to new file with partial-write handling */
     size_t total_written = 0;
     while (total_written < size)
     {
-        ssize_t written = write(fd, (const char *)data + total_written, size - total_written);
+        ssize_t written = write(fd,
+                                (const char *)data + total_written,
+                                size - total_written);
         if (written < 0)
         {
             if (errno == EINTR)
                 continue;
 #ifdef DEBUG
-            fprintf(stderr, "ERROR: Write failed: %s\n", strerror(errno));
+            fprintf(stderr, "ERROR: Write to new file failed: %s\n",
+                    strerror(errno));
 #endif
             close(fd);
-            unlink(tmp_path);
+            unlink(new_path);      /* Clean up failed new file */
             return -1;
         }
         total_written += written;
     }
 
-    // Ensure data is written to storage
+    /* Step 4: Ensure data is flushed to storage */
     if (fsync(fd) != 0)
     {
 #ifdef DEBUG
-        fprintf(stderr, "ERROR: fsync failed: %s\n", strerror(errno));
+        fprintf(stderr, "ERROR: fsync new file failed: %s\n", strerror(errno));
 #endif
         close(fd);
-        unlink(tmp_path);
+        unlink(new_path);          /* Clean up failed new file */
         return -1;
     }
     close(fd);
-    // Atomic rename
-    if (rename(tmp_path, final_path) != 0)
+
+    /* Step 5: Atomically rename new file to current filename */
+    if (rename(new_path, current_path) != 0)
     {
 #ifdef DEBUG
-        fprintf(stderr, "ERROR: rename failed: %s\n", strerror(errno));
+        fprintf(stderr, "ERROR: rename new file failed: %s\n", strerror(errno));
 #endif
-        unlink(tmp_path);
+        unlink(new_path);          /* Clean up failed new file */
         return -1;
     }
 #ifdef DEBUG
-    printf("Config file saved: %s\n", final_path);
+    printf("New config file created successfully: %s\n", current_path);
 #endif
-    return 0;
-}
 
-/**
- * Process control command from server
- */
-void process_control_command(const char *payload)
-{
-    json_object *root = json_tokener_parse(payload);
-    if (!root)
+    /* Step 6: After saving new file, delete old backup (if any) */
+    if (access(backup_path, F_OK) == 0)
     {
-#ifdef DEBUG
-        printf("ERROR: Invalid JSON in control command\n");
-#endif
-        return;
-    }
-    json_object *method_obj, *params_obj;
-    if (!json_object_object_get_ex(root, "method", &method_obj))
-    {
-#ifdef DEBUG
-        printf("ERROR: No method in control command\n");
-#endif
-        json_object_put(root);
-        return;
-    }
-    const char *method = json_object_get_string(method_obj);
-#ifdef DEBUG
-    printf("Processing control method: %s\n", method);
-#endif
-    if (strcmp(method, "executeCommand") == 0)
-    {
-        if (json_object_object_get_ex(root, "params", &params_obj))
+        if (unlink(backup_path) != 0)
         {
-            json_object *node_id_obj, *cmd_id_obj, *params_str_obj;
-            if (json_object_object_get_ex(params_obj, "nodeId", &node_id_obj) &&
-                json_object_object_get_ex(params_obj, "cmdId", &cmd_id_obj))
+#ifdef DEBUG
+            fprintf(stderr, "WARNING: Cannot delete old backup %s: %s\n",
+                    backup_path, strerror(errno));
+#endif
+            /* Do not return - the main file is already saved */
+        }
+#ifdef DEBUG
+        else
+        {
+            printf("Deleted old backup file: %s\n", backup_path);
+        }
+#endif
+    }
+
+    /* Step 7: Create new backup from current file */
+    int src_fd = open(current_path, O_RDONLY);
+    if (src_fd < 0)
+    {
+#ifdef DEBUG
+        fprintf(stderr, "WARNING: Cannot open current file for backup: %s\n",
+                strerror(errno));
+#endif
+        return 0;                  /* Main file OK, backup failed */
+    }
+
+    int backup_fd = open(backup_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (backup_fd < 0)
+    {
+#ifdef DEBUG
+        fprintf(stderr, "WARNING: Cannot create backup file: %s\n",
+                strerror(errno));
+#endif
+        close(src_fd);
+        return 0;                  /* Main file OK, backup failed */
+    }
+
+    /* Copy data to backup */
+    char buffer[4096];
+    ssize_t bytes_read;
+    while ((bytes_read = read(src_fd, buffer, sizeof(buffer))) > 0)
+    {
+        ssize_t bytes_written = 0;
+        while (bytes_written < bytes_read)
+        {
+            ssize_t result = write(backup_fd,
+                                   buffer + bytes_written,
+                                   bytes_read - bytes_written);
+            if (result < 0)
             {
-                int node_id = json_object_get_int(node_id_obj);
-                int cmd_id = json_object_get_int(cmd_id_obj);
-                const char *params_str = "";
-                if (json_object_object_get_ex(params_obj, "params", &params_str_obj))
-                {
-                    params_str = json_object_get_string(params_str_obj);
-                }
+                if (errno == EINTR)
+                    continue;
 #ifdef DEBUG
-                printf("Server command: node=%d, cmd=%d, params=%s\n", node_id, cmd_id, params_str);
+                fprintf(stderr, "WARNING: Backup write failed: %s\n",
+                        strerror(errno));
 #endif
-                // Queue command for execution
-                if (add_control_command(node_id, cmd_id, params_str) == 0)
-                {
-#ifdef DEBUG
-                    printf("Command queued successfully\n");
-#endif
-                }
-                else
-                {
-#ifdef DEBUG
-                    printf("Failed to queue command\n");
-#endif
-                }
+                close(src_fd);
+                close(backup_fd);
+                unlink(backup_path);   /* Remove incomplete backup */
+                return 0;              /* Main file OK */
             }
+            bytes_written += result;
         }
     }
-    json_object_put(root);
+
+    /* Ensure backup is flushed to storage */
+    fsync(backup_fd);
+    close(src_fd);
+    close(backup_fd);
+#ifdef DEBUG
+    printf("Backup created successfully: %s\n", backup_path);
+#endif
+    return 0;
 }
 
 /**
