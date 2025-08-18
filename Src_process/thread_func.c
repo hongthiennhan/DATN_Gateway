@@ -30,7 +30,7 @@ void *uart_thread_func(void *arg) {
     while (1) {
         // Skip processing during config reload
         if (config_reloading) {
-            usleep(100 * 1000); // Wait 100ms during reload
+            usleep(1000 * 1000); // Wait 100ms during reload
             continue;
         }
         
