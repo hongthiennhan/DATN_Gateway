@@ -19,9 +19,9 @@ shared_data_t command_data = {
 
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
-    // #ifdef DEBUG
-    fprintf(stderr, "UART thread started - listening for automatic node data\n");
-    // #endif
+    #ifdef DEBUG
+    printf("UART thread started - listening for automatic node data\n");
+    #endif
     
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
@@ -292,7 +292,7 @@ void *ui_thread_func(void *arg) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-    timeout(get_ui_refresh_delay()); // 1 second timeout for refresh
+    timeout(get_ui_refresh_delay()); // timeout for refresh
 
     int highlight = 0;
     int key_check;
