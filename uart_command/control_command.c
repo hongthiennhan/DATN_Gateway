@@ -129,7 +129,7 @@ void write_command(uint8_t cmd) {
     }
 
     unsigned char byte_cmd = (unsigned char)cmd;
-    uint16_t bytes_written = write(uart_fd, &byte_cmd, 1);
+    write(uart_fd, &byte_cmd, 1);
     pthread_mutex_unlock(&uart_mutex);
 }
 
