@@ -267,6 +267,13 @@ int load_nodes_config(const char *config_file)
         printf("Using ThingsBoard wrapper format\n");
 #endif
     }
+    if (json_object_object_get_ex(root, "config", &config_obj))
+    {
+        effective_root = config_obj;
+#ifdef DEBUG
+        printf("Using ThingsBoard wrapper format v2\n");
+#endif
+    }
 
     // Parse system configuration
     json_object *system_obj;
