@@ -29,7 +29,7 @@
 
       "detection_commands": [
         {
-          "command": 255,
+          "command": 254,
           "expected_response": "DISPLAY_OK",
           "timeout_ms": 1000,
           "description": "Display unit identification"
@@ -52,7 +52,7 @@
 
       "detection_commands": [
         {
-          "command": 255,
+          "command": 253,
           "expected_response": "NEW_DEVICE_OK",
           "timeout_ms": 1000,
           "description": "New device identification"
@@ -75,7 +75,7 @@
 
       "detection_commands": [
         {
-          "command": 255,
+          "command": 252,
           "expected_response": "SENSOR_BOARD_OK",
           "timeout_ms": 1000,
           "description": "Sensor board identification"
