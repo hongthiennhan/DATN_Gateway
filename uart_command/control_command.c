@@ -3,26 +3,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <sys/select.h>
+#include <pthread.h>
+#include <errno.h>
 
-// Global variables for UART and semaphore (static to limit scope)
+// Global variables for UART and mutex (static to limit scope)
 int uart_fd = -1;
-sem_t *uart_sem = NULL;
+pthread_mutex_t uart_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void Uart_Init(speed_t baudrate, char *device) {
-    uart_sem = sem_open("/uart_sem", O_CREAT, 0644, 1);
-    if (uart_sem == SEM_FAILED) {
-        perror("sem_open failed");
-        return;
-    }
-
-    if (sem_wait(uart_sem) != 0) {
+    if (pthread_mutex_lock(&uart_mutex) != 0) {
+        perror("pthread_mutex_lock failed");
         return;
     }
 
     uart_fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (uart_fd == -1) {
         perror("Failed to open UART device");
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
@@ -31,7 +32,7 @@ void Uart_Init(speed_t baudrate, char *device) {
         perror("Failed to get UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
@@ -47,26 +48,26 @@ void Uart_Init(speed_t baudrate, char *device) {
     options.c_lflag = 0; // No input processing
 
     tcflush(uart_fd, TCIFLUSH); // Flush input buffer
+
     if (tcsetattr(uart_fd, TCSANOW, &options) != 0) {
         perror("Failed to set UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
-    sem_post(uart_sem);
+    pthread_mutex_unlock(&uart_mutex);
 }
 
 unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     if (bytes_read_out == NULL) return NULL;
     *bytes_read_out = 0;
 
-    // Acquire semaphore for thread-safe UART access
-    if (sem_wait(uart_sem) != 0) return NULL;
-
+    // Acquire mutex for thread-safe UART access
+    if (pthread_mutex_lock(&uart_mutex) != 0) return NULL;
     if (uart_fd == -1) {
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         perror("UART not initialized or already closed");
         return NULL;
     }
@@ -74,12 +75,12 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     // Get buffer size from config
     uart_config_t *config = get_uart_config();
     int buffer_size = config ? config->response_buffer_size : 2048; // fallback to 2048
-    
+
     // Allocate buffer for response
     unsigned char* buffer = (unsigned char*)malloc(buffer_size);
     if (!buffer) {
         perror("Memory allocation failed");
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return NULL;
     }
 
@@ -92,7 +93,6 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
         fd_set read_fds;
         FD_ZERO(&read_fds);
         FD_SET(uart_fd, &read_fds);
-
         struct timeval timeout;
         timeout.tv_sec = poll_interval / 1000;
         timeout.tv_usec = (poll_interval % 1000) * 1000;
@@ -116,6 +116,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
             perror("read() failed");
             break;
         }
+
         // Else (r == 0): continue polling
     }
 
@@ -126,43 +127,48 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
         buffer = NULL;
     }
 
-    sem_post(uart_sem); // Release UART access
+    pthread_mutex_unlock(&uart_mutex); // Release UART access
     return buffer;
 }
 
 void write_command(uint8_t cmd) {
-    if (sem_wait(uart_sem) != 0) return;
+    if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
     unsigned char byte_cmd = (unsigned char)cmd;
-    uint16_t bytes_written = write(uart_fd, &byte_cmd, 1);
-    sem_post(uart_sem);
+    ssize_t bytes_written = write(uart_fd, &byte_cmd, 1);
+    if (bytes_written < 0) {
+        perror("write() failed in write_command");
+    }
+    pthread_mutex_unlock(&uart_mutex);
 }
 
 void write_init(uint32_t baudrate) {
-    if (sem_wait(uart_sem) != 0) return;
+    if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
     uint8_t buffer[5];
-    buffer[0] = 0xFF; // CMD_INIT hex value from config instead of hard-coded
+    buffer = 0xFF; // CMD_INIT hex value from config instead of hard-coded
     buffer[1] = (uint8_t)(baudrate & 0xFF);
     buffer[2] = (uint8_t)((baudrate >> 8) & 0xFF);
-    buffer[3] = (uint8_t)((baudrate >> 16) & 0xFF);
-    buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF);
+    buffer = (uint8_t)((baudrate >> 16) & 0xFF);
+    buffer = (uint8_t)((baudrate >> 24) & 0xFF);
 
-    uint16_t bytes_written = write(uart_fd, buffer, 5);
-    sem_post(uart_sem);
+    ssize_t bytes_written = write(uart_fd, buffer, 5);
+    if (bytes_written < 0) {
+        perror("write() failed in write_init");
+    }
+    pthread_mutex_unlock(&uart_mutex);
 }
 
 speed_t map_to_speed(uint32_t baud_num) {
     uart_config_t *config = get_uart_config();
-    
     if (config && config->supported_baudrates) {
         // Use config-driven mapping
         for (int i = 0; i < config->baudrate_count; i++) {
@@ -179,20 +185,19 @@ speed_t map_to_speed(uint32_t baud_num) {
                 if (strcmp(speed_code, "B921600") == 0) return B921600;
             }
         }
+
+        // Fallback to default if not found in config
+        int fallback_rate = config ? config->default_baudrate_fallback : 115200;
+        // Get buffer size from config for error message
+        int error_buf_size = config ? config->error_message_buffer_size : 100;
+        char *error_msg = malloc(error_buf_size);
+        if (error_msg) {
+            snprintf(error_msg, error_buf_size, "Unsupported baudrate: %u. Using default %d.\n", baud_num, fallback_rate);
+            fputs(error_msg, stderr);
+            free(error_msg);
+        }
     }
-    
-    // Fallback to default if not found in config
-    int fallback_rate = config ? config->default_baudrate_fallback : 115200;
-    
-    // Get buffer size from config for error message
-    int error_buf_size = config ? config->error_message_buffer_size : 100;
-    char *error_msg = malloc(error_buf_size);
-    if (error_msg) {
-        snprintf(error_msg, error_buf_size, "Unsupported baudrate: %u. Using default %d.\n", baud_num, fallback_rate);
-        fputs(error_msg, stderr);
-        free(error_msg);
-    }
-    
+
     return B115200; // Default fallback
 }
 
@@ -201,7 +206,7 @@ void save_config(uint32_t baud, const char *dev) {
     if (!config_file) {
         config_file = "/tmp/uart_config.txt"; // fallback
     }
-    
+
     FILE *fp = fopen(config_file, "w");
     if (fp) {
         fprintf(fp, "%u\n%s", baud, dev);
@@ -213,21 +218,18 @@ void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
     uart_config_t *config = get_uart_config();
     int temp_buf_size = config ? config->temp_buffer_size : 256;
     uint32_t interval_ms = config ? config->flush_interval_ms : 50;
-    
     unsigned char *temp_buf = malloc(temp_buf_size);
     if (!temp_buf) {
         return; // Cannot allocate buffer
     }
-    
+
     fd_set read_fds;
     struct timeval timeout;
     uint32_t waited_ms = 0;
-
     // Non-blocking read loop for flush_duration_ms
     while (waited_ms < flush_duration_ms) {
         FD_ZERO(&read_fds);
         FD_SET(fd, &read_fds);
-        
         timeout.tv_sec = 0;
         timeout.tv_usec = interval_ms * 1000;
 
@@ -251,19 +253,14 @@ void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
 int Check_UART_Data_Available(void) {
     fd_set readfds;
     struct timeval timeout;
-    
     FD_ZERO(&readfds);
     FD_SET(uart_fd, &readfds);
-    
     // Short timeout to avoid blocking
     timeout.tv_sec = 0;
     timeout.tv_usec = 10000; // 10ms
-    
     int result = select(uart_fd + 1, &readfds, NULL, NULL, &timeout);
-    
     if (result > 0 && FD_ISSET(uart_fd, &readfds)) {
         return 1; // Data available
     }
-    
     return 0; // No data
 }
