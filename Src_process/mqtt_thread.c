@@ -377,14 +377,35 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
 #endif
         return;
     }
+    
 #ifdef DEBUG
     printf("MQTT message on topic: %s\n", message->topic);
 #endif
+
+    // ✅ Thread-safe config access with timeout
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return; // Skip processing during reload
+    }
+    
     mqtt_config_t *config = get_mqtt_config();
-    if (!config)
+    if (!config) {
+        pthread_mutex_unlock(&config_mutex);
         return;
+    }
+
+    // ✅ Copy strings to local variables to avoid dangling pointers
+    char topic_control[256] = {0};
+    if (config->topic_control && strlen(config->topic_control) > 0) {
+        strncpy(topic_control, config->topic_control, sizeof(topic_control) - 1);
+    }
+    
+    pthread_mutex_unlock(&config_mutex);
+    
     // Handle control commands from server
-    if (strstr(message->topic, config->topic_control) || strstr(message->topic, "v1/devices/me/rpc/request/"))
+    if ((strlen(topic_control) > 0 && strstr(message->topic, topic_control)) || 
+        strstr(message->topic, "v1/devices/me/rpc/request/"))
     {
 #ifdef DEBUG
         printf("Processing control command\n");
@@ -427,13 +448,15 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
 #ifdef DEBUG
             printf("Config updated from server\n");
 #endif
-            // Mark for reload
-            pthread_mutex_lock(&config_update_mutex);
-            config_updated = 1;
-            pthread_mutex_unlock(&config_update_mutex);
+            // ✅ Use trylock to avoid deadlock
+            if (pthread_mutex_trylock(&config_update_mutex) == 0) {
+                config_updated = 1;
+                pthread_mutex_unlock(&config_update_mutex);
+            }
         }
     }
 }
+
 
 /**
  * Check and reload config if updated
