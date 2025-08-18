@@ -3,26 +3,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
-// Global variables for UART and semaphore (static to limit scope)
+// Global variables for UART and mutex (static to limit scope)
 int uart_fd = -1;
-sem_t *uart_sem = NULL;
+pthread_mutex_t uart_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void Uart_Init(speed_t baudrate, char *device) {
-    uart_sem = sem_open("/uart_sem", O_CREAT, 0644, 1);
-    if (uart_sem == SEM_FAILED) {
-        perror("sem_open failed");
-        return;
-    }
-
-    if (sem_wait(uart_sem) != 0) {
+    if (pthread_mutex_lock(&uart_mutex) != 0) {
         return;
     }
 
     uart_fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (uart_fd == -1) {
         perror("Failed to open UART device");
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
@@ -31,7 +26,7 @@ void Uart_Init(speed_t baudrate, char *device) {
         perror("Failed to get UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
@@ -51,22 +46,22 @@ void Uart_Init(speed_t baudrate, char *device) {
         perror("Failed to set UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
-    sem_post(uart_sem);
+    pthread_mutex_unlock(&uart_mutex);
 }
 
 unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     if (bytes_read_out == NULL) return NULL;
     *bytes_read_out = 0;
 
-    // Acquire semaphore for thread-safe UART access
-    if (sem_wait(uart_sem) != 0) return NULL;
+    // Acquire mutex for thread-safe UART access
+    if (pthread_mutex_lock(&uart_mutex) != 0) return NULL;
 
     if (uart_fd == -1) {
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         perror("UART not initialized or already closed");
         return NULL;
     }
@@ -79,7 +74,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     unsigned char* buffer = (unsigned char*)malloc(buffer_size);
     if (!buffer) {
         perror("Memory allocation failed");
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return NULL;
     }
 
@@ -126,26 +121,26 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
         buffer = NULL;
     }
 
-    sem_post(uart_sem); // Release UART access
+    pthread_mutex_unlock(&uart_mutex); // Release UART access
     return buffer;
 }
 
 void write_command(uint8_t cmd) {
-    if (sem_wait(uart_sem) != 0) return;
+    if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
     unsigned char byte_cmd = (unsigned char)cmd;
     uint16_t bytes_written = write(uart_fd, &byte_cmd, 1);
-    sem_post(uart_sem);
+    pthread_mutex_unlock(&uart_mutex);
 }
 
 void write_init(uint32_t baudrate) {
-    if (sem_wait(uart_sem) != 0) return;
+    if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
-        sem_post(uart_sem);
+        pthread_mutex_unlock(&uart_mutex);
         return;
     }
 
@@ -157,7 +152,7 @@ void write_init(uint32_t baudrate) {
     buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF);
 
     uint16_t bytes_written = write(uart_fd, buffer, 5);
-    sem_post(uart_sem);
+    pthread_mutex_unlock(&uart_mutex);
 }
 
 speed_t map_to_speed(uint32_t baud_num) {
