@@ -1,19 +1,28 @@
 #include "control_command.h"
 #include "node_config.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Global variables for UART and mutex (static to limit scope)
+// Global variables for UART and semaphore (static to limit scope)
 int uart_fd = -1;
-pthread_mutex_t uart_mutex = PTHREAD_MUTEX_INITIALIZER;
+sem_t *uart_sem = NULL;
 
 void Uart_Init(speed_t baudrate, char *device) {
-    if (pthread_mutex_lock(&uart_mutex) != 0) {
+    uart_sem = sem_open("/uart_sem", O_CREAT, 0644, 1);
+    if (uart_sem == SEM_FAILED) {
+        perror("sem_open failed");
+        return;
+    }
+
+    if (sem_wait(uart_sem) != 0) {
         return;
     }
 
     uart_fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (uart_fd == -1) {
         perror("Failed to open UART device");
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
 
@@ -22,7 +31,7 @@ void Uart_Init(speed_t baudrate, char *device) {
         perror("Failed to get UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
 
@@ -42,22 +51,22 @@ void Uart_Init(speed_t baudrate, char *device) {
         perror("Failed to set UART attributes");
         close(uart_fd);
         uart_fd = -1;
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
 
-    pthread_mutex_unlock(&uart_mutex);
+    sem_post(uart_sem);
 }
 
 unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     if (bytes_read_out == NULL) return NULL;
     *bytes_read_out = 0;
 
-    // Acquire mutex for thread-safe UART access
-    if (pthread_mutex_lock(&uart_mutex) != 0) return NULL;
+    // Acquire semaphore for thread-safe UART access
+    if (sem_wait(uart_sem) != 0) return NULL;
 
     if (uart_fd == -1) {
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         perror("UART not initialized or already closed");
         return NULL;
     }
@@ -70,7 +79,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     unsigned char* buffer = (unsigned char*)malloc(buffer_size);
     if (!buffer) {
         perror("Memory allocation failed");
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return NULL;
     }
 
@@ -117,26 +126,26 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
         buffer = NULL;
     }
 
-    pthread_mutex_unlock(&uart_mutex); // Release UART access
+    sem_post(uart_sem); // Release UART access
     return buffer;
 }
 
 void write_command(uint8_t cmd) {
-    if (pthread_mutex_lock(&uart_mutex) != 0) return;
+    if (sem_wait(uart_sem) != 0) return;
     if (uart_fd == -1) {
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
 
     unsigned char byte_cmd = (unsigned char)cmd;
     uint16_t bytes_written = write(uart_fd, &byte_cmd, 1);
-    pthread_mutex_unlock(&uart_mutex);
+    sem_post(uart_sem);
 }
 
 void write_init(uint32_t baudrate) {
-    if (pthread_mutex_lock(&uart_mutex) != 0) return;
+    if (sem_wait(uart_sem) != 0) return;
     if (uart_fd == -1) {
-        pthread_mutex_unlock(&uart_mutex);
+        sem_post(uart_sem);
         return;
     }
 
@@ -148,7 +157,7 @@ void write_init(uint32_t baudrate) {
     buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF);
 
     uint16_t bytes_written = write(uart_fd, buffer, 5);
-    pthread_mutex_unlock(&uart_mutex);
+    sem_post(uart_sem);
 }
 
 speed_t map_to_speed(uint32_t baud_num) {
@@ -198,6 +207,37 @@ void save_config(uint32_t baud, const char *dev) {
         fprintf(fp, "%u\n%s", baud, dev);
         fclose(fp);
     }
+}
+
+uint8_t load_config(uint32_t *baud, char **dev) {
+    const char *config_file = get_uart_config_file_path();
+    if (!config_file) {
+        config_file = "/tmp/uart_config.txt"; // fallback
+    }
+    
+    FILE *fp = fopen(config_file, "r");
+    if (!fp) return 0;
+
+    // Get buffer size from config
+    uart_config_t *config = get_uart_config();
+    int temp_buf_size = config ? config->temp_buffer_size : 256;
+    
+    char *buf = malloc(temp_buf_size);
+    if (!buf) {
+        fclose(fp);
+        return 0;
+    }
+    
+    if (fscanf(fp, "%u\n%s", baud, buf) != 2) {
+        fclose(fp);
+        free(buf);
+        return 0;
+    }
+
+    *dev = strdup(buf);
+    fclose(fp);
+    free(buf);
+    return 1;
 }
 
 void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
