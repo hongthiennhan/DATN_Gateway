@@ -48,14 +48,14 @@ void *uart_thread_func(void *arg) {
                     node_config_t *node = get_node_by_index(i);
                     if (node && node->detection_commands && node->detection_count > 0) {
                         #ifdef DEBUG
-                        printf("Detecting node %d (%s), expecting '%s'\n", 
-                               node->node_id, node->name, node->detection_commands[0].expected_response);
+                        printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
+                               node->node_id, node->name, node->detection_commands[0].command, node->detection_commands[0].expected_response);
                         #endif
                         
-                        // Send detection command từ JSON
+                        // Send detection command from JSON
                         write_command(node->detection_commands[0].command);
-                        
-                        // Read response with timeout từ JSON
+
+                        // Read response with timeout from JSON
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
                         
