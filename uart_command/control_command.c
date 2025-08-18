@@ -1,9 +1,5 @@
 #include "control_command.h"
 #include "node_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
 
 // Global variables for UART and mutex (static to limit scope)
 int uart_fd = -1;
