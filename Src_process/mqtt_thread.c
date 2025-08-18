@@ -166,7 +166,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         return -1;
     }
 
-    char current_path[512], new_path, backup_path;
+    char current_path[512], new_path[512], backup_path[512];
     snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
     snprintf(new_path,    sizeof(new_path),    "%s/%s.new",  dir, filename);
     snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
@@ -254,7 +254,6 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
             fprintf(stderr, "WARNING: Cannot delete old backup %s: %s\n",
                     backup_path, strerror(errno));
 #endif
-            /* Do not return - the main file is already saved */
         }
 #ifdef DEBUG
         else
