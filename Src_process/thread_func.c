@@ -48,8 +48,8 @@ void *uart_thread_func(void *arg) {
                     node_config_t *node = get_node_by_index(i);
                     if (node && node->detection_commands && node->detection_count > 0) {
                         #ifdef DEBUG
-                        printf("Detecting node %d (%s), expecting '%s'\n", 
-                               node->node_id, node->name, node->detection_commands[0].expected_response);
+                        printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n", 
+                               node->node_id, node->name, node->detection_commands[0].command, node->detection_commands[0].expected_response);
                         #endif
                         
                         // Send detection command từ JSON
