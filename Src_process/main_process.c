@@ -55,7 +55,7 @@ int main(void)
     // If first load failed, try fallback config
     if (load_try == 1)
     {
-        if (load_nodes_config("nodes_config.json") != 0)
+        if (load_nodes_config("../nodes_config.json") != 0)
         {
 #ifdef DEBUG_MAIN
             fprintf(stderr, "Failed to load node configuration from fallback\n");

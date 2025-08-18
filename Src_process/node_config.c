@@ -717,7 +717,7 @@ int safe_reload_config(void) {
     int load_result = 0;
     if (load_nodes_config("../config.json") == 0) {
         load_result = 1;
-    } else if (load_nodes_config("nodes_config.json") == 0) {
+    } else if (load_nodes_config("../nodes_config.json") == 0) {
         load_result = 1;
     }
     
