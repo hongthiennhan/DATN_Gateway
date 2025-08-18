@@ -54,12 +54,12 @@ void *uart_thread_func(void *arg) {
                         
                         // Send detection command from JSON
                         write_command(node->detection_commands[0].command);
-                        uint16_t bytes_written = write(uart_fd, node->detection_commands[0].command, 1);
-                        if (bytes_written < 1) {
-                            #ifdef DEBUG
-                            printf("Failed to write detection command for node %d\n", node->node_id);
-                            #endif
-                        }
+                        // uint16_t bytes_written = write(uart_fd, &node->detection_commands[0].command, 1);
+                        // if (bytes_written < 1) {
+                        //     #ifdef DEBUG
+                        //     printf("Failed to write detection command for node %d\n", node->node_id);
+                        //     #endif
+                        // }
                         // Read response with timeout from JSON
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
