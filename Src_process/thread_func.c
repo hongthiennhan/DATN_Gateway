@@ -44,8 +44,8 @@ void *uart_thread_func(void *arg) {
             
             pthread_mutex_lock(&config_mutex);
             if (!config_reloading) {
-                for (int i = 0; i < safe_get_node_count(); i++) {
-                    node_config_t *node = safe_get_node_by_index(i);
+                for (int i = 0; i < get_node_count(); i++) {
+                    node_config_t *node = get_node_by_index(i);
                     if (node && node->detection_commands && node->detection_count > 0) {
                         #ifdef DEBUG
                         printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
