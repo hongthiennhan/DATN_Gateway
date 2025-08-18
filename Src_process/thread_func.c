@@ -37,7 +37,7 @@ void *uart_thread_func(void *arg) {
         time_t current_time = time(NULL);
         
         // ============= NODE DETECTION EVERY 11 SECONDS =============
-        if ((current_time - last_11_second_detection) >= 11) {
+        if ((current_time - last_11_second_detection) >= 110) {
             #ifdef DEBUG
             printf("Starting 11-second node detection cycle\n");
             #endif
