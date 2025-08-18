@@ -159,6 +159,9 @@ static int validate_json_basic(const void *data, size_t size)
 /**
  * Atomic file write with durability guarantees
  */
+/**
+ * New file management with backup system
+ */
 static int atomic_write_json_file(const char *dir, const char *filename, const void *data, size_t size)
 {
     if (ensure_directory_exists(dir) != 0)
@@ -166,7 +169,9 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         return -1;
     }
 
-    char current_path[512], new_path[512], backup_path[512];
+    /* fixed: new_path[512]  backup_path */
+    char current_path, new_path, backup_path;
+
     snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
     snprintf(new_path,    sizeof(new_path),    "%s/%s.new",  dir, filename);
     snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
@@ -254,6 +259,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
             fprintf(stderr, "WARNING: Cannot delete old backup %s: %s\n",
                     backup_path, strerror(errno));
 #endif
+            /* Do not return – the main file is already saved */
         }
 #ifdef DEBUG
         else
@@ -264,7 +270,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     }
 
     /* Step 7: Create new backup from current file */
-    int src_fd = open(current_path, O_RDONLY);
+    int src_fd = open(current_path, O_RDONLY);   /* fixed: O_RDONLY */
     if (src_fd < 0)
     {
 #ifdef DEBUG
@@ -321,6 +327,70 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     printf("Backup created successfully: %s\n", backup_path);
 #endif
     return 0;
+}
+
+
+/**
+ * Process control command from server
+ */
+void process_control_command(const char *payload)
+{
+    json_object *root = json_tokener_parse(payload);
+    if (!root)
+    {
+#ifdef DEBUG
+        printf("ERROR: Invalid JSON in control command\n");
+#endif
+        return;
+    }
+    json_object *method_obj, *params_obj;
+    if (!json_object_object_get_ex(root, "method", &method_obj))
+    {
+#ifdef DEBUG
+        printf("ERROR: No method in control command\n");
+#endif
+        json_object_put(root);
+        return;
+    }
+    const char *method = json_object_get_string(method_obj);
+#ifdef DEBUG
+    printf("Processing control method: %s\n", method);
+#endif
+    if (strcmp(method, "executeCommand") == 0)
+    {
+        if (json_object_object_get_ex(root, "params", &params_obj))
+        {
+            json_object *node_id_obj, *cmd_id_obj, *params_str_obj;
+            if (json_object_object_get_ex(params_obj, "nodeId", &node_id_obj) &&
+                json_object_object_get_ex(params_obj, "cmdId", &cmd_id_obj))
+            {
+                int node_id = json_object_get_int(node_id_obj);
+                int cmd_id = json_object_get_int(cmd_id_obj);
+                const char *params_str = "";
+                if (json_object_object_get_ex(params_obj, "params", &params_str_obj))
+                {
+                    params_str = json_object_get_string(params_str_obj);
+                }
+#ifdef DEBUG
+                printf("Server command: node=%d, cmd=%d, params=%s\n", node_id, cmd_id, params_str);
+#endif
+                // Queue command for execution
+                if (add_control_command(node_id, cmd_id, params_str) == 0)
+                {
+#ifdef DEBUG
+                    printf("Command queued successfully\n");
+#endif
+                }
+                else
+                {
+#ifdef DEBUG
+                    printf("Failed to queue command\n");
+#endif
+                }
+            }
+        }
+    }
+    json_object_put(root);
 }
 
 /**
@@ -420,7 +490,7 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
     printf("MQTT message on topic: %s\n", message->topic);
 #endif
 
-    // ✅ Thread-safe config access with timeout
+    // Thread-safe config access with timeout
     pthread_mutex_lock(&config_mutex);
     if (config_reloading) {
         pthread_mutex_unlock(&config_mutex);
@@ -432,8 +502,7 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
         pthread_mutex_unlock(&config_mutex);
         return;
     }
-
-    // ✅ Copy strings to local variables to avoid dangling pointers
+    // Copy strings to local variables to avoid dangling pointers
     char topic_control[256] = {0};
     if (config->topic_control && strlen(config->topic_control) > 0) {
         strncpy(topic_control, config->topic_control, sizeof(topic_control) - 1);
@@ -486,7 +555,7 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
 #ifdef DEBUG
             printf("Config updated from server\n");
 #endif
-            // ✅ Use trylock to avoid deadlock
+            // Use trylock to deadlock
             if (pthread_mutex_trylock(&config_update_mutex) == 0) {
                 config_updated = 1;
                 pthread_mutex_unlock(&config_update_mutex);
