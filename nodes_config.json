@@ -145,7 +145,7 @@
     "topic_control": "v1/devices/me/rpc/request/+",
     "topic_status": "v1/devices/me/attributes",
     "qos": 1,
-    "publish_interval": 5,
+    "publish_interval": 1,
     "connection_timeout": 50,
     "reconnect_delay_ms": 1000,
     "loop_interval_ms": 100,
