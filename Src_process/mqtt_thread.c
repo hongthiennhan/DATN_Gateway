@@ -265,7 +265,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 #endif
     }
 
-    /* Step 7: Create new backup from current file */
+    /* Create new backup from current file */
     int src_fd = open(current_path, O_RDONLY);   /* fixed: O_RDONLY */
     if (src_fd < 0)
     {
