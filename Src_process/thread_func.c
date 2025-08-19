@@ -510,10 +510,8 @@ void *ui_thread_func(void *arg) {
                         
                         mvprintw(LINES - 2, 0, "Press any key to continue...");
                         refresh();
-                        
-                        nodelay(stdscr, FALSE);
+                        usleep(500 * 1000); // Wait for 500ms to show message
                         key_check = getch();
-                        nodelay(stdscr, TRUE);
                         break;
                         
                     case 4: // View Node Configuration - UPDATED with last data time
