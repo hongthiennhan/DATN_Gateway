@@ -9,7 +9,7 @@
         {
           "command": 1,
           "expected_response": "SENSOR_BOARD_OK",
-          "timeout_ms": 1000,
+          "timeout_ms": 100,
           "description": "Sensor board identification"
         }
       ],
@@ -31,7 +31,7 @@
         {
           "command": 2,
           "expected_response": "DISPLAY_OK",
-          "timeout_ms": 1000,
+          "timeout_ms": 100,
           "description": "Display unit identification"
         }
       ],
@@ -54,7 +54,7 @@
         {
           "command": 3,
           "expected_response": "NEW_DEVICE_OK",
-          "timeout_ms": 1000,
+          "timeout_ms": 100,
           "description": "New device identification"
         }
       ],
@@ -77,7 +77,7 @@
         {
           "command": 4,
           "expected_response": "SENSOR_BOARD_OK",
-          "timeout_ms": 1000,
+          "timeout_ms": 100,
           "description": "Sensor board identification"
         }
       ],
@@ -100,7 +100,7 @@
         {
           "command": 5,
           "expected_response": "SENSOR_BOARD_OK",
-          "timeout_ms": 1000,
+          "timeout_ms": 100,
           "description": "Sensor board identification"
         }
       ],
