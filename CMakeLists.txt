@@ -28,7 +28,7 @@ message(STATUS "JSON_C libraries: ${JSON_C_LIBRARIES}")
 
 # Include directories
 set(INCLUDE_DIRS
-    uart_command
+    uart_handler
     Inc
 )
 
@@ -38,7 +38,7 @@ set(SOURCES_2
     Src_process/thread_func.c
     Src_process/mqtt_thread.c
     Src_process/node_config.c
-    uart_command/uart_command.c
+    uart_handler/uart_handler.c
 )
 
 # Add main executable
