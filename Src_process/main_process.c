@@ -78,7 +78,7 @@ int main(void)
     }
     *(int *)command_data.data = -1; // Initialize to -1
 
-    Uart_Init(map_to_speed(baudrate), device);
+    Uart_Init(UART_map_to_speed(baudrate), device);
     // Use config value instead of hard-coded timeout
     // Fixed: Clear_Startup_UART with uint32_t parameter
     Clear_Startup_UART(uart_fd, (uint32_t)get_startup_clear_duration());

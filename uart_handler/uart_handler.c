@@ -49,7 +49,7 @@ void Uart_Init(speed_t baudrate, char *device) {
     pthread_mutex_unlock(&uart_mutex);
 }
 
-unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
+unsigned char* UART_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     if (bytes_read_out == NULL) return NULL;
     *bytes_read_out = 0;
 
@@ -121,7 +121,7 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
     return buffer;
 }
 
-void write_command(uint8_t cmd) {
+void UART_Write_Command(uint8_t cmd) {
     if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
         pthread_mutex_unlock(&uart_mutex);
@@ -131,7 +131,7 @@ void write_command(uint8_t cmd) {
     pthread_mutex_unlock(&uart_mutex);
 }
 
-void write_data(uint8_t *data, size_t len) {
+void UART_Write_Data(uint8_t *data, size_t len) {
     if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
         pthread_mutex_unlock(&uart_mutex);
@@ -141,7 +141,7 @@ void write_data(uint8_t *data, size_t len) {
     pthread_mutex_unlock(&uart_mutex);
 }
 
-speed_t map_to_speed(uint32_t baud_num) {
+speed_t UART_map_to_speed(uint32_t baud_num) {
     uart_config_t *config = get_uart_config();
     speed_t speed = B115200; // Default speed
     uint8_t check = 1;

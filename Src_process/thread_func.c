@@ -51,7 +51,7 @@ void *uart_thread_func(void *arg) {
                         #endif
                         
                         // Send detection command from JSON
-                        write_command(node->detection_commands[0].command);
+                        UART_Write_Command(node->detection_commands[0].command);
                         // uint16_t bytes_written = write(uart_fd, &node->detection_commands[0].command, 1);
                         // if (bytes_written < 1) {
                         //     #ifdef DEBUG
@@ -62,7 +62,7 @@ void *uart_thread_func(void *arg) {
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
                         
-                        data_buffer = Read_Response(timeout_ms, &data_len);
+                        data_buffer = UART_Read_Response(timeout_ms, &data_len);
                         
                         if (data_buffer && data_len > 0) {
                             // Convert response to string for comparison
@@ -119,7 +119,7 @@ void *uart_thread_func(void *arg) {
         
         // Check for data from UART (normal operation)
         if (Check_UART_Data_Available()) {
-            data_buffer = Read_Response(1000, &data_len);
+            data_buffer = UART_Read_Response(1000, &data_len);
             if (data_buffer && data_len > 0) {
                 #ifdef DEBUG
                 printf("Received automatic data from node: %d bytes\n", data_len);
@@ -166,7 +166,7 @@ void *uart_thread_func(void *arg) {
                         
                         uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
                         if (uart_cmd != 0) {
-                            write_command((uint8_t)uart_cmd);
+                            UART_Write_Command((uint8_t)uart_cmd);
                         }
                     }
                 }
