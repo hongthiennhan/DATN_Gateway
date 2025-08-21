@@ -34,6 +34,7 @@ void *uart_thread_func(void *arg);
 void *ui_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
 void process_uart_data(unsigned char *data, uint16_t data_len);
+void safe_process_uart_data(unsigned char *data, uint16_t data_len);
 
 // Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
 void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent);

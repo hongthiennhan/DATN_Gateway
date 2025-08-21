@@ -213,7 +213,6 @@ extern pthread_mutex_t config_mutex;
 extern volatile int config_reloading;
 
 // Thread-safe functions
-void safe_process_uart_data(unsigned char *data, uint16_t data_len);
 int safe_get_node_count(void);
 int safe_reload_config(void);
 node_config_t *safe_get_node_by_index(int index);
