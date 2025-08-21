@@ -331,7 +331,7 @@ int load_nodes_config(const char *config_file)
     json_object *uart_obj;
     if (json_object_object_get_ex(effective_root, "uart_config", &uart_obj))
     {
-
+        json_object *temp_obj;
         // Parse nested buffer_sizes
         json_object *buffer_sizes_obj;
         if (json_object_object_get_ex(uart_obj, "buffer_sizes", &buffer_sizes_obj))
