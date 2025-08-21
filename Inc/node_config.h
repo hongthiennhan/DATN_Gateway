@@ -100,7 +100,6 @@ typedef struct {
 } baudrate_mapping_t;
 
 typedef struct {
-    char config_file_path[256];
     int response_buffer_size;
     int temp_buffer_size;
     int error_message_buffer_size;
@@ -188,7 +187,6 @@ system_info_t* get_system_info(void);
 
 // UART config getters
 uart_config_t* get_uart_config(void);
-const char* get_uart_config_file_path(void);
 
 // MQTT config getters
 mqtt_config_t* get_mqtt_config(void);

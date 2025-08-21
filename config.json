@@ -178,7 +178,6 @@
             "model": "Gateway-v1"
         },
         "uart_config": {
-            "config_file_path": "/tmp/uart_config.txt",
             "buffer_sizes": {
                 "response_buffer": 2048,
                 "temp_buffer": 256,

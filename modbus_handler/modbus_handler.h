@@ -57,6 +57,8 @@ typedef struct{
     uint8_t frame_length;
 }data_frame_t;
 
+extern int modbus_fd;
+
 // Basic Modbus functions
 void Modbus_Init(speed_t baudrate, char *device);
 void Modbus_Write_Frame(data_frame_t *frame);

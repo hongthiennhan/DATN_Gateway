@@ -331,13 +331,6 @@ int load_nodes_config(const char *config_file)
     json_object *uart_obj;
     if (json_object_object_get_ex(effective_root, "uart_config", &uart_obj))
     {
-        json_object *temp_obj;
-        if (json_object_object_get_ex(uart_obj, "config_file_path", &temp_obj))
-        {
-            safe_strncpy(node_registry.uart_config.config_file_path,
-                         json_object_get_string(temp_obj),
-                         sizeof(node_registry.uart_config.config_file_path));
-        }
 
         // Parse nested buffer_sizes
         json_object *buffer_sizes_obj;
@@ -596,7 +589,6 @@ int get_startup_clear_duration(void) { return node_registry.startup_clear_durati
 // Detection getters
 system_info_t *get_system_info(void) { return &node_registry.system_info; }
 uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
-const char *get_uart_config_file_path(void) { return node_registry.uart_config.config_file_path; }
 mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
 
 // Control queue functions
