@@ -364,8 +364,6 @@ int load_nodes_config(const char *config_file)
         }
         json_object *support_baudrate;
         //add support baudrate here:
-        json_object *support_baudrate;
-//add support baudrate here:
     if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate)) {
         int baudrate_array_len = json_object_array_length(support_baudrate);
         if (baudrate_array_len > 0) {
