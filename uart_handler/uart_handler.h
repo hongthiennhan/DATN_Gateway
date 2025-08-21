@@ -9,7 +9,7 @@ extern int uart_fd;
 
 void Uart_Init(speed_t baudrate, char *device);
 void write_command(uint8_t cmd);
-void write_init(uint32_t baudrate);
+void write_data(uint8_t *data, size_t len);
 unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out);
 speed_t map_to_speed(uint32_t baud_num);
 void Clear_Startup_UART(int fd, uint32_t flush_duration_ms);

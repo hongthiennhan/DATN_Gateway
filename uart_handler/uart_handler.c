@@ -127,27 +127,17 @@ void write_command(uint8_t cmd) {
         pthread_mutex_unlock(&uart_mutex);
         return;
     }
-
-    unsigned char byte_cmd = (unsigned char)cmd;
-    uint16_t bytes_written = write(uart_fd, &byte_cmd, 1);
+    uint16_t bytes_written = write(uart_fd, &cmd, 1);
     pthread_mutex_unlock(&uart_mutex);
 }
 
-void write_init(uint32_t baudrate) {
+void write_data(uint8_t *data, size_t len) {
     if (pthread_mutex_lock(&uart_mutex) != 0) return;
     if (uart_fd == -1) {
         pthread_mutex_unlock(&uart_mutex);
         return;
     }
-
-    uint8_t buffer[5];
-    buffer[0] = 0xFF; // CMD_INIT hex value from config instead of hard-coded
-    buffer[1] = (uint8_t)(baudrate & 0xFF);
-    buffer[2] = (uint8_t)((baudrate >> 8) & 0xFF);
-    buffer[3] = (uint8_t)((baudrate >> 16) & 0xFF);
-    buffer[4] = (uint8_t)((baudrate >> 24) & 0xFF);
-
-    uint16_t bytes_written = write(uart_fd, buffer, 5);
+    uint16_t bytes_written = write(uart_fd, data, len);
     pthread_mutex_unlock(&uart_mutex);
 }
 
