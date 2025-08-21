@@ -1,5 +1,5 @@
 #include "node_config.h"
-
+#include "thread_func.h"
 // Shared state between threads
 volatile uint8_t is_busy = 0;
 pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
