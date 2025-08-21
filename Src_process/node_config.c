@@ -362,6 +362,31 @@ int load_nodes_config(const char *config_file)
             if (json_object_object_get_ex(timing_obj, "select_timeout_ms", &temp_obj))
                 node_registry.uart_config.select_timeout_ms = json_object_get_int(temp_obj);
         }
+        json-object *support_baudrate;
+        if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate)){
+            int baudrate_count = json_object_array_length(support_baudrate);
+            if (baudrate_count > 0){
+                node_registry.uart_config.supported_baudrates = malloc(sizeof(baudrate_config_t) * baudrate_count);
+                if (node_registry.uart_config.supported_baudrates)
+                {
+                    node_registry.uart_config.supported_baudrates_count = baudrate_count;
+                    for (int i = 0; i < baudrate_count; i++)
+                    {
+                    json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
+                    baudrate_config_t *baudrate = &node_registry.uart_config.supported_baudrates[i];
+                    
+                    if (json_object_object_get_ex(baudrate_obj, "rate", &temp_obj))
+                        baudrate->rate = json_object_get_int(temp_obj);
+                    
+                    if (json_object_object_get_ex(baudrate_obj, "speed_code", &temp_obj))
+                    {
+                        safe_strncpy(baudrate->speed_code, json_object_get_string(temp_obj),
+                                sizeof(baudrate->speed_code));
+                    }
+                    }
+                }
+            }
+        }
         if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
             node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
