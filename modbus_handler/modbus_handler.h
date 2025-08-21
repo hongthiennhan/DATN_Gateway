@@ -59,26 +59,12 @@ typedef struct{
 
 // Basic Modbus functions
 void Modbus_Init(speed_t baudrate, char *device);
-void Modbus_Write_Frame(uint8_t address, uint8_t function_code, uint8_t *data, uint16_t data_len);
-void Modbus_Write_Command(uint8_t address, uint8_t function_code);
-unsigned char* Modbus_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out);
-uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length);
-int Modbus_Verify_CRC(uint8_t *frame, uint16_t frame_length);
-void Modbus_Clear_Buffer(uint32_t flush_duration_ms);
+void Modbus_Write_Frame(data_frame_t *frame);
+data_frame_t* Modbus_Read_Response(uint32_t timeout_ms);
 int Modbus_Check_Data_Available(void);
-
-// Standard read functions
-int Modbus_Read_Coils(uint8_t address, uint16_t start_addr, uint16_t quantity);
-int Modbus_Read_Inputs(uint8_t address, uint16_t start_addr, uint16_t quantity);
-int Modbus_Read_Holding_Registers(uint8_t address, uint16_t start_addr, uint16_t quantity);
-int Modbus_Read_Input_Registers(uint8_t address, uint16_t start_addr, uint16_t quantity);
-
-// Standard write functions
-int Modbus_Write_Single_Coil(uint8_t address, uint16_t coil_addr, uint8_t value);
-int Modbus_Write_Single_Register(uint8_t address, uint16_t reg_addr, uint16_t value);
-
-// Custom function support
-int Modbus_Send_Custom_Function(uint8_t address, uint8_t function_code, uint8_t *data, uint16_t data_len);
-int Modbus_Is_Custom_Function(uint8_t function_code);
+uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length);
+uint8_t Modbus_Verify_CRC(data_frame_t *frame, uint16_t frame_length);
+void Modbus_Build_Frame(data_frame_t *frame, uint8_t address, uint8_t function_code, uint8_t *data, uint16_t data_len);
+void Modbus_Free_Frame(data_frame_t *frame);
 
 #endif // __MODBUS_HANDLER_H__
