@@ -143,13 +143,15 @@ void write_data(uint8_t *data, size_t len) {
 
 speed_t map_to_speed(uint32_t baud_num) {
     uart_config_t *config = get_uart_config();
-    
+    speed_t speed = B115200; // Default speed
+    uint8_t check = 1;
     if (config && config->supported_baudrates) {
         // Use config-driven mapping
         for (int i = 0; i < config->baudrate_count; i++) {
             if (config->supported_baudrates[i].rate == baud_num) {
                 // Convert string speed code to actual speed_t value
                 const char *speed_code = config->supported_baudrates[i].speed_code;
+                printf("Mapping baud rate %u to speed code %s\n", baud_num, speed_code);
                 if (strcmp(speed_code, "B9600") == 0) return B9600;
                 if (strcmp(speed_code, "B19200") == 0) return B19200;
                 if (strcmp(speed_code, "B38400") == 0) return B38400;

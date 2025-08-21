@@ -1,5 +1,5 @@
-#ifndef __CONTROL_COMMAND_H__
-#define __CONTROL_COMMAND_H__
+#ifndef __UART_HANDLER_H__
+#define __UART_HANDLER_H__
 
 #include "main.h"
 
@@ -14,4 +14,4 @@ unsigned char* Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out);
 speed_t map_to_speed(uint32_t baud_num);
 void Clear_Startup_UART(int fd, uint32_t flush_duration_ms);
 extern int Check_UART_Data_Available(void);
-#endif // __CONTROL_COMMAND_H__
+#endif // __UART_HANDLER_H__
