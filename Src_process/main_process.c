@@ -1,5 +1,5 @@
 #include "main.h"
-#include "control_command.h"
+#include "uart_command.h"
 #include "thread_func.h"
 #include "node_config.h"
 

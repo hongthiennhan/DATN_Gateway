@@ -1,5 +1,3 @@
-#include "thread_func.h"
-#include <ncurses.h>
 #include "node_config.h"
 
 // Shared state between threads

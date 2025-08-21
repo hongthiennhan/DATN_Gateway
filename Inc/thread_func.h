@@ -2,7 +2,7 @@
 #define THREAD_FUNC_H
 
 #include "main.h"
-#include "control_command.h"
+#include "uart_command.h"
 #include "node_config.h"  // Include này để có node_config_t và menu_item_t types
 
 typedef struct shared_data_s {

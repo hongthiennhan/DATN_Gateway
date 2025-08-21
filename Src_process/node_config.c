@@ -1,9 +1,5 @@
 #include "main.h"
 #include "node_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <json-c/json.h>
 
 // Global node registry
 static node_registry_t node_registry = {0};

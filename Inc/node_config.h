@@ -1,10 +1,7 @@
 #ifndef NODE_CONFIG_H
 #define NODE_CONFIG_H
 
-#include <pthread.h>
-#include <stdint.h>
-#include <time.h>
-
+#include "main.h"
 #define MAX_NODES 10
 #define MAX_MENU_ITEMS 20
 #define MAX_DETECTION_COMMANDS 10
