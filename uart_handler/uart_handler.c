@@ -145,8 +145,8 @@ speed_t map_to_speed(uint32_t baud_num) {
     uart_config_t *config = get_uart_config();
     speed_t speed = B115200; // Default speed
     uint8_t check = 1;
+    printf("Mapping baud rate %u to speed_t\n", baud_num);
     if (config && config->supported_baudrates) {
-        printf("Mapping baud rate %u to speed_t\n", baud_num);
         // Use config-driven mapping
         for (int i = 0; i < config->baudrate_count; i++) {
             if (config->supported_baudrates[i].rate == baud_num) {
