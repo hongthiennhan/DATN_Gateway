@@ -1,4 +1,4 @@
-#include "uart_command.h"
+#include "uart_handler.h"
 #include "node_config.h"
 
 // Global variables for UART and mutex (static to limit scope)
