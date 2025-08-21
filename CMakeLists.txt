@@ -38,7 +38,7 @@ set(SOURCES_2
     Src_process/thread_func.c
     Src_process/mqtt_thread.c
     Src_process/node_config.c
-    uart_command/control_command.c
+    uart_command/uart_command.c
 )
 
 # Add main executable
