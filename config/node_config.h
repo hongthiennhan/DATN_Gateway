@@ -115,17 +115,6 @@ typedef struct {
     int temp_buffer_size;
     int error_message_buffer_size;
     int poll_interval_ms;
-    int flush_interval_ms;
-    baudrate_mapping_t *supported_baudrates;
-    int baudrate_count;
-    int default_baudrate_fallback;
-} uart_config_t;
-
-typedef struct {
-    int response_buffer_size;
-    int temp_buffer_size;
-    int error_message_buffer_size;
-    int poll_interval_ms;
     baudrate_mapping_t *supported_baudrates;
     int baudrate_count;
     int default_baudrate_fallback;
