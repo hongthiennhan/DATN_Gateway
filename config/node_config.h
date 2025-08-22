@@ -105,11 +105,31 @@ typedef struct {
     int error_message_buffer_size;
     int poll_interval_ms;
     int flush_interval_ms;
-    int select_timeout_ms;
     baudrate_mapping_t *supported_baudrates;
     int baudrate_count;
     int default_baudrate_fallback;
 } uart_config_t;
+
+typedef struct {
+    int response_buffer_size;
+    int temp_buffer_size;
+    int error_message_buffer_size;
+    int poll_interval_ms;
+    int flush_interval_ms;
+    baudrate_mapping_t *supported_baudrates;
+    int baudrate_count;
+    int default_baudrate_fallback;
+} uart_config_t;
+
+typedef struct {
+    int response_buffer_size;
+    int temp_buffer_size;
+    int error_message_buffer_size;
+    int poll_interval_ms;
+    baudrate_mapping_t *supported_baudrates;
+    int baudrate_count;
+    int default_baudrate_fallback;
+} modbus_config_t;
 
 typedef struct {
     int node_id;
@@ -138,10 +158,7 @@ typedef struct {
     int capacity;
     
     // System config
-    int auto_read_command_id;
-    int uart_clear_timeout;
     int ui_refresh_delay;
-    int uart_wait_timeout;
     int default_baudrate;
     char default_device[256];
     int startup_clear_duration;
@@ -153,15 +170,15 @@ typedef struct {
     
     // UART config
     uart_config_t uart_config;
-    
+
+    // Modbus config
+    modbus_config_t modbus_config;
+
     // MQTT config
     mqtt_config_t mqtt_config;
     
     // Control queue
     control_queue_t control_queue;
-    
-    // Config mode flag
-    int config_mode;
     
 } node_registry_t;
 
@@ -174,10 +191,7 @@ menu_item_t* get_menu_item_by_cmd(node_config_t *node, int cmd);
 void cleanup_nodes_config(void);
 
 // System config getters
-int get_auto_read_command_id(void);
-int get_uart_clear_timeout(void);
 int get_ui_refresh_delay(void);
-int get_uart_wait_timeout(void);
 int get_default_baudrate(void);
 const char* get_default_device(void);
 int get_startup_clear_duration(void);
@@ -194,11 +208,6 @@ mqtt_config_t* get_mqtt_config(void);
 // Control queue functions
 int add_control_command(int node_id, int cmd_id, const char *params);
 int get_control_command(server_control_cmd_t *cmd);
-control_queue_t* get_control_queue(void);
-
-// Config mode functions
-void set_config_mode(int enabled);
-int get_config_mode(void);
 
 // Utility function
 uint32_t hex_string_to_int(const char *hex_str);

@@ -250,7 +250,6 @@ int load_nodes_config(const char *config_file)
     node_registry.control_queue.count = 0;
     pthread_mutex_init(&node_registry.control_queue.mutex, NULL);
     pthread_cond_init(&node_registry.control_queue.cond, NULL);
-    node_registry.config_mode = 0;
 
     // Handle ThingsBoard wrapper format
     json_object *effective_root = root;
@@ -352,8 +351,6 @@ int load_nodes_config(const char *config_file)
                 node_registry.uart_config.poll_interval_ms = json_object_get_int(temp_obj);
             if (json_object_object_get_ex(timing_obj, "flush_interval_ms", &temp_obj))
                 node_registry.uart_config.flush_interval_ms = json_object_get_int(temp_obj);
-            if (json_object_object_get_ex(timing_obj, "select_timeout_ms", &temp_obj))
-                node_registry.uart_config.select_timeout_ms = json_object_get_int(temp_obj);
         }
         json_object *support_baudrate;
         //add support baudrate here:
@@ -395,6 +392,72 @@ int load_nodes_config(const char *config_file)
     }
     if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
         node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
+    }
+    // Parse Modbus config
+    json_object *modbus_obj;
+    if (json_object_object_get_ex(effective_root, "modbus_config", &modbus_obj))
+    {
+        json_object *temp_obj;
+        // Parse nested buffer_sizes
+        json_object *buffer_sizes_obj;
+        if (json_object_object_get_ex(modbus_obj, "buffer_sizes", &buffer_sizes_obj))
+        {
+            if (json_object_object_get_ex(buffer_sizes_obj, "response_buffer", &temp_obj))
+                node_registry.modbus_config.response_buffer_size = json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "temp_buffer", &temp_obj))
+                node_registry.modbus_config.temp_buffer_size = json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "error_message_buffer", &temp_obj))
+                node_registry.modbus_config.error_message_buffer_size = json_object_get_int(temp_obj);
+        }
+
+        // Parse nested timing
+        json_object *timing_obj;
+        if (json_object_object_get_ex(modbus_obj, "timing", &timing_obj))
+        {
+            if (json_object_object_get_ex(timing_obj, "poll_interval_ms", &temp_obj))
+                node_registry.modbus_config.poll_interval_ms = json_object_get_int(temp_obj);
+        }
+
+        json_object *support_baudrate;
+        if (json_object_object_get_ex(modbus_obj, "supported_baudrates", &support_baudrate)) {
+            int baudrate_array_len = json_object_array_length(support_baudrate);
+            if (baudrate_array_len > 0) {
+                node_registry.modbus_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
+                if (node_registry.modbus_config.supported_baudrates) {
+                    node_registry.modbus_config.baudrate_count = 0;
+                    
+                    for (int i = 0; i < baudrate_array_len; i++) {
+                        json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
+                        json_object *rate_obj, *code_obj;
+                        
+                        if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
+                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
+                            
+                            baudrate_mapping_t *mapping = &node_registry.modbus_config.supported_baudrates[node_registry.modbus_config.baudrate_count];
+                            mapping->rate = json_object_get_int(rate_obj);
+                            safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
+                            
+                            node_registry.modbus_config.baudrate_count++;
+                            
+    #ifdef DEBUG
+                            printf("Loaded modbus baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
+    #endif
+                        }
+                    }
+                    
+    #ifdef DEBUG
+                    printf("Total modbus supported baudrates loaded: %d\n", node_registry.modbus_config.baudrate_count);
+    #endif
+                } else {
+    #ifdef DEBUG
+                    printf("Error: Failed to allocate memory for modbus supported baudrates\n");
+    #endif
+                }
+            }
+        }
+        
+        if (json_object_object_get_ex(modbus_obj, "default_baudrate_fallback", &temp_obj))
+            node_registry.modbus_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
 
     // Parse MQTT config - SAFE VERSION
@@ -578,10 +641,7 @@ menu_item_t *get_menu_item_by_cmd(node_config_t *node, int cmd)
 }
 
 // System config getters
-int get_auto_read_command_id(void) { return node_registry.auto_read_command_id; }
-int get_uart_clear_timeout(void) { return node_registry.uart_clear_timeout; }
 int get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
-int get_uart_wait_timeout(void) { return node_registry.uart_wait_timeout; }
 int get_default_baudrate(void) { return node_registry.default_baudrate; }
 const char *get_default_device(void) { return node_registry.default_device; }
 int get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
@@ -640,20 +700,7 @@ int get_control_command(server_control_cmd_t *cmd)
     return 0;
 }
 
-control_queue_t *get_control_queue(void)
-{
-    return &node_registry.control_queue;
-}
 
-void set_config_mode(int enabled)
-{
-    node_registry.config_mode = enabled;
-}
-
-int get_config_mode(void)
-{
-    return node_registry.config_mode;
-}
 
 communication_type_t get_communication_type(void)
 {
