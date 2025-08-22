@@ -276,7 +276,7 @@ int load_nodes_config(const char *config_file)
     {
         json_object *temp_obj;
         if (json_object_object_get_ex(system_obj, "ui_refresh_delay", &temp_obj))
-            node_registry.uart_wait_timeout = json_object_get_int(temp_obj);
+            node_registry.ui_refresh_delay = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(system_obj, "default_baudrate", &temp_obj))
             node_registry.default_baudrate = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(system_obj, "default_device", &temp_obj))
