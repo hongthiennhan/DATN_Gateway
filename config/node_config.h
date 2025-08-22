@@ -191,6 +191,9 @@ system_info_t* get_system_info(void);
 // UART config getters
 uart_config_t* get_uart_config(void);
 
+// Modbus config getters
+modbus_config_t* get_modbus_config(void);
+
 // MQTT config getters
 mqtt_config_t* get_mqtt_config(void);
 

@@ -643,6 +643,7 @@ int get_startup_clear_duration(void) { return node_registry.startup_clear_durati
 // Detection getters
 system_info_t *get_system_info(void) { return &node_registry.system_info; }
 uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
+modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
 mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
 
 // Control queue functions

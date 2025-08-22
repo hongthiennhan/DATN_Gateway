@@ -1,5 +1,4 @@
 #include "thread_func.h"
-#include "node_config.h"
 
 // Config download settings
 #define CONFIG_DIR "/home/trieunguyen/Linux_worldspace/DATN_Gateway"

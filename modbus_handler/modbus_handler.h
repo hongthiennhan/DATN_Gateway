@@ -66,7 +66,6 @@ void Modbus_Write_Frame(data_frame_t *frame);
 data_frame_t* Modbus_Read_Response(uint32_t timeout_ms);
 int Modbus_Check_Data_Available(void);
 uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length);
-uint8_t Modbus_Verify_CRC(data_frame_t *frame, uint16_t frame_length);
+uint8_t Modbus_Verify_CRC(uint8_t* data, uint16_t length);
 void Modbus_Build_Frame(data_frame_t *frame, uint8_t address, uint8_t function_code, uint8_t *data, uint16_t data_len);
-void Modbus_Free_Frame(data_frame_t *frame);
 #endif // __MODBUS_HANDLER_H__

@@ -125,14 +125,143 @@ void Modbus_Write_Frame(data_frame_t *frame)
 }
 
 // Read Modbus response and return data frame structure
-data_frame_t *Modbus_Read_Response(uint32_t timeout_ms)
-{
+// Check if data is available for reading
+int Modbus_Check_Data_Available(void) {
+    if (pthread_mutex_lock(&modbus_mutex) != 0) {
+        return 0; // Failed to lock mutex
+    }
+
+    if (modbus_fd == -1) {
+        pthread_mutex_unlock(&modbus_mutex);
+        return 0; // Modbus not initialized
+    }
+
+    fd_set readfds;
+    struct timeval timeout;
+
+    FD_ZERO(&readfds);
+    FD_SET(modbus_fd, &readfds);
+
+    // Short timeout (10 ms) for non-blocking check
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 10000;
+
+    int ret = select(modbus_fd + 1, &readfds, NULL, NULL, &timeout);
+
+    pthread_mutex_unlock(&modbus_mutex);
+
+    if (ret > 0 && FD_ISSET(modbus_fd, &readfds)) {
+        return 1; // Data available
+    }
+
+    return 0; // No data available
 }
 
-// Check if data is available for reading
-int Modbus_Check_Data_Available(void)
-{
+// Read Modbus response and return data frame structure
+data_frame_t *Modbus_Read_Response(uint32_t timeout_ms) {
+    if (pthread_mutex_lock(&modbus_mutex) != 0) {
+        return NULL; // Failed to lock mutex
+    }
+
+    if (modbus_fd == -1) {
+        pthread_mutex_unlock(&modbus_mutex);
+        return NULL; // Modbus not initialized
+    }
+
+    // Get buffer size from config, fallback to safe default
+    modbus_config_t *config = get_modbus_config();
+    int buffer_size = config ? config->response_buffer_size : 512;
+    uint32_t poll_interval_ms = config ? config->poll_interval_ms : 20;
+
+    uint8_t *buffer = malloc(buffer_size);
+    if (!buffer) {
+        pthread_mutex_unlock(&modbus_mutex);
+        return NULL; // Memory allocation failed
+    }
+
+    ssize_t total_read = 0;
+    uint32_t waited_ms = 0;
+
+    // Read response with timeout using polling approach
+    while (waited_ms < timeout_ms && total_read < buffer_size) {
+        fd_set readfds;
+        struct timeval tv;
+        
+        FD_ZERO(&readfds);
+        FD_SET(modbus_fd, &readfds);
+
+        tv.tv_sec = poll_interval_ms / 1000;
+        tv.tv_usec = (poll_interval_ms % 1000) * 1000;
+
+        int ret = select(modbus_fd + 1, &readfds, NULL, NULL, &tv);
+        
+        if (ret < 0) {
+            perror("select() failed in Modbus_Read_Response");
+            break;
+        } else if (ret == 0) {
+            waited_ms += poll_interval_ms; // Increment wait time
+            continue;
+        }
+
+        // Data available - read from Modbus port
+        ssize_t bytes_read = read(modbus_fd, buffer + total_read, buffer_size - total_read);
+        
+        if (bytes_read > 0) {
+            total_read += bytes_read;
+            break; // Got data, process the frame
+        } else if (bytes_read < 0) {
+            perror("read() failed in Modbus_Read_Response");
+            break;
+        }
+    }
+
+    pthread_mutex_unlock(&modbus_mutex);
+
+    // Check minimum frame length (address + function + CRC = 4 bytes)
+    if (total_read < 4) {
+        free(buffer);
+        return NULL; // Invalid or incomplete frame
+    }
+
+    // Verify CRC before parsing frame
+    if (!Modbus_Verify_CRC(buffer, total_read)) {
+        free(buffer);
+        return NULL; // CRC verification failed
+    }
+
+    // Allocate memory for data frame structure
+    data_frame_t *frame = malloc(sizeof(data_frame_t));
+    if (!frame) {
+        free(buffer);
+        return NULL; // Memory allocation failed
+    }
+
+    // Parse Modbus frame components
+    frame->address = buffer[0];                    // Modbus device address
+    frame->function.custom = buffer[1];            // Function code
+    frame->frame_length = total_read;              // Total frame length
+    
+    // Extract CRC (last 2 bytes, little-endian format)
+    frame->crc = (uint16_t)(buffer[total_read - 2] | (buffer[total_read - 1] << 8));
+
+    // Extract data payload (exclude address, function code, and CRC)
+    size_t data_len = total_read - 4;
+    if (data_len > 0) {
+        frame->data = malloc(data_len);
+        if (!frame->data) {
+            free(frame);
+            free(buffer);
+            return NULL; // Memory allocation failed
+        }
+        memcpy(frame->data, &buffer[2], data_len); // Copy data portion
+    } else {
+        frame->data = NULL; // No data payload
+    }
+
+    free(buffer);
+    return frame; // Successfully parsed Modbus response
 }
+
 
 // Calculate CRC for Modbus frame using CRC-16-IBM algorithm
 uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length)
@@ -163,16 +292,33 @@ uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length)
 }
 
 // Verify CRC for Modbus frame
-uint8_t Modbus_Verify_CRC(data_frame_t *frame, uint16_t frame_length)
+uint8_t Modbus_Verify_CRC(uint8_t* data, uint16_t length)
 {
+    pthread_mutex_lock(&modbus_mutex);
+    if (!data || length < 4) // At least address, function, 1 byte data and CRC
+    {
+        pthread_mutex_unlock(&modbus_mutex);
+        return 0; // Invalid frame
+    }
+    uint16_t crc = Modbus_Calculate_CRC(data, length - 2);
+    uint16_t received_crc = (data[length - 2] | (data[length - 1] << 8));
+    pthread_mutex_unlock(&modbus_mutex);
+    return (crc == received_crc);
 }
 
 // Build Modbus frame
 void Modbus_Build_Frame(data_frame_t *frame, uint8_t address, uint8_t function_code, uint8_t *data, uint16_t data_len)
 {
-}
-
-// Clean up Modbus frame
-void Modbus_Free_Frame(data_frame_t *frame)
-{
+    pthread_mutex_lock(&modbus_mutex);
+    if (!frame || data_len > 252) // Max data length for Modbus RTU
+    {
+        pthread_mutex_unlock(&modbus_mutex);
+        return;
+    }
+    frame->address = address;
+    frame->function.custom = function_code; // Set function code
+    frame->data = data; // Pointer to data buffer
+    frame->frame_length = 4 + data_len; // Address + Function + Data + CRC (2 bytes)
+    frame->crc = 0; // Initialize CRC
+    pthread_mutex_unlock(&modbus_mutex);
 }

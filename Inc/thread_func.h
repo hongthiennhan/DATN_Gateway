@@ -4,6 +4,7 @@
 #include "main.h"
 #include "uart_handler.h"
 #include "node_config.h"  // Include này để có node_config_t và menu_item_t types
+#include "modbus_handler.h" // Include Modbus handler for Modbus data types
 
 typedef struct shared_data_s {
     void* data;
@@ -22,7 +23,7 @@ extern int command_pending;
 extern char status_response[256];
 extern int status_color;
 extern unsigned char receive_data[512];
-extern unsigned char save_data[512];
+extern unsigned char send_data[512];
 extern pthread_cond_t cond;
 extern shared_data_t command_data;
 extern shared_data_t mqtt_data_n1;
