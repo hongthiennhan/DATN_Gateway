@@ -275,13 +275,7 @@ int load_nodes_config(const char *config_file)
     if (json_object_object_get_ex(effective_root, "system_config", &system_obj))
     {
         json_object *temp_obj;
-        if (json_object_object_get_ex(system_obj, "auto_read_command_id", &temp_obj))
-            node_registry.auto_read_command_id = json_object_get_int(temp_obj);
-        if (json_object_object_get_ex(system_obj, "uart_clear_timeout", &temp_obj))
-            node_registry.uart_clear_timeout = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(system_obj, "ui_refresh_delay", &temp_obj))
-            node_registry.ui_refresh_delay = json_object_get_int(temp_obj);
-        if (json_object_object_get_ex(system_obj, "uart_wait_timeout", &temp_obj))
             node_registry.uart_wait_timeout = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(system_obj, "default_baudrate", &temp_obj))
             node_registry.default_baudrate = json_object_get_int(temp_obj);
