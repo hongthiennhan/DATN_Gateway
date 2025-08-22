@@ -30,6 +30,7 @@ message(STATUS "JSON_C libraries: ${JSON_C_LIBRARIES}")
 set(INCLUDE_DIRS
     uart_handler
     config
+    modbus_handler
     Inc
 )
 
@@ -40,6 +41,7 @@ set(SOURCES_2
     Src_process/mqtt_thread.c
     config/node_config.c
     uart_handler/uart_handler.c
+    modbus_handler/modbus_handler.c
 )
 
 # Add main executable
