@@ -19,7 +19,7 @@ typedef struct {
 extern volatile uint8_t is_busy;
 extern pthread_mutex_t command_mutex;
 extern int command_pending;
-extern char status_response[100];
+extern char status_response[256];
 extern int status_color;
 extern unsigned char receive_data[512];
 extern unsigned char save_data[512];
