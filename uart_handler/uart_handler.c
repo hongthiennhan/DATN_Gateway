@@ -45,7 +45,6 @@ void Uart_Init(speed_t baudrate, char *device) {
         pthread_mutex_unlock(&uart_mutex);
         return;
     }
-
     pthread_mutex_unlock(&uart_mutex);
 }
 

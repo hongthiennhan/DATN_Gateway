@@ -58,6 +58,7 @@ typedef struct{
 }data_frame_t;
 
 extern int modbus_fd;
+extern pthread_mutex_t modbus_mutex;
 
 // Basic Modbus functions
 void Modbus_Init(speed_t baudrate, char *device);
@@ -68,5 +69,4 @@ uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length);
 uint8_t Modbus_Verify_CRC(data_frame_t *frame, uint16_t frame_length);
 void Modbus_Build_Frame(data_frame_t *frame, uint8_t address, uint8_t function_code, uint8_t *data, uint16_t data_len);
 void Modbus_Free_Frame(data_frame_t *frame);
-
 #endif // __MODBUS_HANDLER_H__
