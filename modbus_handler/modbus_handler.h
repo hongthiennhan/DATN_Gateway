@@ -58,7 +58,6 @@ typedef struct{
 }data_frame_t;
 
 extern int modbus_fd;
-extern pthread_mutex_t modbus_mutex;
 
 // Basic Modbus functions
 void Modbus_Init(speed_t baudrate, char *device);
