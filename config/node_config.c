@@ -170,7 +170,7 @@ static int parse_menu_items(json_object *menu_array, node_config_t *node)
 }
 
 /**
- * NEW: Parse modbus supported functions from JSON
+ *  Parse modbus supported functions from JSON
  */
 static int parse_modbus_functions(json_object *functions_array, modbus_nodes_config_t *modbus_cfg)
 {
@@ -205,7 +205,7 @@ static int parse_modbus_functions(json_object *functions_array, modbus_nodes_con
 }
 
 /**
- * NEW: Parse modbus register area from JSON
+ *  Parse modbus register area from JSON
  */
 static int parse_register_area(json_object *area_obj, modbus_register_area_t *area)
 {
@@ -232,7 +232,7 @@ static int parse_register_area(json_object *area_obj, modbus_register_area_t *ar
 }
 
 /**
- * NEW: Parse modbus registers from JSON
+ *  Parse modbus registers from JSON
  */
 static int parse_modbus_registers(json_object *registers_obj, modbus_nodes_config_t *modbus_cfg)
 {
@@ -317,7 +317,7 @@ static int parse_node_config(json_object *node_obj, node_config_t *node)
 }
 
 /**
- * NEW: Parse UART nodes array from JSON
+ *  Parse UART nodes array from JSON
  */
 static int parse_uart_nodes(json_object *root, uart_nodes_config_t *uart_cfg)
 {
@@ -351,7 +351,7 @@ static int parse_uart_nodes(json_object *root, uart_nodes_config_t *uart_cfg)
 }
 
 /**
- * NEW: Parse Modbus nodes array from JSON
+ *  Parse Modbus nodes array from JSON
  */
 static int parse_modbus_nodes(json_object *root, modbus_nodes_config_t *modbus_cfg)
 {
@@ -375,7 +375,7 @@ static int parse_modbus_nodes(json_object *root, modbus_nodes_config_t *modbus_c
         json_object *node_obj = json_object_array_get_idx(modbus_array, i);
         if (parse_node_config(node_obj, &modbus_cfg->modbus_nodes[i]) == 0) {
             
-            // NEW: Parse modbus-specific fields for each node
+            //  Parse modbus-specific fields for each node
             json_object *temp_obj;
             if (json_object_object_get_ex(node_obj, "modbus_address", &temp_obj)) {
                 modbus_cfg->modbus_address = json_object_get_int(temp_obj);
@@ -426,6 +426,15 @@ int load_nodes_config(const char *config_file)
 
     // Initialize registry - ZERO OUT ALL MEMORY
     memset(&node_registry, 0, sizeof(node_registry));
+    node_registry.uart_nodes = malloc(sizeof(uart_nodes_config_t));
+    if (node_registry.uart_nodes) {
+        memset(node_registry.uart_nodes, 0, sizeof(uart_nodes_config_t));
+    }
+
+    node_registry.modbus_nodes = malloc(sizeof(modbus_nodes_config_t));
+    if (node_registry.modbus_nodes) {
+        memset(node_registry.modbus_nodes, 0, sizeof(modbus_nodes_config_t));
+    }
     // Initialize control queue
     node_registry.server_communication_type = COMM_TYPE_MQTT;
     node_registry.node_communication_type = UART;
@@ -754,7 +763,7 @@ int load_nodes_config(const char *config_file)
         }
     }
 
-    // NEW: Parse UART and Modbus nodes separately
+    //  Parse UART and Modbus nodes separately
     parse_uart_nodes(effective_root, &node_registry.uart_nodes);
     parse_modbus_nodes(effective_root, &node_registry.modbus_nodes);
 
@@ -941,30 +950,37 @@ const char *get_node_communication_type_name(node_communication_type_t type)
  */
 void cleanup_nodes_config(void)
 {
-    // NEW: Cleanup UART nodes
-    if (node_registry.uart_nodes && node_registry.uart_nodes->uart_nodes) {
-        for (int i = 0; i < node_registry.uart_nodes->uart_count; i++) {
-            node_config_t *node = &node_registry.uart_nodes->uart_nodes[i];
-            if (node->menu_items) free(node->menu_items);
-            if (node->detection_commands) free(node->detection_commands);
-            if (node->mqtt_data) free_shared_data(node->mqtt_data);
+    //  Cleanup UART nodes
+    if (node_registry.uart_nodes) {
+        if (node_registry.uart_nodes->uart_nodes) {
+            for (int i = 0; i < node_registry.uart_nodes->uart_count; i++) {
+                node_config_t *node = &node_registry.uart_nodes->uart_nodes[i];
+                if (node->menu_items) free(node->menu_items);
+                if (node->detection_commands) free(node->detection_commands);
+                if (node->mqtt_data) free_shared_data(node->mqtt_data);
+            }
+            free(node_registry.uart_nodes->uart_nodes);
         }
-        free(node_registry.uart_nodes->uart_nodes);
         if (node_registry.uart_nodes->menu_items) free(node_registry.uart_nodes->menu_items);
         free(node_registry.uart_nodes);
+        node_registry.uart_nodes = NULL;
     }
     
-    // NEW: Cleanup Modbus nodes  
-    if (node_registry.modbus_nodes && node_registry.modbus_nodes->modbus_nodes) {
-        for (int i = 0; i < node_registry.modbus_nodes->modbus_count; i++) {
-            node_config_t *node = &node_registry.modbus_nodes->modbus_nodes[i];
-            if (node->menu_items) free(node->menu_items);
-            if (node->detection_commands) free(node->detection_commands);
-            if (node->mqtt_data) free_shared_data(node->mqtt_data);
+    //  Cleanup Modbus nodes  
+    if (node_registry.modbus_nodes) {
+        if (node_registry.modbus_nodes->modbus_nodes) {
+            for (int i = 0; i < node_registry.modbus_nodes->modbus_count; i++) {
+                node_config_t *node = &node_registry.modbus_nodes->modbus_nodes[i];
+                if (node->menu_items) free(node->menu_items);
+                if (node->detection_commands) free(node->detection_commands);
+                if (node->mqtt_data) free_shared_data(node->mqtt_data);
+            }
+            free(node_registry.modbus_nodes->modbus_nodes);
         }
-        free(node_registry.modbus_nodes->modbus_nodes);
-        if (node_registry.modbus_nodes->supported_functions) free(node_registry.modbus_nodes->supported_functions);
+        if (node_registry.modbus_nodes->supported_functions) 
+            free(node_registry.modbus_nodes->supported_functions);
         free(node_registry.modbus_nodes);
+        node_registry.modbus_nodes = NULL;
     }
 
     for (int i = 0; i < node_registry.count; i++)
@@ -1034,19 +1050,6 @@ int safe_reload_config(void) {
     return load_result ? 0 : -1;
 }
 
-// Safe node access functions
-node_config_t *safe_get_node_by_index(int index) {
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
-        pthread_mutex_unlock(&config_mutex);
-        return NULL;
-    }
-
-    node_config_t *node = get_node_by_index(index);
-    pthread_mutex_unlock(&config_mutex);
-    return node;
-}
-
 int safe_get_node_count(void) {
     pthread_mutex_lock(&config_mutex);
     if (config_reloading) {
@@ -1057,4 +1060,90 @@ int safe_get_node_count(void) {
     int count = get_node_count();
     pthread_mutex_unlock(&config_mutex);
     return count;
+}
+
+/**
+ *  Get UART nodes config
+ */
+uart_nodes_config_t *get_uart_nodes_config(void) {
+    return &node_registry.uart_nodes;
+}
+
+/**
+ *  Get UART node by ID
+ */
+node_config_t* get_uart_node_by_id(int node_id) {
+    if (!node_registry.uart_nodes || !node_registry.uart_nodes->uart_nodes) 
+        return NULL;
+    
+    for (int i = 0; i < node_registry.uart_nodes->uart_count; i++) {
+        if (node_registry.uart_nodes->uart_nodes[i].node_id == node_id) {
+            return &node_registry.uart_nodes->uart_nodes[i];
+        }
+    }
+    return NULL;
+}
+
+/**
+ *  Get UART node by index
+ */
+node_config_t* get_uart_node_by_index(int index) {
+    if (!node_registry.uart_nodes || !node_registry.uart_nodes->uart_nodes) 
+        return NULL;
+    if (index < 0 || index >= node_registry.uart_nodes->uart_count) 
+        return NULL;
+    
+    return &node_registry.uart_nodes->uart_nodes[index];
+}
+
+/**
+ *  Get Modbus nodes config
+ */
+modbus_nodes_config_t *get_modbus_nodes_config(void) {
+    return &node_registry.modbus_nodes;
+}
+
+/**
+ *  Get Modbus node by ID
+ */
+node_config_t* get_modbus_node_by_id(int node_id) {
+    if (!node_registry.modbus_nodes || !node_registry.modbus_nodes->modbus_nodes) 
+        return NULL;
+    
+    for (int i = 0; i < node_registry.modbus_nodes->modbus_count; i++) {
+        if (node_registry.modbus_nodes->modbus_nodes[i].node_id == node_id) {
+            return &node_registry.modbus_nodes->modbus_nodes[i];
+        }
+    }
+    return NULL;
+}
+
+/**
+ *  Thread-safe get UART node by index
+ */
+node_config_t *safe_get_uart_node_by_index(int index) {
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return NULL;
+    }
+    
+    node_config_t *node = get_uart_node_by_index(index);
+    pthread_mutex_unlock(&config_mutex);
+    return node;
+}
+
+/**
+ *  Thread-safe get Modbus node by index
+ */
+node_config_t *safe_get_modbus_node_by_index(int index) {
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return NULL;
+    }
+    
+    node_config_t *node = get_modbus_node_by_index(index);
+    pthread_mutex_unlock(&config_mutex);
+    return node;
 }

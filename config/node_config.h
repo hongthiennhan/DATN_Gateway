@@ -69,14 +69,14 @@ typedef struct {
 // Modbus supported function structure
 typedef struct {
     char function_code[16];    // e.g., "0x01"
-    char description;     // e.g., "Read Coils"
+    char description[64];       // e.g., "Read Coils"
 } modbus_function_t;
 
 // Modbus register area structure
 typedef struct {
     char start_address[16];    // e.g., "0x0000"
     int count;               // Number of registers
-    char description;    // Description of register area
+    char description[64];    // Description of register area
 } modbus_register_area_t;
 
 // Modbus registers structure
@@ -216,8 +216,10 @@ typedef struct {
 
 // API functions
 int load_nodes_config(const char *config_file);
-node_config_t* get_node_by_id(int node_id);
-node_config_t* get_node_by_index(int index);
+uart_node_config_t* get_uart_node_by_id(int node_id);
+uart_node_config_t* get_uart_node_by_index(int index);
+modbus_nodes_config_t* get_modbus_nodes_config(void);
+modbus_nodes_config_t* get_modbus_node_by_id(int node_id);
 int get_node_count(void);
 menu_item_t* get_menu_item_by_cmd(node_config_t *node, int cmd);
 void cleanup_nodes_config(void);
@@ -263,6 +265,7 @@ extern volatile int config_reloading;
 // Thread-safe functions
 int safe_get_node_count(void);
 int safe_reload_config(void);
-node_config_t *safe_get_node_by_index(int index);
+uart_node_config_t *safe_get_uart_node_by_index(int index);
+modbus_node_config_t *safe_get_modbus_node_by_index(int index);
 
 #endif
