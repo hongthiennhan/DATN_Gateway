@@ -126,25 +126,28 @@ static int parse_detection_commands(json_object *detection_array, node_config_t 
 }
 
 /**
- * Parse menu items for node
+ * Parse menu items for uart node
  */
-static int parse_menu_items(json_object *menu_array, node_config_t *node)
+static int parse_menu_items(json_object *menu_array, uart_nodes_config_t *uart_cfg)
 {
-    if (!menu_array || !node)
+    if (!menu_array || !uart_cfg)
         return -1;
     int array_len = json_object_array_length(menu_array);
     if (array_len <= 0)
         return 0;
-    node->menu_items = malloc(sizeof(menu_item_t) * array_len);
-    if (!node->menu_items)
+    
+    uart_cfg->menu_items = malloc(sizeof(menu_item_t) * array_len);
+    if (!uart_cfg->menu_items)
         return -1;
-    node->menu_count = array_len;
+    uart_cfg->menu_count = array_len;
+    
     for (int i = 0; i < array_len; i++)
     {
         json_object *item_obj = json_object_array_get_idx(menu_array, i);
-        menu_item_t *item = &node->menu_items[i];
+        menu_item_t *item = &uart_cfg->menu_items[i];
         json_object *temp_obj;
         memset(item, 0, sizeof(menu_item_t));
+        
         if (json_object_object_get_ex(item_obj, "cmd", &temp_obj))
         {
             item->cmd = json_object_get_int(temp_obj);
@@ -763,8 +766,8 @@ int load_nodes_config(const char *config_file)
     }
 
     //  Parse UART and Modbus nodes separately
-    parse_uart_nodes(effective_root, &node_registry.uart_nodes);
-    parse_modbus_nodes(effective_root, &node_registry.modbus_nodes);
+    parse_uart_nodes(effective_root, node_registry.uart_nodes);
+    parse_modbus_nodes(effective_root, node_registry.modbus_nodes);
 
     json_object_put(root);
 #ifdef DEBUG
@@ -1037,13 +1040,13 @@ int safe_get_node_count(void) {
  *  Get UART nodes config
  */
 uart_nodes_config_t *get_uart_nodes_config(void) {
-    return &node_registry.uart_nodes;
+    return node_registry.uart_nodes;
 }
 
 /**
  *  Get UART node by ID
  */
-node_config_t* get_uart_node_by_id(int node_id) {
+uart_nodes_config_t* get_uart_node_by_id(int node_id) {
     if (!node_registry.uart_nodes || !node_registry.uart_nodes->uart_nodes) 
         return NULL;
     
@@ -1058,7 +1061,7 @@ node_config_t* get_uart_node_by_id(int node_id) {
 /**
  *  Get UART node by index
  */
-node_config_t* get_uart_node_by_index(int index) {
+uart_nodes_config_t* get_uart_node_by_index(int index) {
     if (!node_registry.uart_nodes || !node_registry.uart_nodes->uart_nodes) 
         return NULL;
     if (index < 0 || index >= node_registry.uart_nodes->uart_count) 
@@ -1071,13 +1074,13 @@ node_config_t* get_uart_node_by_index(int index) {
  *  Get Modbus nodes config
  */
 modbus_nodes_config_t *get_modbus_nodes_config(void) {
-    return &node_registry.modbus_nodes;
+    return node_registry.modbus_nodes;
 }
 
 /**
  *  Get Modbus node by ID
  */
-node_config_t* get_modbus_node_by_id(int node_id) {
+modbus_nodes_config_t* get_modbus_node_by_id(int node_id) {
     if (!node_registry.modbus_nodes || !node_registry.modbus_nodes->modbus_nodes) 
         return NULL;
     
@@ -1092,14 +1095,14 @@ node_config_t* get_modbus_node_by_id(int node_id) {
 /**
  *  Thread-safe get UART node by index
  */
-node_config_t *safe_get_uart_node_by_index(int index) {
+uart_nodes_config_t *safe_get_uart_node_by_index(int index) {
     pthread_mutex_lock(&config_mutex);
     if (config_reloading) {
         pthread_mutex_unlock(&config_mutex);
         return NULL;
     }
-    
-    node_config_t *node = get_uart_node_by_index(index);
+
+    uart_nodes_config_t *node = get_uart_node_by_index(index);
     pthread_mutex_unlock(&config_mutex);
     return node;
 }
@@ -1107,14 +1110,14 @@ node_config_t *safe_get_uart_node_by_index(int index) {
 /**
  *  Thread-safe get Modbus node by index
  */
-node_config_t *safe_get_modbus_node_by_index(int index) {
+modbus_nodes_config_t *safe_get_modbus_node_by_index(int index) {
     pthread_mutex_lock(&config_mutex);
     if (config_reloading) {
         pthread_mutex_unlock(&config_mutex);
         return NULL;
     }
-    
-    node_config_t *node = get_modbus_node_by_index(index);
+
+    modbus_nodes_config_t *node = get_modbus_node_by_index(index);
     pthread_mutex_unlock(&config_mutex);
     return node;
 }
