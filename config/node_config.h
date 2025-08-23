@@ -12,7 +12,13 @@ typedef enum {
     COMM_TYPE_WEBSOCKET, // For WebSocket communication (not implemented yet)
     COMM_TYPE_TCP,      // For direct TCP communication (not implemented yet)
     COMM_TYPE_COUNT
-} communication_type_t;
+} server_communication_type_t;
+
+typedef enum {
+    CAN = 0,
+    UART,
+    MODBUS
+} node_communication_type_t;
 
 // Raw data structure for communication
 typedef struct {
@@ -189,8 +195,8 @@ typedef struct {
     char default_device[256];
     int startup_clear_duration;
     // Communication type
-    communication_type_t communication_type;
-
+    server_communication_type_t server_communication_type;
+    node_communication_type_t node_communication_type;
     // System info
     system_info_t system_info;
     
@@ -241,10 +247,14 @@ int get_control_command(server_control_cmd_t *cmd);
 // Utility function
 uint32_t hex_string_to_int(const char *hex_str);
 
-//Communication type functions
-communication_type_t get_communication_type(void);
-void set_communication_type(communication_type_t type);
-const char* get_communication_type_name(communication_type_t type);
+//Server Communication type functions
+server_communication_type_t get_server_communication_type(void);
+void set_server_communication_type(server_communication_type_t type);
+const char* get_server_communication_type_name(server_communication_type_t type);
+
+node_communication_type_t get_node_communication_type(void);
+void set_node_communication_type(node_communication_type_t type);
+const char* get_node_communication_type_name(node_communication_type_t type);
 
 // Mutex for config file:
 extern pthread_mutex_t config_mutex;

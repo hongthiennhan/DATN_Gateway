@@ -427,7 +427,8 @@ int load_nodes_config(const char *config_file)
     // Initialize registry - ZERO OUT ALL MEMORY
     memset(&node_registry, 0, sizeof(node_registry));
     // Initialize control queue
-    node_registry.communication_type = COMM_TYPE_MQTT;
+    node_registry.server_communication_type = COMM_TYPE_MQTT;
+    node_registry.node_communication_type = UART;
     node_registry.control_queue.head = 0;
     node_registry.control_queue.tail = 0;
     node_registry.control_queue.count = 0;
@@ -877,20 +878,20 @@ int get_control_command(server_control_cmd_t *cmd)
     return 0;
 }
 
-communication_type_t get_communication_type(void)
+server_communication_type_t get_server_communication_type(void)
 {
-    return node_registry.communication_type;
+    return node_registry.server_communication_type;
 }
 
-void set_communication_type(communication_type_t type)
+void set_server_communication_type(server_communication_type_t type)
 {
     if (type >= 0 && type < COMM_TYPE_COUNT)
     {
-        node_registry.communication_type = type;
+        node_registry.server_communication_type = type;
     }
 }
 
-const char *get_communication_type_name(communication_type_t type)
+const char *get_server_communication_type_name(server_communication_type_t type)
 {
     switch (type)
     {
@@ -902,6 +903,34 @@ const char *get_communication_type_name(communication_type_t type)
         return "WebSocket";
     case COMM_TYPE_TCP:
         return "TCP";
+    default:
+        return "Unknown";
+    }
+}
+
+node_communication_type_t get_node_communication_type(void)
+{
+    return node_registry.node_communication_type;
+}
+
+void set_node_communication_type(node_communication_type_t type)
+{
+    if (type >= 0 && type < NODE_COMM_TYPE_COUNT)
+    {
+        node_registry.node_communication_type = type;
+    }
+}
+
+const char *get_node_communication_type_name(node_communication_type_t type)
+{
+    switch (type)
+    {
+    case CAN:
+        return "CAN";
+    case UART:
+        return "UART";
+    case MODBUS:
+        return "MODBUS";
     default:
         return "Unknown";
     }
