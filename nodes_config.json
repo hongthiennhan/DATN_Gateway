@@ -1,9 +1,9 @@
 {
-  "uart_nodes": [
+  "nodes": [
     {
       "id": 1,
       "name": "Node1 - Sensor Board 1",
-      "type": "sensor",
+      "type": "sensor_board",
       "is_actuator": 0,
       "detection_commands": [
         {
@@ -17,14 +17,16 @@
         { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA1", "timeout_ms": 0 },
         { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA2", "timeout_ms": 0 }
       ],
+
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
     {
       "id": 2,
       "name": "Node2 - Display Unit",
-      "type": "device",
+      "type": "display_unit",
       "is_actuator": 1,
+
       "detection_commands": [
         {
           "command": 2,
@@ -33,81 +35,83 @@
           "description": "Display unit identification"
         }
       ],
+
       "menu_items": [
         { "cmd": 1, "label": "Display On", "uart_cmd": "CMD3_DISPLAY_ON", "hex_value": "0xA3", "timeout_ms": 0 },
         { "cmd": 2, "label": "Display Off", "uart_cmd": "CMD3_DISPLAY_OFF", "hex_value": "0xA4", "timeout_ms": 0 }
       ],
+
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    }
-  ],
-
-  "modbus_nodes": [
+    },
     {
       "id": 3,
       "name": "Node3 - Device 3",
       "type": "device",
-      "modbus_address": 3,
-      "baudrate": 9600,
       "is_actuator": 0,
-      "supported_functions": [
-        {"function_code": "0x01", "description": "Read Coils"},
-        {"function_code": "0x05", "description": "Write Single Coil"},
-        {"function_code": "0x0F", "description": "Write Multiple Coils"}
-      ],
-      "registers": {
-        "coils": {
-          "start_address": "0x0000",
-          "count": 8,
-          "description": "Digital outputs/relays"
-        },
-        "holding_registers": {
-          "start_address": "0x0000",
-          "count": 0,
-          "description": "Analog outputs"
-        },
-        "input_registers": {
-          "start_address": "0x0000",
-          "count": 0,
-          "description": "Analog inputs"
+
+      "detection_commands": [
+        {
+          "command": 3,
+          "expected_response": "NEW_DEVICE_OK",
+          "timeout_ms": 100,
+          "description": "New device identification"
         }
-        
-      },
+      ],
+
+      "menu_items": [
+        { "cmd": 1, "label": "New Command 1", "uart_cmd": "CMD_NEW_1", "hex_value": "0xA7", "timeout_ms": 0 },
+        { "cmd": 2, "label": "New Command 2", "uart_cmd": "CMD_NEW_2", "hex_value": "0xA8", "timeout_ms": 0 }
+      ],
+
       "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello3.bin && deactivate'"
+      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
     {
       "id": 4,
       "name": "Node4 - Sensor Board 2",
-      "type": "sensor",
-      "modbus_address": 4,
-      "baudrate": 9600,
+      "type": "sensor_board",
       "is_actuator": 0,
-      "supported_functions": [
-        {"function_code": "0x01", "description": "Read Coils"},
-        {"function_code": "0x04", "description": "Read Input Registers"},
-        {"function_code": "0x03", "description": "Read Holding Registers"},
-        {"function_code": "0x05", "description": "Write Single Coil"}
-      ],
-      "registers": {
-        "coils": {
-          "start_address": "0x0000",
-          "count": 1,
-          "description": "LED controls"
-        },
-        "input_registers": {
-          "start_address": "0x0000",
-          "count": 1,
-          "description": "Temperature, humidity sensors"
-        },
-        "holding_registers": {
-          "start_address": "0x0000",
-          "count": 3,
-          "description": "Sensor calibration"
+
+      "detection_commands": [
+        {
+          "command": 4,
+          "expected_response": "SENSOR_BOARD_OK",
+          "timeout_ms": 100,
+          "description": "Sensor board identification"
         }
-      },
+      ],
+
+      "menu_items": [
+        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA5", "timeout_ms": 0 },
+        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA6", "timeout_ms": 0 }
+      ],
+
       "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello4.bin && deactivate'"
+      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
+    },
+    {
+      "id": 5,
+      "name": "Node5 - Sensor Board 3",
+      "type": "sensor_board",
+      "is_actuator": 0,
+
+      "detection_commands": [
+        {
+          "command": 5,
+          "expected_response": "SENSOR_BOARD_OK",
+          "timeout_ms": 100,
+          "description": "Sensor board identification"
+        }
+      ],
+
+      "menu_items": [
+        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA7", "timeout_ms": 0 },
+        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA8", "timeout_ms": 0 }
+      ],
+
+      "data_format": "hex",
+      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],
 
@@ -115,7 +119,6 @@
     "auto_read_command_id": 100,
     "ui_refresh_delay": 100,
     "uart_wait_timeout": 1000,
-    "modbus_timeout": 1000,
     "default_baudrate": 115200,
     "default_device": "/dev/ttyUSB0",
     "startup_clear_duration": 10000
@@ -158,9 +161,7 @@
       "error_message_buffer": 100
     },
     "timing": {
-      "poll_interval_ms": 20,
-      "response_timeout_ms": 1000,
-      "frame_delay_ms": 10
+      "poll_interval_ms": 20
     },
     "supported_baudrates": [
       { "rate": 1200,   "speed_code": "B1200"   },
@@ -171,10 +172,7 @@
       { "rate": 57600,  "speed_code": "B57600"  },
       { "rate": 115200, "speed_code": "B115200" }
     ],
-    "default_baudrate_fallback": 9600,
-    "default_data_bits": 8,
-    "default_parity": "none",
-    "default_stop_bits": 1
+    "default_baudrate_fallback": 9600
   },
 
   "mqtt_config": {
