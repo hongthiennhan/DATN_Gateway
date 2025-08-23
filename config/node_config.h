@@ -184,8 +184,8 @@ typedef struct {
 } modbus_nodes_config_t;
 
 typedef struct {
-    uart_node_config_t *uart_nodes;
-    modbus_node_config_t *modbus_nodes;
+    uart_nodes_config_t *uart_nodes;
+    modbus_nodes_config_t *modbus_nodes;
     int count;
     int capacity;
     
