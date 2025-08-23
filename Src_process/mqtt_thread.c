@@ -324,6 +324,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     return 0;
 }
 
+
 /**
  * Process control command from server
  */
@@ -419,13 +420,6 @@ void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result)
         char *attributes = malloc(config->attributes_buffer_size);
         if (attributes)
         {
-            // UPDATED: Get separate node counts
-            uart_nodes_config_t *uart_config = get_uart_nodes_config();
-            modbus_nodes_config_t *modbus_config = get_modbus_nodes_config();
-            
-            int uart_count = (uart_config && uart_config->uart_nodes) ? uart_config->uart_count : 0;
-            int modbus_count = (modbus_config && modbus_config->modbus_nodes) ? modbus_config->modbus_count : 0;
-            
             snprintf(attributes, config->attributes_buffer_size,
                      "{"
                      "\"gateway_ip\":\"%s\","
@@ -433,16 +427,14 @@ void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result)
                      "\"device_type\":\"%s\","
                      "\"manufacturer\":\"%s\","
                      "\"model\":\"%s\","
-                     "\"uart_node_count\":%d,"
-                     "\"modbus_node_count\":%d"
+                     "\"node_count\":%d"
                      "}",
                      get_local_ip(),
                      sys_info->firmware_version,
                      sys_info->device_type,
                      sys_info->manufacturer,
                      sys_info->model,
-                     uart_count,
-                     modbus_count);
+                     get_node_count());
             mosquitto_publish(mqtt_client, NULL, config->topic_attributes,
                               strlen(attributes), attributes, config->qos, false);
             free(attributes);
@@ -567,6 +559,7 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
     }
 }
 
+
 /**
  * Check and reload config if updated
  */
@@ -620,6 +613,7 @@ int check_and_reload_config(void)
     return result;
 }
 
+
 /**
  * Request config from ThingsBoard
  */
@@ -666,7 +660,10 @@ int request_config_json_robust(void)
 }
 
 /**
- * Build telemetry payload with node data - UPDATED for separate UART and Modbus nodes
+ * Build telemetry payload with node data
+ */
+/**
+ * Build telemetry payload with node data
  */
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
@@ -688,78 +685,39 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
         snprintf(payload, payload_size, "{");
     }
 
-    // UPDATED: Add data from UART nodes
-    uart_nodes_config_t *uart_config = get_uart_nodes_config();
-    if (uart_config && uart_config->uart_nodes) {
-        for (int i = 0; i < uart_config->uart_count; i++)
-        {
-            node_config_t *node = &uart_config->uart_nodes[i];
-            if (!node || !node->mqtt_data || !node->detected)
-                continue;
-                
-            // Chỉ trylock node mutex thôi
-            if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0) {
-                if (node->mqtt_data->data)
+    // Add data from detected nodes - KHÔNG LOCK config_mutex nữa
+    for (int i = 0; i < get_node_count(); i++)
+    {
+        node_config_t *node = get_node_by_index(i);
+        if (!node || !node->mqtt_data || !node->detected)
+            continue;
+            
+        // Chỉ trylock node mutex thôi
+        if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0) {
+            if (node->mqtt_data->data)
+            {
+                raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
+                if (raw_data && raw_data->data && raw_data->length > 0)
                 {
-                    raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
-                    if (raw_data && raw_data->data && raw_data->length > 0)
+                    // Convert to hex string
+                    char *hex_str = malloc(raw_data->length * 2 + 1);
+                    if (hex_str)
                     {
-                        // Convert to hex string
-                        char *hex_str = malloc(raw_data->length * 2 + 1);
-                        if (hex_str)
+                        for (int j = 0; j < raw_data->length; j++)
                         {
-                            for (int j = 0; j < raw_data->length; j++)
-                            {
-                                sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
-                            }
-                            hex_str[raw_data->length * 2] = '\0';
-                            snprintf(temp_buffer, 1024, ",\"uart_node%d_data\":\"%s\",\"uart_node%d_type\":\"%s\"",
-                                   node->node_id, hex_str, node->node_id, node->type);
-                            strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-                            free(hex_str);
+                            sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
                         }
+                        hex_str[raw_data->length * 2] = '\0';
+                        snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
+                               node->node_id, hex_str, node->node_id, node->type);
+                        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+                        free(hex_str);
                     }
                 }
-                pthread_mutex_unlock(&node->mqtt_data->mutex);
             }
+            pthread_mutex_unlock(&node->mqtt_data->mutex);
         }
-    }
-
-    // UPDATED: Add data from Modbus nodes
-    modbus_nodes_config_t *modbus_config = get_modbus_nodes_config();
-    if (modbus_config && modbus_config->modbus_nodes) {
-        for (int i = 0; i < modbus_config->modbus_count; i++)
-        {
-            node_config_t *node = &modbus_config->modbus_nodes[i];
-            if (!node || !node->mqtt_data || !node->detected)
-                continue;
-                
-            // Chỉ trylock node mutex thôi
-            if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0) {
-                if (node->mqtt_data->data)
-                {
-                    raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
-                    if (raw_data && raw_data->data && raw_data->length > 0)
-                    {
-                        // Convert to hex string
-                        char *hex_str = malloc(raw_data->length * 2 + 1);
-                        if (hex_str)
-                        {
-                            for (int j = 0; j < raw_data->length; j++)
-                            {
-                                sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
-                            }
-                            hex_str[raw_data->length * 2] = '\0';
-                            snprintf(temp_buffer, 1024, ",\"modbus_node%d_data\":\"%s\",\"modbus_node%d_type\":\"%s\"",
-                                   node->node_id, hex_str, node->node_id, node->type);
-                            strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-                            free(hex_str);
-                        }
-                    }
-                }
-                pthread_mutex_unlock(&node->mqtt_data->mutex);
-            }
-        }
+        // Nếu trylock fail thì skip, đừng block
     }
 
     // Add system info
@@ -771,19 +729,14 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
 
     if (config->system_fields.include_node_count)
     {
-        uart_nodes_config_t *u_cfg = get_uart_nodes_config();
-        modbus_nodes_config_t *m_cfg = get_modbus_nodes_config();
-        
-        int uart_count = (u_cfg && u_cfg->uart_nodes) ? u_cfg->uart_count : 0;
-        int modbus_count = (m_cfg && m_cfg->modbus_nodes) ? m_cfg->modbus_count : 0;
-        
-        snprintf(temp_buffer, 1024, ",\"uart_nodes\":%d,\"modbus_nodes\":%d", uart_count, modbus_count);
+        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", get_node_count());
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
     }
 
     strncat(payload, "}", payload_size - strlen(payload) - 1);
     free(temp_buffer);
 }
+
 
 /**
  * Main MQTT thread function
@@ -895,18 +848,12 @@ void *mqtt_thread_func(void *arg)
             }
         }
 
-        // Send status update - UPDATED: separate node counts
+        // Send status update
         if (strlen(config->topic_status) > 0 && (current_time - last_status) >= 60)
         {
-            uart_nodes_config_t *u_cfg = get_uart_nodes_config();
-            modbus_nodes_config_t *m_cfg = get_modbus_nodes_config();
-            
-            int uart_count = (u_cfg && u_cfg->uart_nodes) ? u_cfg->uart_count : 0;
-            int modbus_count = (m_cfg && m_cfg->modbus_nodes) ? m_cfg->modbus_count : 0;
-            
             snprintf(status_payload, config->payload_buffer_size,
-                    "{\"status\":\"online\",\"timestamp\":%ld000,\"uart_nodes\":%d,\"modbus_nodes\":%d}",
-                    current_time, uart_count, modbus_count);
+                    "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
+                    current_time, get_node_count());
             mosquitto_publish(mqtt_client, NULL, config->topic_status,
                             strlen(status_payload), status_payload, config->qos, false);
             last_status = current_time;

@@ -12,13 +12,7 @@ typedef enum {
     COMM_TYPE_WEBSOCKET, // For WebSocket communication (not implemented yet)
     COMM_TYPE_TCP,      // For direct TCP communication (not implemented yet)
     COMM_TYPE_COUNT
-} server_communication_type_t;
-
-typedef enum {
-    CAN = 0,
-    UART,
-    MODBUS
-} node_communication_type_t;
+} communication_type_t;
 
 // Raw data structure for communication
 typedef struct {
@@ -65,27 +59,6 @@ typedef struct {
     int timeout_ms;
     int is_direct;             // 1 for direct actuator commands, 0 for server commands
 } menu_item_t;
-
-// Modbus supported function structure
-typedef struct {
-    char function_code[16];    // e.g., "0x01"
-    char description[64];       // e.g., "Read Coils"
-} modbus_function_t;
-
-// Modbus register area structure
-typedef struct {
-    char start_address[16];    // e.g., "0x0000"
-    int count;               // Number of registers
-    char description[64];    // Description of register area
-} modbus_register_area_t;
-
-// Modbus registers structure
-typedef struct {
-    modbus_register_area_t coils;
-    modbus_register_area_t holding_registers;
-    modbus_register_area_t input_registers;
-    modbus_register_area_t discrete_inputs;  // Optional for future use
-} modbus_registers_t;
 
 typedef struct {
     char firmware_version[32];
@@ -151,10 +124,13 @@ typedef struct {
     int node_id;
     char name[128];
     char type[64];
+    menu_item_t *menu_items;
+    int menu_count;
     char data_format[16];
     char reflash_script[512];
     int is_actuator;
     
+    // NEW: Node detection commands
     detection_cmd_t *detection_commands;
     int detection_count;
     int detected;              // 1 if node detected, 0 otherwise
@@ -165,27 +141,8 @@ typedef struct {
     shared_data_t *mqtt_data;
 } node_config_t;
 
-// Separate structs for uart and modbus nodes configuration
 typedef struct {
-    node_config_t *uart_nodes;
-    menu_item_t *menu_items;
-    int menu_count;
-    int uart_count;
-} uart_nodes_config_t;
-
-typedef struct {
-    node_config_t *modbus_nodes;
-    int modbus_address;        // Modbus slave address
-    int baudrate;             // Modbus baudrate
-    modbus_function_t *supported_functions;  // Array of supported functions
-    int function_count;       // Number of supported functions
-    modbus_registers_t registers;  // Register configuration
-    int modbus_count;
-} modbus_nodes_config_t;
-
-typedef struct {
-    uart_nodes_config_t *uart_nodes;
-    modbus_nodes_config_t *modbus_nodes;
+    node_config_t *nodes;
     int count;
     int capacity;
     
@@ -195,7 +152,8 @@ typedef struct {
     char default_device[256];
     int startup_clear_duration;
     // Communication type
-    server_communication_type_t server_communication_type;
+    communication_type_t communication_type;
+
     // System info
     system_info_t system_info;
     
@@ -215,10 +173,8 @@ typedef struct {
 
 // API functions
 int load_nodes_config(const char *config_file);
-uart_nodes_config_t* get_uart_node_by_id(int node_id);
-uart_nodes_config_t* get_uart_node_by_index(int index);
-modbus_nodes_config_t* get_modbus_nodes_config(void);
-modbus_nodes_config_t* get_modbus_node_by_id(int node_id);
+node_config_t* get_node_by_id(int node_id);
+node_config_t* get_node_by_index(int index);
 int get_node_count(void);
 menu_item_t* get_menu_item_by_cmd(node_config_t *node, int cmd);
 void cleanup_nodes_config(void);
@@ -248,10 +204,10 @@ int get_control_command(server_control_cmd_t *cmd);
 // Utility function
 uint32_t hex_string_to_int(const char *hex_str);
 
-//Server Communication type functions
-server_communication_type_t get_server_communication_type(void);
-void set_server_communication_type(server_communication_type_t type);
-const char* get_server_communication_type_name(server_communication_type_t type);
+//Communication type functions
+communication_type_t get_communication_type(void);
+void set_communication_type(communication_type_t type);
+const char* get_communication_type_name(communication_type_t type);
 
 // Mutex for config file:
 extern pthread_mutex_t config_mutex;
@@ -260,7 +216,6 @@ extern volatile int config_reloading;
 // Thread-safe functions
 int safe_get_node_count(void);
 int safe_reload_config(void);
-uart_nodes_config_t *safe_get_uart_node_by_index(int index);
-modbus_nodes_config_t *safe_get_modbus_node_by_index(int index);
+node_config_t *safe_get_node_by_index(int index);
 
 #endif

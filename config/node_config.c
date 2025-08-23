@@ -3,7 +3,6 @@
 
 // Global node registry
 static node_registry_t node_registry = {0};
-
 // Global config protection
 pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int config_reloading = 0;
@@ -110,7 +109,7 @@ static int parse_detection_commands(json_object *detection_array, node_config_t 
         if (json_object_object_get_ex(cmd_obj, "expected_response", &temp_obj))
         {
             safe_strncpy(cmd->expected_response, json_object_get_string(temp_obj),
-                        sizeof(cmd->expected_response));
+                         sizeof(cmd->expected_response));
         }
         if (json_object_object_get_ex(cmd_obj, "timeout_ms", &temp_obj))
         {
@@ -119,35 +118,32 @@ static int parse_detection_commands(json_object *detection_array, node_config_t 
         if (json_object_object_get_ex(cmd_obj, "description", &temp_obj))
         {
             safe_strncpy(cmd->description, json_object_get_string(temp_obj),
-                        sizeof(cmd->description));
+                         sizeof(cmd->description));
         }
     }
     return 0;
 }
 
 /**
- * Parse menu items for uart node
+ * Parse menu items for node
  */
-static int parse_menu_items(json_object *menu_array, uart_nodes_config_t *uart_cfg)
+static int parse_menu_items(json_object *menu_array, node_config_t *node)
 {
-    if (!menu_array || !uart_cfg)
+    if (!menu_array || !node)
         return -1;
     int array_len = json_object_array_length(menu_array);
     if (array_len <= 0)
         return 0;
-    
-    uart_cfg->menu_items = malloc(sizeof(menu_item_t) * array_len);
-    if (!uart_cfg->menu_items)
+    node->menu_items = malloc(sizeof(menu_item_t) * array_len);
+    if (!node->menu_items)
         return -1;
-    uart_cfg->menu_count = array_len;
-    
+    node->menu_count = array_len;
     for (int i = 0; i < array_len; i++)
     {
         json_object *item_obj = json_object_array_get_idx(menu_array, i);
-        menu_item_t *item = &uart_cfg->menu_items[i];
+        menu_item_t *item = &node->menu_items[i];
         json_object *temp_obj;
         memset(item, 0, sizeof(menu_item_t));
-        
         if (json_object_object_get_ex(item_obj, "cmd", &temp_obj))
         {
             item->cmd = json_object_get_int(temp_obj);
@@ -169,100 +165,6 @@ static int parse_menu_items(json_object *menu_array, uart_nodes_config_t *uart_c
             item->timeout_ms = json_object_get_int(temp_obj);
         }
     }
-    return 0;
-}
-
-/**
- *  Parse modbus supported functions from JSON
- */
-static int parse_modbus_functions(json_object *functions_array, modbus_nodes_config_t *modbus_cfg)
-{
-    if (!functions_array || !modbus_cfg) return -1;
-    
-    int array_len = json_object_array_length(functions_array);
-    if (array_len <= 0) return 0;
-    
-    modbus_cfg->supported_functions = malloc(sizeof(modbus_function_t) * array_len);
-    if (!modbus_cfg->supported_functions) return -1;
-    
-    modbus_cfg->function_count = array_len;
-    for (int i = 0; i < array_len; i++) {
-        json_object *func_obj = json_object_array_get_idx(functions_array, i);
-        modbus_function_t *func = &modbus_cfg->supported_functions[i];
-        json_object *temp_obj;
-        
-        memset(func, 0, sizeof(modbus_function_t));
-        
-        if (json_object_object_get_ex(func_obj, "function_code", &temp_obj)) {
-            safe_strncpy(func->function_code, json_object_get_string(temp_obj), 
-                        sizeof(func->function_code));
-        }
-        
-        if (json_object_object_get_ex(func_obj, "description", &temp_obj)) {
-            safe_strncpy(func->description, json_object_get_string(temp_obj), 
-                        sizeof(func->description));
-        }
-    }
-    
-    return 0;
-}
-
-/**
- *  Parse modbus register area from JSON
- */
-static int parse_register_area(json_object *area_obj, modbus_register_area_t *area)
-{
-    if (!area_obj || !area) return -1;
-    
-    json_object *temp_obj;
-    memset(area, 0, sizeof(modbus_register_area_t));
-    
-    if (json_object_object_get_ex(area_obj, "start_address", &temp_obj)) {
-        safe_strncpy(area->start_address, json_object_get_string(temp_obj), 
-                    sizeof(area->start_address));
-    }
-    
-    if (json_object_object_get_ex(area_obj, "count", &temp_obj)) {
-        area->count = json_object_get_int(temp_obj);
-    }
-    
-    if (json_object_object_get_ex(area_obj, "description", &temp_obj)) {
-        safe_strncpy(area->description, json_object_get_string(temp_obj), 
-                    sizeof(area->description));
-    }
-    
-    return 0;
-}
-
-/**
- *  Parse modbus registers from JSON
- */
-static int parse_modbus_registers(json_object *registers_obj, modbus_nodes_config_t *modbus_cfg)
-{
-    if (!registers_obj || !modbus_cfg) return -1;
-    
-    json_object *area_obj;
-    
-    // Parse coils
-    if (json_object_object_get_ex(registers_obj, "coils", &area_obj)) {
-        parse_register_area(area_obj, &modbus_cfg->registers.coils);
-    }
-    
-    // Parse holding registers
-    if (json_object_object_get_ex(registers_obj, "holding_registers", &area_obj)) {
-        parse_register_area(area_obj, &modbus_cfg->registers.holding_registers);
-    }
-    
-    // Parse input registers
-    if (json_object_object_get_ex(registers_obj, "input_registers", &area_obj)) {
-        parse_register_area(area_obj, &modbus_cfg->registers.input_registers);
-    }
-    
-    // Parse discrete inputs (optional)
-    if (json_object_object_get_ex(registers_obj, "discrete_inputs", &area_obj)) {
-        parse_register_area(area_obj, &modbus_cfg->registers.discrete_inputs);
-    }
-    
     return 0;
 }
 
@@ -300,113 +202,25 @@ static int parse_node_config(json_object *node_obj, node_config_t *node)
     {
         node->is_actuator = json_object_get_boolean(temp_obj);
     }
+
     // Parse detection commands
     json_object *detection_array;
     if (json_object_object_get_ex(node_obj, "detection_commands", &detection_array))
     {
         parse_detection_commands(detection_array, node);
     }
+
     // Parse menu items
     json_object *menu_array;
     if (json_object_object_get_ex(node_obj, "menu_items", &menu_array))
     {
         parse_menu_items(menu_array, node);
     }
+
     // Initialize runtime data
     node->detected = 0;
     node->last_detection = 0;
     node->mqtt_data = allocate_shared_data();
-    return 0;
-}
-
-/**
- *  Parse UART nodes array from JSON
- */
-static int parse_uart_nodes(json_object *root, uart_nodes_config_t *uart_cfg)
-{
-    if (!root || !uart_cfg) return -1;
-    
-    json_object *uart_array = NULL;
-    if (!json_object_object_get_ex(root, "uart_nodes", &uart_array)) return 0;
-    
-    int count = json_object_array_length(uart_array);
-    if (count <= 0) {
-        uart_cfg->uart_nodes = NULL;
-        uart_cfg->uart_count = 0;
-        return 0;
-    }
-    
-    uart_cfg->uart_nodes = malloc(sizeof(node_config_t) * count);
-    if (!uart_cfg->uart_nodes) return -1;
-    
-    uart_cfg->uart_count = 0;
-    for (int i = 0; i < count; i++) {
-        json_object *node_obj = json_object_array_get_idx(uart_array, i);
-        if (parse_node_config(node_obj, &uart_cfg->uart_nodes[i]) == 0) {
-            uart_cfg->uart_count++;
-        }
-    }
-    
-#ifdef DEBUG
-    printf("Loaded %d UART nodes\n", uart_cfg->uart_count);
-#endif
-    return 0;
-}
-
-/**
- *  Parse Modbus nodes array from JSON
- */
-static int parse_modbus_nodes(json_object *root, modbus_nodes_config_t *modbus_cfg)
-{
-    if (!root || !modbus_cfg) return -1;
-    
-    json_object *modbus_array = NULL;
-    if (!json_object_object_get_ex(root, "modbus_nodes", &modbus_array)) return 0;
-    
-    int count = json_object_array_length(modbus_array);
-    if (count <= 0) {
-        modbus_cfg->modbus_nodes = NULL;
-        modbus_cfg->modbus_count = 0;
-        return 0;
-    }
-    
-    modbus_cfg->modbus_nodes = malloc(sizeof(node_config_t) * count);
-    if (!modbus_cfg->modbus_nodes) return -1;
-    
-    modbus_cfg->modbus_count = 0;
-    for (int i = 0; i < count; i++) {
-        json_object *node_obj = json_object_array_get_idx(modbus_array, i);
-        if (parse_node_config(node_obj, &modbus_cfg->modbus_nodes[i]) == 0) {
-            
-            //  Parse modbus-specific fields for each node
-            json_object *temp_obj;
-            if (json_object_object_get_ex(node_obj, "modbus_address", &temp_obj)) {
-                modbus_cfg->modbus_address = json_object_get_int(temp_obj);
-            }
-            
-            if (json_object_object_get_ex(node_obj, "baudrate", &temp_obj)) {
-                modbus_cfg->baudrate = json_object_get_int(temp_obj);
-            }
-            
-            // Parse supported functions
-            json_object *functions_array;
-            if (json_object_object_get_ex(node_obj, "supported_functions", &functions_array)) {
-                parse_modbus_functions(functions_array, modbus_cfg);
-            }
-            
-            // Parse registers
-            json_object *registers_obj;
-            if (json_object_object_get_ex(node_obj, "registers", &registers_obj)) {
-                parse_modbus_registers(registers_obj, modbus_cfg);
-            }
-            
-            modbus_cfg->modbus_count++;
-        }
-    }
-    
-#ifdef DEBUG
-    printf("Loaded %d Modbus nodes\n", modbus_cfg->modbus_count);
-#endif
     return 0;
 }
 
@@ -429,17 +243,8 @@ int load_nodes_config(const char *config_file)
 
     // Initialize registry - ZERO OUT ALL MEMORY
     memset(&node_registry, 0, sizeof(node_registry));
-    node_registry.uart_nodes = malloc(sizeof(uart_nodes_config_t));
-    if (node_registry.uart_nodes) {
-        memset(node_registry.uart_nodes, 0, sizeof(uart_nodes_config_t));
-    }
-
-    node_registry.modbus_nodes = malloc(sizeof(modbus_nodes_config_t));
-    if (node_registry.modbus_nodes) {
-        memset(node_registry.modbus_nodes, 0, sizeof(modbus_nodes_config_t));
-    }
     // Initialize control queue
-    node_registry.server_communication_type = COMM_TYPE_MQTT;
+    node_registry.communication_type = COMM_TYPE_MQTT;
     node_registry.control_queue.head = 0;
     node_registry.control_queue.tail = 0;
     node_registry.control_queue.count = 0;
@@ -457,7 +262,7 @@ int load_nodes_config(const char *config_file)
         printf("Using ThingsBoard wrapper format\n");
 #endif
     }
-    else if (json_object_object_get_ex(root, "config", &config_obj))
+    if (json_object_object_get_ex(root, "config", &config_obj))
     {
         effective_root = config_obj;
 #ifdef DEBUG
@@ -477,7 +282,7 @@ int load_nodes_config(const char *config_file)
         if (json_object_object_get_ex(system_obj, "default_device", &temp_obj))
         {
             safe_strncpy(node_registry.default_device, json_object_get_string(temp_obj),
-                        sizeof(node_registry.default_device));
+                         sizeof(node_registry.default_device));
         }
         if (json_object_object_get_ex(system_obj, "startup_clear_duration", &temp_obj))
             node_registry.startup_clear_duration = json_object_get_int(temp_obj);
@@ -492,26 +297,26 @@ int load_nodes_config(const char *config_file)
         if (json_object_object_get_ex(system_info_obj, "firmware_version", &temp_obj))
         {
             safe_strncpy(node_registry.system_info.firmware_version,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.system_info.firmware_version));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.system_info.firmware_version));
         }
         if (json_object_object_get_ex(system_info_obj, "device_type", &temp_obj))
         {
             safe_strncpy(node_registry.system_info.device_type,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.system_info.device_type));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.system_info.device_type));
         }
         if (json_object_object_get_ex(system_info_obj, "manufacturer", &temp_obj))
         {
             safe_strncpy(node_registry.system_info.manufacturer,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.system_info.manufacturer));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.system_info.manufacturer));
         }
         if (json_object_object_get_ex(system_info_obj, "model", &temp_obj))
         {
             safe_strncpy(node_registry.system_info.model,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.system_info.model));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.system_info.model));
         }
     }
 
@@ -541,44 +346,47 @@ int load_nodes_config(const char *config_file)
             if (json_object_object_get_ex(timing_obj, "flush_interval_ms", &temp_obj))
                 node_registry.uart_config.flush_interval_ms = json_object_get_int(temp_obj);
         }
-
         json_object *support_baudrate;
         //add support baudrate here:
-        if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate)) {
-            int baudrate_array_len = json_object_array_length(support_baudrate);
-            if (baudrate_array_len > 0) {
-                node_registry.uart_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
-                if (node_registry.uart_config.supported_baudrates) {
-                    node_registry.uart_config.baudrate_count = 0;
-                    for (int i = 0; i < baudrate_array_len; i++) {
-                        json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
-                        json_object *rate_obj, *code_obj;
-                        if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
-                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
-                            baudrate_mapping_t *mapping = &node_registry.uart_config.supported_baudrates[node_registry.uart_config.baudrate_count];
-                            mapping->rate = json_object_get_int(rate_obj);
-                            safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
-                            node_registry.uart_config.baudrate_count++;
+    if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate)) {
+        int baudrate_array_len = json_object_array_length(support_baudrate);
+        if (baudrate_array_len > 0) {
+            node_registry.uart_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
+            if (node_registry.uart_config.supported_baudrates) {
+                node_registry.uart_config.baudrate_count = 0;
+                
+                for (int i = 0; i < baudrate_array_len; i++) {
+                    json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
+                    json_object *rate_obj, *code_obj;
+                    
+                    if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
+                        json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
+                        
+                        baudrate_mapping_t *mapping = &node_registry.uart_config.supported_baudrates[node_registry.uart_config.baudrate_count];
+                        mapping->rate = json_object_get_int(rate_obj);
+                        safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
+                        
+                        node_registry.uart_config.baudrate_count++;
+                        
 #ifdef DEBUG
-                            printf("Loaded baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
+                    printf("Loaded baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
 #endif
-                        }
                     }
-#ifdef DEBUG
-                    printf("Total supported baudrates loaded: %d\n", node_registry.uart_config.baudrate_count);
-#endif
-                } else {
-#ifdef DEBUG
-                    printf("Error: Failed to allocate memory for supported baudrates\n");
-#endif
                 }
+            
+#ifdef DEBUG
+            printf("Total supported baudrates loaded: %d\n", node_registry.uart_config.baudrate_count);
+#endif
+        } else {
+#ifdef DEBUG
+            printf("Error: Failed to allocate memory for supported baudrates\n");
+#endif
             }
-
-            if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
-                node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
         }
     }
-
+    if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
+        node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
+    }
     // Parse Modbus config
     json_object *modbus_obj;
     if (json_object_object_get_ex(effective_root, "modbus_config", &modbus_obj))
@@ -611,33 +419,39 @@ int load_nodes_config(const char *config_file)
                 node_registry.modbus_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
                 if (node_registry.modbus_config.supported_baudrates) {
                     node_registry.modbus_config.baudrate_count = 0;
+                    
                     for (int i = 0; i < baudrate_array_len; i++) {
                         json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
                         json_object *rate_obj, *code_obj;
+                        
                         if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
                             json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
+                            
                             baudrate_mapping_t *mapping = &node_registry.modbus_config.supported_baudrates[node_registry.modbus_config.baudrate_count];
                             mapping->rate = json_object_get_int(rate_obj);
                             safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
+                            
                             node_registry.modbus_config.baudrate_count++;
-#ifdef DEBUG
+                            
+    #ifdef DEBUG
                             printf("Loaded modbus baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
-#endif
+    #endif
                         }
                     }
-#ifdef DEBUG
+                    
+    #ifdef DEBUG
                     printf("Total modbus supported baudrates loaded: %d\n", node_registry.modbus_config.baudrate_count);
-#endif
+    #endif
                 } else {
-#ifdef DEBUG
+    #ifdef DEBUG
                     printf("Error: Failed to allocate memory for modbus supported baudrates\n");
-#endif
+    #endif
                 }
             }
-
-            if (json_object_object_get_ex(modbus_obj, "default_baudrate_fallback", &temp_obj))
-                node_registry.modbus_config.default_baudrate_fallback = json_object_get_int(temp_obj);
         }
+        
+        if (json_object_object_get_ex(modbus_obj, "default_baudrate_fallback", &temp_obj))
+            node_registry.modbus_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
 
     // Parse MQTT config - SAFE VERSION
@@ -648,51 +462,52 @@ int load_nodes_config(const char *config_file)
         if (json_object_object_get_ex(mqtt_obj, "broker_host", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.broker_host,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.broker_host));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.broker_host));
         }
         if (json_object_object_get_ex(mqtt_obj, "client_id", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.client_id,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.client_id));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.client_id));
         }
         if (json_object_object_get_ex(mqtt_obj, "username", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.username,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.username));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.username));
         }
         if (json_object_object_get_ex(mqtt_obj, "password", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.password,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.password));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.password));
         }
         if (json_object_object_get_ex(mqtt_obj, "topic_telemetry", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.topic_telemetry,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.topic_telemetry));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.topic_telemetry));
         }
         if (json_object_object_get_ex(mqtt_obj, "topic_attributes", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.topic_attributes,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.topic_attributes));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.topic_attributes));
         }
         if (json_object_object_get_ex(mqtt_obj, "topic_control", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.topic_control,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.topic_control));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.topic_control));
         }
         if (json_object_object_get_ex(mqtt_obj, "topic_status", &temp_obj))
         {
             safe_strncpy(node_registry.mqtt_config.topic_status,
-                        json_object_get_string(temp_obj),
-                        sizeof(node_registry.mqtt_config.topic_status));
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.mqtt_config.topic_status));
         }
+
         // Integer fields
         if (json_object_object_get_ex(mqtt_obj, "broker_port", &temp_obj))
             node_registry.mqtt_config.broker_port = json_object_get_int(temp_obj);
@@ -710,6 +525,7 @@ int load_nodes_config(const char *config_file)
             node_registry.mqtt_config.payload_buffer_size = json_object_get_int(temp_obj);
         if (json_object_object_get_ex(mqtt_obj, "attributes_buffer_size", &temp_obj))
             node_registry.mqtt_config.attributes_buffer_size = json_object_get_int(temp_obj);
+
         // Parse system fields
         json_object *system_fields_obj;
         if (json_object_object_get_ex(mqtt_obj, "system_fields", &system_fields_obj))
@@ -717,8 +533,8 @@ int load_nodes_config(const char *config_file)
             if (json_object_object_get_ex(system_fields_obj, "data_source", &temp_obj))
             {
                 safe_strncpy(node_registry.mqtt_config.system_fields.data_source,
-                            json_object_get_string(temp_obj),
-                            sizeof(node_registry.mqtt_config.system_fields.data_source));
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.mqtt_config.system_fields.data_source));
             }
             if (json_object_object_get_ex(system_fields_obj, "include_timestamp", &temp_obj))
                 node_registry.mqtt_config.system_fields.include_timestamp = json_object_get_boolean(temp_obj);
@@ -764,17 +580,9 @@ int load_nodes_config(const char *config_file)
             }
         }
     }
-
-    //  Parse UART and Modbus nodes separately
-    parse_uart_nodes(effective_root, node_registry.uart_nodes);
-    parse_modbus_nodes(effective_root, node_registry.modbus_nodes);
-
     json_object_put(root);
 #ifdef DEBUG
-    printf("Configuration loaded: %d nodes, %d UART nodes, %d Modbus nodes\n", 
-           node_registry.count, 
-           node_registry.uart_nodes ? node_registry.uart_nodes->uart_count : 0,
-           node_registry.modbus_nodes ? node_registry.modbus_nodes->modbus_count : 0);
+    printf("Configuration loaded: %d nodes\n", node_registry.count);
     // DEBUG: Validate broker_host after parsing
     printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n",
            node_registry.mqtt_config.broker_host,
@@ -850,7 +658,6 @@ int add_control_command(int node_id, int cmd_id, const char *params)
         pthread_mutex_unlock(&node_registry.control_queue.mutex);
         return -1;
     }
-
     server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
     cmd->node_id = node_id;
     cmd->cmd_id = cmd_id;
@@ -881,7 +688,6 @@ int get_control_command(server_control_cmd_t *cmd)
         pthread_mutex_unlock(&node_registry.control_queue.mutex);
         return -1;
     }
-
     *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
     node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
     node_registry.control_queue.count--;
@@ -889,20 +695,22 @@ int get_control_command(server_control_cmd_t *cmd)
     return 0;
 }
 
-server_communication_type_t get_server_communication_type(void)
+
+
+communication_type_t get_communication_type(void)
 {
-    return node_registry.server_communication_type;
+    return node_registry.communication_type;
 }
 
-void set_server_communication_type(server_communication_type_t type)
+void set_communication_type(communication_type_t type)
 {
     if (type >= 0 && type < COMM_TYPE_COUNT)
     {
-        node_registry.server_communication_type = type;
+        node_registry.communication_type = type;
     }
 }
 
-const char *get_server_communication_type_name(server_communication_type_t type)
+const char *get_communication_type_name(communication_type_t type)
 {
     switch (type)
     {
@@ -924,39 +732,6 @@ const char *get_server_communication_type_name(server_communication_type_t type)
  */
 void cleanup_nodes_config(void)
 {
-    //  Cleanup UART nodes
-    if (node_registry.uart_nodes) {
-        if (node_registry.uart_nodes->uart_nodes) {
-            for (int i = 0; i < node_registry.uart_nodes->uart_count; i++) {
-                node_config_t *node = &node_registry.uart_nodes->uart_nodes[i];
-                if (node->menu_items) free(node->menu_items);
-                if (node->detection_commands) free(node->detection_commands);
-                if (node->mqtt_data) free_shared_data(node->mqtt_data);
-            }
-            free(node_registry.uart_nodes->uart_nodes);
-        }
-        if (node_registry.uart_nodes->menu_items) free(node_registry.uart_nodes->menu_items);
-        free(node_registry.uart_nodes);
-        node_registry.uart_nodes = NULL;
-    }
-    
-    //  Cleanup Modbus nodes  
-    if (node_registry.modbus_nodes) {
-        if (node_registry.modbus_nodes->modbus_nodes) {
-            for (int i = 0; i < node_registry.modbus_nodes->modbus_count; i++) {
-                node_config_t *node = &node_registry.modbus_nodes->modbus_nodes[i];
-                if (node->menu_items) free(node->menu_items);
-                if (node->detection_commands) free(node->detection_commands);
-                if (node->mqtt_data) free_shared_data(node->mqtt_data);
-            }
-            free(node_registry.modbus_nodes->modbus_nodes);
-        }
-        if (node_registry.modbus_nodes->supported_functions) 
-            free(node_registry.modbus_nodes->supported_functions);
-        free(node_registry.modbus_nodes);
-        node_registry.modbus_nodes = NULL;
-    }
-
     for (int i = 0; i < node_registry.count; i++)
     {
         node_config_t *node = &node_registry.nodes[i];
@@ -991,37 +766,56 @@ void cleanup_nodes_config(void)
 
 // Thread-safe config reload
 int safe_reload_config(void) {
-#ifdef DEBUG
+    #ifdef DEBUG
     printf("Starting safe config reload\n");
-#endif
+    #endif
+    
     // Signal all threads that config is reloading
     pthread_mutex_lock(&config_mutex);
     config_reloading = 1;
+    
     // Give other threads time to finish current operations
     pthread_mutex_unlock(&config_mutex);
     usleep(200 * 1000); // 200ms
+    
     // Now acquire lock for full reload
     pthread_mutex_lock(&config_mutex);
-#ifdef DEBUG
+    
+    #ifdef DEBUG
     printf("Cleaning up old config\n");
-#endif
+    #endif
     cleanup_nodes_config();
-#ifdef DEBUG
+    
+    #ifdef DEBUG
     printf("Loading new config\n");
-#endif
+    #endif
     int load_result = 0;
     if (load_nodes_config("../config.json") == 0) {
         load_result = 1;
     } else if (load_nodes_config("../nodes_config.json") == 0) {
         load_result = 1;
     }
-
+    
     config_reloading = 0;
     pthread_mutex_unlock(&config_mutex);
-#ifdef DEBUG
+    
+    #ifdef DEBUG
     printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
-#endif
+    #endif
+    
     return load_result ? 0 : -1;
+}
+
+// Safe node access functions
+node_config_t *safe_get_node_by_index(int index) {
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading) {
+        pthread_mutex_unlock(&config_mutex);
+        return NULL;
+    }
+    node_config_t *node = get_node_by_index(index);
+    pthread_mutex_unlock(&config_mutex);
+    return node;
 }
 
 int safe_get_node_count(void) {
@@ -1030,94 +824,7 @@ int safe_get_node_count(void) {
         pthread_mutex_unlock(&config_mutex);
         return 0;
     }
-
     int count = get_node_count();
     pthread_mutex_unlock(&config_mutex);
     return count;
-}
-
-/**
- *  Get UART nodes config
- */
-uart_nodes_config_t *get_uart_nodes_config(void) {
-    return node_registry.uart_nodes;
-}
-
-/**
- *  Get UART node by ID
- */
-uart_nodes_config_t* get_uart_node_by_id(int node_id) {
-    if (!node_registry.uart_nodes || !node_registry.uart_nodes->uart_nodes) 
-        return NULL;
-    
-    for (int i = 0; i < node_registry.uart_nodes->uart_count; i++) {
-        if (node_registry.uart_nodes->uart_nodes[i].node_id == node_id) {
-            return &node_registry.uart_nodes->uart_nodes[i];
-        }
-    }
-    return NULL;
-}
-
-/**
- *  Get UART node by index
- */
-uart_nodes_config_t* get_uart_node_by_index(int index) {
-    if (!node_registry.uart_nodes || !node_registry.uart_nodes->uart_nodes) 
-        return NULL;
-    if (index < 0 || index >= node_registry.uart_nodes->uart_count) 
-        return NULL;
-    
-    return &node_registry.uart_nodes->uart_nodes[index];
-}
-
-/**
- *  Get Modbus nodes config
- */
-modbus_nodes_config_t *get_modbus_nodes_config(void) {
-    return node_registry.modbus_nodes;
-}
-
-/**
- *  Get Modbus node by ID
- */
-modbus_nodes_config_t* get_modbus_node_by_id(int node_id) {
-    if (!node_registry.modbus_nodes || !node_registry.modbus_nodes->modbus_nodes) 
-        return NULL;
-    
-    for (int i = 0; i < node_registry.modbus_nodes->modbus_count; i++) {
-        if (node_registry.modbus_nodes->modbus_nodes[i].node_id == node_id) {
-            return &node_registry.modbus_nodes->modbus_nodes[i];
-        }
-    }
-    return NULL;
-}
-
-/**
- *  Thread-safe get UART node by index
- */
-uart_nodes_config_t *safe_get_uart_node_by_index(int index) {
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
-        pthread_mutex_unlock(&config_mutex);
-        return NULL;
-    }
-
-    uart_nodes_config_t *node = get_uart_node_by_index(index);
-    pthread_mutex_unlock(&config_mutex);
-    return node;
-}
-
-/**
- *  Thread-safe get Modbus node by index
- */
-modbus_nodes_config_t *safe_get_modbus_node_by_index(int index) {
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
-        pthread_mutex_unlock(&config_mutex);
-        return NULL;
-    }
-
-    modbus_nodes_config_t *node = get_modbus_node_by_index(index);
-    pthread_mutex_unlock(&config_mutex);
-    return node;
 }
