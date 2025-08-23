@@ -60,6 +60,27 @@ typedef struct {
     int is_direct;             // 1 for direct actuator commands, 0 for server commands
 } menu_item_t;
 
+// Modbus supported function structure
+typedef struct {
+    char function_code[16];    // e.g., "0x01"
+    char description;     // e.g., "Read Coils"
+} modbus_function_t;
+
+// Modbus register area structure
+typedef struct {
+    char start_address[16];    // e.g., "0x0000"
+    int count;               // Number of registers
+    char description;    // Description of register area
+} modbus_register_area_t;
+
+// Modbus registers structure
+typedef struct {
+    modbus_register_area_t coils;
+    modbus_register_area_t holding_registers;
+    modbus_register_area_t input_registers;
+    modbus_register_area_t discrete_inputs;  // Optional for future use
+} modbus_registers_t;
+
 typedef struct {
     char firmware_version[32];
     char device_type[64];
@@ -124,13 +145,10 @@ typedef struct {
     int node_id;
     char name[128];
     char type[64];
-    menu_item_t *menu_items;
-    int menu_count;
     char data_format[16];
     char reflash_script[512];
     int is_actuator;
     
-    // NEW: Node detection commands
     detection_cmd_t *detection_commands;
     int detection_count;
     int detected;              // 1 if node detected, 0 otherwise
@@ -141,8 +159,27 @@ typedef struct {
     shared_data_t *mqtt_data;
 } node_config_t;
 
+// Separate structs for uart and modbus nodes configuration
 typedef struct {
-    node_config_t *nodes;
+    node_config_t *uart_nodes;
+    menu_item_t *menu_items;
+    int menu_count;
+    int uart_count;
+} uart_nodes_config_t;
+
+typedef struct {
+    node_config_t *modbus_nodes;
+    int modbus_address;        // Modbus slave address
+    int baudrate;             // Modbus baudrate
+    modbus_function_t *supported_functions;  // Array of supported functions
+    int function_count;       // Number of supported functions
+    modbus_registers_t registers;  // Register configuration
+    int modbus_count;
+} modbus_nodes_config_t;
+
+typedef struct {
+    uart_node_config_t *uart_nodes;
+    modbus_node_config_t *modbus_nodes;
     int count;
     int capacity;
     
