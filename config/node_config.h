@@ -196,7 +196,6 @@ typedef struct {
     int startup_clear_duration;
     // Communication type
     server_communication_type_t server_communication_type;
-    node_communication_type_t node_communication_type;
     // System info
     system_info_t system_info;
     
@@ -253,10 +252,6 @@ uint32_t hex_string_to_int(const char *hex_str);
 server_communication_type_t get_server_communication_type(void);
 void set_server_communication_type(server_communication_type_t type);
 const char* get_server_communication_type_name(server_communication_type_t type);
-
-node_communication_type_t get_node_communication_type(void);
-void set_node_communication_type(node_communication_type_t type);
-const char* get_node_communication_type_name(node_communication_type_t type);
 
 // Mutex for config file:
 extern pthread_mutex_t config_mutex;

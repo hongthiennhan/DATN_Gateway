@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "uart_handler.h"
-#include "node_config.h"  // Include này để có node_config_t và menu_item_t types
+#include "node_config.h" // Include này để có node_config_t và menu_item_t types
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
 
 typedef struct shared_data_s {
@@ -32,8 +32,10 @@ extern int shared_node_type;
 
 // ========== Function prototypes ==========
 void *uart_thread_func(void *arg);
+void *modbus_thread_func(void *arg);  // NEW: Modbus thread function
 void *ui_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
+
 void process_uart_data(unsigned char *data, uint16_t data_len);
 void safe_process_uart_data(unsigned char *data, uint16_t data_len);
 
