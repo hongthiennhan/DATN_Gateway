@@ -6,7 +6,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
 
+
 # Find required libraries
+
+
 pkg_check_modules(NCURSES REQUIRED ncurses)
 pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
 
@@ -32,7 +35,11 @@ set(INCLUDE_DIRS
     Inc
 )
 
+
 # Source files for main application (UPDATED: Added node_config.c)
+
+# Source files
+
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
@@ -52,6 +59,7 @@ target_include_directories(main_app PRIVATE
     ${MOSQUITTO_INCLUDE_DIRS}
     ${JSON_C_INCLUDE_DIRS}
 )
+
 
 # Link libraries (UPDATED: Added JSON_C libraries)
 target_link_libraries(main_app 
@@ -77,3 +85,6 @@ configure_file(${CMAKE_SOURCE_DIR}/nodes_config.json ${CMAKE_BINARY_DIR}/nodes_c
 # NEW: Install targets
 install(TARGETS main_app DESTINATION bin)
 install(FILES nodes_config.json DESTINATION bin)
+
+target_link_libraries(main_app ${NCURSES_LIBRARIES} ${MOSQUITTO_LIBRARIES})
+

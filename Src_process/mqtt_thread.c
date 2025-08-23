@@ -5,6 +5,12 @@
 #define CONFIG_DIR "/home/trieunguyen/Linux_worldspace/DATN_Gateway_Task1"
 #define CONFIG_FILE "config.json"
 #define MAX_JSON_SIZE (1024 * 1024) // 1MB limit
+// MQTT Configuration for ThingsBoard
+#define MQTT_BROKER_HOST "demo.thingsboard.io"
+#define MQTT_BROKER_PORT 1883
+#define MQTT_CLIENT_ID "gateway_device"
+#define MQTT_USERNAME "t7gsjo00dj3ca0ocyb1f"
+#define MQTT_PASSWORD ""
 
 // ===== Config update tracking =====
 static volatile int config_updated = 0;
@@ -15,6 +21,8 @@ static pthread_mutex_t config_update_mutex = PTHREAD_MUTEX_INITIALIZER;
  * This function scans all network interfaces to find a valid public IP
  * @return: Static string containing the local IP address
  */
+
+// Function to get local IP address (unchanged)
 char* get_local_ip() {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
@@ -247,6 +255,131 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
  * @param timeout_ms: Maximum time to wait in milliseconds
  * @return: 1 if data received within timeout, 0 if timeout occurred
  */
+
+// UPDATED: Raw data structures instead of parsed data
+shared_data_t mqtt_data_n1 = {
+    .data = NULL,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
+shared_data_t mqtt_data_n2 = {
+    .data = NULL,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
+// === RAW DATA Helper Functions ===
+
+// UPDATED: Store raw data for Node1 (12 bytes)
+void set_mqtt_data_n1_raw(unsigned char *raw_bytes, int length) {
+    pthread_mutex_lock(&mqtt_data_n1.mutex);
+    
+    // Free old data if exists
+    if (mqtt_data_n1.data) {
+        raw_data_t *old_data = (raw_data_t*)mqtt_data_n1.data;
+        if (old_data->data) free(old_data->data);
+        free(old_data);
+    }
+    
+    // Store new raw data
+    raw_data_t *new_data = malloc(sizeof(raw_data_t));
+    if (new_data) {
+        new_data->length = length;
+        new_data->data = malloc(length);
+        if (new_data->data) {
+            memcpy(new_data->data, raw_bytes, length);
+            mqtt_data_n1.data = new_data;
+            pthread_cond_signal(&mqtt_data_n1.cond);
+        } else {
+            free(new_data);
+        }
+    }
+    
+    pthread_mutex_unlock(&mqtt_data_n1.mutex);
+}
+
+// UPDATED: Store raw data for Node2 (2 bytes)
+void set_mqtt_data_n2_raw(unsigned char *raw_bytes, int length) {
+    pthread_mutex_lock(&mqtt_data_n2.mutex);
+    
+    // Free old data if exists
+    if (mqtt_data_n2.data) {
+        raw_data_t *old_data = (raw_data_t*)mqtt_data_n2.data;
+        if (old_data->data) free(old_data->data);
+        free(old_data);
+    }
+    
+    // Store new raw data
+    raw_data_t *new_data = malloc(sizeof(raw_data_t));
+    if (new_data) {
+        new_data->length = length;
+        new_data->data = malloc(length);
+        if (new_data->data) {
+            memcpy(new_data->data, raw_bytes, length);
+            mqtt_data_n2.data = new_data;
+            pthread_cond_signal(&mqtt_data_n2.cond);
+        } else {
+            free(new_data);
+        }
+    }
+    
+    pthread_mutex_unlock(&mqtt_data_n2.mutex);
+}
+
+// UPDATED: Get raw data for Node1
+raw_data_t get_mqtt_data_n1_raw() {
+    pthread_mutex_lock(&mqtt_data_n1.mutex);
+    raw_data_t result = {NULL, 0};
+    
+    if (mqtt_data_n1.data) {
+        raw_data_t *stored_data = (raw_data_t*)mqtt_data_n1.data;
+        if (stored_data->data && stored_data->length > 0) {
+            result.length = stored_data->length;
+            result.data = malloc(result.length);
+            if (result.data) {
+                memcpy(result.data, stored_data->data, result.length);
+            }
+        }
+    }
+    
+    pthread_mutex_unlock(&mqtt_data_n1.mutex);
+    return result;
+}
+
+// UPDATED: Get raw data for Node2
+raw_data_t get_mqtt_data_n2_raw() {
+    pthread_mutex_lock(&mqtt_data_n2.mutex);
+    raw_data_t result = {NULL, 0};
+    
+    if (mqtt_data_n2.data) {
+        raw_data_t *stored_data = (raw_data_t*)mqtt_data_n2.data;
+        if (stored_data->data && stored_data->length > 0) {
+            result.length = stored_data->length;
+            result.data = malloc(result.length);
+            if (result.data) {
+                memcpy(result.data, stored_data->data, result.length);
+            }
+        }
+    }
+    
+    pthread_mutex_unlock(&mqtt_data_n2.mutex);
+    return result;
+}
+
+// FIXED: Raw data to hex string conversion (fix from previous conversation)
+void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int hex_str_size) {
+    if (hex_str_size < 1) return;
+    
+    int pos = 0;
+    for (int i = 0; i < length && pos + 3 <= hex_str_size; i++) {
+        sprintf(hex_str + pos, "%02X", data[i]);
+        pos += 2;
+    }
+    hex_str[pos] = '\0';
+}
+
+
 int wait_for_mqtt_data_by_node(int node_type, int timeout_ms) {
     node_config_t *node = get_node_by_id(node_type);
     if (!node || !node->mqtt_data) return 0;
@@ -291,7 +424,7 @@ void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int 
     hex_str[pos] = '\0'; // Null terminate the string
 }
 
-/**
+ /**
  * MQTT connection established callback
  * Called automatically when MQTT connection is successfully established
  * Publishes device attributes to inform server about gateway capabilities
@@ -299,6 +432,8 @@ void raw_data_to_hex_string(unsigned char *data, int length, char *hex_str, int 
  * @param userdata: User-defined data (unused)
  * @param result: Connection result code (0 = success)
  */
+
+// MQTT Callbacks (unchanged)
 void on_mqtt_connect(struct mosquitto *mosq, void *userdata, int result) {
     if (result == 0) {
         mqtt_connected = 1; // Set connection flag
@@ -361,7 +496,7 @@ void on_mqtt_publish(struct mosquitto *mosq, void *userdata, int mid) {
     // Message published successfully
 }
 
-// ===== ROBUST MQTT MESSAGE HANDLER WITH COMPREHENSIVE ERROR HANDLING =====
+ // ===== ROBUST MQTT MESSAGE HANDLER WITH COMPREHENSIVE ERROR HANDLING =====
 /**
  * MQTT message received callback with production-grade error handling
  * Handles incoming JSON configuration files from ThingsBoard with full validation
@@ -377,7 +512,12 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
     }
 
     printf("Received MQTT message on topic: %s\n", message->topic);
-    
+}
+
+// ====== MQTT THREAD (RAW DATA MODE) ======
+void *mqtt_thread_func(void *arg) {
+    mosquitto_lib_init();
+
     // Handle JSON config from ThingsBoard attributes response
     if (strstr(message->topic, "v1/devices/me/attributes/response/")) {
         printf("Processing ThingsBoard attributes response...\n");
@@ -636,6 +776,13 @@ void *mqtt_thread_func(void *arg) {
 
     // Attempt to connect to MQTT broker
     int rc = mosquitto_connect(mqtt_client, config->broker_host, config->broker_port, 60);
+
+    mosquitto_username_pw_set(mqtt_client, MQTT_USERNAME, MQTT_PASSWORD);
+    mosquitto_connect_callback_set(mqtt_client, on_mqtt_connect);
+    mosquitto_disconnect_callback_set(mqtt_client, on_mqtt_disconnect);
+    mosquitto_publish_callback_set(mqtt_client, on_mqtt_publish);
+    
+    int rc = mosquitto_connect(mqtt_client, MQTT_BROKER_HOST, MQTT_BROKER_PORT, 60);
     if (rc != MOSQ_ERR_SUCCESS) {
         mosquitto_destroy(mqtt_client);
         mosquitto_lib_cleanup();
@@ -692,6 +839,8 @@ void *mqtt_thread_func(void *arg) {
     }
 
     // Initialize telemetry publishing variables
+    // Main MQTT loop - UPDATED for raw data
+
     time_t last_publish = 0;
     char *telemetry_payload = malloc(config->payload_buffer_size);
     if (!telemetry_payload) {
@@ -704,7 +853,7 @@ void *mqtt_thread_func(void *arg) {
     // Main loop - publishes telemetry data at configured intervals
     while (1) {
         time_t current_time = time(NULL);
-        
+
         //  Periodically check for config updates
         check_and_reload_config();
         
@@ -712,6 +861,46 @@ void *mqtt_thread_func(void *arg) {
         if (current_time - last_publish >= config->publish_interval) {
             // Build JSON payload with current node data
             build_telemetry_payload(telemetry_payload, config->payload_buffer_size, current_time);
+
+        // Send raw telemetry data every second
+        if (current_time - last_publish >= 1) {
+            char telemetry_payload[2048];
+            
+            // Get raw data from both nodes
+            raw_data_t node1_raw = get_mqtt_data_n1_raw();
+            raw_data_t node2_raw = get_mqtt_data_n2_raw();
+            
+            // Convert raw data to hex strings
+            char node1_hex[256] = "";
+            char node2_hex[64] = "";
+            
+            if (node1_raw.data && node1_raw.length > 0) {
+                raw_data_to_hex_string(node1_raw.data, node1_raw.length, node1_hex, sizeof(node1_hex));
+            }
+            
+            if (node2_raw.data && node2_raw.length > 0) {
+                raw_data_to_hex_string(node2_raw.data, node2_raw.length, node2_hex, sizeof(node2_hex));
+            }
+            
+            // UPDATED: ThingsBoard raw data format
+            snprintf(telemetry_payload, sizeof(telemetry_payload),
+                "{"
+                "\"timestamp\":%ld000,"
+                "\"node1_raw_data\":\"%s\","
+                "\"node1_data_length\":%d,"
+                "\"node2_raw_data\":\"%s\","
+                "\"node2_data_length\":%d,"
+                "\"gateway_ip\":\"%s\","
+                "\"data_source\":\"gateway_device\""
+                "}", 
+                current_time, 
+                node1_hex, node1_raw.length,
+                node2_hex, node2_raw.length,
+                get_local_ip());
+
+            rc = mosquitto_publish(mqtt_client, NULL, MQTT_TOPIC_TELEMETRY,
+                                 strlen(telemetry_payload), telemetry_payload, MQTT_QOS, false);
+
             
             // Publish telemetry data to ThingsBoard
             rc = mosquitto_publish(mqtt_client, NULL, config->topic_telemetry,
@@ -720,6 +909,10 @@ void *mqtt_thread_func(void *arg) {
             if (rc == MOSQ_ERR_SUCCESS) {
                 last_publish = current_time;
             }
+            
+            // Clean up allocated memory
+            if (node1_raw.data) free(node1_raw.data);
+            if (node2_raw.data) free(node2_raw.data);
         }
 
         // Handle disconnection - attempt to reconnect
@@ -738,4 +931,5 @@ void *mqtt_thread_func(void *arg) {
     mosquitto_destroy(mqtt_client);
     mosquitto_lib_cleanup();
     return NULL;
+    }
 }

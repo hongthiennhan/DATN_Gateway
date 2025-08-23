@@ -15,6 +15,12 @@ typedef struct {
     int t1, t2, t3;
 } node1_data_t;
 
+// ========== ADDED: Raw Data Structure ==========
+typedef struct {
+    unsigned char *data;
+    int length;
+} raw_data_t;
+
 // ========== External declarations for shared state ==========
 extern volatile uint8_t is_busy;
 extern pthread_mutex_t command_mutex;

@@ -6,6 +6,24 @@
 // Remove hard-coded CONFIG_FILE - now get from config
 
 extern int uart_fd;
+typedef enum {
+    CMD_DIRECTION_1  = 0xA1,
+    CMD_DIRECTION_2  = 0xA2,
+    CMD_DIRECTION_3  = 0xA3,
+    CMD_SYS_ON       = 0xA4,
+    CMD_SYS_OFF      = 0xA5,
+    CMD_SEND_STATUS  = 0xA6,
+    CMD_STOP_SYSTEM  = 0xA7,
+    CMD_INIT         = 0xFF
+} Command;
+
+typedef enum {
+    CMD2_LED_ON          = 0xA1,
+    CMD2_LED_OFF         = 0xA2,
+    CMD2_READ_SINGLE     = 0xA3
+} Command_2;
+
+extern int uart_fd;
 extern sem_t *uart_sem;
 
 void Uart_Init(speed_t baudrate, char *device);

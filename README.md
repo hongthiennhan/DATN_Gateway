@@ -17,6 +17,9 @@ stateDiagram-v2
     Cleanup --> [*]: Program exit
 ```
 
+
+
+
 ### UI (Controller / Configarator) Thread State Machine
 ```mermaid
 stateDiagram-v2
@@ -57,6 +60,7 @@ stateDiagram-v2
     
     note right of MainLoop
         Key Features:
+
         - Auto-read pauses during BUSY state
         - Auto-read pauses during WAITING_RESPONSE state
         - Timer compensation after busy/wait periods
@@ -64,6 +68,15 @@ stateDiagram-v2
         - Config-driven node selection and menus
         - Thread-safe state tracking with transitions
     end note
+
+        - Auto-read triggers every 1 second when idle
+        - Non-blocking input with 100ms timeout
+        - Dynamic menu for Node1/Node2 commands
+        - Real-time status updates from UART thread
+        - Thread-safe communication via command_data
+        - Busy flag prevents command overlap
+    end note 
+
 ```
 
 ### Communication Thread State Machine

@@ -48,6 +48,9 @@ int main(void) {
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
     char *device = strdup(get_default_device()); // Make a copy since it might be modified
+    atexit(cleanup_on_exit);  // Register cleanup function to be called on exit
+    uint32_t baudrate = 115200;
+    char *device = "/dev/ttyUSB0";
     int opt, option_index = 0;
 
     // Initialize command_data with a pointer to an int
@@ -58,6 +61,8 @@ int main(void) {
     }
 
     *(int*)command_data.data = -1; // Initialize to -1
+
+    *(int*)command_data.data = -1;  // Initialize to -1
 
     load_config(&baudrate, &device);
     Uart_Init(map_to_speed(baudrate), device);
