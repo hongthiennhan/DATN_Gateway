@@ -215,8 +215,8 @@ typedef struct {
 
 // API functions
 int load_nodes_config(const char *config_file);
-uart_node_config_t* get_uart_node_by_id(int node_id);
-uart_node_config_t* get_uart_node_by_index(int index);
+uart_nodes_config_t* get_uart_node_by_id(int node_id);
+uart_nodes_config_t* get_uart_node_by_index(int index);
 modbus_nodes_config_t* get_modbus_nodes_config(void);
 modbus_nodes_config_t* get_modbus_node_by_id(int node_id);
 int get_node_count(void);
@@ -260,7 +260,7 @@ extern volatile int config_reloading;
 // Thread-safe functions
 int safe_get_node_count(void);
 int safe_reload_config(void);
-uart_node_config_t *safe_get_uart_node_by_index(int index);
-modbus_node_config_t *safe_get_modbus_node_by_index(int index);
+uart_nodes_config_t *safe_get_uart_node_by_index(int index);
+modbus_nodes_config_t *safe_get_modbus_node_by_index(int index);
 
 #endif
