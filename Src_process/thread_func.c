@@ -175,6 +175,15 @@ void *uart_thread_func(void *arg) {
     return NULL;
 }
 
+void *modbus_thread_func(void *arg) {
+    // Placeholder for Modbus thread functionality
+    while (1) {
+        // Implement Modbus communication handling here
+        usleep(500 * 1000); // Sleep 500ms
+    }
+    return NULL;
+}
+
 /**
  * Assign received data to appropriate node
  */

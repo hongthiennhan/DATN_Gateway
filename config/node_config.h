@@ -60,7 +60,7 @@ typedef struct {
 typedef struct {
     int cmd;
     char label[64];
-    char hex_value[64];
+    char hex_value[256];
     int timeout_ms;
     int is_direct;             // 1 for direct actuator commands, 0 for server commands
 } menu_item_t;
@@ -127,6 +127,7 @@ typedef struct {
 
 typedef struct {
     int node_id;
+    char address[8];
     char name[64];
     char com_type[64];
     menu_item_t *menu_items;

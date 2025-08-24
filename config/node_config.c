@@ -172,6 +172,10 @@ static int parse_node_config(json_object *node_obj, node_config_t *node)
     {
         safe_strncpy(node->com_type, json_object_get_string(temp_obj), sizeof(node->com_type));
     }
+    if (json_object_object_get_ex(node_obj, "address", &temp_obj))
+    {
+        safe_strncpy(node->address, json_object_get_string(temp_obj), sizeof(node->address));
+    }
     if (json_object_object_get_ex(node_obj, "data_format", &temp_obj))
     {
         safe_strncpy(node->data_format, json_object_get_string(temp_obj), sizeof(node->data_format));

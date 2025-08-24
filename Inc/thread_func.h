@@ -33,6 +33,7 @@ extern int shared_node_type;
 // ========== Function prototypes ==========
 void *uart_thread_func(void *arg);
 void *ui_thread_func(void *arg);
+void *modbus_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
 void process_uart_data(unsigned char *data, uint16_t data_len);
 void safe_process_uart_data(unsigned char *data, uint16_t data_len);
