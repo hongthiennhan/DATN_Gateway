@@ -38,7 +38,6 @@ void process_uart_data(unsigned char *data, uint16_t data_len);
 void safe_process_uart_data(unsigned char *data, uint16_t data_len);
 
 // Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
-void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent);
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp);
 

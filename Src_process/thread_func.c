@@ -44,7 +44,7 @@ void *uart_thread_func(void *arg) {
             if (!config_reloading) {
                 for (int i = 0; i < get_node_count(); i++) {
                     node_config_t *node = get_node_by_index(i);
-                    if (node && node->detection_commands && node->detection_count > 0) {
+                    if (node && node->detection_commands && node->detection_count > 0 && strncmp(node->com_type, "UART", 4) == 0) {
                         #ifdef DEBUG
                         printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
                                node->node_id, node->name, node->detection_commands[0].command, node->detection_commands[0].expected_response);
@@ -52,12 +52,7 @@ void *uart_thread_func(void *arg) {
                         
                         // Send detection command from JSON
                         UART_Write_Command(node->detection_commands[0].command);
-                        // uint16_t bytes_written = write(uart_fd, &node->detection_commands[0].command, 1);
-                        // if (bytes_written < 1) {
-                        //     #ifdef DEBUG
-                        //     printf("Failed to write detection command for node %d\n", node->node_id);
-                        //     #endif
-                        // }
+
                         // Read response with timeout from JSON
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
@@ -202,45 +197,6 @@ void safe_process_uart_data(unsigned char *data, uint16_t data_len) {
         }
     }
     pthread_mutex_unlock(&config_mutex);
-}
-
-/**
- * Process UART response from node (legacy function, still used by server commands)
- */
-void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, uint16_t resp_len, int silent) {
-    if (silent) {
-        // Only update MQTT data, no UI update
-        update_mqtt_data_from_response(node, resp, resp_len);
-        return;
-    }
-    
-    pthread_mutex_lock(&command_mutex);
-    
-    if (resp && resp_len > 0) {
-        snprintf(status_response, sizeof(status_response),
-                 "Node %s: Command %d executed", node->name, cmd);
-        
-        // Format response for display
-        char hex_str[256] = {0};
-        int max_display = (resp_len > 50) ? 50 : resp_len;
-        
-        for (int i = 0; i < max_display; i++) {
-            sprintf(hex_str + strlen(hex_str), "%02X ", resp[i]);
-        }
-        
-        snprintf((char*)receive_data, sizeof(receive_data), "Data[%d bytes]: %s%s",
-                 resp_len, hex_str, (resp_len > 50) ? "..." : "");
-        status_color = 2;
-        
-        update_mqtt_data_from_response(node, resp, resp_len);
-    } else {
-        snprintf(status_response, sizeof(status_response),
-                 "Node %s: Command %d - no response", node->name, cmd);
-        snprintf((char*)receive_data, sizeof(receive_data), "No data received");
-        status_color = 3;
-    }
-    
-    pthread_mutex_unlock(&command_mutex);
 }
 
 /**
