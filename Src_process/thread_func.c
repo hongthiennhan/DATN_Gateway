@@ -293,7 +293,8 @@ void *ui_thread_func(void *arg) {
         const char *menu_options[] = {
             "View System Status",
             "View Communication Config", 
-            "Select Communication Type",  // NEW
+            "Select Communication Type",
+            "Select Node Communication Type",
             "Reload Configuration",
             "View Node Configuration",
             "Exit"
@@ -475,6 +476,9 @@ void *ui_thread_func(void *arg) {
                         refresh();
                         usleep(500 * 1000); // Wait for 500ms to show message
                         key_check = getch();
+                        while (key_check == ERR) {
+                            key_check = getch(); // Wait for any key
+                        }
                         break;
                         
                     case 4: // View Node Configuration - UPDATED with last data time
@@ -510,8 +514,54 @@ void *ui_thread_func(void *arg) {
                             key_check = getch(); // Wait for any key
                         }
                         break;
-                        
-                    case 5: // Exit
+                    case 5: // Select Node Communication Type
+                        clear();
+                        mvprintw(1, 0, "=== Select Node Communication Type ===");
+                        // Display available communication types
+                        const char *node_comm_types[] = {
+                            "UART",
+                            "Modbus (Coming soon)",
+                            "CAN (Coming soon)"
+                        };
+                        int node_comm_highlight = 0;
+                        int node_comm_selecting = 1;
+
+                        while (node_comm_selecting) {
+                            for (int i = 0; i < sizeof(node_comm_types) / sizeof(node_comm_types[0]); i++) {
+                                if (i == node_comm_highlight) {
+                                    attron(COLOR_PAIR(1));
+                                }
+                                mvprintw(5 + i, 2, "%d. %s", i + 1, node_comm_types[i]);
+                                if (i == node_comm_highlight) {
+                                    attroff(COLOR_PAIR(1));
+                                }
+                            }
+
+                            mvprintw(5 + sizeof(node_comm_types) / sizeof(node_comm_types[0]) + 2, 0, "Use UP/DOWN to select, ENTER to confirm, ESC to cancel");
+                            refresh();
+
+                            int node_comm_key = getch();
+                            switch (node_comm_key) {
+                                case KEY_UP:
+                                    node_comm_highlight = (node_comm_highlight == 0) ? sizeof(node_comm_types) / sizeof(node_comm_types[0]) - 1 : node_comm_highlight - 1;
+                                    break;
+                                case KEY_DOWN:
+                                    node_comm_highlight = (node_comm_highlight == sizeof(node_comm_types) / sizeof(node_comm_types[0]) - 1) ? 0 : node_comm_highlight + 1;
+                                    break;
+                                case 10: // ENTER
+                                    mvprintw(5 + sizeof(node_comm_types) / sizeof(node_comm_types[0]) + 4, 0, "Node communication type changed to: %s",
+                                             node_comm_types[node_comm_highlight]);
+                                    refresh();
+                                    sleep(1);
+                                    node_comm_selecting = 0;
+                                    break;
+                                case 27: // ESC
+                                    node_comm_selecting = 0;
+                                    break;
+                            }
+                        }
+                        break;
+                    case 6: // Exit
                         endwin();
                         exit(0);
                         break;
