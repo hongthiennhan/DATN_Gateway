@@ -14,6 +14,23 @@ shared_data_t command_data = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
 };
+thread_pause_t uart_pause = {
+    .is_paused = false, 
+    .mutex = PTHREAD_MUTEX_INITIALIZER, 
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
+thread_pause_t modbus_pause = {
+    .is_paused = true,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
+thread_pause_t mqtt_pause = {
+    .is_paused = false,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
 
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg) {
@@ -641,4 +658,19 @@ size_t hex_string_to_bytes(const char *hex_str, uint8_t *output, size_t max_byte
     free(str_copy);
     // Return number of bytes successfully parsed
     return byte_count;
+}
+
+// Pause thread function
+void pause_thread(thread_pause_t *pause_ctrl) {
+    pthread_mutex_lock(&pause_ctrl->mutex);
+    pause_ctrl->is_paused = true;
+    pthread_mutex_unlock(&pause_ctrl->mutex);
+}
+
+// Resume thread function
+void resume_thread(thread_pause_t *pause_ctrl) {
+    pthread_mutex_lock(&pause_ctrl->mutex);
+    pause_ctrl->is_paused = false;
+    pthread_cond_signal(&pause_ctrl->cond);
+    pthread_mutex_unlock(&pause_ctrl->mutex);
 }
