@@ -294,9 +294,9 @@ void *ui_thread_func(void *arg) {
             "View System Status",
             "View Communication Config", 
             "Select Communication Type",
-            "Select Node Communication Type",
             "Reload Configuration",
             "View Node Configuration",
+            "Select Node Communication Type",
             "Exit"
         };
         
