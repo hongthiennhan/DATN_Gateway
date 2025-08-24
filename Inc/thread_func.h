@@ -42,4 +42,8 @@ void process_uart_response(node_config_t *node, int cmd, unsigned char *resp, ui
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp);
 
+// Utility function
+uint8_t hex_string_to_uint8(const char *hex_str);
+size_t hex_string_to_bytes(const char *hex_str, uint8_t *output, size_t max_bytes);
+
 #endif // THREAD_FUNC_H

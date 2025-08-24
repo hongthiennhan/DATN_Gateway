@@ -54,7 +54,7 @@ typedef struct {
 typedef struct {
     int cmd;
     char label[64];
-    char hex_value[16];
+    char hex_value[64];
     int timeout_ms;
     int is_direct;             // 1 for direct actuator commands, 0 for server commands
 } menu_item_t;
@@ -121,12 +121,12 @@ typedef struct {
 
 typedef struct {
     int node_id;
-    char name[128];
+    char name[64];
     char com_type[64];
     menu_item_t *menu_items;
     int menu_count;
     char data_format[16];
-    char reflash_script[512];
+    char reflash_script[256];
     int is_actuator;
     
     // NEW: Node detection commands
@@ -199,9 +199,6 @@ mqtt_config_t* get_mqtt_config(void);
 // Control queue functions
 int add_control_command(int node_id, int cmd_id, const char *params);
 int get_control_command(server_control_cmd_t *cmd);
-
-// Utility function
-uint32_t hex_string_to_int(const char *hex_str);
 
 //Communication type functions
 communication_type_t get_communication_type(void);

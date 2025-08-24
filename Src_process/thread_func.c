@@ -164,9 +164,9 @@ void *uart_thread_func(void *arg) {
                                control_cmd.node_id, control_cmd.cmd_id);
                         #endif
                         
-                        uint32_t uart_cmd = hex_string_to_int(menu_item->hex_value);
+                        uint8_t uart_cmd = hex_string_to_uint8(menu_item->hex_value);
                         if (uart_cmd != 0) {
-                            UART_Write_Command((uint8_t)uart_cmd);
+                            UART_Write_Command(uart_cmd);
                         }
                     }
                 }
@@ -568,4 +568,62 @@ void *ui_thread_func(void *arg) {
     
     endwin();
     return NULL;
+}
+
+// Convert hex string to integer
+uint8_t hex_string_to_uint8(const char *hex_str)
+{
+    if (!hex_str)
+        return 0;
+    
+    if (strncmp(hex_str, "0x", 2) == 0 || strncmp(hex_str, "0X", 2) == 0)
+    {
+        hex_str += 2;
+    }
+    
+    unsigned long result = strtoul(hex_str, NULL, 16);
+
+    // Limit in range from 0x00 to 0xFF
+    if (result > 0xFF)
+        result = 0xFF;
+        
+    return (uint8_t)result;
+}
+
+// Convert hex string to byte array
+size_t hex_string_to_bytes(const char *hex_str, uint8_t *output, size_t max_bytes)
+{
+    // Check for null pointers and invalid buffer size
+    if (!hex_str || !output || max_bytes == 0)
+        return 0;
+    
+    size_t byte_count = 0;
+    // Create a copy of input string to avoid modifying the original
+    char *str_copy = strdup(hex_str);
+    // Get first token separated by space
+    char *token = strtok(str_copy, " ");
+    
+    // Process each hex token until no more tokens or buffer is full
+    while (token != NULL && byte_count < max_bytes)
+    {
+        // Skip "0x" or "0X" prefix if present
+        if (strncmp(token, "0x", 2) == 0 || strncmp(token, "0X", 2) == 0)
+            token += 2;
+        
+        // Convert hex token to unsigned long, then to byte
+        unsigned long value = strtoul(token, NULL, 16);
+        // Only store if value is within byte range (0-255)
+        if (value <= 0xFF)
+        {
+            output[byte_count++] = (uint8_t)value;
+        }
+        
+        // Get next token
+        token = strtok(NULL, " ");
+    }
+    
+    // Free the allocated memory for string copy
+    free(str_copy);
+    // Return number of bytes successfully parsed
+    return byte_count;
 }

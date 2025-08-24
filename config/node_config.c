@@ -30,20 +30,6 @@ static void safe_strncpy(char *dest, const char *src, size_t dest_size)
 }
 
 /**
- * Convert hex string to integer
- */
-uint32_t hex_string_to_int(const char *hex_str)
-{
-    if (!hex_str)
-        return 0;
-    if (strncmp(hex_str, "0x", 2) == 0 || strncmp(hex_str, "0X", 2) == 0)
-    {
-        hex_str += 2;
-    }
-    return (uint32_t)strtoul(hex_str, NULL, 16);
-}
-
-/**
  * Allocate shared data structure
  */
 static shared_data_t *allocate_shared_data(void)
