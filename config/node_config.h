@@ -6,6 +6,12 @@
 #define MAX_MENU_ITEMS 20
 #define MAX_DETECTION_COMMANDS 10
 
+// Config download settings
+#define MAX_JSON_SIZE (1024 * 1024)
+#define CONFIG_DIR ".."
+#define CONFIG_FILE "config.json"
+#define FALLBACK_CONFIG_FILE "nodes_config.json"
+
 typedef enum {
     COMM_TYPE_MQTT = 0,
     COMM_TYPE_HTTP,     // For HTTP communication (not implemented yet)

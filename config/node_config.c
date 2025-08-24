@@ -772,12 +772,14 @@ int safe_reload_config(void) {
     printf("Loading new config\n");
     #endif
     int load_result = 0;
-    if (load_nodes_config("../config.json") == 0) {
+    char config_path[64];
+    snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
+    char backup_path[64];
+    snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
+    if (load_nodes_config(config_path) == 0) {
         load_result = 1;
-        printf("Config reloaded from ../config.json\n");
-    } else if (load_nodes_config("../nodes_config.json") == 0) {
+    } else if (load_nodes_config(backup_path) == 0) {
         load_result = 1;
-        printf("Config reloaded from ../nodes_config.json\n");
     }
     
     config_reloading = 0;

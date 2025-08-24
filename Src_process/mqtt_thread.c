@@ -1,10 +1,5 @@
 #include "thread_func.h"
 
-// Config download settings
-#define CONFIG_DIR "/home/trieunguyen/Linux_worldspace/DATN_Gateway"
-#define CONFIG_FILE "config.json"
-#define MAX_JSON_SIZE (1024 * 1024)
-
 // Config update tracking
 static volatile int config_updated = 0;
 static pthread_mutex_t config_update_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -167,7 +162,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     {
         return -1;
     }
-    char current_path[512], new_path[512], backup_path[512];
+    char current_path[64], new_path[64], backup_path[64];
     snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
     snprintf(new_path,    sizeof(new_path),    "%s/%s.new",  dir, filename);
     snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
@@ -584,7 +579,7 @@ int check_and_reload_config(void)
     
     cleanup_nodes_config();
     
-    char config_path[512];
+    char config_path[64];
     snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
     
     int result = 0;
@@ -601,9 +596,10 @@ int check_and_reload_config(void)
         fprintf(stderr, "Failed to reload config, using fallback\n");
 #endif
         // Try fallback configs
-        if (load_nodes_config("../config.json") != 0)
+        if (load_nodes_config(config_path) != 0)
         {
-            load_nodes_config("nodes_config.json");
+            snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
+            load_nodes_config(config_path);
         }
     }
     
