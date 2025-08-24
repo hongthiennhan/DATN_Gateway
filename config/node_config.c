@@ -777,6 +777,7 @@ int safe_reload_config(void) {
         printf("Config reloaded from ../config.json\n");
     } else if (load_nodes_config("../nodes_config.json") == 0) {
         load_result = 1;
+        printf("Config reloaded from ../nodes_config.json\n");
     }
     
     config_reloading = 0;
