@@ -43,6 +43,11 @@ void *uart_thread_func(void *arg) {
     time_t last_11_second_detection = 0;  // Chỉ cần timer cho 11 giây detection
     
     while (1) {
+        pthread_mutex_lock(&uart_pause.mutex);
+        while (uart_pause.is_paused) {
+            pthread_cond_wait(&uart_pause.cond, &uart_pause.mutex);  // Sleep and wait for signal
+        }
+        pthread_mutex_unlock(&uart_pause.mutex);
         // Skip processing during config reload
         if (config_reloading) {
             usleep(1000 * 1000); // Wait 100ms during reload
@@ -195,7 +200,11 @@ void *uart_thread_func(void *arg) {
 void *modbus_thread_func(void *arg) {
     // Placeholder for Modbus thread functionality
     while (1) {
-        // Implement Modbus communication handling here
+        pthread_mutex_lock(&modbus_pause.mutex);
+        while (modbus_pause.is_paused) {
+            pthread_cond_wait(&modbus_pause.cond, &modbus_pause.mutex);  // Sleep and wait for signal
+        }
+        pthread_mutex_unlock(&modbus_pause.mutex);
         usleep(500 * 1000); // Sleep 500ms
     }
     return NULL;
