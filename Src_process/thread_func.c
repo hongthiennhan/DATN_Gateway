@@ -450,7 +450,7 @@ void *ui_thread_func(void *arg) {
                         refresh();
                         
                         int load_result = safe_reload_config();
-                        
+                        usleep(500 * 1000); // Small delay
                         if (load_result == 0) {
                             attron(COLOR_PAIR(2));
                             mvprintw(3, 0, "Configuration reloaded successfully!");
