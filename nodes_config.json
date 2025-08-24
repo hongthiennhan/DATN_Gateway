@@ -46,31 +46,8 @@
     },
     {
       "id": 3,
-      "name": "Node3 - Device 3",
-      "com_type": "UART",
-      "is_actuator": 0,
-
-      "detection_commands": [
-        {
-          "command": 3,
-          "expected_response": "NEW_DEVICE_OK",
-          "timeout_ms": 100,
-          "description": "New device identification"
-        }
-      ],
-
-      "menu_items": [
-        { "cmd": 1, "label": "New Command 1", "hex_value": "0xA7", "timeout_ms": 0 },
-        { "cmd": 2, "label": "New Command 2", "hex_value": "0xA8", "timeout_ms": 0 }
-      ],
-
-      "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    },
-    {
-      "id": 4,
-      "name": "Node4 - Sensor Board 2",
-      "com_type": "UART",
+      "name": "Node3 - Sensor Board 2",
+      "com_type": "Modbus",
       "is_actuator": 0,
 
       "detection_commands": [
@@ -91,9 +68,9 @@
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
     {
-      "id": 5,
-      "name": "Node5 - Sensor Board 3",
-      "com_type": "UART",
+      "id": 4,
+      "name": "Node4 - Sensor Board 3",
+      "com_type": "Modbus",
       "is_actuator": 0,
 
       "detection_commands": [
@@ -106,8 +83,8 @@
       ],
 
       "menu_items": [
-        { "cmd": 1, "label": "LED On",  "uart_cmd": "CMD2_LED_ON",  "hex_value": "0xA7", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "uart_cmd": "CMD2_LED_OFF", "hex_value": "0xA8", "timeout_ms": 0 }
+        { "cmd": 1, "label": "LED On",  "hex_value": "0xA7", "timeout_ms": 0 },
+        { "cmd": 2, "label": "LED Off", "hex_value": "0xA8", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",
