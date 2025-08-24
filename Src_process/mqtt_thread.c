@@ -709,7 +709,7 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
                         }
                         hex_str[raw_data->length * 2] = '\0';
                         snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
-                               node->node_id, hex_str, node->node_id, node->type);
+                               node->node_id, hex_str, node->node_id, node->com_type);
                         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
                         free(hex_str);
                     }

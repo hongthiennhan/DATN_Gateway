@@ -152,10 +152,6 @@ static int parse_menu_items(json_object *menu_array, node_config_t *node)
         {
             safe_strncpy(item->label, json_object_get_string(temp_obj), sizeof(item->label));
         }
-        if (json_object_object_get_ex(item_obj, "uart_cmd", &temp_obj))
-        {
-            safe_strncpy(item->uart_cmd, json_object_get_string(temp_obj), sizeof(item->uart_cmd));
-        }
         if (json_object_object_get_ex(item_obj, "hex_value", &temp_obj))
         {
             safe_strncpy(item->hex_value, json_object_get_string(temp_obj), sizeof(item->hex_value));
@@ -186,9 +182,9 @@ static int parse_node_config(json_object *node_obj, node_config_t *node)
     {
         safe_strncpy(node->name, json_object_get_string(temp_obj), sizeof(node->name));
     }
-    if (json_object_object_get_ex(node_obj, "type", &temp_obj))
+    if (json_object_object_get_ex(node_obj, "com_type", &temp_obj))
     {
-        safe_strncpy(node->type, json_object_get_string(temp_obj), sizeof(node->type));
+        safe_strncpy(node->com_type, json_object_get_string(temp_obj), sizeof(node->com_type));
     }
     if (json_object_object_get_ex(node_obj, "data_format", &temp_obj))
     {

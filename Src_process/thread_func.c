@@ -522,7 +522,7 @@ void *ui_thread_func(void *arg) {
                                 if (node) {
                                     attron(node->detected ? COLOR_PAIR(2) : COLOR_PAIR(3));
                                     mvprintw(3 + i * 2, 0, "Node %d: %s (%s) - %s",
-                                             node->node_id, node->name, node->type,
+                                             node->node_id, node->name, node->com_type,
                                              node->detected ? "DETECTED" : "NOT DETECTED");
                                     
                                     // ADD: Show last data received time
