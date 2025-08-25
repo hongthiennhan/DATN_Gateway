@@ -224,7 +224,7 @@ void *modbus_thread_func(void *arg) {
                         data_frame.frame_length = hex_string_to_bytes(node->detection_commands[0].command, command_buffer, 256);
                         data_frame.frame_length += 3;
                         data_frame.address = hex_string_to_uint8(node->address);
-                        data_frame.function.custom = command_buffer[0];
+                        data_frame.function.write = command_buffer[0];
                         data_frame.data = command_buffer + 1;
                         #ifdef DEBUG
                         printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
@@ -277,7 +277,7 @@ void *modbus_thread_func(void *arg) {
                         uint8_t length = hex_string_to_bytes(menu_item->hex_value, command_buffer, 64);
                         data_frame.frame_length = length + 3;
                         data_frame.address = hex_string_to_uint8(node->address);
-                        data_frame.function.custom = command_buffer[0];
+                        data_frame.function.write = command_buffer[0];
                         data_frame.data = command_buffer + 1;
                         if (length > 0) {
                             Modbus_Write_Frame(&data_frame);
