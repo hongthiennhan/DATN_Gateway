@@ -226,10 +226,6 @@ void *modbus_thread_func(void *arg) {
                         data_frame.address = hex_string_to_uint8(node->address);
                         data_frame.function.write = command_buffer[0];
                         data_frame.data = command_buffer + 1;
-                        #ifdef DEBUG
-                        printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
-                               node->node_id, node->name, detect_cmd, node->detection_commands[0].expected_response);
-                        #endif
                         
                         // Send detection command from JSON
                         Modbus_Write_Frame(&data_frame);

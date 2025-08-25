@@ -86,21 +86,21 @@ int main(void)
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
     // Start UART thread (no arg needed, it will wait for shared_node_type)
-    // pthread_t uart_thread;
-    // pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
+    pthread_t uart_thread;
+    pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
     // Start UI thread
     pthread_t ui_thread;
     pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
-    pthread_t modbus_thread;
-    pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
+    // pthread_t modbus_thread;
+    // pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
 
     // Main waits for threads to finish (does nothing else)
     // pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
-    pthread_join(modbus_thread, NULL);
+    // pthread_join(modbus_thread, NULL);
 
     // Cleanup the device string
     free(device);
