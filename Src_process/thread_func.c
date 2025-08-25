@@ -214,6 +214,9 @@ void *modbus_thread_func(void *arg) {
             usleep(1000 * 1000); // Wait 1000ms during reload
             continue;
         }
+// #ifdef DEBUG
+        printf("Modbus thread is running\n");
+// #endif
         time_t current_time = time(NULL);
         if ((current_time - get_data_time) >= 1) {
              pthread_mutex_lock(&config_mutex);
