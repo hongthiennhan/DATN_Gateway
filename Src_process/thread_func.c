@@ -228,7 +228,11 @@ void *modbus_thread_func(void *arg) {
                         data_frame.function.write = command_buffer[0];
                         data_frame.data = command_buffer + 1;
 // #ifdef DEBUG
-                        printf("Modbus check node %d, command %s\n", node->node_id, node->detection_commands[0].command);
+                        printf("Modbus check node %d\n", node->node_id);
+                        for (int j = 0; j < data_frame.frame_length - 3; j++) {
+                            printf("%02X ", command_buffer[j]);
+                        }
+                        printf("\n");
 // #endif
                         // Send detection command from JSON
                         Modbus_Write_Frame(&data_frame);
