@@ -214,9 +214,7 @@ void *modbus_thread_func(void *arg) {
             usleep(1000 * 1000); // Wait 1000ms during reload
             continue;
         }
-// #ifdef DEBUG
-        printf("Modbus thread is running\n");
-// #endif
+
         time_t current_time = time(NULL);
         if ((current_time - get_data_time) >= 1) {
              pthread_mutex_lock(&config_mutex);
@@ -229,7 +227,9 @@ void *modbus_thread_func(void *arg) {
                         data_frame.address = hex_string_to_uint8(node->address);
                         data_frame.function.write = command_buffer[0];
                         data_frame.data = command_buffer + 1;
-                        
+#ifdef DEBUG
+                        printf("Modbus thread is running\n");
+#endif
                         // Send detection command from JSON
                         Modbus_Write_Frame(&data_frame);
                         
