@@ -100,7 +100,6 @@ int main(void)
 
     // Main waits for threads to finish (does nothing else)
     pthread_join(uart_thread, NULL);
-    resume_thread(&uart_pause);
     pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
     pthread_join(modbus_thread, NULL);

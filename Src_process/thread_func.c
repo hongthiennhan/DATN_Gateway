@@ -362,7 +362,7 @@ void *ui_thread_func(void *arg) {
     noecho();
     curs_set(0);
     timeout(get_ui_refresh_delay()); // timeout for refresh
-
+    pause_thread(&uart_pause); // Start paused
     int highlight = 0;
     int key_check;
     while (1) {
