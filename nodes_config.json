@@ -2,13 +2,13 @@
   "nodes": [
     {
       "id": 1,
-      "name": "Node1 - Sensor Board 1",
+      "name": "Node1 - Sensor Board",
       "com_type": "UART",
       "address": "0x01",
       "is_actuator": 0,
       "detection_commands": [
         {
-          "command": "0x01",
+          "command": "0x03",
           "expected_response": "SENSOR_BOARD_OK",
           "timeout_ms": 100,
           "description": "Sensor board identification"
