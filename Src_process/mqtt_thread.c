@@ -826,11 +826,9 @@ void *mqtt_thread_func(void *arg)
     }
 
     while (1) {
-        pthread_mutex_lock(&mqtt_pause.mutex);
         while (mqtt_pause.is_paused) {
             pthread_cond_wait(&mqtt_pause.cond, &mqtt_pause.mutex);  // Sleep and wait for signal
         }
-        pthread_mutex_unlock(&mqtt_pause.mutex);
 
         time_t current_time = time(NULL);
         

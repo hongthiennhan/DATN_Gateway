@@ -44,11 +44,9 @@ void *uart_thread_func(void *arg) {
     char response_str[128] = {0};
     char hex_str[256] = {0};
     while (1) {
-        pthread_mutex_lock(&uart_pause.mutex);
         while (uart_pause.is_paused) {
             pthread_cond_wait(&uart_pause.cond, &uart_pause.mutex);  // Sleep and wait for signal
         }
-        pthread_mutex_unlock(&uart_pause.mutex);
         // Skip processing during config reload
         if (config_reloading) {
             usleep(1000 * 1000); // Wait 100ms during reload
@@ -205,11 +203,9 @@ void *modbus_thread_func(void *arg) {
     uint8_t command_buffer[64] = {0};
     char response_str[128] = {0};
     while (1) {
-        pthread_mutex_lock(&modbus_pause.mutex);
         while (modbus_pause.is_paused) {
             pthread_cond_wait(&modbus_pause.cond, &modbus_pause.mutex);  // Sleep and wait for signal
         }
-        pthread_mutex_unlock(&modbus_pause.mutex);
         if (config_reloading) {
             usleep(1000 * 1000); // Wait 1000ms during reload
             continue;
