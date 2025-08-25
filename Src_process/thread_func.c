@@ -41,7 +41,8 @@ void *uart_thread_func(void *arg) {
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
     time_t last_11_second_detection = 0;  // Chỉ cần timer cho 11 giây detection
-    
+    char response_str[128] = {0};
+    char hex_str[256] = {0};
     while (1) {
         pthread_mutex_lock(&uart_pause.mutex);
         while (uart_pause.is_paused) {
@@ -84,8 +85,7 @@ void *uart_thread_func(void *arg) {
                         
                         if (data_buffer && data_len > 0) {
                             // Convert response to string for comparison
-                            char response_str[512] = {0};
-                            int max_len = (data_len < 511) ? data_len : 511;
+                            int max_len = (data_len < 127) ? data_len : 127;
                             memcpy(response_str, data_buffer, max_len);
                             response_str[max_len] = '\0';
                             
@@ -108,7 +108,7 @@ void *uart_thread_func(void *arg) {
                                        node->node_id, response_str);
                                 #endif
                             }
-                            
+                            memset(response_str, 0, sizeof(response_str));
                             free(data_buffer);
                             data_buffer = NULL;
                         } else {
@@ -153,7 +153,6 @@ void *uart_thread_func(void *arg) {
                 status_color = 2;
                 
                 // Format for display
-                char hex_str[256] = {0};
                 int max_display = (data_len > 50) ? 50 : data_len;
                 for (int i = 0; i < max_display; i++) {
                     sprintf(hex_str + strlen(hex_str), "%02X ", data_buffer[i]);
@@ -161,7 +160,7 @@ void *uart_thread_func(void *arg) {
                 snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
                          data_len, hex_str, (data_len > 50) ? "..." : "");
                 pthread_mutex_unlock(&command_mutex);
-                
+                memset(hex_str, 0, sizeof(hex_str));
                 free(data_buffer);
                 data_buffer = NULL;
                 data_len = 0;
@@ -199,14 +198,93 @@ void *uart_thread_func(void *arg) {
 }
 
 void *modbus_thread_func(void *arg) {
-    // Placeholder for Modbus thread functionality
+    uint16_t data_len = 0;
+    data_frame_t *receive_frame = NULL;
+    data_frame_t data_frame;
+    time_t get_data_time = 0;
+    char command_buffer[64] = {0};
+    char response_str[128] = {0};
     while (1) {
         pthread_mutex_lock(&modbus_pause.mutex);
         while (modbus_pause.is_paused) {
             pthread_cond_wait(&modbus_pause.cond, &modbus_pause.mutex);  // Sleep and wait for signal
         }
         pthread_mutex_unlock(&modbus_pause.mutex);
-        usleep(500 * 1000); // Sleep 500ms
+        if (config_reloading) {
+            usleep(1000 * 1000); // Wait 1000ms during reload
+            continue;
+        }
+        time_t current_time = time(NULL);
+        if ((current_time - get_data_time) >= 1) {
+             pthread_mutex_lock(&config_mutex);
+            if (!config_reloading) {
+                for (int i = 0; i < get_node_count(); i++) {
+                    node_config_t *node = get_node_by_index(i);
+                    if (node && node->detection_commands && node->detection_count > 0 && strncmp(node->com_type, "Modbus", 6) == 0) {
+                        data_frame.frame_length = hex_string_to_bytes(node->detection_commands[0].command, command_buffer, 256);
+                        data_frame.frame_length += 3;
+                        data_frame.address = hex_string_to_uint8(node->address);
+                        data_frame.function = command_buffer[0];
+                        data_frame.data = command_buffer + 1;
+                        #ifdef DEBUG
+                        printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
+                               node->node_id, node->name, detect_cmd, node->detection_commands[0].expected_response);
+                        #endif
+                        
+                        // Send detection command from JSON
+                        Modbus_Write_Frame(&data_frame);
+                        
+                        // Read response with timeout from JSON
+                        int timeout_ms = node->detection_commands[0].timeout_ms;
+                        if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
+
+                        receive_frame = Modbus_Read_Response(timeout_ms);
+
+                        if (receive_frame) {
+                            // Process the received frame
+                            update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
+                            free(receive_frame);
+                        }
+                        // Small delay between nodes
+                        usleep(100 * 1000); // 100ms
+                    }
+                }
+            }
+            pthread_mutex_unlock(&config_mutex);
+            
+            get_data_time = current_time;
+            
+            #ifdef DEBUG
+            printf("11-second detection cycle completed\n");
+            #endif
+        }
+        // =======================================================
+        
+        // Handle server control commands
+        server_control_cmd_t control_cmd;
+        if (get_control_command(&control_cmd) == 0) {
+            pthread_mutex_lock(&config_mutex);
+            if (!config_reloading) {
+                node_config_t *node = get_node_by_id(control_cmd.node_id);
+                if (node && strncmp(node->com_type, "Modbus", 6) == 0) {
+                    menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
+                    if (menu_item) {
+                        #ifdef DEBUG
+                        printf("Executing server command: node=%d, cmd=%d\n",
+                               control_cmd.node_id, control_cmd.cmd_id);
+                        #endif
+                        
+                        uint8_t uart_cmd = hex_string_to_uint8(menu_item->hex_value);
+                        if (uart_cmd != 0) {
+                            UART_Write_Command(uart_cmd);
+                        }
+                    }
+                }
+            }
+            pthread_mutex_unlock(&config_mutex);
+        }
+        
+        usleep(100 * 1000); // 100ms sleep
     }
     return NULL;
 }

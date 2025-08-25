@@ -102,7 +102,7 @@ void Modbus_Write_Frame(data_frame_t *frame)
         return;
     }
     // Temporary buffer to hold the serialized frame
-    uint8_t buffer[256]; // Max Modbus RTU frame size (typically 256 bytes)
+    uint8_t buffer[256] = {0}; // Max Modbus RTU frame size (typically 256 bytes)
     size_t buffer_size = sizeof(buffer);
 
     // Serialize frame to buffer
