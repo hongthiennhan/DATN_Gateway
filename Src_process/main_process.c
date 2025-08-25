@@ -66,7 +66,7 @@ int main(void)
 
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
-    char *device = strdup(get_default_device()); // Make a copy since it might be modified
+    char *device = strdup(get_default_device());
     // Initialize command_data with a pointer to an int
     command_data.data = malloc(sizeof(int));
     if (command_data.data == NULL)
@@ -78,10 +78,10 @@ int main(void)
     }
     *(int *)command_data.data = -1; // Initialize to -1
 
-    Uart_Init(UART_map_to_speed(baudrate), device);
+    // Uart_Init(UART_map_to_speed(baudrate), device);
     // Use config value instead of hard-coded timeout
     // Fixed: Clear_Startup_UART with uint32_t parameter
-    Clear_Startup_UART(uart_fd, (uint32_t)get_startup_clear_duration());
+    // Clear_Startup_UART(uart_fd, (uint32_t)get_startup_clear_duration());
 
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};

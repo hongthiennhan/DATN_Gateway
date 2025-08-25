@@ -664,10 +664,12 @@ void *ui_thread_func(void *arg) {
                                 case 10: // ENTER
                                     if (node_comm_highlight == 0) {
                                         // UART selected
+                                        Uart_Init(UART_map_to_speed(baudrate), device);
                                         pause_thread(&modbus_pause);
                                         resume_thread(&uart_pause);
                                     } else if (node_comm_highlight == 1) {
                                         // Modbus selected
+                                        Modbus_Init(UART_map_to_speed(baudrate), device);
                                         pause_thread(&uart_pause);
                                         resume_thread(&modbus_pause);
                                     }
