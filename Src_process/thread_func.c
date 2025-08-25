@@ -15,7 +15,7 @@ shared_data_t command_data = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 thread_pause_t uart_pause = {
-    .is_paused = true, 
+    .is_paused = false, 
     .mutex = PTHREAD_MUTEX_INITIALIZER, 
     .cond = PTHREAD_COND_INITIALIZER
 };
