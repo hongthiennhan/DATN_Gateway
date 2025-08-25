@@ -369,7 +369,8 @@ void *ui_thread_func(void *arg) {
     noecho();
     curs_set(0);
     timeout(get_ui_refresh_delay()); // timeout for refresh
-
+    pause_thread(&uart_pause);
+    pause_thread(&modbus_pause);
     int highlight = 0;
     int key_check;
     while (1) {
@@ -628,7 +629,7 @@ void *ui_thread_func(void *arg) {
                         // Display available communication types
                         const char *node_comm_types[] = {
                             "UART",
-                            "Modbus (Coming soon)",
+                            "Modbus",
                             "CAN (Coming soon)"
                         };
                         int node_comm_highlight = 0;
@@ -657,6 +658,15 @@ void *ui_thread_func(void *arg) {
                                     node_comm_highlight = (node_comm_highlight == sizeof(node_comm_types) / sizeof(node_comm_types[0]) - 1) ? 0 : node_comm_highlight + 1;
                                     break;
                                 case 10: // ENTER
+                                    if (node_comm_highlight == 0) {
+                                        // UART selected
+                                        pause_thread(&modbus_pause);
+                                        resume_thread(&uart_pause);
+                                    } else if (node_comm_highlight == 1) {
+                                        // Modbus selected
+                                        pause_thread(&uart_pause);
+                                        resume_thread(&modbus_pause);
+                                    }
                                     mvprintw(5 + sizeof(node_comm_types) / sizeof(node_comm_types[0]) + 4, 0, "Node communication type changed to: %s",
                                              node_comm_types[node_comm_highlight]);
                                     refresh();
