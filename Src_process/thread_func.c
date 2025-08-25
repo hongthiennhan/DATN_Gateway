@@ -274,9 +274,13 @@ void *modbus_thread_func(void *arg) {
                                control_cmd.node_id, control_cmd.cmd_id);
                         #endif
                         
-                        uint8_t uart_cmd = hex_string_to_uint8(menu_item->hex_value);
-                        if (uart_cmd != 0) {
-                            UART_Write_Command(uart_cmd);
+                        uint8_t length = hex_string_to_bytes(menu_item->hex_value, command_buffer, 64);
+                        data_frame.frame_length = length + 3;
+                        data_frame.address = hex_string_to_uint8(node->address);
+                        data_frame.function = command_buffer[0];
+                        data_frame.data = command_buffer + 1;
+                        if (length > 0) {
+                            Modbus_Write_Frame(&data_frame);
                         }
                     }
                 }
