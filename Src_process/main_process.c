@@ -91,17 +91,19 @@ int main(void)
     // Start UI thread
     pthread_t ui_thread;
     pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
+    // Start MQTT thread
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
-    // pthread_t modbus_thread;
-    // pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
+    // Start Modbus thread
+    pthread_t modbus_thread;
+    pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
 
     // Main waits for threads to finish (does nothing else)
-    // pthread_join(uart_thread, NULL);
+    pthread_join(uart_thread, NULL);
     pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
-    // pthread_join(modbus_thread, NULL);
-
+    pthread_join(modbus_thread, NULL);
+    pause_thread(&uart_pause);
     // Cleanup the device string
     free(device);
     return 0;

@@ -21,7 +21,7 @@ thread_pause_t uart_pause = {
 };
 
 thread_pause_t modbus_pause = {
-    .is_paused = true,
+    .is_paused = false,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER
 };
