@@ -32,7 +32,7 @@ typedef struct shared_data_s shared_data_t;
 
 // Node detection command structure
 typedef struct {
-    uint8_t command;           // UART command to send
+    char command[64];           // UART command to send
     char expected_response[64]; // Expected response pattern
     int timeout_ms;            // Command timeout
     char description[128];     // Command description

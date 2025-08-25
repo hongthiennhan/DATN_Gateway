@@ -67,13 +67,14 @@ void *uart_thread_func(void *arg) {
                 for (int i = 0; i < get_node_count(); i++) {
                     node_config_t *node = get_node_by_index(i);
                     if (node && node->detection_commands && node->detection_count > 0 && strncmp(node->com_type, "UART", 4) == 0) {
+                        uint8_t detect_cmd = hex_string_to_uint8(node->detection_commands[0].command);
                         #ifdef DEBUG
                         printf("Detecting node %d (%s), write command 0x%02X expecting '%s'\n",
-                               node->node_id, node->name, node->detection_commands[0].command, node->detection_commands[0].expected_response);
+                               node->node_id, node->name, detect_cmd, node->detection_commands[0].expected_response);
                         #endif
                         
                         // Send detection command from JSON
-                        UART_Write_Command(node->detection_commands[0].command);
+                        UART_Write_Command(detect_cmd);
 
                         // Read response with timeout from JSON
                         int timeout_ms = node->detection_commands[0].timeout_ms;

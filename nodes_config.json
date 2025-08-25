@@ -8,7 +8,7 @@
       "is_actuator": 0,
       "detection_commands": [
         {
-          "command": 1,
+          "command": "0x01",
           "expected_response": "SENSOR_BOARD_OK",
           "timeout_ms": 100,
           "description": "Sensor board identification"
@@ -31,7 +31,7 @@
 
       "detection_commands": [
         {
-          "command": 2,
+          "command": "0x02",
           "expected_response": "DISPLAY_OK",
           "timeout_ms": 100,
           "description": "Display unit identification"
@@ -55,17 +55,16 @@
 
       "detection_commands": [
         {
-          "command": 4,
-          "expected_response": "SENSOR_BOARD_OK",
+          "command": "0x01 0x00 0x00 0x00 0x08",
+          "expected_response": "None",
           "timeout_ms": 100,
-          "description": "Sensor board identification"
+          "description": "Read Output State"
         }
       ],
 
       "menu_items": [
         { "cmd": 1, "label": "LED On",  "hex_value": "0x05 0x00 0x00 0xFF 0x00", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 },
-        { "cmd": 3, "label": "Read Output State", "hex_value": "0x01 0x00 0x00 0x00 0x08", "timeout_ms": 100 }
+        { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",
@@ -80,17 +79,16 @@
 
       "detection_commands": [
         {
-          "command": 5,
-          "expected_response": "SENSOR_BOARD_OK",
+          "command": "0x04 0x00 0x00 0x00 0x01",
+          "expected_response": "None",
           "timeout_ms": 100,
-          "description": "Sensor board identification"
+          "description": "Read Input Value"
         }
       ],
 
       "menu_items": [
         { "cmd": 1, "label": "LED On",  "hex_value": "0x05 0x00 0x00 0xFF 0x00", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 },
-        { "cmd": 3, "label": "Read Input Data", "hex_value": "0x04 0x00 0x00 0x00 0x01", "timeout_ms": 100 }
+        { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",

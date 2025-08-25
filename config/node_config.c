@@ -90,7 +90,8 @@ static int parse_detection_commands(json_object *detection_array, node_config_t 
         memset(cmd, 0, sizeof(detection_cmd_t));
         if (json_object_object_get_ex(cmd_obj, "command", &temp_obj))
         {
-            cmd->command = (uint8_t)json_object_get_int(temp_obj);
+           safe_strncpy(cmd->command, json_object_get_string(temp_obj),
+                        sizeof(cmd->command));
         }
         if (json_object_object_get_ex(cmd_obj, "expected_response", &temp_obj))
         {
