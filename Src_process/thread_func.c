@@ -119,9 +119,6 @@ void *uart_thread_func(void *arg) {
                             printf("Node %d NOT DETECTED - no response\n", node->node_id);
                             #endif
                         }
-                        
-                        // Small delay between nodes
-                        usleep(100 * 1000); // 100ms
                     }
                 }
             }
@@ -248,8 +245,6 @@ void *modbus_thread_func(void *arg) {
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
                             free(receive_frame);
                         }
-                        // Small delay between nodes
-                        usleep(500 * 1000); // 500ms
                     }
                 }
             }
