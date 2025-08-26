@@ -24,8 +24,8 @@ static void Modbus_Frame_To_Buffer(data_frame_t *frame, uint8_t *buffer, size_t 
     }
     frame->crc = Modbus_Calculate_CRC(buffer, idx);
     // CRC (2 bytes) - Little Endian
-    buffer[idx++] = (uint8_t)(frame->crc & 0xFF);
     buffer[idx++] = (uint8_t)((frame->crc >> 8) & 0xFF);
+    buffer[idx++] = (uint8_t)(frame->crc & 0xFF);
 }
 
 // Initialize Modbus communication
