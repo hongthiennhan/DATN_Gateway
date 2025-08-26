@@ -372,7 +372,7 @@ void *ui_thread_func(void *arg) {
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
-    timeout(get_ui_refresh_delay()); // timeout for refresh
+    timeout(100); // timeout for refresh
     pause_thread(&uart_pause);
     pause_thread(&modbus_pause);
     int highlight = 0;
