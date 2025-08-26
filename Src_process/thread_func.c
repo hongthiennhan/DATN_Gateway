@@ -40,7 +40,7 @@ void *uart_thread_func(void *arg) {
     
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
-    time_t last_11_second_detection = 0;  // Chỉ cần timer cho 11 giây detection
+    time_t last_detection = 0;  // Chỉ cần timer cho 11 giây detection
     char response_str[128] = {0};
     char hex_str[256] = {0};
     while (1) {
@@ -51,14 +51,14 @@ void *uart_thread_func(void *arg) {
         pthread_mutex_unlock(&uart_pause.mutex);
         // Skip processing during config reload
         if (config_reloading) {
-            usleep(1000 * 1000); // Wait 100ms during reload
+            usleep(100 * 1000); // Wait 100ms during reload
             continue;
         }
         
         time_t current_time = time(NULL);
         
         // ============= NODE DETECTION EVERY 11 SECONDS =============
-        if ((current_time - last_11_second_detection) >= 3) {
+        if ((current_time - last_detection) >= 11) {
             #ifdef DEBUG
             printf("Starting 11-second node detection cycle\n");
             #endif
@@ -124,7 +124,7 @@ void *uart_thread_func(void *arg) {
             }
             pthread_mutex_unlock(&config_mutex);
             
-            last_11_second_detection = current_time;
+            last_detection = current_time;
             
             #ifdef DEBUG
             printf("11-second detection cycle completed\n");
@@ -211,9 +211,9 @@ void *modbus_thread_func(void *arg) {
             usleep(1000 * 1000); // Wait 1000ms during reload
             continue;
         }
-
+        // Get data every 2 second
         time_t current_time = time(NULL);
-        if ((current_time - get_data_time) >= 1) {
+        if ((current_time - get_data_time) >= 2) {
              pthread_mutex_lock(&config_mutex);
             if (!config_reloading) {
                 for (int i = 0; i < get_node_count(); i++) {
