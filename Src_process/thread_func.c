@@ -249,7 +249,7 @@ void *modbus_thread_func(void *arg) {
                             free(receive_frame);
                         }
                         // Small delay between nodes
-                        usleep(100 * 1000); // 100ms
+                        usleep(500 * 1000); // 500ms
                     }
                 }
             }

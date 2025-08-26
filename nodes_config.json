@@ -57,7 +57,7 @@
         {
           "command": "0x01 0x00 0x00 0x00 0x08",
           "expected_response": "None",
-          "timeout_ms": 1000,
+          "timeout_ms": 200,
           "description": "Read Output State"
         }
       ],
@@ -81,7 +81,7 @@
         {
           "command": "0x04 0x00 0x00 0x00 0x01",
           "expected_response": "None",
-          "timeout_ms": 1000,
+          "timeout_ms": 200,
           "description": "Read Input Value"
         }
       ],
