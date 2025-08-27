@@ -201,7 +201,6 @@ void *modbus_thread_func(void *arg) {
     time_t get_data_time = 0;
     uint8_t command_buffer[64] = {0};
     char response_str[128] = {0};
-    char hex_str[256] = {0};
     while (1) {
         pthread_mutex_lock(&modbus_pause.mutex);
         while (modbus_pause.is_paused) {
@@ -240,25 +239,14 @@ void *modbus_thread_func(void *arg) {
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
 
                         receive_frame = Modbus_Read_Response(timeout_ms);
+
                         if (receive_frame) {
                             // Process the received frame
-                            data_len = receive_frame->frame_length;
-                            
-                            // Format hex string for display
-                            memset(hex_str, 0, sizeof(hex_str));
-                            int max_display = (data_len > 50) ? 50 : data_len;
-                            for (int j = 0; j < max_display; j++) {
-                                sprintf(hex_str + strlen(hex_str), "%02X ", receive_frame->data[j]);
-                            }
-                            
-                            pthread_mutex_lock(&command_mutex);
-                            snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
-                                     data_len, hex_str, (data_len > 50) ? "..." : "");
-                            pthread_mutex_unlock(&command_mutex);
-                            
+                            printf("Receive Data!");
+                            snprintf(receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
+                                     receive_frame->frame_length, receive_frame->data, (receive_frame->frame_length > 50) ? "..." : "");
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
                             free(receive_frame);
-                        }
                         }
                     }
                 }
