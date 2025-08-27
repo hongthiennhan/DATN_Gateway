@@ -171,31 +171,27 @@ data_frame_t *Modbus_Read_Response(uint32_t timeout_ms) {
         return NULL;
     }
 
-    printf("[DEBUG] Modbus fd: %d\n", modbus_fd);
-
-    // Get buffer size from config, fallback to safe default
+    // Get buffer size from config
     modbus_config_t *config = get_modbus_config();
     int buffer_size = config ? config->response_buffer_size : 512;
     uint32_t poll_interval_ms = config ? config->poll_interval_ms : 20;
 
-    printf("[DEBUG] Buffer size: %d, Poll interval: %u ms\n", buffer_size, poll_interval_ms);
-
-    // Allocate buffer for response
     uint8_t *buffer = malloc(buffer_size);
     if (!buffer) {
-        printf("[ERROR] Memory allocation failed for buffer size %d\n", buffer_size);
+        printf("[ERROR] Memory allocation failed\n");
         pthread_mutex_unlock(&modbus_mutex);
         return NULL;
     }
 
     ssize_t total_read = 0;
     uint32_t waited_ms = 0;
+    uint8_t expected_frame_size = 0;
+    uint8_t min_bytes_needed = 2; // Address + Length minimum
 
-    printf("[DEBUG] Starting read loop...\n");
+    printf("[DEBUG] Starting buffered read loop...\n");
 
-    // ✅ Read loop exactly like UART_Read_Response
+    // ✅ Buffered reading loop - accumulate data until complete frame
     while (waited_ms < timeout_ms && total_read < buffer_size) {
-        // Wait for data to become available
         fd_set read_fds;
         FD_ZERO(&read_fds);
         FD_SET(modbus_fd, &read_fds);
@@ -204,164 +200,139 @@ data_frame_t *Modbus_Read_Response(uint32_t timeout_ms) {
         timeout.tv_sec = poll_interval_ms / 1000;
         timeout.tv_usec = (poll_interval_ms % 1000) * 1000;
 
-        printf("[DEBUG] Calling select() - waited: %u ms, timeout remaining: %u ms\n", 
-               waited_ms, timeout_ms - waited_ms);
-
         int ready = select(modbus_fd + 1, &read_fds, NULL, NULL, &timeout);
         if (ready < 0) {
             printf("[ERROR] select() failed: %s\n", strerror(errno));
-            perror("select() failed");
             break;
         } else if (ready == 0) {
-            // No data yet; increment wait timer
-            printf("[DEBUG] select() timeout, no data available\n");
             waited_ms += poll_interval_ms;
             continue;
         }
 
-        printf("[DEBUG] Data available on fd %d\n", modbus_fd);
-
-        // ✅ Data available — read from Modbus port (exactly like UART)
+        // ✅ Read available data and accumulate
         ssize_t r = read(modbus_fd, buffer + total_read, buffer_size - total_read);
         if (r > 0) {
-            printf("[DEBUG] Read %zd bytes from Modbus port\n", r);
+            printf("[DEBUG] Read %zd bytes, total now: %zd\n", r, total_read + r);
             
-            // Print raw bytes received
-            printf("[DEBUG] Raw data received: ");
+            // Print newly received bytes
+            printf("[DEBUG] New bytes: ");
             for (int i = 0; i < r; i++) {
                 printf("%02X ", buffer[total_read + i]);
             }
             printf("\n");
             
             total_read += r;
-            printf("[DEBUG] Total bytes read: %zd\n", total_read);
-            break; // ✅ Exit after reading data (like UART_Read_Response)
+
+            // ✅ Determine expected frame size once we have length byte
+            if (total_read >= 2 && expected_frame_size == 0) {
+                uint8_t frame_length_field = buffer[1];
+                
+                // ✅ Interpret length field properly based on your protocol
+                // Option 1: Length is payload size (excluding header + CRC)
+                expected_frame_size = 2 + frame_length_field + 2; // Addr + Len + Payload + CRC(2)
+                
+                // Option 2: Length is total frame size
+                // expected_frame_size = frame_length_field;
+                
+                printf("[DEBUG] Length field: %u, Expected total frame size: %u\n", 
+                       frame_length_field, expected_frame_size);
+            }
+
+            // ✅ Check if we have complete frame
+            if (expected_frame_size > 0 && total_read >= expected_frame_size) {
+                printf("[DEBUG] Complete frame detected (%zd >= %u bytes)\n", 
+                       total_read, expected_frame_size);
+                break; // Complete frame received
+            }
+
+            // ✅ Also break if we've been accumulating for too long
+            if (total_read >= 32) { // Reasonable max frame size
+                printf("[DEBUG] Max frame size reached, processing...\n");
+                break;
+            }
+
         } else if (r < 0) {
             printf("[ERROR] read() failed: %s\n", strerror(errno));
-            perror("read() failed");
             break;
         }
-        // Else (r == 0): continue polling
+        // Continue accumulating if r == 0
     }
 
     pthread_mutex_unlock(&modbus_mutex);
 
-    printf("[DEBUG] Read loop completed. Total read: %zd, Waited: %u ms\n", total_read, waited_ms);
-
     if (total_read == 0) {
-        // No data received
         printf("[ERROR] No data received within timeout\n");
         free(buffer);
         return NULL;
     }
 
-    printf("[DEBUG] Complete frame received (%zd bytes): ", total_read);
+    printf("[DEBUG] Final accumulated frame (%zd bytes): ", total_read);
     for (int i = 0; i < total_read; i++) {
         printf("%02X ", buffer[i]);
     }
     printf("\n");
 
-    // ✅ Parse custom frame format: [Address][Length][Data...][CRC_High][CRC_Low]
+    // ✅ Use accumulated data for frame parsing
     if (total_read < 4) {
-        printf("[ERROR] Frame too short - minimum 4 bytes required (Address + Length + CRC)\n");
+        printf("[ERROR] Frame too short - minimum 4 bytes required\n");
         free(buffer);
         return NULL;
     }
 
-    uint8_t frame_address = buffer[0];        // Byte 1: Frame address
-    uint8_t frame_length = buffer[1];         // Byte 2: Frame length
-    
+    // ✅ Parse frame using actual accumulated size
+    uint8_t frame_address = buffer[0];
+    uint8_t frame_length_field = buffer[1];
+    size_t actual_frame_size = (expected_frame_size > 0) ? expected_frame_size : total_read;
+
     printf("[DEBUG] Frame parsing:\n");
     printf("[DEBUG]   Address: 0x%02X (%u)\n", frame_address, frame_address);
-    printf("[DEBUG]   Length: %u bytes\n", frame_length);
+    printf("[DEBUG]   Length field: %u\n", frame_length_field);
+    printf("[DEBUG]   Actual frame size: %zu bytes\n", actual_frame_size);
 
-    // Validate frame length
-    if (frame_length != total_read) {
-        printf("[ERROR] Frame length mismatch - expected %u, got %zd\n", frame_length, total_read);
-        free(buffer);
-        return NULL;
-    }
+    // ✅ Extract and verify CRC
+    if (actual_frame_size >= 4) {
+        uint16_t calculated_crc = Modbus_Calculate_CRC(buffer, actual_frame_size - 2);
+        uint16_t received_crc = ((buffer[actual_frame_size - 2] << 8) | buffer[actual_frame_size - 1]);
 
-    if (frame_length < 4) {
-        printf("[ERROR] Invalid frame length %u (minimum 4)\n", frame_length);
-        free(buffer);
-        return NULL;
-    }
+        printf("[DEBUG] CRC: Calculated=0x%04X, Received=0x%04X\n", calculated_crc, received_crc);
 
-    // ✅ Extract CRC (last 2 bytes) - Big Endian format
-    uint8_t crc_high = buffer[frame_length - 2];  // Second to last byte
-    uint8_t crc_low = buffer[frame_length - 1];   // Last byte
-    uint16_t received_crc = (crc_high << 8) | crc_low;  // Big Endian
-
-    printf("[DEBUG]   CRC bytes: [%02X %02X]\n", crc_high, crc_low);
-    printf("[DEBUG]   Received CRC (Big Endian): 0x%04X\n", received_crc);
-
-    // ✅ Calculate CRC for data (exclude CRC bytes)
-    uint16_t calculated_crc = Modbus_Calculate_CRC(buffer, frame_length - 2);
-
-    printf("[DEBUG] CRC Check:\n");
-    printf("[DEBUG]   Data for CRC (%u bytes): ", frame_length - 2);
-    for (int i = 0; i < frame_length - 2; i++) {
-        printf("%02X ", buffer[i]);
-    }
-    printf("\n");
-    printf("[DEBUG]   Calculated CRC: 0x%04X\n", calculated_crc);
-    printf("[DEBUG]   Received CRC: 0x%04X\n", received_crc);
-    printf("[DEBUG]   CRC Match: %s\n", (calculated_crc == received_crc) ? "YES" : "NO");
-
-    // ✅ Verify CRC
-    if (calculated_crc != received_crc) {
-        printf("[ERROR] CRC verification failed\n");
-        printf("[ERROR]   Expected: 0x%04X, Got: 0x%04X\n", calculated_crc, received_crc);
-        free(buffer);
-        return NULL;
-    }
-
-    printf("[DEBUG] CRC verification passed\n");
-
-    // ✅ Allocate memory for data frame structure
-    data_frame_t *frame = malloc(sizeof(data_frame_t));
-    if (!frame) {
-        printf("[ERROR] Memory allocation failed for data frame structure\n");
-        free(buffer);
-        return NULL;
-    }
-
-    // ✅ Fill frame structure
-    frame->address = frame_address;
-    frame->function.custom = 0; // Not used in this format
-    frame->frame_length = frame_length;
-    frame->crc = received_crc;
-
-    // ✅ Extract data payload (exclude address, length, and CRC)
-    size_t data_len = frame_length - 4; // Total - Address - Length - CRC(2 bytes)
-    printf("[DEBUG]   Data payload length: %zu bytes\n", data_len);
-
-    if (data_len > 0) {
-        frame->data = malloc(data_len);
-        if (!frame->data) {
-            printf("[ERROR] Memory allocation failed for data payload (%zu bytes)\n", data_len);
-            free(frame);
+        if (calculated_crc != received_crc) {
+            printf("[ERROR] CRC verification failed\n");
             free(buffer);
             return NULL;
         }
-        // Copy data from buffer[2] to buffer[frame_length-3]
-        memcpy(frame->data, &buffer[2], data_len);
-        
-        printf("[DEBUG]   Data payload: ");
-        for (size_t i = 0; i < data_len; i++) {
-            printf("%02X ", ((uint8_t*)frame->data)[i]);
-        }
-        printf("\n");
-    } else {
-        frame->data = NULL;
-        printf("[DEBUG]   No data payload\n");
+        printf("[DEBUG] CRC verification passed\n");
     }
 
-    printf("[DEBUG] Successfully parsed custom frame\n");
+    // ✅ Create and fill data frame
+    data_frame_t *frame = malloc(sizeof(data_frame_t));
+    if (!frame) {
+        printf("[ERROR] Memory allocation failed for frame\n");
+        free(buffer);
+        return NULL;
+    }
+
+    frame->address = frame_address;
+    frame->function.custom = frame_length_field; // Store length field here
+    frame->frame_length = actual_frame_size;
+    frame->crc = ((buffer[actual_frame_size - 2] << 8) | buffer[actual_frame_size - 1]);
+
+    // Extract payload data
+    size_t payload_size = actual_frame_size - 4; // Exclude addr + length + CRC
+    if (payload_size > 0) {
+        frame->data = malloc(payload_size);
+        if (frame->data) {
+            memcpy(frame->data, &buffer[2], payload_size);
+        }
+    } else {
+        frame->data = NULL;
+    }
+
+    printf("[DEBUG] Successfully parsed complete frame\n");
     free(buffer);
     return frame;
 }
+
 
 // Calculate CRC for Modbus frame using CRC-16-IBM algorithm
 uint16_t Modbus_Calculate_CRC(uint8_t *data, uint16_t length)
