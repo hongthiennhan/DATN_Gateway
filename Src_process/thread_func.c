@@ -238,7 +238,7 @@ void *modbus_thread_func(void *arg) {
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
 
-                        receive_frame = Modbus_Read_Response(200);
+                        receive_frame = Modbus_Read_Response(2000);
 
                         if (receive_frame) {
                             // Process the received frame
