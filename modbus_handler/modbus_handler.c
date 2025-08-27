@@ -301,7 +301,7 @@ uint8_t Modbus_Verify_CRC(uint8_t* data, uint16_t length)
         return 0; // Invalid frame
     }
     uint16_t crc = Modbus_Calculate_CRC(data, length - 2);
-    uint16_t received_crc = (data[length - 2] | (data[length - 1] << 8));
+    uint16_t received_crc = ((data[length - 2] << 8) | data[length - 1]);
     pthread_mutex_unlock(&modbus_mutex);
     return (crc == received_crc);
 }
