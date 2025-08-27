@@ -82,7 +82,7 @@ int main(void)
     // Use config value instead of hard-coded timeout
     // Fixed: Clear_Startup_UART with uint32_t parameter
     // Clear_Startup_UART(uart_fd, (uint32_t)get_startup_clear_duration());
-
+    Modbus_Init(UART_map_to_speed(baudrate), device);
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
     // Start UART thread (no arg needed, it will wait for shared_node_type)
