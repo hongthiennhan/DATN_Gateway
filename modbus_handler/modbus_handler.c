@@ -225,6 +225,7 @@ data_frame_t *Modbus_Read_Response(uint32_t timeout_ms) {
 
     // Verify CRC before parsing frame
     if (!Modbus_Verify_CRC(buffer, total_read)) {
+        printf("Modbus CRC verification failed\n");
         free(buffer);
         return NULL; // CRC verification failed
     }
