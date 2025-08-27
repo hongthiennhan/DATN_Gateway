@@ -238,11 +238,10 @@ void *modbus_thread_func(void *arg) {
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
 
-                        receive_frame = Modbus_Read_Response(2000);
+                        receive_frame = Modbus_Read_Response(timeout_ms);
 
                         if (receive_frame) {
                             // Process the received frame
-                            printf("Receive Data! \n");
                             snprintf(receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
                                      receive_frame->frame_length, receive_frame->data, (receive_frame->frame_length > 50) ? "..." : "");
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
