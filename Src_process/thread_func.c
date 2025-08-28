@@ -247,10 +247,12 @@ void *modbus_thread_func(void *arg) {
                             // Process the received frame
                             // Convert received data to displayable format
                             memset(display_str, 0, sizeof(display_str));
-                            int max_display = (receive_frame->frame_length > 50) ? 50 : receive_frame->frame_length;
-                            for (int j = 0; j < max_display - 4; j++) {
-                                sprintf(display_str + strlen(display_str), "%02X ", receive_frame->data[j]);
-                            }
+
+                            sprintf(display_str, "%02X ", receive_frame->address);
+                            sprintf(display_str + 1, "%02X ", receive_frame->function.custom);
+                            snprintf(display_str + 2, "%02X ", receive_frame->data[0]);
+                            snprintf(display_str + 3, "%02X ", receive_frame->data[1]);
+
 
                             // Update status
                             pthread_mutex_lock(&command_mutex);
@@ -259,7 +261,7 @@ void *modbus_thread_func(void *arg) {
                             status_color = 2;
                             pthread_mutex_unlock(&command_mutex);
                             snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s, receive_num: %d",
-                                     receive_frame->frame_length - 4, display_str, (receive_frame->frame_length - 4 > 50) ? "..." : "", receive_num);
+                                     receive_frame->frame_length, display_str, (receive_frame->frame_length > 50) ? "..." : "", receive_num);
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
                             free(receive_frame);
                         }
