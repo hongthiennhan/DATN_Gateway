@@ -267,7 +267,7 @@ void *modbus_thread_func(void *arg) {
                             pthread_mutex_unlock(&command_mutex);
                             snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s, receive_num: %d",
                                      receive_frame->frame_length, display_str, (receive_frame->frame_length > 50) ? "..." : "", receive_num);
-                            update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
+                            update_mqtt_data_from_response(node, response_str, receive_frame->frame_length - 2);
                             free(receive_frame);
                         }
                         usleep(5 * 1000); // Small delay for next command
