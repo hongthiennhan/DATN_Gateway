@@ -4,7 +4,7 @@
 #include "node_config.h"
 
 #define DEBUG_MAIN
-#define DEBUG
+
 static struct option long_options[] = {
     {0, 0, 0, 0}};
 
