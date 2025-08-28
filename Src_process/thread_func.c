@@ -243,9 +243,19 @@ void *modbus_thread_func(void *arg) {
 
                         if (receive_frame) {
                             // Process the received frame
-                            for (int i = 0; i < receive_frame->frame_length; i++) {
-                                snprintf(display_str + strlen(display_str), "%02X ", receive_frame->data[i]);
+                            // Convert received data to displayable format
+                            memset(display_str, 0, sizeof(display_str));
+                            int max_display = (receive_frame->frame_length > 50) ? 50 : receive_frame->frame_length;
+                            for (int j = 0; j < max_display; j++) {
+                                sprintf(display_str + strlen(display_str), "%02X ", receive_frame->data[j]);
                             }
+
+                            // Update status
+                            pthread_mutex_lock(&command_mutex);
+                            snprintf(status_response, sizeof(status_response),
+                                     "Received modbus data: %d bytes", receive_frame->frame_length);
+                            status_color = 2;
+                            pthread_mutex_unlock(&command_mutex);
                             snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
                                      receive_frame->frame_length, display_str, (receive_frame->frame_length > 50) ? "..." : "");
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
