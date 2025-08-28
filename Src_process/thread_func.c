@@ -202,6 +202,7 @@ void *modbus_thread_func(void *arg) {
     uint8_t command_buffer[64] = {0};
     char response_str[128] = {0};
     char display_str[256] = {0};
+    memset(display_str, 0, sizeof(display_str));
     int receive_num = 0;
     while (1) {
         pthread_mutex_lock(&modbus_pause.mutex);
