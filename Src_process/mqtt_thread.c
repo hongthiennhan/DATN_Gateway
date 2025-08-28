@@ -663,213 +663,73 @@ int request_config_json_robust(void)
  */
 void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: Entry - payload=%p, payload_size=%zu, timestamp=%ld\n", 
-           (void*)payload, payload_size, (long)timestamp);
-#endif
-
     mqtt_config_t *config = get_mqtt_config();
-    if (!config) {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Failed to get MQTT config - early return\n");
-#endif
+    if (!config)
         return;
-    }
-
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: MQTT config retrieved successfully\n");
-#endif
         
     char *temp_buffer = malloc(1024);
-    if (!temp_buffer) {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Failed to allocate temp buffer\n");
-#endif
-        printf("[ERROR] Failed to allocate temp buffer for telemetry payload\n");
+    if (!temp_buffer)
         return;
-    }
-
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: Temp buffer allocated (1024 bytes)\n");
-#endif
         
     // Start JSON with timestamp
-    if (config->system_fields.include_timestamp) {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Including timestamp in payload (%ld)\n", (long)timestamp);
-#endif
+    if (config->system_fields.include_timestamp)
+    {
         snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);
-    } else {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Timestamp not included in payload\n");
-#endif
+    }
+    else
+    {
         snprintf(payload, payload_size, "{");
     }
 
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: JSON header created - current payload: '%.100s%s'\n", 
-           payload, strlen(payload) > 100 ? "..." : "");
-#endif
-
-    int node_count = get_node_count();
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: Processing %d nodes\n", node_count);
-#endif
-
     // Add data from detected nodes - KHÔNG LOCK config_mutex nữa
-    for (int i = 0; i < node_count; i++) {
+    for (int i = 0; i < get_node_count(); i++)
+    {
         node_config_t *node = get_node_by_index(i);
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Processing node %d - node=%p\n", i, (void*)node);
-#endif
-
-        if (!node || !node->mqtt_data) {
-#ifdef DEBUG
-            printf("[DEBUG] build_telemetry_payload: Skipping node %d - invalid or not detected\n", i);
-            printf("[DEBUG]   node=%p, mqtt_data=%p\n", 
-                   (void*)node, node ? (void*)node->mqtt_data : NULL);
-#endif
+        if (!node || !node->mqtt_data)
             continue;
-        }
-
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Node %d (ID=%d) - attempting trylock\n", i, node->node_id);
-#endif
             
         // Chỉ trylock node mutex thôi
         if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0) {
-#ifdef DEBUG
-            printf("[DEBUG] build_telemetry_payload: Successfully locked node %d mutex\n", node->node_id);
-#endif
-            
-            if (node->mqtt_data->data) {
+            if (node->mqtt_data->data)
+            {
                 raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
-                if (raw_data && raw_data->data && raw_data->length > 0) {
-#ifdef DEBUG
-                    printf("[DEBUG] build_telemetry_payload: Node %d has valid data (%u bytes)\n", 
-                           node->node_id, raw_data->length);
-                    printf("[DEBUG]   Data timestamp: %ld, com_type: %s\n", 
-                           (long)raw_data->timestamp, node->com_type);
-                    printf("[DEBUG]   Raw data (first 8 bytes): ");
-                    for (int k = 0; k < (raw_data->length < 8 ? raw_data->length : 8); k++) {
-                        printf("%02X ", raw_data->data[k]);
-                    }
-                    if (raw_data->length > 8) printf("...");
-                    printf("\n");
-#endif
-                    
+                if (raw_data && raw_data->data && raw_data->length > 0)
+                {
                     // Convert to hex string
                     char *hex_str = malloc(raw_data->length * 2 + 1);
-                    if (hex_str) {
-#ifdef DEBUG
-                        printf("[DEBUG] build_telemetry_payload: Converting %u bytes to hex string\n", raw_data->length);
-#endif
-                        for (int j = 0; j < raw_data->length; j++) {
+                    if (hex_str)
+                    {
+                        for (int j = 0; j < raw_data->length; j++)
+                        {
                             sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
                         }
                         hex_str[raw_data->length * 2] = '\0';
-                        
-#ifdef DEBUG
-                        printf("[DEBUG] build_telemetry_payload: Hex string created: '%.50s%s'\n", 
-                               hex_str, strlen(hex_str) > 50 ? "..." : "");
-#endif
-                        
                         snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
                                node->node_id, hex_str, node->node_id, node->com_type);
-                        
-#ifdef DEBUG
-                        printf("[DEBUG] build_telemetry_payload: Node %d JSON fragment: '%.100s%s'\n", 
-                               node->node_id, temp_buffer, strlen(temp_buffer) > 100 ? "..." : "");
-                        printf("[DEBUG] build_telemetry_payload: Current payload length before append: %zu\n", strlen(payload));
-#endif
-                        
                         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-                        
-#ifdef DEBUG
-                        printf("[DEBUG] build_telemetry_payload: Node %d data appended successfully\n", node->node_id);
-                        printf("[DEBUG] build_telemetry_payload: New payload length: %zu\n", strlen(payload));
-#endif
                         free(hex_str);
-                    } else {
-#ifdef DEBUG
-                        printf("[DEBUG] build_telemetry_payload: Failed to allocate hex string for node %d\n", node->node_id);
-#endif
-                        printf("[ERROR] Failed to allocate hex string for node %d\n", node->node_id);
                     }
-                } else {
-#ifdef DEBUG
-                    printf("[DEBUG] build_telemetry_payload: Node %d has invalid or empty data\n", node->node_id);
-                    printf("[DEBUG]   raw_data=%p, data=%p, length=%u\n", 
-                           (void*)raw_data, raw_data ? (void*)raw_data->data : NULL, 
-                           raw_data ? raw_data->length : 0);
-#endif
                 }
-            } else {
-#ifdef DEBUG
-                printf("[DEBUG] build_telemetry_payload: Node %d has no mqtt_data->data\n", node->node_id);
-#endif
             }
             pthread_mutex_unlock(&node->mqtt_data->mutex);
-#ifdef DEBUG
-            printf("[DEBUG] build_telemetry_payload: Unlocked node %d mutex\n", node->node_id);
-#endif
-        } else {
-#ifdef DEBUG
-            printf("[DEBUG] build_telemetry_payload: Failed to trylock node %d mutex - skipping\n", node->node_id);
-#endif
         }
         // Nếu trylock fail thì skip, đừng block
     }
 
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: Node processing completed\n");
-#endif
-
     // Add system info
-    if (config->system_fields.include_gateway_ip) {
-        char *gateway_ip = get_local_ip();
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Adding gateway IP: %s\n", gateway_ip ? gateway_ip : "NULL");
-#endif
-        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", gateway_ip ? gateway_ip : "unknown");
+    if (config->system_fields.include_gateway_ip)
+    {
+        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", get_local_ip());
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Gateway IP added to payload\n");
-#endif
-    } else {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Gateway IP not included in payload\n");
-#endif
     }
 
-    if (config->system_fields.include_node_count) {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Adding node count: %d\n", node_count);
-#endif
-        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", node_count);
+    if (config->system_fields.include_node_count)
+    {
+        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", get_node_count());
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Node count added to payload\n");
-#endif
-    } else {
-#ifdef DEBUG
-        printf("[DEBUG] build_telemetry_payload: Node count not included in payload\n");
-#endif
     }
-
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: Closing JSON payload\n");
-    printf("[DEBUG] build_telemetry_payload: Final payload length before closing: %zu\n", strlen(payload));
-#endif
 
     strncat(payload, "}", payload_size - strlen(payload) - 1);
-    
-#ifdef DEBUG
-    printf("[DEBUG] build_telemetry_payload: Final payload (%zu chars): '%.200s%s'\n", 
-           strlen(payload), payload, strlen(payload) > 200 ? "..." : "");
-    printf("[DEBUG] build_telemetry_payload: Function completed successfully\n");
-#endif
-
     free(temp_buffer);
 }
 
