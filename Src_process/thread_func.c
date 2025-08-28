@@ -238,7 +238,7 @@ void *modbus_thread_func(void *arg) {
                         int timeout_ms = node->detection_commands[0].timeout_ms;
                         if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
 
-                        receive_frame = Modbus_Read_Response(300);
+                        receive_frame = Modbus_Read_Response(timeout_ms);
 
                         if (receive_frame) {
                             // Process the received frame
@@ -247,6 +247,7 @@ void *modbus_thread_func(void *arg) {
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
                             free(receive_frame);
                         }
+                        usleep(1 * 1000); // Sleep for 100ms
                     }
                 }
             }
