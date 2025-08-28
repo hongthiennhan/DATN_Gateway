@@ -247,7 +247,7 @@ void *modbus_thread_func(void *arg) {
                             update_mqtt_data_from_response(node, receive_frame->data, receive_frame->frame_length);
                             free(receive_frame);
                         }
-                        usleep(1 * 1000); // Sleep for 100ms
+                        usleep(5 * 1000); // Small delay for next command
                     }
                 }
             }
