@@ -341,115 +341,35 @@ void safe_process_uart_data(unsigned char *data, uint16_t data_len) {
  * Update MQTT data with received response
  */
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len) {
-#ifdef DEBUG
-    printf("[DEBUG] update_mqtt_data_from_response: Entry - node=%p, resp=%p, resp_len=%u\n", 
-           (void*)node, (void*)resp, resp_len);
-#endif
-
-    if (!node || !node->mqtt_data || !resp || resp_len == 0) {
-#ifdef DEBUG
-        printf("[DEBUG] update_mqtt_data_from_response: Invalid parameters - early return\n");
-        printf("[DEBUG]   node=%p, mqtt_data=%p, resp=%p, resp_len=%u\n", 
-               (void*)node, node ? (void*)node->mqtt_data : NULL, (void*)resp, resp_len);
-#endif
-        return;
-    }
-
-#ifdef DEBUG
-    printf("[DEBUG] update_mqtt_data_from_response: Acquiring mutex for node ID %d\n", 
-           node->node_id);
-#endif
+    if (!node || !node->mqtt_data || !resp || resp_len == 0) return;
     
     pthread_mutex_lock(&node->mqtt_data->mutex);
     
     // Free old data if exists
     if (node->mqtt_data->data) {
-#ifdef DEBUG
-        printf("[DEBUG] update_mqtt_data_from_response: Freeing old MQTT data\n");
-#endif
         raw_data_t *old_data = (raw_data_t*)node->mqtt_data->data;
         if (old_data->data) {
-#ifdef DEBUG
-            printf("[DEBUG]   Freeing old data buffer (%u bytes)\n", old_data->length);
-#endif
             free(old_data->data);
         }
         free(old_data);
-        node->mqtt_data->data = NULL;
-    } else {
-#ifdef DEBUG
-        printf("[DEBUG] update_mqtt_data_from_response: No old data to free\n");
-#endif
     }
     
     // Store new raw data
-#ifdef DEBUG
-    printf("[DEBUG] update_mqtt_data_from_response: Allocating new raw_data_t structure\n");
-#endif
     raw_data_t *raw_data = malloc(sizeof(raw_data_t));
     if (raw_data) {
-#ifdef DEBUG
-        printf("[DEBUG] update_mqtt_data_from_response: Successfully allocated raw_data_t\n");
-#endif
         raw_data->length = resp_len;
         raw_data->timestamp = time(NULL); // ADD timestamp
-        
-#ifdef DEBUG
-        printf("[DEBUG] update_mqtt_data_from_response: Setting data - length=%u, timestamp=%ld\n", 
-               raw_data->length, (long)raw_data->timestamp);
-        printf("[DEBUG]   Allocating data buffer (%u bytes)\n", resp_len);
-#endif
-        
         raw_data->data = malloc(resp_len);
         if (raw_data->data) {
-#ifdef DEBUG
-            printf("[DEBUG] update_mqtt_data_from_response: Successfully allocated data buffer\n");
-            printf("[DEBUG]   Copying %u bytes of response data\n", resp_len);
-            printf("[DEBUG]   Response data (first 16 bytes): ");
-            for (int i = 0; i < (resp_len < 16 ? resp_len : 16); i++) {
-                printf("%02X ", resp[i]);
-            }
-            if (resp_len > 16) printf("...");
-            printf("\n");
-#endif
-            
             memcpy(raw_data->data, resp, resp_len);
             node->mqtt_data->data = raw_data;
-            
-#ifdef DEBUG
-            printf("[DEBUG] update_mqtt_data_from_response: Data copied successfully\n");
-            printf("[DEBUG]   Signaling condition variable to notify waiters\n");
-#endif
-            
             pthread_cond_signal(&node->mqtt_data->cond);
-            
-#ifdef DEBUG
-            printf("[DEBUG] update_mqtt_data_from_response: MQTT data update completed successfully\n");
-#endif
         } else {
-#ifdef DEBUG
-            printf("[DEBUG] update_mqtt_data_from_response: Failed to allocate data buffer\n");
-#endif
-            printf("[ERROR] Failed to allocate MQTT data buffer (%u bytes)\n", resp_len);
             free(raw_data);
         }
-    } else {
-#ifdef DEBUG
-        printf("[DEBUG] update_mqtt_data_from_response: Failed to allocate raw_data_t structure\n");
-#endif
-        printf("[ERROR] Failed to allocate MQTT raw_data_t structure\n");
     }
     
-#ifdef DEBUG
-    printf("[DEBUG] update_mqtt_data_from_response: Releasing mutex for node ID %d\n", 
-           node->node_id);
-#endif
-    
     pthread_mutex_unlock(&node->mqtt_data->mutex);
-    
-#ifdef DEBUG
-    printf("[DEBUG] update_mqtt_data_from_response: Function completed\n");
-#endif
 }
 
 // ==================== UI THREAD - Enhanced config menu ====================
