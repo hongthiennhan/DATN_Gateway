@@ -248,10 +248,7 @@ void *modbus_thread_func(void *arg) {
                             // Convert received data to displayable format
                             memset(display_str, 0, sizeof(display_str));
 
-                            sprintf(display_str, "%02X ", receive_frame->address);
-                            sprintf(display_str + 1, "%02X ", receive_frame->function.custom);
-                            snprintf(display_str + 2, "%02X ", receive_frame->data[0]);
-                            snprintf(display_str + 3, "%02X ", receive_frame->data[1]);
+                            sprintf(display_str, "%02X %02X %02X %02X", receive_frame->address, receive_frame->function.custom, receive_frame->data[0], receive_frame->data[1]);
 
 
                             // Update status
