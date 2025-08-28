@@ -251,6 +251,9 @@ void *modbus_thread_func(void *arg) {
 
                             sprintf(display_str, "%02X %02X %02X %02X", receive_frame->address, receive_frame->function.custom, receive_frame->data[0], receive_frame->data[1]);
 
+                            #ifdef DEBUG
+                            printf("Received modbus data: %s\n", display_str);
+                            #endif
 
                             // Update status
                             pthread_mutex_lock(&command_mutex);

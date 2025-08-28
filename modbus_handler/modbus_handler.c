@@ -302,19 +302,19 @@ data_frame_t *Modbus_Read_Response(uint32_t timeout_ms) {
     size_t data_length = 0;
 
     // Determine frame structure based on function code
-    if (func_code == 0x01 || func_code == 0x02 || func_code == 0x03 || func_code == 0x04) {
+    if (func_code == READ_COILS || func_code == READ_DISCRETE_INPUTS || func_code == READ_HOLDING_REGISTERS || func_code == READ_INPUT_REGISTERS) {
         // Read responses: [addr][func][byte_count][data...][CRC_high][CRC_low]
         if (total_read >= 3) {
             uint8_t byte_count = buffer[2];
             frame_size = 3 + byte_count + 2; // addr + func + count + data + CRC
-            data_start_pos = 3; // Data starts after byte count
-            data_length = byte_count;
+            data_start_pos = 2; // Data starts after byte count
+            data_length = byte_count + 1;
             
             if (frame_size > total_read) {
                 frame_size = total_read; // Use what we have
             }
         }
-    } else if (func_code == 0x05 || func_code == 0x06 || func_code == 0x0F || func_code == 0x10) {
+    } else if (func_code == WRITE_SINGLE_COIL || func_code == WRITE_SINGLE_REGISTER || func_code == WRITE_MULTIPLE_COILS || func_code == WRITE_MULTIPLE_REGISTERS) {
         // Write responses: [addr][func][data_addr_high][data_addr_low][data_high][data_low][CRC_high][CRC_low]
         frame_size = 8; // Fixed size
         data_start_pos = 2;
