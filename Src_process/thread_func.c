@@ -200,8 +200,8 @@ void *modbus_thread_func(void *arg) {
     data_frame_t data_frame;
     time_t get_data_time = 0;
     uint8_t command_buffer[64] = {0};
-    char response_str[128] = {0};
-    char display_str[256] = {0};
+    char response_str[256] = {0};
+    char display_str[128] = {0};
     memset(display_str, 0, sizeof(display_str));
     int receive_num = 0;
     while (1) {
@@ -254,7 +254,11 @@ void *modbus_thread_func(void *arg) {
                             #ifdef DEBUG
                             printf("Received modbus data: %s\n", display_str);
                             #endif
-
+                            response_str[0] = receive_frame->address;
+                            response_str[1] = receive_frame->function.custom;
+                            for (int i = 0; i < receive_frame->frame_length  - 4; i++) {
+                                response_str[i + 2] = receive_frame->data[i];
+                            }
                             // Update status
                             pthread_mutex_lock(&command_mutex);
                             snprintf(status_response, sizeof(status_response),
@@ -273,10 +277,6 @@ void *modbus_thread_func(void *arg) {
             pthread_mutex_unlock(&config_mutex);
             
             get_data_time = current_time;
-            
-            #ifdef DEBUG
-            printf("11-second detection cycle completed\n");
-            #endif
         }
         // =======================================================
         
