@@ -722,8 +722,8 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
 #ifdef DEBUG
         printf("[DEBUG] build_telemetry_payload: Processing node %d - node=%p\n", i, (void*)node);
 #endif
-        
-        if (!node || !node->mqtt_data || !node->detected) {
+
+        if (!node || !node->mqtt_data) {
 #ifdef DEBUG
             printf("[DEBUG] build_telemetry_payload: Skipping node %d - invalid or not detected\n", i);
             printf("[DEBUG]   node=%p, mqtt_data=%p, detected=%s\n", 
