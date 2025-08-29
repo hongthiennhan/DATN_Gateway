@@ -146,7 +146,7 @@ void *uart_thread_func(void *arg) {
                 // Update status
                 pthread_mutex_lock(&command_mutex);
                 snprintf(status_response, sizeof(status_response),
-                         "Received data: %d bytes", data_len);
+                         "Received uart data: %d bytes", data_len);
                 status_color = 2;
                 
                 // Format for display
@@ -200,7 +200,7 @@ void *modbus_thread_func(void *arg) {
     data_frame_t data_frame;
     time_t get_data_time = 0;
     uint8_t command_buffer[64] = {0};
-    char response_str[256] = {0};
+    char response_str[64] = {0};
     char display_str[128] = {0};
     memset(display_str, 0, sizeof(display_str));
     int receive_num = 0;

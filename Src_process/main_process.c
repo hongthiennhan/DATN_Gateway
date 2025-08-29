@@ -85,12 +85,12 @@ int main(void)
     Modbus_Init(UART_map_to_speed(baudrate), device);
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
-    // // Start UART thread (no arg needed, it will wait for shared_node_type)
-    // pthread_t uart_thread;
-    // pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
-    // // Start UI thread
-    // pthread_t ui_thread;
-    // pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
+    // Start UART thread (no arg needed, it will wait for shared_node_type)
+    pthread_t uart_thread;
+    pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
+    // Start UI thread
+    pthread_t ui_thread;
+    pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
     // Start MQTT thread
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
