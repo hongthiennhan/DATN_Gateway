@@ -214,9 +214,9 @@ void *modbus_thread_func(void *arg) {
             usleep(1000 * 1000); // Wait 1000ms during reload
             continue;
         }
-        // Get data every 2 second
+        // Get data every 1 second
         time_t current_time = time(NULL);
-        if ((current_time - get_data_time) >= 2) {
+        if ((current_time - get_data_time) >= 1) {
              pthread_mutex_lock(&config_mutex);
             if (!config_reloading) {
                 for (int i = 0; i < get_node_count(); i++) {
