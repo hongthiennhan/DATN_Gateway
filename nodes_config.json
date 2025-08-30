@@ -5,7 +5,6 @@
       "name": "Node1 - Sensor Board",
       "com_type": "UART",
       "address": "0x01",
-      "is_actuator": 0,
       "detection_commands": [
         {
           "command": "0x03",
@@ -27,8 +26,6 @@
       "name": "Node2 - Display Unit",
       "com_type": "UART",
       "address": "0x02",
-      "is_actuator": 1,
-
       "detection_commands": [
         {
           "command": "0x02",
@@ -51,8 +48,6 @@
       "name": "Node3 - Sensor Board 2",
       "com_type": "Modbus",
       "address": "0x03",
-      "is_actuator": 0,
-
       "detection_commands": [
         {
           "command": "0x01 0x00 0x00 0x00 0x08",
@@ -75,8 +70,6 @@
       "name": "Node4 - Sensor Board 3",
       "address": "0x04",
       "com_type": "Modbus",
-      "is_actuator": 0,
-
       "detection_commands": [
         {
           "command": "0x04 0x00 0x00 0x00 0x01",
@@ -89,6 +82,28 @@
       "menu_items": [
         { "cmd": 1, "label": "LED On",  "hex_value": "0x05 0x00 0x00 0xFF 0x00", "timeout_ms": 0 },
         { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 }
+      ],
+
+      "data_format": "hex",
+      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
+    },
+    {
+      "id": 5,
+      "name": "Node5 - CAN Test",
+      "com_type": "CAN",
+      "address": "0x00",
+      "detection_commands": [
+        {
+          "command": "0x05",
+          "expected_response": "None",
+          "timeout_ms": 100,
+          "description": "Read Input Value"
+        }
+      ],
+
+      "menu_items": [
+        { "cmd": 1, "label": "Activate",   "hex_value": "0xB1", "timeout_ms": 0 },
+        { "cmd": 2, "label": "Deactivate", "hex_value": "0xB2", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",

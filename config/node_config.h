@@ -134,7 +134,6 @@ typedef struct {
     int menu_count;
     char data_format[16];
     char reflash_script[256];
-    int is_actuator;
     
     // NEW: Node detection commands
     detection_cmd_t *detection_commands;

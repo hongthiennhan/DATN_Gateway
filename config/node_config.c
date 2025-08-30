@@ -185,10 +185,6 @@ static int parse_node_config(json_object *node_obj, node_config_t *node)
     {
         safe_strncpy(node->reflash_script, json_object_get_string(temp_obj), sizeof(node->reflash_script));
     }
-    if (json_object_object_get_ex(node_obj, "is_actuator", &temp_obj))
-    {
-        node->is_actuator = json_object_get_boolean(temp_obj);
-    }
 
     // Parse detection commands
     json_object *detection_array;
