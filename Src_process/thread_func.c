@@ -313,6 +313,19 @@ void *modbus_thread_func(void *arg) {
     return NULL;
 }
 
+void can_thread_func(void *arg)
+{
+    uint16_t data_len = 0;
+    unsigned char *data_buffer = NULL;
+    time_t last_detection = 0;  // Chỉ cần timer cho 11 giây detection
+    char response_str[128] = {0};
+    char hex_str[256] = {0};
+    while (1)
+    {
+
+    }
+}
+
 /**
  * Assign received data to appropriate node
  */
