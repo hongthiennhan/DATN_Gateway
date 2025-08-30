@@ -91,14 +91,18 @@ void CAN_Write_Data(uint8_t *data, size_t len)
 }
 
 // Read response from the CAN device
-unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) {
-    if (bytes_read_out == NULL) return NULL;
+unsigned char *CAN_Read_Response(uint32_t timeout_ms, uint16_t *bytes_read_out)
+{
+    if (bytes_read_out == NULL)
+        return NULL;
     *bytes_read_out = 0;
 
     // Acquire mutex for thread-safe CAN access
-    if (pthread_mutex_lock(&can_mutex) != 0) return NULL;
+    if (pthread_mutex_lock(&can_mutex) != 0)
+        return NULL;
 
-    if (can_fd == -1) {
+    if (can_fd == -1)
+    {
         pthread_mutex_unlock(&can_mutex);
         perror("CAN not initialized or already closed");
         return NULL;
@@ -107,10 +111,11 @@ unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) 
     // Get buffer size from config
     can_config_t *config = get_can_config();
     int buffer_size = config ? config->response_buffer_size : 2048; // fallback to 2048
-    
+
     // Allocate buffer for response
-    unsigned char* buffer = (unsigned char*)malloc(buffer_size);
-    if (!buffer) {
+    unsigned char *buffer = (unsigned char *)malloc(buffer_size);
+    if (!buffer)
+    {
         perror("Memory allocation failed");
         pthread_mutex_unlock(&can_mutex);
         return NULL;
@@ -120,7 +125,8 @@ unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) 
     uint32_t waited_ms = 0;
     uint32_t poll_interval = config ? config->poll_interval_ms : 20; // fallback to 20ms
 
-    while (waited_ms < timeout_ms && total_read < buffer_size) {
+    while (waited_ms < timeout_ms && total_read < buffer_size)
+    {
         // Wait for CAN data to become available
         fd_set read_fds;
         FD_ZERO(&read_fds);
@@ -131,10 +137,13 @@ unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) 
         timeout.tv_usec = (poll_interval % 1000) * 1000;
 
         int ready = select(can_fd + 1, &read_fds, NULL, NULL, &timeout);
-        if (ready < 0) {
+        if (ready < 0)
+        {
             perror("select() failed");
             break;
-        } else if (ready == 0) {
+        }
+        else if (ready == 0)
+        {
             // No data yet; increment wait timer
             waited_ms += poll_interval;
             continue;
@@ -142,10 +151,13 @@ unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) 
 
         // Data available — read from CAN
         ssize_t r = read(can_fd, buffer + total_read, buffer_size - total_read);
-        if (r > 0) {
+        if (r > 0)
+        {
             total_read += r;
             break;
-        } else if (r < 0) {
+        }
+        else if (r < 0)
+        {
             perror("read() failed");
             break;
         }
@@ -153,7 +165,8 @@ unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) 
     }
 
     *bytes_read_out = (uint16_t)total_read;
-    if (total_read == 0) {
+    if (total_read == 0)
+    {
         // No data received
         free(buffer);
         buffer = NULL;
@@ -163,16 +176,18 @@ unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out) 
     return buffer;
 }
 
-
-int Check_CAN_Data_Available(void) {
-    if(pthread_mutex_lock(&can_mutex) != 0) return 0;
-    if (can_fd == -1) {
+int Check_CAN_Data_Available(void)
+{
+    if (pthread_mutex_lock(&can_mutex) != 0)
+        return 0;
+    if (can_fd == -1)
+    {
         pthread_mutex_unlock(&can_mutex);
         return 0;
     }
     fd_set readfds;
     struct timeval timeout;
-    
+
     FD_ZERO(&readfds);
     FD_SET(can_fd, &readfds);
 
@@ -182,7 +197,8 @@ int Check_CAN_Data_Available(void) {
 
     int result = select(can_fd + 1, &readfds, NULL, NULL, &timeout);
 
-    if (result > 0 && FD_ISSET(can_fd, &readfds)) {
+    if (result > 0 && FD_ISSET(can_fd, &readfds))
+    {
         pthread_mutex_unlock(&can_mutex);
         return 1; // Data available
     }
