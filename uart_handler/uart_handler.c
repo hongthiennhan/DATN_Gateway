@@ -220,6 +220,11 @@ void Clear_Startup_UART(int fd, uint32_t flush_duration_ms) {
 
 // non-blocking UART data check:
 int Check_UART_Data_Available(void) {
+    if(pthread_mutex_lock(&uart_mutex) != 0) return 0;
+    if (uart_fd == -1) {
+        pthread_mutex_unlock(&uart_mutex);
+        return 0;
+    }
     fd_set readfds;
     struct timeval timeout;
     
@@ -233,8 +238,10 @@ int Check_UART_Data_Available(void) {
     int result = select(uart_fd + 1, &readfds, NULL, NULL, &timeout);
     
     if (result > 0 && FD_ISSET(uart_fd, &readfds)) {
+        pthread_mutex_unlock(&uart_mutex);
         return 1; // Data available
     }
-    
+
+    pthread_mutex_unlock(&uart_mutex);
     return 0; // No data
 }
