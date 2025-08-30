@@ -20,6 +20,8 @@ typedef struct{
     uint8_t data_len;
 } CAN_Message_USB;
 
+extern int can_fd;
+
 void CAN_Init(speed_t baudrate, char *device);
 void CAN_Write_Data(uint8_t *data, size_t len);
 unsigned char* CAN_Read_Response(uint32_t timeout_ms);
