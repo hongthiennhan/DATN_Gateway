@@ -218,11 +218,11 @@ void CAN_USB_to_Byte(CAN_Message_USB_t *usb_msg, uint8_t *byte_array)
     byte_array[1] = usb_msg->command;
     byte_array[2] = usb_msg->id & 0xFF;        // Low byte of ID
     byte_array[3] = (usb_msg->id >> 8) & 0xFF; // High byte of ID
-    for (int i = 0; i < usb_msg->data_length; i++)
+    for (int i = 0; i < usb_msg->data_len; i++)
     {
         byte_array[4 + i] = usb_msg->data[i];
     }
-    byte_array[4 + usb_msg->data_length] = usb_msg->footer;
+    byte_array[4 + usb_msg->data_len] = usb_msg->footer;
 }
 
 void CAN_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array)
