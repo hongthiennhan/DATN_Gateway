@@ -377,7 +377,6 @@ void *modbus_thread_func(void *arg)
 
 void *can_thread_func(void *arg)
 {
-    uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
     time_t last_detection = 0; // Chỉ cần timer cho 11 giây detection
     uint8_t response_str[32] = {0};
@@ -428,7 +427,7 @@ void *can_thread_func(void *arg)
                         else
                         {
                             can_msg_custom.header = CAN_CUSTOM_HEADER;
-                            can_msg_custom.id = (command_buffer[0] << 8) | command_buffer[1];
+                            can_msg_custom.ID = (command_buffer[0] << 8) | command_buffer[1];
                             can_msg_custom.DLC = cmd_length - 2;
                             can_msg_custom.RTR = 0;
                             can_msg_custom.IDE = 0;
@@ -572,7 +571,7 @@ void *can_thread_func(void *arg)
                         else
                         {
                             can_msg_custom.header = CAN_CUSTOM_HEADER;
-                            can_msg_custom.id = (command_buffer[0] << 8) | command_buffer[1];
+                            can_msg_custom.ID = (command_buffer[0] << 8) | command_buffer[1];
                             can_msg_custom.DLC = cmd_length - 2;
                             can_msg_custom.RTR = 0;
                             can_msg_custom.IDE = 0;
