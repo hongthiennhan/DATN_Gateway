@@ -225,9 +225,10 @@ void CAN_USB_to_Byte(CAN_Message_USB_t *usb_msg, uint8_t *byte_array)
     byte_array[4 + usb_msg->data_len] = usb_msg->footer;
 }
 
-void CAN_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array)
+// Convert custom CAN message to byte array
+void CAN_Custom_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array)
 {
-    if (!can_msg || !byte_array || can_msg->data_len > 8)
+    if (!can_msg || !byte_array || can_msg->DLC > 8)
     {
         return;
     }
@@ -237,8 +238,8 @@ void CAN_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array)
     byte_array[3] = can_msg->RTR;
     byte_array[4] = can_msg->IDE;
     byte_array[5] = can_msg->reserved;
-    byte_array[6] = can_msg->DLC & 0x0F;
-    for (int i = 0; i < can_msg->data_len; i++)
+    byte_array[6] = can_msg->DLC;
+    for (int i = 0; i < can_msg->DLC; i++)
     {
         byte_array[7 + i] = can_msg->data[i];
     }
