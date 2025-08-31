@@ -360,7 +360,7 @@ void *can_thread_func(void *arg)
         
         time_t current_time = time(NULL);
 
-        if ((current_time - last_detection) >= 5) {
+        if ((current_time - last_detection) >= 2) {
             pthread_mutex_lock(&config_mutex);
             if (!config_reloading) {
                 for (int i = 0; i < get_node_count(); i++) {
