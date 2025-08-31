@@ -34,7 +34,7 @@ void CAN_Init(speed_t baudrate, char *device);
 void CAN_Write_Data(uint8_t *data, size_t len);
 unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out);
 extern int Check_CAN_Data_Available(void);
-void CAN_USB_to_Byte(CAN_Message_USB *usb_msg, uint8_t *byte_array);
-void CAN_to_Byte(CAN_Message *can_msg, uint8_t *byte_array);
+void CAN_USB_to_Byte(CAN_Message_USB_t *usb_msg, uint8_t *byte_array);
+void CAN_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array);
 
 #endif
