@@ -416,6 +416,7 @@ void *can_thread_func(void *arg)
                         uint8_t cmd_length = hex_string_to_bytes(node->detection_commands[0].command, command_buffer, sizeof(command_buffer));
                         if (CAN_TYPE == 0)
                         {
+                            can_msg.header = CAN_USB_HEADER;
                             can_msg.id = (command_buffer[0] << 8) | command_buffer[1];
                             can_msg.command = CAN_USB_COMMAND;
                             can_msg.data = command_buffer + 2;
@@ -560,6 +561,7 @@ void *can_thread_func(void *arg)
                         uint8_t cmd_length = hex_string_to_bytes(node->detection_commands[0].command, command_buffer, sizeof(command_buffer));
                         if (CAN_TYPE == 0)
                         {
+                            can_msg.header = CAN_USB_HEADER;
                             can_msg.id = (command_buffer[0] << 8) | command_buffer[1];
                             can_msg.command = CAN_USB_COMMAND;
                             can_msg.data = command_buffer + 2;
