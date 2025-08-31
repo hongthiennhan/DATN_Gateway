@@ -126,6 +126,16 @@ typedef struct {
 } modbus_config_t;
 
 typedef struct {
+    int response_buffer_size;
+    int temp_buffer_size;
+    int error_message_buffer_size;
+    int poll_interval_ms;
+    baudrate_mapping_t *supported_baudrates;
+    int baudrate_count;
+    int default_baudrate_fallback;
+} can_config_t;
+
+typedef struct {
     int node_id;
     char address[8];
     char name[64];
@@ -168,6 +178,9 @@ typedef struct {
     // Modbus config
     modbus_config_t modbus_config;
 
+    // CAN config
+    can_config_t can_config;
+
     // MQTT config
     mqtt_config_t mqtt_config;
     
@@ -198,6 +211,9 @@ uart_config_t* get_uart_config(void);
 
 // Modbus config getters
 modbus_config_t* get_modbus_config(void);
+
+// CAN config getters
+can_config_t* get_can_config(void);
 
 // MQTT config getters
 mqtt_config_t* get_mqtt_config(void);

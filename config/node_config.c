@@ -437,6 +437,71 @@ int load_nodes_config(const char *config_file)
             node_registry.modbus_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
 
+    //Parse CAN config:
+    json_object *can_obj;
+    if (json_object_object_get_ex(effective_root, "can_config", &can_obj))
+    {
+        json_object *buffer_sizes_obj;
+        if (json_object_object_get_ex(can_obj, "buffer_sizes", &buffer_sizes_obj))
+        {
+            json_object *response_buffer_obj, *temp_buffer_obj, *error_message_buffer_obj;
+            if (json_object_object_get_ex(buffer_sizes_obj, "response_buffer", &response_buffer_obj))
+                node_registry.can_config.buffer_sizes.response_buffer = json_object_get_int(response_buffer_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "temp_buffer", &temp_buffer_obj))
+                node_registry.can_config.buffer_sizes.temp_buffer = json_object_get_int(temp_buffer_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "error_message_buffer", &error_message_buffer_obj))
+                node_registry.can_config.buffer_sizes.error_message_buffer = json_object_get_int(error_message_buffer_obj);
+        }
+
+        json_object *timing_obj;
+        if (json_object_object_get_ex(can_obj, "timing", &timing_obj))
+        {
+            if (json_object_object_get_ex(timing_obj, "poll_interval_ms", &temp_obj))
+                node_registry.can_config.timing.poll_interval_ms = json_object_get_int(temp_obj);
+        }
+
+        json_object *support_baudrate;
+        if (json_object_object_get_ex(can_obj, "supported_baudrates", &support_baudrate)) {
+            int baudrate_array_len = json_object_array_length(support_baudrate);
+            if (baudrate_array_len > 0) {
+                node_registry.can_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
+                if (node_registry.can_config.supported_baudrates) {
+                    node_registry.can_config.baudrate_count = 0;
+
+                    for (int i = 0; i < baudrate_array_len; i++) {
+                        json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
+                        json_object *rate_obj, *code_obj;
+
+                        if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
+                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
+
+                            baudrate_mapping_t *mapping = &node_registry.can_config.supported_baudrates[node_registry.can_config.baudrate_count];
+                            mapping->rate = json_object_get_int(rate_obj);
+                            safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
+
+                            node_registry.can_config.baudrate_count++;
+
+    #ifdef DEBUG
+                            printf("Loaded can baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
+    #endif
+                        }
+                    }
+
+    #ifdef DEBUG
+                    printf("Total can supported baudrates loaded: %d\n", node_registry.can_config.baudrate_count);
+    #endif
+                } else {
+    #ifdef DEBUG
+                    printf("Error: Failed to allocate memory for can supported baudrates\n");
+    #endif
+                }
+            }
+        }
+
+        if (json_object_object_get_ex(can_obj, "default_baudrate_fallback", &temp_obj))
+            node_registry.can_config.default_baudrate_fallback = json_object_get_int(temp_obj);
+    }
+
     // Parse MQTT config - SAFE VERSION
     json_object *mqtt_obj;
     if (json_object_object_get_ex(effective_root, "mqtt_config", &mqtt_obj))
@@ -627,6 +692,7 @@ int get_startup_clear_duration(void) { return node_registry.startup_clear_durati
 system_info_t *get_system_info(void) { return &node_registry.system_info; }
 uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
 modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
+can_config_t *get_can_config(void) { return &node_registry.can_config; }
 mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
 
 // Control queue functions

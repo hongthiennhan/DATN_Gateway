@@ -129,8 +129,8 @@
 
   "uart_config": {
     "buffer_sizes": {
-      "response_buffer": 2048,
-      "temp_buffer": 1024,
+      "response_buffer": 512,
+      "temp_buffer": 256,
       "error_message_buffer": 100
     },
     "timing": {
@@ -153,7 +153,7 @@
   "modbus_config": {
     "buffer_sizes": {
       "response_buffer": 512,
-      "temp_buffer": 1024,
+      "temp_buffer": 256,
       "error_message_buffer": 100
     },
     "timing": {
@@ -168,7 +168,24 @@
       { "rate": 57600,  "speed_code": "B57600"  },
       { "rate": 115200, "speed_code": "B115200" }
     ],
-    "default_baudrate_fallback": 9600
+      "default_baudrate_fallback": 115200
+  },
+  "can_config": {
+      "buffer_sizes": {
+        "response_buffer": 512,
+        "temp_buffer": 256,
+        "error_message_buffer": 100
+      },
+      "timing": {
+        "poll_interval_ms": 20
+      },
+      "supported_baudrates": [
+        { "rate": 115200, "speed_code": "B115200" },
+        { "rate": 256000, "speed_code": "B256000" },
+        { "rate": 512000, "speed_code": "B512000" },
+        { "rate": 9216000, "speed_code": "B921600" }
+      ],
+      "default_baudrate_fallback": 115200
   },
 
   "mqtt_config": {

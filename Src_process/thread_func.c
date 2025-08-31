@@ -336,7 +336,7 @@ void *modbus_thread_func(void *arg) {
     return NULL;
 }
 
-void can_thread_func(void *arg)
+void *can_thread_func(void *arg)
 {
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
