@@ -94,7 +94,7 @@
       "address": "0x00",
       "detection_commands": [
         {
-          "command": "0x05",
+          "command": "0x00 0x05 0xAA 0xBB 0xCC",
           "expected_response": "None",
           "timeout_ms": 100,
           "description": "Read Input Value"
@@ -102,8 +102,8 @@
       ],
 
       "menu_items": [
-        { "cmd": 1, "label": "Activate",   "hex_value": "0xB1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "Deactivate", "hex_value": "0xB2", "timeout_ms": 0 }
+        { "cmd": 1, "label": "Activate",   "hex_value": "0x00 0x0A 0x00 0x00 0xFF", "timeout_ms": 0 },
+        { "cmd": 2, "label": "Deactivate", "hex_value": "0x00 0x0B 0x00 0x00 0xFF", "timeout_ms": 0 }
       ],
 
       "data_format": "hex",
