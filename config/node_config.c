@@ -441,16 +441,17 @@ int load_nodes_config(const char *config_file)
     json_object *can_obj;
     if (json_object_object_get_ex(effective_root, "can_config", &can_obj))
     {
+        json_object *temp_obj;
         json_object *buffer_sizes_obj;
+
         if (json_object_object_get_ex(can_obj, "buffer_sizes", &buffer_sizes_obj))
         {
-            json_object *response_buffer_obj, *temp_buffer_obj, *error_message_buffer_obj;
-            if (json_object_object_get_ex(buffer_sizes_obj, "response_buffer", &response_buffer_obj))
-                node_registry.can_config.buffer_sizes.response_buffer = json_object_get_int(response_buffer_obj);
-            if (json_object_object_get_ex(buffer_sizes_obj, "temp_buffer", &temp_buffer_obj))
-                node_registry.can_config.buffer_sizes.temp_buffer = json_object_get_int(temp_buffer_obj);
-            if (json_object_object_get_ex(buffer_sizes_obj, "error_message_buffer", &error_message_buffer_obj))
-                node_registry.can_config.buffer_sizes.error_message_buffer = json_object_get_int(error_message_buffer_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "response_buffer", &temp_obj))
+                node_registry.can_config.response_buffer_size = json_object_get_int(&temp_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "temp_buffer", &temp_obj))
+                node_registry.can_config.temp_buffer_size = json_object_get_int(&temp_obj);
+            if (json_object_object_get_ex(buffer_sizes_obj, "error_message_buffer", &temp_obj))
+                node_registry.can_config.error_message_buffer_size = json_object_get_int(&temp_obj);
         }
 
         json_object *timing_obj;
