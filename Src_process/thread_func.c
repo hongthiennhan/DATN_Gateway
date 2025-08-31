@@ -382,7 +382,7 @@ void *can_thread_func(void *arg)
     uint8_t response_str[32] = {0};
     uint8_t command_buffer[32] = {0};
     uint8_t write_buffer[32] = {0};
-    uint8_t data_len = 0;
+    uint16_t data_len = 0;
     char hex_str[128] = {0};
     CAN_Message_USB_t can_msg;
     CAN_Message_t can_msg_custom;
