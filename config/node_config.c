@@ -447,18 +447,18 @@ int load_nodes_config(const char *config_file)
         if (json_object_object_get_ex(can_obj, "buffer_sizes", &buffer_sizes_obj))
         {
             if (json_object_object_get_ex(buffer_sizes_obj, "response_buffer", &temp_obj))
-                node_registry.can_config.response_buffer_size = json_object_get_int(&temp_obj);
+                node_registry.can_config.response_buffer_size = json_object_get_int(temp_obj);
             if (json_object_object_get_ex(buffer_sizes_obj, "temp_buffer", &temp_obj))
-                node_registry.can_config.temp_buffer_size = json_object_get_int(&temp_obj);
+                node_registry.can_config.temp_buffer_size = json_object_get_int(temp_obj);
             if (json_object_object_get_ex(buffer_sizes_obj, "error_message_buffer", &temp_obj))
-                node_registry.can_config.error_message_buffer_size = json_object_get_int(&temp_obj);
+                node_registry.can_config.error_message_buffer_size = json_object_get_int(temp_obj);
         }
 
         json_object *timing_obj;
         if (json_object_object_get_ex(can_obj, "timing", &timing_obj))
         {
             if (json_object_object_get_ex(timing_obj, "poll_interval_ms", &temp_obj))
-                node_registry.can_config.timing.poll_interval_ms = json_object_get_int(temp_obj);
+                node_registry.can_config.poll_interval_ms = json_object_get_int(temp_obj);
         }
 
         json_object *support_baudrate;
