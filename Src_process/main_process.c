@@ -99,8 +99,8 @@ int main(void)
     pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
 
     // Main waits for threads to finish (does nothing else)
-    // pthread_join(uart_thread, NULL);
-    // pthread_join(ui_thread, NULL);
+    pthread_join(uart_thread, NULL);
+    pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
     pthread_join(modbus_thread, NULL);
     // Cleanup the device string
