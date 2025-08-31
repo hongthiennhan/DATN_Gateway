@@ -26,6 +26,12 @@ thread_pause_t modbus_pause = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
+thread_pause_t can_pause = {
+    .is_paused = false,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
 thread_pause_t mqtt_pause = {
     .is_paused = false,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -141,7 +147,24 @@ void *uart_thread_func(void *arg) {
                 #endif
                 
                 // SAFE process received data
-                safe_process_uart_data(data_buffer, data_len);
+                if (data_buffer != NULL && data_len > 0 && !config_reloading) {
+                    pthread_mutex_lock(&config_mutex);
+                    int node_count = get_node_count();
+                    for (int i = 0; i < node_count; i++) {
+                        node_config_t *node = get_node_by_index(i);
+                        if (node && node->detected) {
+                            // Update last data received timestamp
+                            node->last_data_received = time(NULL);
+                            // Update MQTT data with received response
+                            update_mqtt_data_from_response(node, data_buffer, data_len);
+                            #ifdef DEBUG
+                            printf("Data assigned to node %d (%s)\n", node->node_id, node->name);
+                            #endif
+                            break;
+                        }
+                    }
+                    pthread_mutex_unlock(&config_mutex);
+                }
                 
                 // Update status
                 pthread_mutex_lock(&command_mutex);
@@ -318,36 +341,164 @@ void can_thread_func(void *arg)
     uint16_t data_len = 0;
     unsigned char *data_buffer = NULL;
     time_t last_detection = 0;  // Chỉ cần timer cho 11 giây detection
-    char response_str[128] = {0};
-    char hex_str[256] = {0};
-    while (1)
-    {
-
-    }
-}
-
-/**
- * Assign received data to appropriate node
- */
-void safe_process_uart_data(unsigned char *data, uint16_t data_len) {
-    if (!data || data_len == 0 || config_reloading) return;
-    
-    pthread_mutex_lock(&config_mutex);
-    int node_count = get_node_count();
-    for (int i = 0; i < node_count; i++) {
-        node_config_t *node = get_node_by_index(i);
-        if (node && node->detected) {
-            // Update last data received timestamp
-            node->last_data_received = time(NULL);
-            // Update MQTT data with received response
-            update_mqtt_data_from_response(node, data, data_len);
-            #ifdef DEBUG
-            printf("Data assigned to node %d (%s)\n", node->node_id, node->name);
-            #endif
-            break;
+    uint8_t response_str[32] = {0};
+    uint8_t command_buffer[32] = {0};
+    uint8_t write_buffer[32] = {0};
+    char hex_str[128] = {0};
+    CAN_Message_USB_t can_msg;
+    while (1) {
+        pthread_mutex_lock(&can_pause.mutex);
+        while (can_pause.is_paused) {
+            pthread_cond_wait(&can_pause.cond, &can_pause.mutex);  // Sleep and wait for signal
         }
+        pthread_mutex_unlock(&can_pause.mutex);
+        // Skip processing during config reload
+        if (config_reloading) {
+            usleep(100 * 1000); // Wait 100ms during reload
+            continue;
+        }
+        
+        time_t current_time = time(NULL);
+
+        if ((current_time - last_detection) >= 5) {
+            pthread_mutex_lock(&config_mutex);
+            if (!config_reloading) {
+                for (int i = 0; i < get_node_count(); i++) {
+                    node_config_t *node = get_node_by_index(i);
+                    if (node && node->detection_commands && node->detection_count > 0 && strncmp(node->com_type, "CAN", 3) == 0) {
+                        uint8_t cmd_length = hex_string_to_bytes(node->detection_commands[0].command, command_buffer, sizeof(command_buffer));
+                        can_msg.header = CAN_USB_HEADER;
+                        can_msg.id = (command_buffer[0] << 8) | command_buffer[1];
+                        can_msg.command = CAN_USB_COMMAND;
+                        can_msg.data = command_buffer + 2;
+                        can_msg.data_len = cmd_length - 2;
+                        can_msg.footer = CAN_USB_FOOTER;
+                        CAN_USB_to_Byte(&can_msg, write_buffer);
+                        CAN_Write_Data(write_buffer, can_msg.data_len + 5);
+
+                        // Read response with timeout from JSON
+                        int timeout_ms = node->detection_commands[0].timeout_ms;
+                        if (timeout_ms <= 0) timeout_ms = 1000; // Default 1 second
+
+                        data_buffer = CAN_Read_Response(timeout_ms, &data_len);
+
+                        if (data_buffer && data_len > 0) {
+                            node->detected = 1;
+                            // Convert response to string for comparison
+                            int max_len = (data_len < 127) ? data_len : 127;
+                            memcpy(response_str, data_buffer, max_len);
+                            response_str[max_len] = '\0';
+
+                            // Update MQTT data with received response
+                            update_mqtt_data_from_response(node, response_str, data_len);
+                            
+                            // Update status for CAN
+                            pthread_mutex_lock(&command_mutex);
+                            snprintf(status_response, sizeof(status_response),
+                                     "Received CAN data: %d bytes", data_len);
+                            status_color = 2;
+
+                            // Format for display
+                            int max_display = (data_len > 50) ? 50 : data_len;
+                            for (int i = 0; i < max_display; i++) {
+                                sprintf(hex_str + strlen(hex_str), "%02X ", data_buffer[i]);
+                            }
+                            snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
+                                     data_len, hex_str, (data_len > 50) ? "..." : "");
+                            pthread_mutex_unlock(&command_mutex);
+
+                            memset(hex_str, 0, sizeof(hex_str));
+                            free(data_buffer);
+                            data_buffer = NULL;
+                        }
+                        else{
+                            node->detected = 0;
+                        }
+                    }
+                }
+            }
+            pthread_mutex_unlock(&config_mutex);
+            
+            last_detection = current_time;
+        }
+        // =======================================================
+
+        // Check for data from CAN (normal operation)
+        if (Check_CAN_Data_Available()) {
+            data_buffer = CAN_Read_Response(1000, &data_len);
+            if (data_buffer && data_len > 0) {
+                // SAFE process received data
+                if (data_buffer != NULL && data_len > 0 && !config_reloading) {
+                    pthread_mutex_lock(&config_mutex);
+                    int node_count = get_node_count();
+                    for (int i = 0; i < node_count; i++) {
+                        node_config_t *node = get_node_by_index(i);
+                        if (node && node->detected) {
+                            // Update last data received timestamp
+                            node->last_data_received = time(NULL);
+                            // Update MQTT data with received response
+                            update_mqtt_data_from_response(node, data_buffer, data_len);
+                            break;
+                        }
+                    }
+                    pthread_mutex_unlock(&config_mutex);
+                }
+                
+                // Update status
+                pthread_mutex_lock(&command_mutex);
+                snprintf(status_response, sizeof(status_response),
+                         "Received CAN data: %d bytes", data_len);
+                status_color = 2;
+                
+                // Format for display
+                int max_display = (data_len > 50) ? 50 : data_len;
+                for (int i = 0; i < max_display; i++) {
+                    sprintf(hex_str + strlen(hex_str), "%02X ", data_buffer[i]);
+                }
+                snprintf((char*)receive_data, sizeof(receive_data), "Auto Data[%d bytes]: %s%s",
+                         data_len, hex_str, (data_len > 50) ? "..." : "");
+                pthread_mutex_unlock(&command_mutex);
+                memset(hex_str, 0, sizeof(hex_str));
+                free(data_buffer);
+                data_buffer = NULL;
+                data_len = 0;
+            }
+        }
+        
+        // Handle server control commands
+        server_control_cmd_t control_cmd;
+        if (get_control_command(&control_cmd) == 0) {
+            pthread_mutex_lock(&config_mutex);
+            if (!config_reloading) {
+                node_config_t *node = get_node_by_id(control_cmd.node_id);
+                if (node) {
+                    menu_item_t *menu_item = get_menu_item_by_cmd(node, control_cmd.cmd_id);
+                    if (menu_item) {
+                        #ifdef DEBUG
+                        printf("Executing server command: node=%d, cmd=%d\n",
+                               control_cmd.node_id, control_cmd.cmd_id);
+                        #endif
+                        
+                        // Write CAN command
+                        uint8_t cmd_length = hex_string_to_bytes(node->detection_commands[0].command, command_buffer, sizeof(command_buffer));
+                        can_msg.header = CAN_USB_HEADER;
+                        can_msg.id = (command_buffer[0] << 8) | command_buffer[1];
+                        can_msg.command = CAN_USB_COMMAND;
+                        can_msg.data = command_buffer + 2;
+                        can_msg.data_len = cmd_length - 2;
+                        can_msg.footer = CAN_USB_FOOTER;
+                        CAN_USB_to_Byte(&can_msg, write_buffer);
+                        CAN_Write_Data(write_buffer, can_msg.data_len + 5);
+
+                    }
+                }
+            }
+            pthread_mutex_unlock(&config_mutex);
+        }
+        
+        usleep(100 * 1000); // 100ms sleep
     }
-    pthread_mutex_unlock(&config_mutex);
+    return NULL;
 }
 
 /**

@@ -208,7 +208,7 @@ int Check_CAN_Data_Available(void)
 }
 
 // Convert USB to CAN message to byte array
-void CAN_USB_to_Byte(CAN_Message_USB *usb_msg, uint8_t *byte_array)
+void CAN_USB_to_Byte(CAN_Message_USB_t *usb_msg, uint8_t *byte_array)
 {
     if (!usb_msg || !byte_array || usb_msg->data_len > 8)
     {
@@ -225,7 +225,7 @@ void CAN_USB_to_Byte(CAN_Message_USB *usb_msg, uint8_t *byte_array)
     byte_array[4 + usb_msg->data_length] = usb_msg->footer;
 }
 
-void CAN_to_Byte(CAN_Message *can_msg, uint8_t *byte_array)
+void CAN_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array)
 {
     if (!can_msg || !byte_array || can_msg->data_len > 8)
     {

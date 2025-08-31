@@ -17,7 +17,7 @@ typedef struct {
     uint8_t DLC; // 4 bits Data Length Code
     uint8_t* data; // 0 - 8 bytes of data
     uint8_t data_len;
-} CAN_Message;
+} CAN_Message_t;
 
 typedef struct{
     uint8_t header;
@@ -26,7 +26,7 @@ typedef struct{
     uint8_t *data;
     uint8_t footer;
     uint8_t data_len;
-} CAN_Message_USB;
+} CAN_Message_USB_t;
 
 extern int can_fd;
 

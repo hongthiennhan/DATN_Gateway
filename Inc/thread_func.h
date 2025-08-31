@@ -5,6 +5,7 @@
 #include "uart_handler.h"
 #include "node_config.h"  // Include này để có node_config_t và menu_item_t types
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
+#include "can_handler.h" // Include CAN handler for CAN data types
 
 typedef struct shared_data_s {
     void* data;
@@ -47,8 +48,6 @@ void *ui_thread_func(void *arg);
 void *modbus_thread_func(void *arg);
 void *can_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
-void process_uart_data(unsigned char *data, uint16_t data_len);
-void safe_process_uart_data(unsigned char *data, uint16_t data_len);
 
 // Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
