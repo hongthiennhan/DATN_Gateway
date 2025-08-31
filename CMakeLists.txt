@@ -32,6 +32,7 @@ set(INCLUDE_DIRS
     config
     modbus_handler
     Inc
+    CAN_handler
 )
 
 # Source files for main application (UPDATED: Added node_config.c)
@@ -42,6 +43,7 @@ set(SOURCES_2
     config/node_config.c
     uart_handler/uart_handler.c
     modbus_handler/modbus_handler.c
+    CAN_handler/CAN_handler.c
 )
 
 # Add main executable

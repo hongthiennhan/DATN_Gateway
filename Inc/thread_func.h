@@ -5,7 +5,7 @@
 #include "uart_handler.h"
 #include "node_config.h"  // Include này để có node_config_t và menu_item_t types
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
-#include "can_handler.h" // Include CAN handler for CAN data types
+#include "CAN_handler.h" // Include CAN handler for CAN data types
 
 typedef struct shared_data_s {
     void* data;
