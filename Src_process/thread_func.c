@@ -414,6 +414,7 @@ void *can_thread_func(void *arg)
                         else{
                             node->detected = 0;
                         }
+                        usleep(5 * 1000); // Small delay for next command
                     }
                 }
             }
