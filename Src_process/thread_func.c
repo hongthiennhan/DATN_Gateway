@@ -815,7 +815,7 @@ void *ui_thread_func(void *arg) {
                         const char *node_comm_types[] = {
                             "UART",
                             "Modbus",
-                            "CAN (Coming soon)"
+                            "CAN"
                         };
                         int node_comm_highlight = 0;
                         int node_comm_selecting = 1;
@@ -848,11 +848,19 @@ void *ui_thread_func(void *arg) {
                                         Uart_Init(UART_map_to_speed(baudrate), device);
                                         pause_thread(&modbus_pause);
                                         resume_thread(&uart_pause);
+                                        pause_thread(&can_pause);
                                     } else if (node_comm_highlight == 1) {
                                         // Modbus selected
                                         Modbus_Init(UART_map_to_speed(baudrate), device);
                                         pause_thread(&uart_pause);
+                                        pause_thread(&can_pause);
                                         resume_thread(&modbus_pause);
+                                    } else if (node_comm_highlight == 2) {
+                                        // CAN selected
+                                        CAN_Init(UART_map_to_speed(baudrate), device);
+                                        pause_thread(&uart_pause);
+                                        pause_thread(&modbus_pause);
+                                        resume_thread(&can_pause);
                                     }
                                     mvprintw(5 + sizeof(node_comm_types) / sizeof(node_comm_types[0]) + 4, 0, "Node communication type changed to: %s",
                                              node_comm_types[node_comm_highlight]);
