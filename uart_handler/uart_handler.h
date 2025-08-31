@@ -2,7 +2,7 @@
 #define __UART_HANDLER_H__
 
 #include "main.h"
-
+#include "node_config.h"
 // Remove hard-coded CONFIG_FILE - now get from config
 
 extern int uart_fd;

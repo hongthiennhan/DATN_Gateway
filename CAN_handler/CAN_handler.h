@@ -1,6 +1,7 @@
 #ifndef __CAN_HANDLER_H__
 #define __CAN_HANDLER_H__
 #include "main.h"
+#include "node_config.h"
 
 #define CAN_USB_HEADER 0xAA
 #define CAN_USB_COMMAND 0xC2
