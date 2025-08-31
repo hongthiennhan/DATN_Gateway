@@ -949,7 +949,7 @@ void *ui_thread_func(void *arg)
                 const char *node_comm_types[] = {
                     "UART",
                     "Modbus",
-                    "CAN USB"
+                    "CAN USB",
                     "CAN CUSTOM"};
                 int node_comm_highlight = 0;
                 int node_comm_selecting = 1;
