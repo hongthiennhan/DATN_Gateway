@@ -3,7 +3,7 @@
 volatile uint8_t is_busy = 0;
 pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
 char status_response[256] = "System ready";
-int status_color = 2;
+uint32_t status_color = 2;
 unsigned char receive_data[512] = {0};
 unsigned char send_data[512] = {0};
 uint8_t CAN_TYPE = 0; // 0: USB, 1: CUSTOM
