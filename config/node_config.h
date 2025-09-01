@@ -299,7 +299,7 @@ const char* get_communication_type_name(communication_type_t type);
 
 // Mutex for config file:
 extern pthread_mutex_t config_mutex;
-extern volatile int config_reloading;
+extern volatile uint32_t config_reloading;
 
 // Thread-safe functions
 int safe_get_node_count(void);
