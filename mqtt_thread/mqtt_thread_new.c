@@ -319,11 +319,11 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data) {
             if (attributes) {
                 snprintf(attributes, config->attributes_buffer_size,
                     "{"
-                    "\"gateway_ip\":\"%s\"," 
-                    "\"firmware_version\":\"%s\"," 
-                    "\"device_type\":\"%s\"," 
-                    "\"manufacturer\":\"%s\"," 
-                    "\"model\":\"%s\"," 
+                    "\"gateway_ip\":\"%s\","
+                    "\"firmware_version\":\"%s\","
+                    "\"device_type\":\"%s\","
+                    "\"manufacturer\":\"%s\","
+                    "\"model\":\"%s\","
                     "\"node_count\":%d"
                     "}",
                     get_local_ip(),
@@ -610,12 +610,12 @@ void *mqtt_thread_func(void *arg) {
     // Init Mongoose manager
     mg_mgr_init(&mqtt_mgr);
 
-    // Build connection URL
+    // **FIX 1: Build connection URL correctly for ThingsBoard**
     char url[512];
-    if (strlen(config->username) > 0 && strlen(config->password) > 0) {
-        snprintf(url, sizeof(url), "mqtt://%s:%s@%s:%d", 
-                config->username, config->password, 
-                config->broker_host, config->broker_port);
+    // For ThingsBoard: only use username (access token), no password in URL
+    if (strlen(config->username) > 0) {
+        snprintf(url, sizeof(url), "mqtt://%s@%s:%d", 
+                config->username, config->broker_host, config->broker_port);
     } else {
         snprintf(url, sizeof(url), "mqtt://%s:%d", 
                 config->broker_host, config->broker_port);
@@ -623,10 +623,19 @@ void *mqtt_thread_func(void *arg) {
 
     #ifdef DEBUG
     printf("Connecting to MQTT broker: %s\n", url);
+    printf("DEBUG: Username: '%s'\n", config->username);
+    printf("DEBUG: Password: '%s'\n", config->password);
     #endif
 
-    // Setup MQTT options
-    struct mg_mqtt_opts opts = { .client_id = mg_str(config->client_id) };
+    // **FIX 2: Setup MQTT options with explicit credentials**
+    struct mg_mqtt_opts opts = {
+        .client_id = mg_str(config->client_id),
+        .user = mg_str(config->username),      // Explicit username
+        .pass = mg_str(""),                    // Empty password for ThingsBoard
+        .clean = true,                         // Clean session
+        .keep_alive = 60,                      // Keep alive timeout
+        .version = 4                           // MQTT 3.1.1
+    };
 
     // Connect to MQTT
     mqtt_connection = mg_mqtt_connect(&mqtt_mgr, url, &opts, mqtt_event_handler, NULL);
@@ -643,6 +652,13 @@ void *mqtt_thread_func(void *arg) {
     while (!mqtt_connected && connection_timeout > 0) {
         mg_mgr_poll(&mqtt_mgr, 100); // 100 ms poll
         connection_timeout--;
+        
+        // **FIX 3: Add connection progress logging**
+        if (connection_timeout % 10 == 0 && connection_timeout > 0) {
+            #ifdef DEBUG
+            printf("MQTT: Waiting for connection... (%d seconds left)\n", connection_timeout/10);
+            #endif
+        }
     }
 
     if (!mqtt_connected) {
@@ -703,6 +719,10 @@ void *mqtt_thread_func(void *arg) {
                 pub_opts.retain = false;
                 mg_mqtt_pub(mqtt_connection, &pub_opts);
                 last_publish = current_time;
+                
+                #ifdef DEBUG
+                printf("Telemetry published: %s\n", telemetry_payload);
+                #endif
             }
         }
 
@@ -722,9 +742,23 @@ void *mqtt_thread_func(void *arg) {
             }
         }
 
-        // Reconnect if disconnected
-        if (!mqtt_connected && mqtt_connection) {
+        // **FIX 4: Improved reconnection logic**
+        if (!mqtt_connected) {
+            #ifdef DEBUG
+            printf("MQTT: Connection lost, attempting reconnect...\n");
+            #endif
+            
+            // Clear existing connection
+            if (mqtt_connection) {
+                mg_mgr_poll(&mqtt_mgr, 0); // Process any pending events
+                mqtt_connection = NULL;
+            }
+            
+            // Create new connection
             mqtt_connection = mg_mqtt_connect(&mqtt_mgr, url, &opts, mqtt_event_handler, NULL);
+            
+            // Wait before next attempt
+            usleep(5000 * 1000); // 5 seconds delay
         }
 
         usleep(config->loop_interval_ms * 1000);
