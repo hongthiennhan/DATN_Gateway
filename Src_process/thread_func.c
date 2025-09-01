@@ -610,6 +610,7 @@ void *ui_thread_func(void *arg)
     timeout(100); // timeout for refresh
     pause_thread(&uart_pause);
     pause_thread(&modbus_pause);
+    pause_thread(&can_pause);
     int highlight = 0;
     int key_check;
     while (1)
