@@ -609,10 +609,8 @@ void *mqtt_thread_func(void *arg) {
 
     // Init Mongoose manager
     mg_mgr_init(&mqtt_mgr);
-
-    // **FIX 1: Build connection URL correctly for ThingsBoard**
+    // Build Connection URL
     char url[512];
-    // For ThingsBoard: only use username (access token), no password in URL
     if (strlen(config->username) > 0) {
         snprintf(url, sizeof(url), "mqtt://%s@%s:%d", 
                 config->username, config->broker_host, config->broker_port);
@@ -627,7 +625,6 @@ void *mqtt_thread_func(void *arg) {
     printf("DEBUG: Password: '%s'\n", config->password);
     #endif
 
-    // **FIX 2: Setup MQTT options with explicit credentials**
     struct mg_mqtt_opts opts = {
         .client_id = mg_str(config->client_id),
         .user = mg_str(config->username),      // Explicit username
@@ -653,7 +650,6 @@ void *mqtt_thread_func(void *arg) {
         mg_mgr_poll(&mqtt_mgr, 100); // 100 ms poll
         connection_timeout--;
         
-        // **FIX 3: Add connection progress logging**
         if (connection_timeout % 10 == 0 && connection_timeout > 0) {
             #ifdef DEBUG
             printf("MQTT: Waiting for connection... (%d seconds left)\n", connection_timeout/10);
@@ -742,7 +738,6 @@ void *mqtt_thread_func(void *arg) {
             }
         }
 
-        // **FIX 4: Improved reconnection logic**
         if (!mqtt_connected) {
             #ifdef DEBUG
             printf("MQTT: Connection lost, attempting reconnect...\n");
