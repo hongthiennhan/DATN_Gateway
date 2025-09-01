@@ -18,7 +18,7 @@ void tcp_process_config_update(json_object *config_obj);
 void tcp_send_pong_response(void);
 void process_tcp_control_command(const char *payload);
 void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data);
-void tcp_process_receive
+void tcp_process_received_data(const char *data, size_t len);
 int ensure_directory_exists(const char *dir);
 
 // Get local IP address - optimized but keeping full functionality
