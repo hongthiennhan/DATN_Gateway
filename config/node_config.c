@@ -82,8 +82,8 @@ static uint32_t parse_detection_commands(json_object *detection_array, node_conf
         memset(cmd, 0, sizeof(detection_cmd_t));
         if (json_object_object_get_ex(cmd_obj, "command", &temp_obj))
         {
-           safe_strncpy(cmd->command, json_object_get_string(temp_obj),
-                        sizeof(cmd->command));
+            safe_strncpy(cmd->command, json_object_get_string(temp_obj),
+                         sizeof(cmd->command));
         }
         if (json_object_object_get_ex(cmd_obj, "expected_response", &temp_obj))
         {
@@ -322,45 +322,52 @@ uint32_t load_nodes_config(const char *config_file)
                 node_registry.uart_config.flush_interval_ms = json_object_get_int(temp_obj);
         }
         json_object *support_baudrate;
-        //add support baudrate here:
-    if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate)) {
-        uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
-        if (baudrate_array_len > 0) {
-            node_registry.uart_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
-            if (node_registry.uart_config.supported_baudrates) {
-                node_registry.uart_config.baudrate_count = 0;
-                
-                for (uint32_t i = 0; i < baudrate_array_len; i++) {
-                    json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
-                    json_object *rate_obj, *code_obj;
-                    
-                    if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
-                        json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
-                        
-                        baudrate_mapping_t *mapping = &node_registry.uart_config.supported_baudrates[node_registry.uart_config.baudrate_count];
-                        mapping->rate = json_object_get_int(rate_obj);
-                        safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
-                        
-                        node_registry.uart_config.baudrate_count++;
-                        
+        // add support baudrate here:
+        if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate))
+        {
+            uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
+            if (baudrate_array_len > 0)
+            {
+                node_registry.uart_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
+                if (node_registry.uart_config.supported_baudrates)
+                {
+                    node_registry.uart_config.baudrate_count = 0;
+
+                    for (uint32_t i = 0; i < baudrate_array_len; i++)
+                    {
+                        json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
+                        json_object *rate_obj, *code_obj;
+
+                        if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
+                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj))
+                        {
+
+                            baudrate_mapping_t *mapping = &node_registry.uart_config.supported_baudrates[node_registry.uart_config.baudrate_count];
+                            mapping->rate = json_object_get_int(rate_obj);
+                            safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
+
+                            node_registry.uart_config.baudrate_count++;
+
 #ifdef DEBUG
-                    printf("Loaded baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
+                            printf("Loaded baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
 #endif
+                        }
                     }
+
+#ifdef DEBUG
+                    printf("Total supported baudrates loaded: %d\n", node_registry.uart_config.baudrate_count);
+#endif
                 }
-            
+                else
+                {
 #ifdef DEBUG
-            printf("Total supported baudrates loaded: %d\n", node_registry.uart_config.baudrate_count);
+                    printf("Error: Failed to allocate memory for supported baudrates\n");
 #endif
-        } else {
-#ifdef DEBUG
-            printf("Error: Failed to allocate memory for supported baudrates\n");
-#endif
+                }
             }
         }
-    }
-    if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
-        node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
+        if (json_object_object_get_ex(uart_obj, "default_baudrate_fallback", &temp_obj))
+            node_registry.uart_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
     // Parse Modbus config
     json_object *modbus_obj;
@@ -388,48 +395,55 @@ uint32_t load_nodes_config(const char *config_file)
         }
 
         json_object *support_baudrate;
-        if (json_object_object_get_ex(modbus_obj, "supported_baudrates", &support_baudrate)) {
+        if (json_object_object_get_ex(modbus_obj, "supported_baudrates", &support_baudrate))
+        {
             uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
-            if (baudrate_array_len > 0) {
+            if (baudrate_array_len > 0)
+            {
                 node_registry.modbus_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
-                if (node_registry.modbus_config.supported_baudrates) {
+                if (node_registry.modbus_config.supported_baudrates)
+                {
                     node_registry.modbus_config.baudrate_count = 0;
-                    
-                    for (uint32_t i = 0; i < baudrate_array_len; i++) {
+
+                    for (uint32_t i = 0; i < baudrate_array_len; i++)
+                    {
                         json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
                         json_object *rate_obj, *code_obj;
-                        
+
                         if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
-                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
-                            
+                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj))
+                        {
+
                             baudrate_mapping_t *mapping = &node_registry.modbus_config.supported_baudrates[node_registry.modbus_config.baudrate_count];
                             mapping->rate = json_object_get_int(rate_obj);
                             safe_strncpy(mapping->speed_code, json_object_get_string(code_obj), sizeof(mapping->speed_code));
-                            
+
                             node_registry.modbus_config.baudrate_count++;
-                            
-    #ifdef DEBUG
+
+#ifdef DEBUG
                             printf("Loaded modbus baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
-    #endif
+#endif
                         }
                     }
-                    
-    #ifdef DEBUG
+
+#ifdef DEBUG
                     printf("Total modbus supported baudrates loaded: %d\n", node_registry.modbus_config.baudrate_count);
-    #endif
-                } else {
-    #ifdef DEBUG
+#endif
+                }
+                else
+                {
+#ifdef DEBUG
                     printf("Error: Failed to allocate memory for modbus supported baudrates\n");
-    #endif
+#endif
                 }
             }
         }
-        
+
         if (json_object_object_get_ex(modbus_obj, "default_baudrate_fallback", &temp_obj))
             node_registry.modbus_config.default_baudrate_fallback = json_object_get_int(temp_obj);
     }
 
-    //Parse CAN config:
+    // Parse CAN config:
     json_object *can_obj;
     if (json_object_object_get_ex(effective_root, "can_config", &can_obj))
     {
@@ -454,19 +468,24 @@ uint32_t load_nodes_config(const char *config_file)
         }
 
         json_object *support_baudrate;
-        if (json_object_object_get_ex(can_obj, "supported_baudrates", &support_baudrate)) {
+        if (json_object_object_get_ex(can_obj, "supported_baudrates", &support_baudrate))
+        {
             uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
-            if (baudrate_array_len > 0) {
+            if (baudrate_array_len > 0)
+            {
                 node_registry.can_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
-                if (node_registry.can_config.supported_baudrates) {
+                if (node_registry.can_config.supported_baudrates)
+                {
                     node_registry.can_config.baudrate_count = 0;
 
-                    for (uint32_t i = 0; i < baudrate_array_len; i++) {
+                    for (uint32_t i = 0; i < baudrate_array_len; i++)
+                    {
                         json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
                         json_object *rate_obj, *code_obj;
 
                         if (json_object_object_get_ex(baudrate_obj, "rate", &rate_obj) &&
-                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj)) {
+                            json_object_object_get_ex(baudrate_obj, "speed_code", &code_obj))
+                        {
 
                             baudrate_mapping_t *mapping = &node_registry.can_config.supported_baudrates[node_registry.can_config.baudrate_count];
                             mapping->rate = json_object_get_int(rate_obj);
@@ -474,19 +493,21 @@ uint32_t load_nodes_config(const char *config_file)
 
                             node_registry.can_config.baudrate_count++;
 
-    #ifdef DEBUG
+#ifdef DEBUG
                             printf("Loaded can baudrate: %d (%s)\n", mapping->rate, mapping->speed_code);
-    #endif
+#endif
                         }
                     }
 
-    #ifdef DEBUG
+#ifdef DEBUG
                     printf("Total can supported baudrates loaded: %d\n", node_registry.can_config.baudrate_count);
-    #endif
-                } else {
-    #ifdef DEBUG
+#endif
+                }
+                else
+                {
+#ifdef DEBUG
                     printf("Error: Failed to allocate memory for can supported baudrates\n");
-    #endif
+#endif
                 }
             }
         }
@@ -585,292 +606,423 @@ uint32_t load_nodes_config(const char *config_file)
                 node_registry.mqtt_config.system_fields.include_node_count = json_object_get_boolean(temp_obj);
         }
     }
-
-    // Parse nodes array
-    json_object *nodes_array;
-    if (json_object_object_get_ex(effective_root, "nodes", &nodes_array) ||
-        json_object_object_get_ex(effective_root, "node", &nodes_array))
+    // Parse TCP config:
+    json_object *tcp_obj;
+    json_object *tcp_obj;
+    if (json_object_object_get_ex(effective_root, "tcp_config", &tcp_obj))
     {
-        uint32_t array_len = json_object_array_length(nodes_array);
-        if (array_len > 0)
+        json_object *temp_obj;
+
+        // Parse basic TCP fields
+        if (json_object_object_get_ex(tcp_obj, "server_host", &temp_obj))
         {
-            node_registry.nodes = malloc(sizeof(node_config_t) * array_len);
-            if (!node_registry.nodes)
+            safe_strncpy(node_registry.tcp_config.server_host,
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.tcp_config.server_host));
+        }
+        if (json_object_object_get_ex(tcp_obj, "server_port", &temp_obj))
+            node_registry.tcp_config.server_port = (uint16_t)json_object_get_int(temp_obj);
+
+        if (json_object_object_get_ex(tcp_obj, "config_server_host", &temp_obj))
+        {
+            safe_strncpy(node_registry.tcp_config.config_server_host,
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.tcp_config.config_server_host));
+        }
+        if (json_object_object_get_ex(tcp_obj, "config_server_port", &temp_obj))
+            node_registry.tcp_config.config_server_port = (uint16_t)json_object_get_int(temp_obj);
+
+        if (json_object_object_get_ex(tcp_obj, "client_id", &temp_obj))
+        {
+            safe_strncpy(node_registry.tcp_config.client_id,
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.tcp_config.client_id));
+        }
+        if (json_object_object_get_ex(tcp_obj, "protocol_version", &temp_obj))
+        {
+            safe_strncpy(node_registry.tcp_config.protocol_version,
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.tcp_config.protocol_version));
+        }
+        if (json_object_object_get_ex(tcp_obj, "data_format", &temp_obj))
+        {
+            safe_strncpy(node_registry.tcp_config.data_format,
+                         json_object_get_string(temp_obj),
+                         sizeof(node_registry.tcp_config.data_format));
+        }
+
+        // Parse timing and buffer fields
+        if (json_object_object_get_ex(tcp_obj, "send_interval", &temp_obj))
+            node_registry.tcp_config.send_interval = (uint16_t)json_object_get_int(temp_obj);
+        if (json_object_object_get_ex(tcp_obj, "connection_timeout", &temp_obj))
+            node_registry.tcp_config.connection_timeout = (uint16_t)json_object_get_int(temp_obj);
+        if (json_object_object_get_ex(tcp_obj, "reconnect_delay_ms", &temp_obj))
+            node_registry.tcp_config.reconnect_delay_ms = (uint16_t)json_object_get_int(temp_obj);
+        if (json_object_object_get_ex(tcp_obj, "loop_interval_ms", &temp_obj))
+            node_registry.tcp_config.loop_interval_ms = (uint16_t)json_object_get_int(temp_obj);
+        if (json_object_object_get_ex(tcp_obj, "payload_buffer_size", &temp_obj))
+            node_registry.tcp_config.payload_buffer_size = (uint16_t)json_object_get_int(temp_obj);
+        if (json_object_object_get_ex(tcp_obj, "receive_buffer_size", &temp_obj))
+            node_registry.tcp_config.receive_buffer_size = (uint16_t)json_object_get_int(temp_obj);
+
+        // Parse nested socket_options object
+        json_object *socket_options_obj;
+        if (json_object_object_get_ex(tcp_obj, "socket_options", &socket_options_obj))
+        {
+            if (json_object_object_get_ex(socket_options_obj, "keepalive", &temp_obj))
+                node_registry.tcp_config.socket_options.keepalive = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(socket_options_obj, "keepalive_idle", &temp_obj))
+                node_registry.tcp_config.socket_options.keepalive_idle = (uint16_t)json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(socket_options_obj, "keepalive_interval", &temp_obj))
+                node_registry.tcp_config.socket_options.keepalive_interval = (uint16_t)json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(socket_options_obj, "keepalive_count", &temp_obj))
+                node_registry.tcp_config.socket_options.keepalive_count = (uint8_t)json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(socket_options_obj, "tcp_nodelay", &temp_obj))
+                node_registry.tcp_config.socket_options.tcp_nodelay = (uint8_t)json_object_get_boolean(temp_obj);
+        }
+
+        // Parse nested system_fields object
+        json_object *tcp_system_fields_obj;
+        if (json_object_object_get_ex(tcp_obj, "system_fields", &tcp_system_fields_obj))
+        {
+            if (json_object_object_get_ex(tcp_system_fields_obj, "data_source", &temp_obj))
             {
-#ifdef DEBUG
-                printf("Error: Failed to allocate memory for nodes\n");
-#endif
-                json_object_put(root);
-                return -1;
+                safe_strncpy(node_registry.tcp_config.system_fields.data_source,
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.tcp_config.system_fields.data_source));
             }
-            node_registry.capacity = array_len;
-            node_registry.count = 0;
-            for (uint32_t i = 0; i < array_len; i++)
+            if (json_object_object_get_ex(tcp_system_fields_obj, "include_timestamp", &temp_obj))
+                node_registry.tcp_config.system_fields.include_timestamp = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(tcp_system_fields_obj, "include_gateway_ip", &temp_obj))
+                node_registry.tcp_config.system_fields.include_gateway_ip = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(tcp_system_fields_obj, "include_node_count", &temp_obj))
+                node_registry.tcp_config.system_fields.include_node_count = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(tcp_system_fields_obj, "include_system_info", &temp_obj))
+                node_registry.tcp_config.system_fields.include_system_info = (uint8_t)json_object_get_boolean(temp_obj);
+        }
+
+        // Parse nested protocol_settings object
+        json_object *protocol_settings_obj;
+        if (json_object_object_get_ex(tcp_obj, "protocol_settings", &protocol_settings_obj))
+        {
+            if (json_object_object_get_ex(protocol_settings_obj, "message_delimiter", &temp_obj))
             {
-                json_object *node_obj = json_object_array_get_idx(nodes_array, i);
-                if (parse_node_config(node_obj, &node_registry.nodes[i]) == 0)
-                {
-                    node_registry.count++;
-                }
-                else
+                safe_strncpy(node_registry.tcp_config.protocol_settings.message_delimiter,
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.tcp_config.protocol_settings.message_delimiter));
+            }
+            if (json_object_object_get_ex(protocol_settings_obj, "max_message_size", &temp_obj))
+                node_registry.tcp_config.protocol_settings.max_message_size = (uint16_t)json_object_get_int(temp_obj);
+            if (json_object_object_get_ex(protocol_settings_obj, "compression_enabled", &temp_obj))
+                node_registry.tcp_config.protocol_settings.compression_enabled = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(protocol_settings_obj, "encryption_enabled", &temp_obj))
+                node_registry.tcp_config.protocol_settings.encryption_enabled = (uint8_t)json_object_get_boolean(temp_obj);
+        }
+
+        // Parse nested features object
+        json_object *features_obj;
+        if (json_object_object_get_ex(tcp_obj, "features", &features_obj))
+        {
+            if (json_object_object_get_ex(features_obj, "config_download", &temp_obj))
+                node_registry.tcp_config.features.config_download = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(features_obj, "control_commands", &temp_obj))
+                node_registry.tcp_config.features.control_commands = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(features_obj, "telemetry_upload", &temp_obj))
+                node_registry.tcp_config.features.telemetry_upload = (uint8_t)json_object_get_boolean(temp_obj);
+            if (json_object_object_get_ex(features_obj, "status_reporting", &temp_obj))
+                node_registry.tcp_config.features.status_reporting = (uint8_t)json_object_get_boolean(temp_obj);
+        }
+        // Parse nodes array
+        json_object *nodes_array;
+        if (json_object_object_get_ex(effective_root, "nodes", &nodes_array) ||
+            json_object_object_get_ex(effective_root, "node", &nodes_array))
+        {
+            uint32_t array_len = json_object_array_length(nodes_array);
+            if (array_len > 0)
+            {
+                node_registry.nodes = malloc(sizeof(node_config_t) * array_len);
+                if (!node_registry.nodes)
                 {
 #ifdef DEBUG
-                    printf("Warning: Failed to parse node at index %d\n", i);
+                    printf("Error: Failed to allocate memory for nodes\n");
 #endif
+                    json_object_put(root);
+                    return -1;
+                }
+                node_registry.capacity = array_len;
+                node_registry.count = 0;
+                for (uint32_t i = 0; i < array_len; i++)
+                {
+                    json_object *node_obj = json_object_array_get_idx(nodes_array, i);
+                    if (parse_node_config(node_obj, &node_registry.nodes[i]) == 0)
+                    {
+                        node_registry.count++;
+                    }
+                    else
+                    {
+#ifdef DEBUG
+                        printf("Warning: Failed to parse node at index %d\n", i);
+#endif
+                    }
                 }
             }
         }
-    }
-    json_object_put(root);
+        json_object_put(root);
 #ifdef DEBUG
-    printf("Configuration loaded: %d nodes\n", node_registry.count);
-    // DEBUG: Validate broker_host after parsing
-    printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n",
-           node_registry.mqtt_config.broker_host,
-           strlen(node_registry.mqtt_config.broker_host));
-    printf("MQTT broker: %s:%d\n", node_registry.mqtt_config.broker_host,
-           node_registry.mqtt_config.broker_port);
+        printf("Configuration loaded: %d nodes\n", node_registry.count);
+        // DEBUG: Validate broker_host after parsing
+        printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n",
+               node_registry.mqtt_config.broker_host,
+               strlen(node_registry.mqtt_config.broker_host));
+        printf("MQTT broker: %s:%d\n", node_registry.mqtt_config.broker_host,
+               node_registry.mqtt_config.broker_port);
 #endif
-    return 0;
-}
-
-// Standard getter functions
-node_config_t *get_node_by_id(uint32_t node_id)
-{
-    for (uint32_t i = 0; i < node_registry.count; i++)
-    {
-        if (node_registry.nodes[i].node_id == node_id)
-        {
-            return &node_registry.nodes[i];
-        }
-    }
-    return NULL;
-}
-
-node_config_t *get_node_by_index(uint32_t index)
-{
-    if (index >= 0 && index < node_registry.count)
-    {
-        return &node_registry.nodes[index];
-    }
-    return NULL;
-}
-
-uint32_t get_node_count(void)
-{
-    return node_registry.count;
-}
-
-menu_item_t *get_menu_item_by_cmd(node_config_t *node, uint32_t cmd)
-{
-    if (!node)
-        return NULL;
-    for (uint32_t i = 0; i < node->menu_count; i++)
-    {
-        if (node->menu_items[i].cmd == cmd)
-        {
-            return &node->menu_items[i];
-        }
-    }
-    return NULL;
-}
-
-// System config getters
-uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
-uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
-const char *get_default_device(void) { return node_registry.default_device; }
-uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
-
-// Detection getters
-system_info_t *get_system_info(void) { return &node_registry.system_info; }
-uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
-modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
-can_config_t *get_can_config(void) { return &node_registry.can_config; }
-mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
-
-// Control queue functions
-uint32_t add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
-{
-    pthread_mutex_lock(&node_registry.control_queue.mutex);
-    if (node_registry.control_queue.count >= 100)
-    {
-#ifdef DEBUG
-        printf("Warning: Control queue full\n");
-#endif
-        pthread_mutex_unlock(&node_registry.control_queue.mutex);
-        return -1;
-    }
-    server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
-    cmd->node_id = node_id;
-    cmd->cmd_id = cmd_id;
-    if (params)
-    {
-        safe_strncpy(cmd->params, params, sizeof(cmd->params));
-    }
-    else
-    {
-        cmd->params[0] = '\0';
-    }
-    cmd->timestamp = time(NULL);
-    cmd->processed = 0;
-    node_registry.control_queue.tail = (node_registry.control_queue.tail + 1) % 100;
-    node_registry.control_queue.count++;
-    pthread_cond_signal(&node_registry.control_queue.cond);
-    pthread_mutex_unlock(&node_registry.control_queue.mutex);
-    return 0;
-}
-
-uint32_t get_control_command(server_control_cmd_t *cmd)
-{
-    if (!cmd)
-        return -1;
-    pthread_mutex_lock(&node_registry.control_queue.mutex);
-    if (node_registry.control_queue.count == 0)
-    {
-        pthread_mutex_unlock(&node_registry.control_queue.mutex);
-        return -1;
-    }
-    *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
-    node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
-    node_registry.control_queue.count--;
-    pthread_mutex_unlock(&node_registry.control_queue.mutex);
-    return 0;
-}
-
-
-
-communication_type_t get_communication_type(void)
-{
-    return node_registry.communication_type;
-}
-
-void set_communication_type(communication_type_t type)
-{
-    if (type >= 0 && type < COMM_TYPE_COUNT)
-    {
-        node_registry.communication_type = type;
-    }
-}
-
-const char *get_communication_type_name(communication_type_t type)
-{
-    switch (type)
-    {
-    case COMM_TYPE_MQTT:
-        return "MQTT";
-    case COMM_TYPE_HTTP:
-        return "HTTP";
-    case COMM_TYPE_WEBSOCKET:
-        return "WebSocket";
-    case COMM_TYPE_TCP:
-        return "TCP";
-    default:
-        return "Unknown";
-    }
-}
-
-/**
- * Cleanup all resources
- */
-void cleanup_nodes_config(void)
-{
-    for (uint32_t i = 0; i < node_registry.count; i++)
-    {
-        node_config_t *node = &node_registry.nodes[i];
-        if (node->menu_items)
-        {
-            free(node->menu_items);
-        }
-        if (node->detection_commands)
-        {
-            free(node->detection_commands);
-        }
-        if (node->mqtt_data)
-        {
-            free_shared_data(node->mqtt_data);
-        }
-    }
-    if (node_registry.nodes)
-    {
-        free(node_registry.nodes);
-    }
-    if (node_registry.uart_config.supported_baudrates)
-    {
-        free(node_registry.uart_config.supported_baudrates);
-    }
-    pthread_mutex_destroy(&node_registry.control_queue.mutex);
-    pthread_cond_destroy(&node_registry.control_queue.cond);
-    memset(&node_registry, 0, sizeof(node_registry));
-#ifdef DEBUG
-    printf("Configuration cleanup completed\n");
-#endif
-}
-
-// Thread-safe config reload
-uint32_t safe_reload_config(void) {
-    #ifdef DEBUG
-    printf("Starting safe config reload\n");
-    #endif
-    
-    // Signal all threads that config is reloading
-    pthread_mutex_lock(&config_mutex);
-    config_reloading = 1;
-    
-    // Give other threads time to finish current operations
-    pthread_mutex_unlock(&config_mutex);
-    usleep(200 * 1000); // 200ms
-    
-    // Now acquire lock for full reload
-    pthread_mutex_lock(&config_mutex);
-    
-    #ifdef DEBUG
-    printf("Cleaning up old config\n");
-    #endif
-    cleanup_nodes_config();
-    
-    #ifdef DEBUG
-    printf("Loading new config\n");
-    #endif
-    uint32_t load_result = 0;
-    char config_path[64];
-    snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
-    char backup_path[64];
-    snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
-    if (load_nodes_config(config_path) == 0) {
-        load_result = 1;
-    } else if (load_nodes_config(backup_path) == 0) {
-        load_result = 1;
-    }
-    
-    config_reloading = 0;
-    pthread_mutex_unlock(&config_mutex);
-    
-    #ifdef DEBUG
-    printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
-    #endif
-    
-    return load_result ? 0 : -1;
-}
-
-// Safe node access functions
-node_config_t *safe_get_node_by_index(uint32_t index) {
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
-        pthread_mutex_unlock(&config_mutex);
-        return NULL;
-    }
-    node_config_t *node = get_node_by_index(index);
-    pthread_mutex_unlock(&config_mutex);
-    return node;
-}
-
-uint32_t safe_get_node_count(void) {
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
-        pthread_mutex_unlock(&config_mutex);
         return 0;
     }
-    uint32_t count = get_node_count();
-    pthread_mutex_unlock(&config_mutex);
-    return count;
-}
+
+    // Standard getter functions
+    node_config_t *get_node_by_id(uint32_t node_id)
+    {
+        for (uint32_t i = 0; i < node_registry.count; i++)
+        {
+            if (node_registry.nodes[i].node_id == node_id)
+            {
+                return &node_registry.nodes[i];
+            }
+        }
+        return NULL;
+    }
+
+    node_config_t *get_node_by_index(uint32_t index)
+    {
+        if (index >= 0 && index < node_registry.count)
+        {
+            return &node_registry.nodes[index];
+        }
+        return NULL;
+    }
+
+    uint32_t get_node_count(void)
+    {
+        return node_registry.count;
+    }
+
+    menu_item_t *get_menu_item_by_cmd(node_config_t * node, uint32_t cmd)
+    {
+        if (!node)
+            return NULL;
+        for (uint32_t i = 0; i < node->menu_count; i++)
+        {
+            if (node->menu_items[i].cmd == cmd)
+            {
+                return &node->menu_items[i];
+            }
+        }
+        return NULL;
+    }
+
+    // System config getters
+    uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
+    uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
+    const char *get_default_device(void) { return node_registry.default_device; }
+    uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
+
+    // Detection getters
+    system_info_t *get_system_info(void) { return &node_registry.system_info; }
+    uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
+    modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
+    can_config_t *get_can_config(void) { return &node_registry.can_config; }
+    mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
+
+    // Control queue functions
+    uint32_t add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
+    {
+        pthread_mutex_lock(&node_registry.control_queue.mutex);
+        if (node_registry.control_queue.count >= 100)
+        {
+#ifdef DEBUG
+            printf("Warning: Control queue full\n");
+#endif
+            pthread_mutex_unlock(&node_registry.control_queue.mutex);
+            return -1;
+        }
+        server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
+        cmd->node_id = node_id;
+        cmd->cmd_id = cmd_id;
+        if (params)
+        {
+            safe_strncpy(cmd->params, params, sizeof(cmd->params));
+        }
+        else
+        {
+            cmd->params[0] = '\0';
+        }
+        cmd->timestamp = time(NULL);
+        cmd->processed = 0;
+        node_registry.control_queue.tail = (node_registry.control_queue.tail + 1) % 100;
+        node_registry.control_queue.count++;
+        pthread_cond_signal(&node_registry.control_queue.cond);
+        pthread_mutex_unlock(&node_registry.control_queue.mutex);
+        return 0;
+    }
+
+    uint32_t get_control_command(server_control_cmd_t * cmd)
+    {
+        if (!cmd)
+            return -1;
+        pthread_mutex_lock(&node_registry.control_queue.mutex);
+        if (node_registry.control_queue.count == 0)
+        {
+            pthread_mutex_unlock(&node_registry.control_queue.mutex);
+            return -1;
+        }
+        *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
+        node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
+        node_registry.control_queue.count--;
+        pthread_mutex_unlock(&node_registry.control_queue.mutex);
+        return 0;
+    }
+
+    communication_type_t get_communication_type(void)
+    {
+        return node_registry.communication_type;
+    }
+
+    void set_communication_type(communication_type_t type)
+    {
+        if (type >= 0 && type < COMM_TYPE_COUNT)
+        {
+            node_registry.communication_type = type;
+        }
+    }
+
+    const char *get_communication_type_name(communication_type_t type)
+    {
+        switch (type)
+        {
+        case COMM_TYPE_MQTT:
+            return "MQTT";
+        case COMM_TYPE_HTTP:
+            return "HTTP";
+        case COMM_TYPE_WEBSOCKET:
+            return "WebSocket";
+        case COMM_TYPE_TCP:
+            return "TCP";
+        default:
+            return "Unknown";
+        }
+    }
+
+    /**
+     * Cleanup all resources
+     */
+    void cleanup_nodes_config(void)
+    {
+        for (uint32_t i = 0; i < node_registry.count; i++)
+        {
+            node_config_t *node = &node_registry.nodes[i];
+            if (node->menu_items)
+            {
+                free(node->menu_items);
+            }
+            if (node->detection_commands)
+            {
+                free(node->detection_commands);
+            }
+            if (node->mqtt_data)
+            {
+                free_shared_data(node->mqtt_data);
+            }
+        }
+        if (node_registry.nodes)
+        {
+            free(node_registry.nodes);
+        }
+        if (node_registry.uart_config.supported_baudrates)
+        {
+            free(node_registry.uart_config.supported_baudrates);
+        }
+        pthread_mutex_destroy(&node_registry.control_queue.mutex);
+        pthread_cond_destroy(&node_registry.control_queue.cond);
+        memset(&node_registry, 0, sizeof(node_registry));
+#ifdef DEBUG
+        printf("Configuration cleanup completed\n");
+#endif
+    }
+
+    // Thread-safe config reload
+    uint32_t safe_reload_config(void)
+    {
+#ifdef DEBUG
+        printf("Starting safe config reload\n");
+#endif
+
+        // Signal all threads that config is reloading
+        pthread_mutex_lock(&config_mutex);
+        config_reloading = 1;
+
+        // Give other threads time to finish current operations
+        pthread_mutex_unlock(&config_mutex);
+        usleep(200 * 1000); // 200ms
+
+        // Now acquire lock for full reload
+        pthread_mutex_lock(&config_mutex);
+
+#ifdef DEBUG
+        printf("Cleaning up old config\n");
+#endif
+        cleanup_nodes_config();
+
+#ifdef DEBUG
+        printf("Loading new config\n");
+#endif
+        uint32_t load_result = 0;
+        char config_path[64];
+        snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
+        char backup_path[64];
+        snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
+        if (load_nodes_config(config_path) == 0)
+        {
+            load_result = 1;
+        }
+        else if (load_nodes_config(backup_path) == 0)
+        {
+            load_result = 1;
+        }
+
+        config_reloading = 0;
+        pthread_mutex_unlock(&config_mutex);
+
+#ifdef DEBUG
+        printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
+#endif
+
+        return load_result ? 0 : -1;
+    }
+
+    // Safe node access functions
+    node_config_t *safe_get_node_by_index(uint32_t index)
+    {
+        pthread_mutex_lock(&config_mutex);
+        if (config_reloading)
+        {
+            pthread_mutex_unlock(&config_mutex);
+            return NULL;
+        }
+        node_config_t *node = get_node_by_index(index);
+        pthread_mutex_unlock(&config_mutex);
+        return node;
+    }
+
+    uint32_t safe_get_node_count(void)
+    {
+        pthread_mutex_lock(&config_mutex);
+        if (config_reloading)
+        {
+            pthread_mutex_unlock(&config_mutex);
+            return 0;
+        }
+        uint32_t count = get_node_count();
+        pthread_mutex_unlock(&config_mutex);
+        return count;
+    }

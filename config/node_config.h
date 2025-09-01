@@ -217,6 +217,7 @@ typedef struct {
 
     // Runtime data
     shared_data_t *mqtt_data;
+    shared_data_t *tcp_data;
 } node_config_t;
 
 typedef struct {
@@ -246,7 +247,10 @@ typedef struct {
 
     // MQTT config
     mqtt_config_t mqtt_config;
-    
+
+    // TCP config
+    tcp_config_t tcp_config;
+
     // Control queue
     control_queue_t control_queue;
     
@@ -280,6 +284,9 @@ can_config_t* get_can_config(void);
 
 // MQTT config getters
 mqtt_config_t* get_mqtt_config(void);
+
+// TCP config getters
+tcp_config_t* get_tcp_config(void);
 
 // Control queue functions
 int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params);
