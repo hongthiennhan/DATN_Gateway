@@ -608,7 +608,6 @@ int load_nodes_config(const char *config_file)
     }
     // Parse TCP config:
     json_object *tcp_obj;
-    json_object *tcp_obj;
     if (json_object_object_get_ex(effective_root, "tcp_config", &tcp_obj))
     {
         json_object *temp_obj;
@@ -836,7 +835,7 @@ mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
 tcp_config_t *get_tcp_config(void) { return &node_registry.tcp_config; }
 
 // Control queue functions
-uint32_t add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
+int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
 {
     pthread_mutex_lock(&node_registry.control_queue.mutex);
     if (node_registry.control_queue.count >= 100)
@@ -867,7 +866,7 @@ uint32_t add_control_command(uint32_t node_id, uint32_t cmd_id, const char *para
     return 0;
 }
 
-uint32_t get_control_command(server_control_cmd_t *cmd)
+int get_control_command(server_control_cmd_t *cmd)
 {
     if (!cmd)
         return -1;

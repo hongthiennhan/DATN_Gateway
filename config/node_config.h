@@ -260,15 +260,15 @@ typedef struct {
 int load_nodes_config(const char *config_file);
 node_config_t* get_node_by_id(uint32_t node_id);
 node_config_t* get_node_by_index(uint32_t index);
-int get_node_count(void);
+uint32_t get_node_count(void);
 menu_item_t* get_menu_item_by_cmd(node_config_t *node, uint32_t cmd);
 void cleanup_nodes_config(void);
 
 // System config getters
-int get_ui_refresh_delay(void);
-int get_default_baudrate(void);
+uint32_t get_ui_refresh_delay(void);
+uint32_t get_default_baudrate(void);
 const char* get_default_device(void);
-int get_startup_clear_duration(void);
+uint32_t get_startup_clear_duration(void);
 
 // System info getters
 system_info_t* get_system_info(void);
@@ -302,7 +302,7 @@ extern pthread_mutex_t config_mutex;
 extern volatile uint32_t config_reloading;
 
 // Thread-safe functions
-int safe_get_node_count(void);
+uint32_t safe_get_node_count(void);
 int safe_reload_config(void);
 node_config_t *safe_get_node_by_index(uint32_t index);
 
