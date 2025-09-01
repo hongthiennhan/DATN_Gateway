@@ -211,5 +211,46 @@
       "include_gateway_ip": true,
       "include_node_count": true
     }
+  },
+  "tcp_config": {
+    "server_host": "localhost",
+    "server_port": 8765,
+    "config_server_host": "localhost",
+    "config_server_port": 8766,
+    "client_id": "gateway_device_tcp",
+    "protocol_version": "1.0",
+    "data_format": "json",
+    "send_interval": 30,
+    "connection_timeout": 50,
+    "reconnect_delay_ms": 5000,
+    "loop_interval_ms": 100,
+    "payload_buffer_size": 2048,
+    "receive_buffer_size": 1024,
+    "socket_options": {
+      "keepalive": true,
+      "keepalive_idle": 60,
+      "keepalive_interval": 10,
+      "keepalive_count": 3,
+      "tcp_nodelay": true
+    },
+    "system_fields": {
+      "data_source": "gateway_device_tcp",
+      "include_timestamp": true,
+      "include_gateway_ip": true,
+      "include_node_count": true,
+      "include_system_info": true
+    },
+    "protocol_settings": {
+      "message_delimiter": "\n",
+      "max_message_size": 4096,
+      "compression_enabled": false,
+      "encryption_enabled": false
+    },
+    "features": {
+      "config_download": true,
+      "control_commands": true,
+      "telemetry_upload": true,
+      "status_reporting": true
+    }
   }
 }

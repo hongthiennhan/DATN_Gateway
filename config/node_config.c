@@ -5,7 +5,7 @@
 static node_registry_t node_registry = {0};
 // Global config protection
 pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;
-volatile int config_reloading = 0;
+volatile uint32_t config_reloading = 0;
 
 /**
  * Safe string copy with guaranteed null termination
@@ -63,18 +63,18 @@ static void free_shared_data(shared_data_t *shared)
 /**
  * Parse detection commands from JSON
  */
-static int parse_detection_commands(json_object *detection_array, node_config_t *node)
+static uint32_t parse_detection_commands(json_object *detection_array, node_config_t *node)
 {
     if (!detection_array || !node)
         return -1;
-    int array_len = json_object_array_length(detection_array);
+    uint32_t array_len = json_object_array_length(detection_array);
     if (array_len <= 0)
         return 0;
     node->detection_commands = malloc(sizeof(detection_cmd_t) * array_len);
     if (!node->detection_commands)
         return -1;
     node->detection_count = array_len;
-    for (int i = 0; i < array_len; i++)
+    for (uint32_t i = 0; i < array_len; i++)
     {
         json_object *cmd_obj = json_object_array_get_idx(detection_array, i);
         detection_cmd_t *cmd = &node->detection_commands[i];
@@ -106,18 +106,18 @@ static int parse_detection_commands(json_object *detection_array, node_config_t 
 /**
  * Parse menu items for node
  */
-static int parse_menu_items(json_object *menu_array, node_config_t *node)
+static uint32_t parse_menu_items(json_object *menu_array, node_config_t *node)
 {
     if (!menu_array || !node)
         return -1;
-    int array_len = json_object_array_length(menu_array);
+    uint32_t array_len = json_object_array_length(menu_array);
     if (array_len <= 0)
         return 0;
     node->menu_items = malloc(sizeof(menu_item_t) * array_len);
     if (!node->menu_items)
         return -1;
     node->menu_count = array_len;
-    for (int i = 0; i < array_len; i++)
+    for (uint32_t i = 0; i < array_len; i++)
     {
         json_object *item_obj = json_object_array_get_idx(menu_array, i);
         menu_item_t *item = &node->menu_items[i];
@@ -146,7 +146,7 @@ static int parse_menu_items(json_object *menu_array, node_config_t *node)
 /**
  * Parse individual node configuration
  */
-static int parse_node_config(json_object *node_obj, node_config_t *node)
+static uint32_t parse_node_config(json_object *node_obj, node_config_t *node)
 {
     if (!node_obj || !node)
         return -1;
@@ -202,7 +202,7 @@ static int parse_node_config(json_object *node_obj, node_config_t *node)
 /**
  * Load complete configuration from JSON file
  */
-int load_nodes_config(const char *config_file)
+uint32_t load_nodes_config(const char *config_file)
 {
 #ifdef DEBUG
     printf("Loading configuration from: %s\n", config_file);
@@ -324,13 +324,13 @@ int load_nodes_config(const char *config_file)
         json_object *support_baudrate;
         //add support baudrate here:
     if (json_object_object_get_ex(uart_obj, "supported_baudrates", &support_baudrate)) {
-        int baudrate_array_len = json_object_array_length(support_baudrate);
+        uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
         if (baudrate_array_len > 0) {
             node_registry.uart_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
             if (node_registry.uart_config.supported_baudrates) {
                 node_registry.uart_config.baudrate_count = 0;
                 
-                for (int i = 0; i < baudrate_array_len; i++) {
+                for (uint32_t i = 0; i < baudrate_array_len; i++) {
                     json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
                     json_object *rate_obj, *code_obj;
                     
@@ -389,13 +389,13 @@ int load_nodes_config(const char *config_file)
 
         json_object *support_baudrate;
         if (json_object_object_get_ex(modbus_obj, "supported_baudrates", &support_baudrate)) {
-            int baudrate_array_len = json_object_array_length(support_baudrate);
+            uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
             if (baudrate_array_len > 0) {
                 node_registry.modbus_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
                 if (node_registry.modbus_config.supported_baudrates) {
                     node_registry.modbus_config.baudrate_count = 0;
                     
-                    for (int i = 0; i < baudrate_array_len; i++) {
+                    for (uint32_t i = 0; i < baudrate_array_len; i++) {
                         json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
                         json_object *rate_obj, *code_obj;
                         
@@ -455,13 +455,13 @@ int load_nodes_config(const char *config_file)
 
         json_object *support_baudrate;
         if (json_object_object_get_ex(can_obj, "supported_baudrates", &support_baudrate)) {
-            int baudrate_array_len = json_object_array_length(support_baudrate);
+            uint32_t baudrate_array_len = json_object_array_length(support_baudrate);
             if (baudrate_array_len > 0) {
                 node_registry.can_config.supported_baudrates = malloc(sizeof(baudrate_mapping_t) * baudrate_array_len);
                 if (node_registry.can_config.supported_baudrates) {
                     node_registry.can_config.baudrate_count = 0;
 
-                    for (int i = 0; i < baudrate_array_len; i++) {
+                    for (uint32_t i = 0; i < baudrate_array_len; i++) {
                         json_object *baudrate_obj = json_object_array_get_idx(support_baudrate, i);
                         json_object *rate_obj, *code_obj;
 
@@ -591,7 +591,7 @@ int load_nodes_config(const char *config_file)
     if (json_object_object_get_ex(effective_root, "nodes", &nodes_array) ||
         json_object_object_get_ex(effective_root, "node", &nodes_array))
     {
-        int array_len = json_object_array_length(nodes_array);
+        uint32_t array_len = json_object_array_length(nodes_array);
         if (array_len > 0)
         {
             node_registry.nodes = malloc(sizeof(node_config_t) * array_len);
@@ -605,7 +605,7 @@ int load_nodes_config(const char *config_file)
             }
             node_registry.capacity = array_len;
             node_registry.count = 0;
-            for (int i = 0; i < array_len; i++)
+            for (uint32_t i = 0; i < array_len; i++)
             {
                 json_object *node_obj = json_object_array_get_idx(nodes_array, i);
                 if (parse_node_config(node_obj, &node_registry.nodes[i]) == 0)
@@ -635,9 +635,9 @@ int load_nodes_config(const char *config_file)
 }
 
 // Standard getter functions
-node_config_t *get_node_by_id(int node_id)
+node_config_t *get_node_by_id(uint32_t node_id)
 {
-    for (int i = 0; i < node_registry.count; i++)
+    for (uint32_t i = 0; i < node_registry.count; i++)
     {
         if (node_registry.nodes[i].node_id == node_id)
         {
@@ -647,7 +647,7 @@ node_config_t *get_node_by_id(int node_id)
     return NULL;
 }
 
-node_config_t *get_node_by_index(int index)
+node_config_t *get_node_by_index(uint32_t index)
 {
     if (index >= 0 && index < node_registry.count)
     {
@@ -656,16 +656,16 @@ node_config_t *get_node_by_index(int index)
     return NULL;
 }
 
-int get_node_count(void)
+uint32_t get_node_count(void)
 {
     return node_registry.count;
 }
 
-menu_item_t *get_menu_item_by_cmd(node_config_t *node, int cmd)
+menu_item_t *get_menu_item_by_cmd(node_config_t *node, uint32_t cmd)
 {
     if (!node)
         return NULL;
-    for (int i = 0; i < node->menu_count; i++)
+    for (uint32_t i = 0; i < node->menu_count; i++)
     {
         if (node->menu_items[i].cmd == cmd)
         {
@@ -676,10 +676,10 @@ menu_item_t *get_menu_item_by_cmd(node_config_t *node, int cmd)
 }
 
 // System config getters
-int get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
-int get_default_baudrate(void) { return node_registry.default_baudrate; }
+uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
+uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
 const char *get_default_device(void) { return node_registry.default_device; }
-int get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
+uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
 
 // Detection getters
 system_info_t *get_system_info(void) { return &node_registry.system_info; }
@@ -689,7 +689,7 @@ can_config_t *get_can_config(void) { return &node_registry.can_config; }
 mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
 
 // Control queue functions
-int add_control_command(int node_id, int cmd_id, const char *params)
+uint32_t add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
 {
     pthread_mutex_lock(&node_registry.control_queue.mutex);
     if (node_registry.control_queue.count >= 100)
@@ -720,7 +720,7 @@ int add_control_command(int node_id, int cmd_id, const char *params)
     return 0;
 }
 
-int get_control_command(server_control_cmd_t *cmd)
+uint32_t get_control_command(server_control_cmd_t *cmd)
 {
     if (!cmd)
         return -1;
@@ -774,7 +774,7 @@ const char *get_communication_type_name(communication_type_t type)
  */
 void cleanup_nodes_config(void)
 {
-    for (int i = 0; i < node_registry.count; i++)
+    for (uint32_t i = 0; i < node_registry.count; i++)
     {
         node_config_t *node = &node_registry.nodes[i];
         if (node->menu_items)
@@ -807,7 +807,7 @@ void cleanup_nodes_config(void)
 }
 
 // Thread-safe config reload
-int safe_reload_config(void) {
+uint32_t safe_reload_config(void) {
     #ifdef DEBUG
     printf("Starting safe config reload\n");
     #endif
@@ -831,7 +831,7 @@ int safe_reload_config(void) {
     #ifdef DEBUG
     printf("Loading new config\n");
     #endif
-    int load_result = 0;
+    uint32_t load_result = 0;
     char config_path[64];
     snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
     char backup_path[64];
@@ -853,7 +853,7 @@ int safe_reload_config(void) {
 }
 
 // Safe node access functions
-node_config_t *safe_get_node_by_index(int index) {
+node_config_t *safe_get_node_by_index(uint32_t index) {
     pthread_mutex_lock(&config_mutex);
     if (config_reloading) {
         pthread_mutex_unlock(&config_mutex);
@@ -864,13 +864,13 @@ node_config_t *safe_get_node_by_index(int index) {
     return node;
 }
 
-int safe_get_node_count(void) {
+uint32_t safe_get_node_count(void) {
     pthread_mutex_lock(&config_mutex);
     if (config_reloading) {
         pthread_mutex_unlock(&config_mutex);
         return 0;
     }
-    int count = get_node_count();
+    uint32_t count = get_node_count();
     pthread_mutex_unlock(&config_mutex);
     return count;
 }

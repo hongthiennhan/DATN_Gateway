@@ -42,37 +42,37 @@ typedef struct {
 
 // Node detection command structure
 typedef struct {
-    char command[64];           // UART command to send
-    char expected_response[64]; // Expected response pattern
-    int timeout_ms;            // Command timeout
-    char description[128];     // Command description
+    char command[64];
+    char expected_response[64];
+    uint16_t timeout_ms;
+    char description[128];
 } detection_cmd_t;
 
 // Control command from server
 typedef struct {
-    int node_id;
-    int cmd_id;
+    uint32_t node_id;
+    uint32_t cmd_id;
     char params[256];
     time_t timestamp;
-    int processed;
+    uint8_t processed;
 } server_control_cmd_t;
 
 // Control command queue
 typedef struct {
     server_control_cmd_t commands[100];
-    int head;
-    int tail;
-    int count;
+    uint8_t head;
+    uint8_t tail;
+    uint8_t count;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 } control_queue_t;
 
 typedef struct {
-    int cmd;
+    uint8_t cmd;
     char label[64];
     char hex_value[256];
-    int timeout_ms;
-    int is_direct;             // 1 for direct actuator commands, 0 for server commands
+    uint16_t timeout_ms;
+    uint8_t is_direct;
 } menu_item_t;
 
 typedef struct {
@@ -84,81 +84,134 @@ typedef struct {
 
 typedef struct {
     char data_source[64];
-    int include_timestamp;
-    int include_gateway_ip;
-    int include_node_count;
+    uint8_t include_timestamp;
+    uint8_t include_gateway_ip;
+    uint8_t include_node_count;
 } system_fields_t;
 
 typedef struct {
     char broker_host[128];
-    int broker_port;
+    uint16_t broker_port;
     char client_id[64];
     char username[128];
     char password[128];
     char topic_telemetry[128];
     char topic_attributes[128];
-    char topic_control[128];   // Control topic from server
-    char topic_status[128];    // Status topic to server
-    int qos;
-    int publish_interval;
-    int connection_timeout;
-    int reconnect_delay_ms;
-    int loop_interval_ms;
-    int payload_buffer_size;
-    int attributes_buffer_size;
+    char topic_control[128];
+    char topic_status[128];
+    uint8_t qos;
+    uint16_t publish_interval;
+    uint16_t connection_timeout;
+    uint16_t reconnect_delay_ms;
+    uint16_t loop_interval_ms;
+    uint16_t payload_buffer_size;
+    uint16_t attributes_buffer_size;
     system_fields_t system_fields;
 } mqtt_config_t;
 
+//Add TCP parse struct:
 typedef struct {
-    int rate;
+    uint8_t keepalive;
+    uint16_t keepalive_idle;
+    uint16_t keepalive_interval;
+    uint8_t keepalive_count;
+    uint8_t tcp_nodelay;
+} tcp_socket_options_t;
+
+typedef struct {
+    char data_source[64];
+    uint8_t include_timestamp;
+    uint8_t include_gateway_ip; 
+    uint8_t include_node_count; 
+    uint8_t include_system_info;
+} tcp_system_fields_t;
+
+typedef struct {
+    char message_delimiter[8];
+    uint16_t max_message_size;
+    uint8_t compression_enabled;
+    uint8_t encryption_enabled; 
+} tcp_protocol_settings_t;
+
+typedef struct {
+    uint8_t config_download;  
+    uint8_t control_commands; 
+    uint8_t telemetry_upload; 
+    uint8_t status_reporting; 
+} tcp_features_t;
+
+typedef struct {
+    char server_host[128];
+    uint16_t server_port;
+    char config_server_host[128];
+    uint16_t config_server_port;
+    char client_id[64];
+    char protocol_version[16];
+    char data_format[16];
+    uint16_t send_interval;
+    uint16_t connection_timeout;
+    uint16_t reconnect_delay_ms;
+    uint16_t loop_interval_ms;
+    uint16_t payload_buffer_size;
+    uint16_t receive_buffer_size;
+    tcp_socket_options_t socket_options;
+    tcp_system_fields_t system_fields;
+    tcp_protocol_settings_t protocol_settings;
+    tcp_features_t features;
+} tcp_config_t;
+
+
+
+typedef struct {
+    uint32_t rate;
     char speed_code[16];
 } baudrate_mapping_t;
 
 typedef struct {
-    int response_buffer_size;
-    int temp_buffer_size;
-    int error_message_buffer_size;
-    int poll_interval_ms;
-    int flush_interval_ms;
+    uint16_t response_buffer_size;
+    uint16_t temp_buffer_size;
+    uint16_t error_message_buffer_size;
+    uint16_t poll_interval_ms;
+    uint16_t flush_interval_ms;
     baudrate_mapping_t *supported_baudrates;
-    int baudrate_count;
-    int default_baudrate_fallback;
+    uint8_t baudrate_count;
+    uint32_t default_baudrate_fallback;
 } uart_config_t;
 
 typedef struct {
-    int response_buffer_size;
-    int temp_buffer_size;
-    int error_message_buffer_size;
-    int poll_interval_ms;
+    uint16_t response_buffer_size;
+    uint16_t temp_buffer_size;
+    uint16_t error_message_buffer_size;
+    uint16_t poll_interval_ms;
     baudrate_mapping_t *supported_baudrates;
-    int baudrate_count;
-    int default_baudrate_fallback;
+    uint8_t baudrate_count;
+    uint32_t default_baudrate_fallback;
 } modbus_config_t;
 
 typedef struct {
-    int response_buffer_size;
-    int temp_buffer_size;
-    int error_message_buffer_size;
-    int poll_interval_ms;
+    uint16_t response_buffer_size;
+    uint16_t temp_buffer_size;
+    uint16_t error_message_buffer_size;
+    uint16_t poll_interval_ms;
     baudrate_mapping_t *supported_baudrates;
-    int baudrate_count;
-    int default_baudrate_fallback;
+    uint8_t baudrate_count;
+    uint32_t default_baudrate_fallback;
 } can_config_t;
 
 typedef struct {
-    int node_id;
+    uint32_t node_id;
     char address[8];
     char name[64];
     char com_type[64];
     menu_item_t *menu_items;
-    int menu_count;
+    uint32_t menu_count;
     char data_format[16];
     char reflash_script[256];
     
     // NEW: Node detection commands
     detection_cmd_t *detection_commands;
-    int detection_count;
-    int detected;              // 1 if node detected, 0 otherwise
+    uint32_t detection_count;
+    uint8_t detected;              // 1 if node detected, 0 otherwise
     time_t last_detection;     // Last detection attempt timestamp
     time_t last_data_received; // when node last sent data
 
@@ -168,14 +221,14 @@ typedef struct {
 
 typedef struct {
     node_config_t *nodes;
-    int count;
-    int capacity;
-    
+    uint32_t count;
+    uint32_t capacity;
+
     // System config
-    int ui_refresh_delay;
-    int default_baudrate;
+    uint32_t ui_refresh_delay;
+    uint32_t default_baudrate;
     char default_device[256];
-    int startup_clear_duration;
+    uint32_t startup_clear_duration;
     // Communication type
     communication_type_t communication_type;
 
@@ -201,10 +254,10 @@ typedef struct {
 
 // API functions
 int load_nodes_config(const char *config_file);
-node_config_t* get_node_by_id(int node_id);
-node_config_t* get_node_by_index(int index);
+node_config_t* get_node_by_id(uint32_t node_id);
+node_config_t* get_node_by_index(uint32_t index);
 int get_node_count(void);
-menu_item_t* get_menu_item_by_cmd(node_config_t *node, int cmd);
+menu_item_t* get_menu_item_by_cmd(node_config_t *node, uint32_t cmd);
 void cleanup_nodes_config(void);
 
 // System config getters
@@ -229,7 +282,7 @@ can_config_t* get_can_config(void);
 mqtt_config_t* get_mqtt_config(void);
 
 // Control queue functions
-int add_control_command(int node_id, int cmd_id, const char *params);
+int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params);
 int get_control_command(server_control_cmd_t *cmd);
 
 //Communication type functions
@@ -244,6 +297,6 @@ extern volatile int config_reloading;
 // Thread-safe functions
 int safe_get_node_count(void);
 int safe_reload_config(void);
-node_config_t *safe_get_node_by_index(int index);
+node_config_t *safe_get_node_by_index(uint32_t index);
 
 #endif

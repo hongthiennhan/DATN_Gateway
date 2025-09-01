@@ -11,13 +11,11 @@
 // ========== External declarations for shared state ==========
 extern volatile uint8_t is_busy;
 extern pthread_mutex_t command_mutex;
-extern int command_pending;
 extern char status_response[256];
-extern int status_color;
+extern uint32_t status_color;
 extern unsigned char receive_data[512];
 extern unsigned char send_data[512];
 extern pthread_cond_t cond;
-extern int shared_node_type;
 
 // Pause control for threads
 extern thread_pause_t uart_pause;

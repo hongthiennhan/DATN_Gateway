@@ -331,3 +331,28 @@ stateDiagram-v2
 ```
 ---
 
+### TCP Send to linux server state machine:
+```mermaid
+stateDiagram-v2
+    [*] --> InitMgr : Initialize Manager
+    InitMgr --> CreateConn : Create TCP Connection
+    CreateConn --> Connected
+    Connected --> PreparePayload : Prepare JSON Payload
+    PreparePayload --> SendData : Send Data
+    SendData --> ReceiveData : Wait and Receive Data
+    ReceiveData --> ProcessIncomingData : Handle Incoming Data
+    ProcessIncomingData --> CheckConnection : Check Connection Status
+    CheckConnection --> Connected : If Alive
+    CheckConnection --> Reconnect : If Disconnected
+    Reconnect --> CreateConn : Reconnect
+    Connected --> Pause : Check for Pause Event
+    Pause --> Connected : Resume
+    SendData --> Sleep : Sleep before next send
+    Sleep --> PreparePayload : Loop
+
+    note left of InitMgr : Initialize TCP Manager
+    note right of CreateConn : Connect to Server
+    note right of PreparePayload : Build telemetry JSON payload
+    note right of ProcessIncomingData : Process control or config commands
+
+```

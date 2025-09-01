@@ -1,7 +1,82 @@
 #include "tcp_thread.h"
 
-void *tcp_thread_func(void *arg)
-{
-    // TCP thread implementation
+static struct mg_mgr tcp_mgr;
+static struct mg_connection *tcp_connection = NULL;
+volatile int tcp_connected = 0;
+
+thread_pause_t tcp_pause = {
+    .is_paused = false,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER
+};
+
+char *get_local_ip(void){}
+int ensure_directory_exists(const char *dir){}
+
+int tcp_init(void){}
+int tcp_connect(const char *server_url){}
+void tcp_close(void){}
+int tcp_reconnect(void){}
+
+void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data){}
+int tcp_send_data(const char *data, size_t len){}
+void tcp_process_received_data(const char *data, size_t len){}
+
+int validate_json_basic(const void *data, size_t size){}
+int atomic_write_json_file(const char *dir, const char *filename, const void *data, size_t size){}
+void process_tcp_control_command(const char *payload){}
+int check_and_reload_config(void){}
+
+void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp) {}
+void update_tcp_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len) {}
+
+void *tcp_thread_func(void *arg) {
+    // 1. INITIALIZATION
+    tcp_init();
+    
+    // 2. INITIAL CONNECTION
+    const char *server_url = "tcp://localhost:8765";
+    tcp_connect(server_url);
+    
+    // 3. WAIT FOR SUCCESSFUL CONNECTION
+    // Wait for connection timeout logic
+    
+    // 4. INITIAL CONFIG REQUEST (if needed)
+    // tcp_request_config();
+    
+    // 5. MAIN LOOP
+    while (1) {
+        // 5.1 Handle pause/resume
+        pthread_mutex_lock(&tcp_pause.mutex);
+        while (tcp_pause.is_paused) {
+            pthread_cond_wait(&tcp_pause.cond, &tcp_pause.mutex);
+        }
+        pthread_mutex_unlock(&tcp_pause.mutex);
+        
+        // 5.2 Poll events (handle tcp_event_handler)
+        mg_mgr_poll(&tcp_mgr, 100);
+        
+        // 5.3 Check & reload config
+        check_and_reload_config();
+        
+        // 5.4 Send periodic telemetry
+        time_t current_time = time(NULL);
+        if (current_time - last_publish >= publish_interval) {
+            build_telemetry_payload(payload_buffer, buffer_size, current_time);
+            tcp_send_data(payload_buffer, strlen(payload_buffer));
+            last_publish = current_time;
+        }
+        
+        // 5.5 Handle reconnection
+        if (!tcp_connected) {
+            tcp_reconnect();
+        }
+        
+        // 5.6 Loop sleep
+        usleep(loop_interval_ms * 1000);
+    }
+    
+    // 6. CLEANUP
+    tcp_close();
     return NULL;
 }
