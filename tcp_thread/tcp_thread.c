@@ -1,5 +1,5 @@
 #include "tcp_thread.h"
-
+#include "mongoose.h"
 static struct mg_mgr tcp_mgr;
 static struct mg_connection *tcp_connection = NULL;
 volatile int tcp_connected = 0;
@@ -10,8 +10,87 @@ thread_pause_t tcp_pause = {
     .cond = PTHREAD_COND_INITIALIZER
 };
 
-char *get_local_ip(void){}
-int ensure_directory_exists(const char *dir){}
+// Get local IP address
+char *get_local_ip(void)
+{
+    static char ip_str[INET_ADDRSTRLEN];  // Static buffer for IP string
+    struct ifaddrs *ifaddrs_ptr, *ifa;
+    
+    // Get list of network interfaces
+    if (getifaddrs(&ifaddrs_ptr) == -1) {
+        // Failed to get interface list, return localhost
+        strcpy(ip_str, "127.0.0.1");
+        return ip_str;
+    }
+
+    // Iterate through all network interfaces
+    for (ifa = ifaddrs_ptr; ifa != NULL; ifa = ifa->ifa_next) {
+        // Skip interfaces without addresses
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        // Only process IPv4 addresses
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            struct sockaddr_in *addr_in = (struct sockaddr_in *)ifa->ifa_addr;
+            char *addr_str = inet_ntoa(addr_in->sin_addr);
+            
+            // Skip loopback (127.x.x.x) and link-local (169.254.x.x) addresses
+            if (strncmp(addr_str, "127.", 4) != 0 && strncmp(addr_str, "169.254.", 8) != 0) {
+                // Found a valid external IP address
+                strcpy(ip_str, addr_str);
+                freeifaddrs(ifaddrs_ptr);
+                return ip_str;
+            }
+        }
+    }
+
+    // No suitable IP address found, free memory and return localhost
+    freeifaddrs(ifaddrs_ptr);
+    strcpy(ip_str, "127.0.0.1");
+    return ip_str;
+}
+
+// Ensure directory exists for JSON files
+int ensure_directory_exists(const char *dir)
+{
+    struct stat st;
+    
+    // Check if path exists
+    if (stat(dir, &st) == 0) {
+        // Path exists, check if it's a directory
+        if (S_ISDIR(st.st_mode)) {
+            // Directory exists and is valid
+            return 0;
+        } else {
+            // Path exists but is not a directory (could be a file)
+#ifdef DEBUG
+            fprintf(stderr, "ERROR: %s exists but is not a directory\n", dir);
+#endif
+            return -1;
+        }
+    }
+
+    // Directory doesn't exist, try to create it
+    if (mkdir(dir, 0755) == 0) {
+        // Successfully created directory
+#ifdef DEBUG
+        printf("Created directory: %s\n", dir);
+#endif
+        return 0;
+    }
+
+    // mkdir() failed, check the reason
+    if (errno == EEXIST) {
+        // Race condition: directory was created by another process
+        return ensure_directory_exists(dir); // Recursive check
+    }
+
+    // Other error occurred during mkdir()
+#ifdef DEBUG
+    fprintf(stderr, "ERROR: Cannot create directory %s: %s\n", dir, strerror(errno));
+#endif
+    return -1;
+}
 
 int tcp_init(void){}
 int tcp_connect(const char *server_url){}
