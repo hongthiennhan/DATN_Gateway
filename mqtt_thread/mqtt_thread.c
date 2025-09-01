@@ -328,7 +328,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 /**
  * Process control command from server
  */
-void process_control_command(const char *payload)
+static void process_control_command(const char *payload)
 {
     json_object *root = json_tokener_parse(payload);
     if (!root)
@@ -563,7 +563,7 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
 /**
  * Check and reload config if updated
  */
-int check_and_reload_config(void)
+static int check_and_reload_config(void)
 {
     pthread_mutex_lock(&config_update_mutex);
     int should_reload = config_updated;
@@ -618,7 +618,7 @@ int check_and_reload_config(void)
 /**
  * Request config from ThingsBoard
  */
-int request_config_json_robust(void)
+static int request_config_json_robust(void)
 {
     pthread_mutex_lock(&config_mutex);
     mqtt_config_t *cfg = get_mqtt_config();

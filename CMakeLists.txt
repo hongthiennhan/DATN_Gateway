@@ -34,13 +34,16 @@ set(INCLUDE_DIRS
     Inc
     CAN_handler
     mongoose_lib
+    mqtt_thread
+    tcp_thread
+    udp_thread
 )
 
 # Source files for main application (UPDATED: Added node_config.c)
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
-    Src_process/mqtt_thread.c
+    mqtt_thread/mqtt_thread.c
     config/node_config.c
     uart_handler/uart_handler.c
     modbus_handler/modbus_handler.c
