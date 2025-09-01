@@ -1,5 +1,6 @@
 #include "mongoose.h"
 #include "thread_func.h"
+
 // Config update tracking
 static volatile int config_updated = 0;
 static pthread_mutex_t config_update_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -13,9 +14,6 @@ thread_pause_t mqtt_pause = {
     .is_paused = false,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER};
-
-// Maximum JSON file size for validation
-#define MAX_JSON_SIZE 65536
 
 // Safe MQTT config access with mutex protection
 mqtt_config_t *safe_get_mqtt_config(void) {
@@ -283,7 +281,7 @@ static void process_control_command(const char *payload) {
 }
 
 // MQTT event handler for Mongoose
-static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, void *fn_data) {
+static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data) {
     switch (ev) {
         case MG_EV_MQTT_OPEN: {
             // Connected to the broker
@@ -298,14 +296,20 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
 
             // Subscribe to control topic
             if (strlen(config->topic_control) > 0) {
-                mg_mqtt_sub(c, mg_str(config->topic_control), config->qos);
+                struct mg_mqtt_opts sub_opts = {0};
+                sub_opts.topic = mg_str(config->topic_control);
+                sub_opts.qos = config->qos;
+                mg_mqtt_sub(c, &sub_opts);
                 #ifdef DEBUG
                 printf("Subscribed to control topic: %s\n", config->topic_control);
                 #endif
             }
 
             // Subscribe to RPC request topic
-            mg_mqtt_sub(c, mg_str("v1/devices/me/rpc/request/+"), config->qos);
+            struct mg_mqtt_opts rpc_opts = {0};
+            rpc_opts.topic = mg_str("v1/devices/me/rpc/request/+");
+            rpc_opts.qos = config->qos;
+            mg_mqtt_sub(c, &rpc_opts);
             #ifdef DEBUG
             printf("Subscribed to RPC requests\n");
             #endif
@@ -329,9 +333,12 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
                     sys_info->model,
                     get_node_count());
 
-                mg_mqtt_pub(c, mg_str(config->topic_attributes), 
-                           mg_str_n(attributes, strlen(attributes)), 
-                           config->qos, false);
+                struct mg_mqtt_opts pub_opts = {0};
+                pub_opts.topic = mg_str(config->topic_attributes);
+                pub_opts.message = mg_str(attributes);
+                pub_opts.qos = config->qos;
+                pub_opts.retain = false;
+                mg_mqtt_pub(c, &pub_opts);
                 free(attributes);
             }
             break;
@@ -341,7 +348,7 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
             // Received MQTT message event
             struct mg_mqtt_message *mm = (struct mg_mqtt_message *) ev_data;
             #ifdef DEBUG
-            printf("MQTT message on topic: %.*s\n", (int)mm->topic.len, mm->topic.ptr);
+            printf("MQTT message on topic: %.*s\n", (int)mm->topic.len, mm->topic.buf);
             #endif
 
             // Protect config with mutex
@@ -360,7 +367,7 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
             // Copy topic string safely
             char topic_str[256] = {0};
             int topic_len = (mm->topic.len < 255) ? mm->topic.len : 255;
-            memcpy(topic_str, mm->topic.ptr, topic_len);
+            memcpy(topic_str, mm->topic.buf, topic_len);
             topic_str[topic_len] = '\0';
 
             char topic_control[256] = {0};
@@ -380,7 +387,7 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
                 if (mm->data.len > 0) {
                     char *payload_str = malloc(mm->data.len + 1);
                     if (payload_str) {
-                        memcpy(payload_str, mm->data.ptr, mm->data.len);
+                        memcpy(payload_str, mm->data.buf, mm->data.len);
                         payload_str[mm->data.len] = '\0';
                         process_control_command(payload_str);
                         free(payload_str);
@@ -396,7 +403,7 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
                 printf("Processing config update\n");
                 #endif
 
-                const void *payload = mm->data.ptr;
+                const void *payload = mm->data.buf;
                 size_t payload_size = mm->data.len;
 
                 if (!validate_json_basic(payload, payload_size)) {
@@ -503,13 +510,24 @@ static int request_config_json_robust(void) {
     #endif
 
     // Subscribe to config topics
-    mg_mqtt_sub(mqtt_connection, mg_str("v1/devices/me/attributes/response/+"), cfg->qos);
-    mg_mqtt_sub(mqtt_connection, mg_str("v1/devices/me/attributes"), cfg->qos);
+    struct mg_mqtt_opts attr_resp_opts = {0};
+    attr_resp_opts.topic = mg_str("v1/devices/me/attributes/response/+");
+    attr_resp_opts.qos = cfg->qos;
+    mg_mqtt_sub(mqtt_connection, &attr_resp_opts);
+    
+    struct mg_mqtt_opts attr_opts = {0};
+    attr_opts.topic = mg_str("v1/devices/me/attributes");
+    attr_opts.qos = cfg->qos;
+    mg_mqtt_sub(mqtt_connection, &attr_opts);
 
     // Publish config request
     const char *request_payload = "{\"sharedKeys\":\"config\"}";
-    mg_mqtt_pub(mqtt_connection, mg_str("v1/devices/me/attributes/request/1"), 
-               mg_str(request_payload), cfg->qos, false);
+    struct mg_mqtt_opts pub_opts = {0};
+    pub_opts.topic = mg_str("v1/devices/me/attributes/request/1");
+    pub_opts.message = mg_str(request_payload);
+    pub_opts.qos = cfg->qos;
+    pub_opts.retain = false;
+    mg_mqtt_pub(mqtt_connection, &pub_opts);
 
     #ifdef DEBUG
     printf("Config request sent\n");
@@ -678,9 +696,12 @@ void *mqtt_thread_func(void *arg) {
         if (current_time - last_publish >= config->publish_interval) {
             build_telemetry_payload(telemetry_payload, config->payload_buffer_size, current_time);
             if (mqtt_connection && mqtt_connected) {
-                mg_mqtt_pub(mqtt_connection, mg_str(config->topic_telemetry), 
-                           mg_str_n(telemetry_payload, strlen(telemetry_payload)), 
-                           config->qos, false);
+                struct mg_mqtt_opts pub_opts = {0};
+                pub_opts.topic = mg_str(config->topic_telemetry);
+                pub_opts.message = mg_str(telemetry_payload);
+                pub_opts.qos = config->qos;
+                pub_opts.retain = false;
+                mg_mqtt_pub(mqtt_connection, &pub_opts);
                 last_publish = current_time;
             }
         }
@@ -691,9 +712,12 @@ void *mqtt_thread_func(void *arg) {
                      "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
                      current_time, get_node_count());
             if (mqtt_connection && mqtt_connected) {
-                mg_mqtt_pub(mqtt_connection, mg_str(config->topic_status), 
-                           mg_str_n(status_payload, strlen(status_payload)), 
-                           config->qos, false);
+                struct mg_mqtt_opts pub_opts = {0};
+                pub_opts.topic = mg_str(config->topic_status);
+                pub_opts.message = mg_str(status_payload);
+                pub_opts.qos = config->qos;
+                pub_opts.retain = false;
+                mg_mqtt_pub(mqtt_connection, &pub_opts);
                 last_status = current_time;
             }
         }
