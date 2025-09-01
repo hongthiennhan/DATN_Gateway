@@ -84,11 +84,11 @@ int main(void)
     // pthread_create(&can_thread, NULL, can_thread_func, NULL);
 
     // Main waits for threads to finish (does nothing else)
-    pthread_join(uart_thread, NULL);
+    // pthread_join(uart_thread, NULL);
     // pthread_join(ui_thread, NULL);
     pthread_join(mqtt_thread, NULL);
-    pthread_join(can_thread, NULL);
-    pthread_join(modbus_thread, NULL);
+    // pthread_join(can_thread, NULL);
+    // pthread_join(modbus_thread, NULL);
     // Cleanup the device string
     free(device);
     return 0;
