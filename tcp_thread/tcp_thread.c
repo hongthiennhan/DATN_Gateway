@@ -372,7 +372,7 @@ static void tcp_process_config_update(json_object *config_obj) {
 }
 
 // Pong response
-static void tcp_send_pong_response(void) {
+void tcp_send_pong_response(void) {
     tcp_config_t *config = get_tcp_config();
     if (!config) return;
 
