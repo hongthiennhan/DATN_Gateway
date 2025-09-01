@@ -19,11 +19,7 @@ void cleanup_on_exit(void)
 
     // Cleanup node config
     cleanup_nodes_config();
-    // Cleanup command data
-    if (command_data.data)
-    {
-        free(command_data.data);
-    }
+    
     pthread_mutex_destroy(&command_data.mutex);
     pthread_cond_destroy(&command_data.cond);
     // Cleanup command mutex
@@ -67,16 +63,6 @@ int main(void)
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
     char *device = strdup(get_default_device());
-    // Initialize command_data with a pointer to an int
-    command_data.data = malloc(sizeof(int));
-    if (command_data.data == NULL)
-    {
-#ifdef DEBUG_MAIN
-        fprintf(stderr, "Failed to allocate memory for command data\n");
-#endif
-        return -1;
-    }
-    *(int *)command_data.data = -1; // Initialize to -1
 
     // Uart_Init(UART_map_to_speed(baudrate), device);
     // Use config value instead of hard-coded timeout
