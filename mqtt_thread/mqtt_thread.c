@@ -1,4 +1,4 @@
-#include "thread_func.h"
+#include "mqtt_thread.h"
 
 // Config update tracking
 static volatile int config_updated = 0;
@@ -7,6 +7,11 @@ static pthread_mutex_t config_update_mutex = PTHREAD_MUTEX_INITIALIZER;
 // Global MQTT variables
 struct mosquitto *mqtt_client = NULL;
 volatile int mqtt_connected = 0;
+
+thread_pause_t mqtt_pause = {
+    .is_paused = false,
+    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .cond = PTHREAD_COND_INITIALIZER};
 
 /**
  * Safe MQTT config access
@@ -878,4 +883,47 @@ void *mqtt_thread_func(void *arg)
     mosquitto_destroy(mqtt_client);
     mosquitto_lib_cleanup();
     return NULL;
+}
+
+/**
+ * Update MQTT data with received response
+ */
+void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len)
+{
+    if (!node || !node->mqtt_data || !resp || resp_len == 0)
+        return;
+
+    pthread_mutex_lock(&node->mqtt_data->mutex);
+
+    // Free old data if exists
+    if (node->mqtt_data->data)
+    {
+        raw_data_t *old_data = (raw_data_t *)node->mqtt_data->data;
+        if (old_data->data)
+        {
+            free(old_data->data);
+        }
+        free(old_data);
+    }
+
+    // Store new raw data
+    raw_data_t *raw_data = malloc(sizeof(raw_data_t));
+    if (raw_data)
+    {
+        raw_data->length = resp_len;
+        raw_data->timestamp = time(NULL); // ADD timestamp
+        raw_data->data = malloc(resp_len);
+        if (raw_data->data)
+        {
+            memcpy(raw_data->data, resp, resp_len);
+            node->mqtt_data->data = raw_data;
+            pthread_cond_signal(&node->mqtt_data->cond);
+        }
+        else
+        {
+            free(raw_data);
+        }
+    }
+
+    pthread_mutex_unlock(&node->mqtt_data->mutex);
 }

@@ -10,10 +10,10 @@ unsigned char send_data[512] = {0};
 int shared_node_type = 0;
 uint8_t CAN_TYPE = 0; // 0: USB, 1: CUSTOM
 
-shared_data_t command_data = {
-    .data = NULL,
-    .mutex = PTHREAD_MUTEX_INITIALIZER,
-    .cond = PTHREAD_COND_INITIALIZER};
+// shared_data_t command_data = {
+//     .data = NULL,
+//     .mutex = PTHREAD_MUTEX_INITIALIZER,
+//     .cond = PTHREAD_COND_INITIALIZER};
 thread_pause_t uart_pause = {
     .is_paused = false,
     .mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -29,10 +29,6 @@ thread_pause_t can_pause = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER};
 
-thread_pause_t mqtt_pause = {
-    .is_paused = false,
-    .mutex = PTHREAD_MUTEX_INITIALIZER,
-    .cond = PTHREAD_COND_INITIALIZER};
 
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg)
@@ -591,49 +587,6 @@ void *can_thread_func(void *arg)
         usleep(100 * 1000); // 100ms sleep
     }
     return NULL;
-}
-
-/**
- * Update MQTT data with received response
- */
-void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len)
-{
-    if (!node || !node->mqtt_data || !resp || resp_len == 0)
-        return;
-
-    pthread_mutex_lock(&node->mqtt_data->mutex);
-
-    // Free old data if exists
-    if (node->mqtt_data->data)
-    {
-        raw_data_t *old_data = (raw_data_t *)node->mqtt_data->data;
-        if (old_data->data)
-        {
-            free(old_data->data);
-        }
-        free(old_data);
-    }
-
-    // Store new raw data
-    raw_data_t *raw_data = malloc(sizeof(raw_data_t));
-    if (raw_data)
-    {
-        raw_data->length = resp_len;
-        raw_data->timestamp = time(NULL); // ADD timestamp
-        raw_data->data = malloc(resp_len);
-        if (raw_data->data)
-        {
-            memcpy(raw_data->data, resp, resp_len);
-            node->mqtt_data->data = raw_data;
-            pthread_cond_signal(&node->mqtt_data->cond);
-        }
-        else
-        {
-            free(raw_data);
-        }
-    }
-
-    pthread_mutex_unlock(&node->mqtt_data->mutex);
 }
 
 // ==================== UI THREAD - Enhanced config menu ====================
