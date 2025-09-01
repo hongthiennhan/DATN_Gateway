@@ -16,9 +16,11 @@ thread_pause_t mqtt_pause = {
 /**
  * Safe MQTT config access
  */
-mqtt_config_t *safe_get_mqtt_config(void) {
+mqtt_config_t *safe_get_mqtt_config(void)
+{
     pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
+    if (config_reloading)
+    {
         pthread_mutex_unlock(&config_mutex);
         return NULL;
     }
@@ -169,7 +171,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     }
     char current_path[64], new_path[64], backup_path[64];
     snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
-    snprintf(new_path,    sizeof(new_path),    "%s/%s.new",  dir, filename);
+    snprintf(new_path, sizeof(new_path), "%s/%s.new", dir, filename);
     snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
     /* Delete old config file if it exists */
     if (access(current_path, F_OK) == 0)
@@ -214,7 +216,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
                     strerror(errno));
 #endif
             close(fd);
-            unlink(new_path);      /* Clean up failed new file */
+            unlink(new_path); /* Clean up failed new file */
             return -1;
         }
         total_written += written;
@@ -227,7 +229,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         fprintf(stderr, "ERROR: fsync new file failed: %s\n", strerror(errno));
 #endif
         close(fd);
-        unlink(new_path);          /* Clean up failed new file */
+        unlink(new_path); /* Clean up failed new file */
         return -1;
     }
     close(fd);
@@ -238,7 +240,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 #ifdef DEBUG
         fprintf(stderr, "ERROR: rename new file failed: %s\n", strerror(errno));
 #endif
-        unlink(new_path);          /* Clean up failed new file */
+        unlink(new_path); /* Clean up failed new file */
         return -1;
     }
 #ifdef DEBUG
@@ -265,14 +267,14 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     }
 
     /* Create new backup from current file */
-    int src_fd = open(current_path, O_RDONLY);   /* fixed: O_RDONLY */
+    int src_fd = open(current_path, O_RDONLY); /* fixed: O_RDONLY */
     if (src_fd < 0)
     {
 #ifdef DEBUG
         fprintf(stderr, "WARNING: Cannot open current file for backup: %s\n",
                 strerror(errno));
 #endif
-        return 0;                  /* Main file OK, backup failed */
+        return 0; /* Main file OK, backup failed */
     }
 
     int backup_fd = open(backup_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -283,7 +285,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
                 strerror(errno));
 #endif
         close(src_fd);
-        return 0;                  /* Main file OK, backup failed */
+        return 0; /* Main file OK, backup failed */
     }
 
     /* Copy data to backup */
@@ -307,8 +309,8 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 #endif
                 close(src_fd);
                 close(backup_fd);
-                unlink(backup_path);   /* Remove incomplete backup */
-                return 0;              /* Main file OK */
+                unlink(backup_path); /* Remove incomplete backup */
+                return 0;            /* Main file OK */
             }
             bytes_written += result;
         }
@@ -323,7 +325,6 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 #endif
     return 0;
 }
-
 
 /**
  * Process control command from server
@@ -480,33 +481,36 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
 #endif
         return;
     }
-    
+
 #ifdef DEBUG
     printf("MQTT message on topic: %s\n", message->topic);
 #endif
 
     // Thread-safe config access with timeout
     pthread_mutex_lock(&config_mutex);
-    if (config_reloading) {
+    if (config_reloading)
+    {
         pthread_mutex_unlock(&config_mutex);
         return; // Skip processing during reload
     }
-    
+
     mqtt_config_t *config = get_mqtt_config();
-    if (!config) {
+    if (!config)
+    {
         pthread_mutex_unlock(&config_mutex);
         return;
     }
     // Copy strings to local variables to avoid dangling pointers
     char topic_control[256] = {0};
-    if (config->topic_control && strlen(config->topic_control) > 0) {
+    if (config->topic_control && strlen(config->topic_control) > 0)
+    {
         strncpy(topic_control, config->topic_control, sizeof(topic_control) - 1);
     }
-    
+
     pthread_mutex_unlock(&config_mutex);
-    
+
     // Handle control commands from server
-    if ((strlen(topic_control) > 0 && strstr(message->topic, topic_control)) || 
+    if ((strlen(topic_control) > 0 && strstr(message->topic, topic_control)) ||
         strstr(message->topic, "v1/devices/me/rpc/request/"))
     {
 #ifdef DEBUG
@@ -551,14 +555,14 @@ void on_mqtt_message_robust(struct mosquitto *mosq, void *userdata, const struct
             printf("Config updated from server\n");
 #endif
             // Use trylock to deadlock
-            if (pthread_mutex_trylock(&config_update_mutex) == 0) {
+            if (pthread_mutex_trylock(&config_update_mutex) == 0)
+            {
                 config_updated = 1;
                 pthread_mutex_unlock(&config_update_mutex);
             }
         }
     }
 }
-
 
 /**
  * Check and reload config if updated
@@ -572,21 +576,22 @@ static int check_and_reload_config(void)
         config_updated = 0;
     }
     pthread_mutex_unlock(&config_update_mutex);
-    
-    if (!should_reload) return 0;
-    
+
+    if (!should_reload)
+        return 0;
+
     pthread_mutex_lock(&config_mutex);
     config_reloading = 1;
-    
+
 #ifdef DEBUG
     printf("Reloading config from server update\n");
 #endif
-    
+
     cleanup_nodes_config();
-    
+
     char config_path[64];
     snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
-    
+
     int result = 0;
     if (load_nodes_config(config_path) == 0)
     {
@@ -607,13 +612,12 @@ static int check_and_reload_config(void)
             load_nodes_config(config_path);
         }
     }
-    
+
     config_reloading = 0;
     pthread_mutex_unlock(&config_mutex);
-    
+
     return result;
 }
-
 
 /**
  * Request config from ThingsBoard
@@ -655,7 +659,7 @@ static int request_config_json_robust(void)
 #ifdef DEBUG
         fprintf(stderr, "Failed to send config request\n");
 #endif
-        
+
         return 0;
     }
 }
@@ -668,11 +672,11 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
     mqtt_config_t *config = get_mqtt_config();
     if (!config)
         return;
-        
+
     char *temp_buffer = malloc(1024);
     if (!temp_buffer)
         return;
-        
+
     // Start JSON with timestamp
     if (config->system_fields.include_timestamp)
     {
@@ -689,9 +693,10 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
         node_config_t *node = get_node_by_index(i);
         if (!node || !node->mqtt_data)
             continue;
-            
+
         // Chỉ trylock node mutex thôi
-        if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0) {
+        if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0)
+        {
             if (node->mqtt_data->data)
             {
                 raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
@@ -707,7 +712,7 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
                         }
                         hex_str[raw_data->length * 2] = '\0';
                         snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
-                               node->node_id, hex_str, node->node_id, node->com_type);
+                                 node->node_id, hex_str, node->node_id, node->com_type);
                         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
                         free(hex_str);
                     }
@@ -734,7 +739,6 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
     strncat(payload, "}", payload_size - strlen(payload) - 1);
     free(temp_buffer);
 }
-
 
 /**
  * Main MQTT thread function
@@ -827,25 +831,27 @@ void *mqtt_thread_func(void *arg)
         return NULL;
     }
 
-    while (1) {
+    while (1)
+    {
         pthread_mutex_lock(&mqtt_pause.mutex);
-        while (mqtt_pause.is_paused) {
-            pthread_cond_wait(&mqtt_pause.cond, &mqtt_pause.mutex);  // Sleep and wait for signal
+        while (mqtt_pause.is_paused)
+        {
+            pthread_cond_wait(&mqtt_pause.cond, &mqtt_pause.mutex); // Sleep and wait for signal
         }
         pthread_mutex_unlock(&mqtt_pause.mutex);
 
         time_t current_time = time(NULL);
-        
+
         // Check for config updates
         check_and_reload_config();
-        
+
         // Publish telemetry data - dùng config ban đầu thay vì get mới
         if (current_time - last_publish >= config->publish_interval)
         {
             build_telemetry_payload(telemetry_payload, config->payload_buffer_size, current_time);
             rc = mosquitto_publish(mqtt_client, NULL, config->topic_telemetry,
-                                 strlen(telemetry_payload), telemetry_payload,
-                                 config->qos, false);
+                                   strlen(telemetry_payload), telemetry_payload,
+                                   config->qos, false);
             if (rc == MOSQ_ERR_SUCCESS)
             {
                 last_publish = current_time;
@@ -856,10 +862,10 @@ void *mqtt_thread_func(void *arg)
         if (strlen(config->topic_status) > 0 && (current_time - last_status) >= 60)
         {
             snprintf(status_payload, config->payload_buffer_size,
-                    "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
-                    current_time, get_node_count());
+                     "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
+                     current_time, get_node_count());
             mosquitto_publish(mqtt_client, NULL, config->topic_status,
-                            strlen(status_payload), status_payload, config->qos, false);
+                              strlen(status_payload), status_payload, config->qos, false);
             last_status = current_time;
         }
 
