@@ -43,7 +43,7 @@ set(INCLUDE_DIRS
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
-    mqtt_thread/mqtt_thread.c
+    mqtt_thread/mqtt_thread_new.c
     config/node_config.c
     uart_handler/uart_handler.c
     modbus_handler/modbus_handler.c

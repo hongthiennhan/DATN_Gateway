@@ -663,10 +663,7 @@ static int request_config_json_robust(void)
 /**
  * Build telemetry payload with node data
  */
-/**
- * Build telemetry payload with node data
- */
-void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
+static void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
     mqtt_config_t *config = get_mqtt_config();
     if (!config)

@@ -222,7 +222,7 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
 }
 
 // Process control command from server
-void process_control_command(const char *payload) {
+static void process_control_command(const char *payload) {
     json_object *root = json_tokener_parse(payload);
     if (!root) {
         #ifdef DEBUG
@@ -443,7 +443,7 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data, v
 }
 
 // Check and reload config if updated
-int check_and_reload_config(void) {
+static int check_and_reload_config(void) {
     pthread_mutex_lock(&config_update_mutex);
     int should_reload = config_updated;
     if (should_reload) {
@@ -487,7 +487,7 @@ int check_and_reload_config(void) {
 }
 
 // Request config from server
-int request_config_json_robust(void) {
+static int request_config_json_robust(void) {
     pthread_mutex_lock(&config_mutex);
     mqtt_config_t *cfg = get_mqtt_config();
     if (!cfg || !mqtt_connection || !mqtt_connected) {
@@ -520,7 +520,7 @@ int request_config_json_robust(void) {
 }
 
 // Build telemetry payload with node data
-void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp) {
+static void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp) {
     mqtt_config_t *config = get_mqtt_config();
     if (!config) return;
     
