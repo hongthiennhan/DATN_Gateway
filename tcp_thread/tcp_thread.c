@@ -13,12 +13,12 @@ thread_pause_t tcp_pause = {
 };
 
 // Forward declarations
-void tcp_process_single_message(const char *message);
-void tcp_process_config_update(json_object *config_obj);
-void tcp_send_pong_response(void);
-void process_tcp_control_command(const char *payload);
-void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data);
-void tcp_process_received_data(const char *data, size_t len);
+static void tcp_process_single_message(const char *message);
+static void tcp_process_config_update(json_object *config_obj);
+static void tcp_send_pong_response(void);
+static void process_tcp_control_command(const char *payload);
+static void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data);
+static void tcp_process_received_data(const char *data, size_t len);
 
 // Get local IP address - optimized but keeping full functionality
 char *tcp_get_local_ip(void) {
