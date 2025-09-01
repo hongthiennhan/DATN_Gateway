@@ -202,7 +202,7 @@ static uint32_t parse_node_config(json_object *node_obj, node_config_t *node)
 /**
  * Load complete configuration from JSON file
  */
-uint32_t load_nodes_config(const char *config_file)
+int load_nodes_config(const char *config_file)
 {
 #ifdef DEBUG
     printf("Loading configuration from: %s\n", config_file);
