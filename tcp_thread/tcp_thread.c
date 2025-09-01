@@ -13,14 +13,16 @@ thread_pause_t tcp_pause = {
 };
 
 // Forward declarations
-static void tcp_process_single_message(const char *message);
-static void tcp_process_config_update(json_object *config_obj);
-static void tcp_send_pong_response(void);
-static void process_tcp_control_command(const char *payload);
-static int ensure_directory_exists(const char *dir);
+void tcp_process_single_message(const char *message);
+void tcp_process_config_update(json_object *config_obj);
+void tcp_send_pong_response(void);
+void process_tcp_control_command(const char *payload);
+void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data);
+void tcp_process_receive
+int ensure_directory_exists(const char *dir);
 
 // Get local IP address - optimized but keeping full functionality
-char *get_local_ip(void) {
+char *tcp_get_local_ip(void) {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
 
@@ -232,7 +234,7 @@ void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data) {
                     snprintf(handshake, sizeof(handshake),
                         "{\"type\":\"handshake\",\"client_id\":\"%s\",\"protocol_version\":\"%s\","
                         "\"gateway_ip\":\"%s\",\"firmware_version\":\"%s\",\"device_type\":\"%s\"}%s",
-                        config->client_id, config->protocol_version, get_local_ip(),
+                        config->client_id, config->protocol_version, tcp_get_local_ip(),
                         sys_info->firmware_version, sys_info->device_type,
                         config->protocol_settings.message_delimiter);
                     mg_send(c, handshake, strlen(handshake));
@@ -246,7 +248,7 @@ void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data) {
         
         case MG_EV_READ: {
             if (c->recv.len > 0) {
-                tcp_process_received_data(c->recv.ptr, c->recv.len);
+                tcp_process_received_data((const char*)c->recv.buf, c->recv.len);
                 mg_iobuf_del(&c->recv, 0, c->recv.len);
             }
             break;
@@ -479,7 +481,7 @@ void build_telemetry_payload(char *payload, size_t payload_size, time_t timestam
 
     // Add system information
     if (config->system_fields.include_gateway_ip) {
-        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", get_local_ip());
+        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", tcp_get_local_ip());
         if (strlen(payload) + strlen(temp_buffer) + 2 < payload_size) {
             strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
         }

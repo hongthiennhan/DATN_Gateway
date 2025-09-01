@@ -30,7 +30,7 @@ mqtt_config_t *safe_get_mqtt_config(void)
 }
 
 // Get local IP address for gateway identification
-char *get_local_ip()
+char *mqtt_get_local_ip()
 {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
@@ -376,7 +376,7 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
                      "\"model\":\"%s\","
                      "\"node_count\":%d"
                      "}",
-                     get_local_ip(),
+                     mqtt_get_local_ip(),
                      sys_info->firmware_version,
                      sys_info->device_type,
                      sys_info->manufacturer,
@@ -670,7 +670,7 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
     // Add system info
     if (config->system_fields.include_gateway_ip)
     {
-        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", get_local_ip());
+        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", mqtt_get_local_ip());
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
     }
 
