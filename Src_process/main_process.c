@@ -19,11 +19,7 @@ void cleanup_on_exit(void)
 
     // Cleanup node config
     cleanup_nodes_config();
-    
-    pthread_mutex_destroy(&command_data.mutex);
-    pthread_cond_destroy(&command_data.cond);
-    // Cleanup command mutex
-    pthread_mutex_destroy(&command_mutex);
+
 #ifdef DEBUG
     printf("Cleanup completed\n");
 #endif

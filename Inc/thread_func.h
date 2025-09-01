@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "uart_handler.h"
-#include "node_config.h"  // Include này để có node_config_t và menu_item_t types
+#include "node_config.h"  // Include to get node_config_t and menu_item_t types
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
 #include "CAN_handler.h" // Include CAN handler for CAN data types
 #include "mqtt_thread.h" // Include MQTT thread header for MQTT handling
@@ -13,7 +13,7 @@ typedef struct shared_data_s {
     pthread_cond_t cond;
 } shared_data_t;
 
-typedef struct {
+typedef struct thread_pause_s {
     bool is_paused;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
