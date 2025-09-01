@@ -7,17 +7,6 @@
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
 #include "CAN_handler.h" // Include CAN handler for CAN data types
 #include "mqtt_thread.h" // Include MQTT thread header for MQTT handling
-typedef struct {
-    void* data;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-} shared_data_t;
-
-typedef struct {
-    bool is_paused;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-} thread_pause_t;
 
 // ========== External declarations for shared state ==========
 extern volatile uint8_t is_busy;

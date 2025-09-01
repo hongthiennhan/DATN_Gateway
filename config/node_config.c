@@ -7,14 +7,6 @@ static node_registry_t node_registry = {0};
 pthread_mutex_t config_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int config_reloading = 0;
 
-// Shared data structure for thread communication
-typedef struct shared_data_s
-{
-    void *data;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-} shared_data_t;
-
 /**
  * Safe string copy with guaranteed null termination
  */

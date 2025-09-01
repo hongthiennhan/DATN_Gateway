@@ -28,7 +28,17 @@ typedef struct {
 } raw_data_t;
 
 // Forward declaration
-typedef struct shared_data_s shared_data_t;
+typedef struct {
+    void* data;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+} shared_data_t;
+
+typedef struct {
+    bool is_paused;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+} thread_pause_t;
 
 // Node detection command structure
 typedef struct {
