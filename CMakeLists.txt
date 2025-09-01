@@ -33,6 +33,7 @@ set(INCLUDE_DIRS
     modbus_handler
     Inc
     CAN_handler
+    mongoose_lib
 )
 
 # Source files for main application (UPDATED: Added node_config.c)
@@ -44,6 +45,7 @@ set(SOURCES_2
     uart_handler/uart_handler.c
     modbus_handler/modbus_handler.c
     CAN_handler/CAN_handler.c
+    mongoose_lib/mongoose.c
 )
 
 # Add main executable

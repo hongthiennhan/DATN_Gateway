@@ -48,6 +48,8 @@ void *ui_thread_func(void *arg);
 void *modbus_thread_func(void *arg);
 void *can_thread_func(void *arg);
 void *mqtt_thread_func(void *arg);
+void *tcp_thread_func(void *arg);
+void *udp_thread_func(void *arg);
 
 // Config-driven function declarations - FIXED: Use actual typedefs instead of struct forward declarations
 void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len);
