@@ -833,6 +833,7 @@ uint32_t load_nodes_config(const char *config_file)
     modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
     can_config_t *get_can_config(void) { return &node_registry.can_config; }
     mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
+    tcp_config_t *get_tcp_config(void) { return &node_registry.tcp_config; }
 
     // Control queue functions
     uint32_t add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
