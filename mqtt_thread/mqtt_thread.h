@@ -1,7 +1,8 @@
 #ifndef MQTT_THREAD_H
 #define MQTT_THREAD_H
 #include "main.h"
-#include "node_config.h"  
+#include "node_config.h"
+#include "thread_func.h"
 
 extern thread_pause_t mqtt_pause;
 void *mqtt_thread_func(void *arg);
