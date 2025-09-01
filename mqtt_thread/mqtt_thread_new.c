@@ -633,7 +633,7 @@ void *mqtt_thread_func(void *arg) {
         .user = mg_str(config->username),      // Explicit username
         .pass = mg_str(""),                    // Empty password for ThingsBoard
         .clean = true,                         // Clean session
-        .keep_alive = 60,                      // Keep alive timeout
+        .keepalive = 60,                      // Keep alive timeout
         .version = 4                           // MQTT 3.1.1
     };
 
