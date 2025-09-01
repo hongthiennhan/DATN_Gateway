@@ -951,7 +951,7 @@ void cleanup_nodes_config(void)
 }
 
 // Thread-safe config reload
-uint32_t safe_reload_config(void)
+int safe_reload_config(void)
 {
 #ifdef DEBUG
     printf("Starting safe config reload\n");
