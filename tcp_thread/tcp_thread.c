@@ -19,7 +19,6 @@ void tcp_send_pong_response(void);
 void process_tcp_control_command(const char *payload);
 void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data);
 void tcp_process_received_data(const char *data, size_t len);
-int ensure_directory_exists(const char *dir);
 
 // Get local IP address - optimized but keeping full functionality
 char *tcp_get_local_ip(void) {
@@ -63,7 +62,7 @@ static int ensure_directory_exists(const char *dir) {
 }
 
 // JSON validation - keeping original logic but streamlined
-int validate_json_basic(const void *data, size_t size) {
+static int validate_json_basic(const void *data, size_t size) {
     if (!data || size == 0 || size > MAX_JSON_SIZE) return 0;
     
     const char *json_str = (const char *)data;
@@ -78,7 +77,7 @@ int validate_json_basic(const void *data, size_t size) {
 }
 
 // Atomic file write - preserving full atomic operation
-int atomic_write_json_file(const char *dir, const char *filename, const void *data, size_t size) {
+static int atomic_write_json_file(const char *dir, const char *filename, const void *data, size_t size) {
     if (ensure_directory_exists(dir) != 0) return -1;
 
     char current_path[256], new_path[256];
@@ -116,7 +115,7 @@ int atomic_write_json_file(const char *dir, const char *filename, const void *da
 }
 
 // Config reload - keeping full thread safety
-int check_and_reload_config(void) {
+static int check_and_reload_config(void) {
     static volatile int config_updated = 0;
     static pthread_mutex_t config_update_mutex = PTHREAD_MUTEX_INITIALIZER;
 
