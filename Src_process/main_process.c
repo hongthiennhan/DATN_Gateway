@@ -38,7 +38,8 @@ int main(void)
 #endif
         load_try = 1;
     }
-    else {
+    else
+    {
 #ifdef DEBUG_MAIN
         printf("Node configuration loaded successfully\n");
 #endif
@@ -74,19 +75,23 @@ int main(void)
     // pthread_t ui_thread;
     // pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
     // Start MQTT thread
-    pthread_t mqtt_thread;
-    pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
+    // pthread_t mqtt_thread;
+    // pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
     // Start Modbus thread
     // pthread_t modbus_thread;
     // pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
-    // // Start CAN thread
+    // Start CAN thread
     // pthread_t can_thread;
     // pthread_create(&can_thread, NULL, can_thread_func, NULL);
+    // Start TCP thread
+    pthread_t tcp_thread;
+    pthread_create(&tcp_thread, NULL, tcp_thread_func, NULL);
 
     // Main waits for threads to finish (does nothing else)
     // pthread_join(uart_thread, NULL);
     // pthread_join(ui_thread, NULL);
-    pthread_join(mqtt_thread, NULL);
+    // pthread_join(mqtt_thread, NULL);
+    pthread_join(tcp_thread, NULL);
     // pthread_join(can_thread, NULL);
     // pthread_join(modbus_thread, NULL);
     // Cleanup the device string

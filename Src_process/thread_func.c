@@ -27,7 +27,6 @@ thread_pause_t can_pause = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER};
 
-
 // ==================== UART THREAD - Passive listening for node data ====================
 void *uart_thread_func(void *arg)
 {
@@ -609,6 +608,8 @@ void *ui_thread_func(void *arg)
     pause_thread(&uart_pause);
     pause_thread(&modbus_pause);
     pause_thread(&can_pause);
+    pause_thread(&tcp_pause);
+    pause_thread(&mqtt_pause);
     int highlight = 0;
     int key_check;
     while (1)
@@ -752,7 +753,7 @@ void *ui_thread_func(void *arg)
                     "MQTT",
                     "HTTP (Coming soon)",
                     "WebSocket (Coming soon)",
-                    "TCP (Coming soon)"};
+                    "TCP"};
 
                 int comm_highlight = (int)get_communication_type();
                 int comm_selecting = 1;
@@ -795,8 +796,18 @@ void *ui_thread_func(void *arg)
                         comm_highlight = (comm_highlight == COMM_TYPE_COUNT - 1) ? 0 : comm_highlight + 1;
                         break;
                     case 10: // ENTER
-                        if (comm_highlight == 0)
+                        if (comm_highlight == 0 || comm_highlight == 3)
                         { // Only MQTT implemented
+                            if (comm_highlight == 0)
+                            {
+                                resume_thread(&mqtt_pause);
+                                pause_thread(&tcp_pause);
+                            }
+                            else if (comm_highlight == 3)
+                            {
+                                resume_thread(&tcp_pause);
+                                pause_thread(&mqtt_pause);
+                            }
                             set_communication_type((communication_type_t)comm_highlight);
                             mvprintw(5 + COMM_TYPE_COUNT + 4, 0, "Communication type changed to: %s",
                                      get_communication_type_name((communication_type_t)comm_highlight));
