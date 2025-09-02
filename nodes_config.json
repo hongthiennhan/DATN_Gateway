@@ -14,10 +14,19 @@
         }
       ],
       "menu_items": [
-        { "cmd": 1, "label": "LED On",  "hex_value": "0xA1", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "hex_value": "0xA2", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "LED On",
+          "hex_value": "0xA1",
+          "timeout_ms": 0
+        },
+        {
+          "cmd": 2,
+          "label": "LED Off",
+          "hex_value": "0xA2",
+          "timeout_ms": 0
+        }
       ],
-
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
@@ -34,12 +43,20 @@
           "description": "Display unit identification"
         }
       ],
-
       "menu_items": [
-        { "cmd": 1, "label": "Display On", "hex_value": "0xA3", "timeout_ms": 0 },
-        { "cmd": 2, "label": "Display Off", "hex_value": "0xA4", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "Display On",
+          "hex_value": "0xA3",
+          "timeout_ms": 0
+        },
+        {
+          "cmd": 2,
+          "label": "Display Off",
+          "hex_value": "0xA4",
+          "timeout_ms": 0
+        }
       ],
-
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
@@ -56,12 +73,20 @@
           "description": "Read Output State"
         }
       ],
-
       "menu_items": [
-        { "cmd": 1, "label": "LED On",  "hex_value": "0x05 0x00 0x00 0xFF 0x00", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "LED On",
+          "hex_value": "0x05 0x00 0x00 0xFF 0x00",
+          "timeout_ms": 0
+        },
+        {
+          "cmd": 2,
+          "label": "LED Off",
+          "hex_value": "0x05 0x00 0x00 0x00 0x00",
+          "timeout_ms": 0
+        }
       ],
-
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
@@ -78,12 +103,20 @@
           "description": "Read Input Value"
         }
       ],
-
       "menu_items": [
-        { "cmd": 1, "label": "LED On",  "hex_value": "0x05 0x00 0x00 0xFF 0x00", "timeout_ms": 0 },
-        { "cmd": 2, "label": "LED Off", "hex_value": "0x05 0x00 0x00 0x00 0x00", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "LED On",
+          "hex_value": "0x05 0x00 0x00 0xFF 0x00",
+          "timeout_ms": 0
+        },
+        {
+          "cmd": 2,
+          "label": "LED Off",
+          "hex_value": "0x05 0x00 0x00 0x00 0x00",
+          "timeout_ms": 0
+        }
       ],
-
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     },
@@ -100,17 +133,24 @@
           "description": "Read Input Value"
         }
       ],
-
       "menu_items": [
-        { "cmd": 1, "label": "Activate",   "hex_value": "0x00 0x0A 0x00 0x00 0xFF", "timeout_ms": 0 },
-        { "cmd": 2, "label": "Deactivate", "hex_value": "0x00 0x0B 0x00 0x00 0xFF", "timeout_ms": 0 }
+        {
+          "cmd": 1,
+          "label": "Activate",
+          "hex_value": "0x00 0x0A 0x00 0x00 0xFF",
+          "timeout_ms": 0
+        },
+        {
+          "cmd": 2,
+          "label": "Deactivate",
+          "hex_value": "0x00 0x0B 0x00 0x00 0xFF",
+          "timeout_ms": 0
+        }
       ],
-
       "data_format": "hex",
       "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
     }
   ],
-
   "system_config": {
     "auto_read_command_id": 100,
     "ui_refresh_delay": 100,
@@ -119,14 +159,12 @@
     "default_device": "/dev/ttyUSB0",
     "startup_clear_duration": 10000
   },
-
   "system_info": {
     "firmware_version": "1.0.0",
     "device_type": "IoT Gateway",
     "manufacturer": "Your Company",
     "model": "Gateway-v1"
   },
-
   "uart_config": {
     "buffer_sizes": {
       "response_buffer": 512,
@@ -138,18 +176,41 @@
       "flush_interval_ms": 50
     },
     "supported_baudrates": [
-      { "rate": 9600,   "speed_code": "B9600"   },
-      { "rate": 19200,  "speed_code": "B19200"  },
-      { "rate": 38400,  "speed_code": "B38400"  },
-      { "rate": 57600,  "speed_code": "B57600"  },
-      { "rate": 115200, "speed_code": "B115200" },
-      { "rate": 230400, "speed_code": "B230400" },
-      { "rate": 460800, "speed_code": "B460800" },
-      { "rate": 921600, "speed_code": "B921600" }
+      {
+        "rate": 9600,
+        "speed_code": "B9600"
+      },
+      {
+        "rate": 19200,
+        "speed_code": "B19200"
+      },
+      {
+        "rate": 38400,
+        "speed_code": "B38400"
+      },
+      {
+        "rate": 57600,
+        "speed_code": "B57600"
+      },
+      {
+        "rate": 115200,
+        "speed_code": "B115200"
+      },
+      {
+        "rate": 230400,
+        "speed_code": "B230400"
+      },
+      {
+        "rate": 460800,
+        "speed_code": "B460800"
+      },
+      {
+        "rate": 921600,
+        "speed_code": "B921600"
+      }
     ],
     "default_baudrate_fallback": 115200
   },
-
   "modbus_config": {
     "buffer_sizes": {
       "response_buffer": 512,
@@ -160,34 +221,66 @@
       "poll_interval_ms": 20
     },
     "supported_baudrates": [
-      { "rate": 1200,   "speed_code": "B1200"   },
-      { "rate": 4800,   "speed_code": "B4800"   },
-      { "rate": 9600,   "speed_code": "B9600"   },
-      { "rate": 19200,  "speed_code": "B19200"  },
-      { "rate": 38400,  "speed_code": "B38400"  },
-      { "rate": 57600,  "speed_code": "B57600"  },
-      { "rate": 115200, "speed_code": "B115200" }
+      {
+        "rate": 1200,
+        "speed_code": "B1200"
+      },
+      {
+        "rate": 4800,
+        "speed_code": "B4800"
+      },
+      {
+        "rate": 9600,
+        "speed_code": "B9600"
+      },
+      {
+        "rate": 19200,
+        "speed_code": "B19200"
+      },
+      {
+        "rate": 38400,
+        "speed_code": "B38400"
+      },
+      {
+        "rate": 57600,
+        "speed_code": "B57600"
+      },
+      {
+        "rate": 115200,
+        "speed_code": "B115200"
+      }
     ],
-      "default_baudrate_fallback": 115200
+    "default_baudrate_fallback": 115200
   },
   "can_config": {
-      "buffer_sizes": {
-        "response_buffer": 512,
-        "temp_buffer": 256,
-        "error_message_buffer": 100
+    "buffer_sizes": {
+      "response_buffer": 512,
+      "temp_buffer": 256,
+      "error_message_buffer": 100
+    },
+    "timing": {
+      "poll_interval_ms": 20
+    },
+    "supported_baudrates": [
+      {
+        "rate": 115200,
+        "speed_code": "B115200"
       },
-      "timing": {
-        "poll_interval_ms": 20
+      {
+        "rate": 256000,
+        "speed_code": "B256000"
       },
-      "supported_baudrates": [
-        { "rate": 115200, "speed_code": "B115200" },
-        { "rate": 256000, "speed_code": "B256000" },
-        { "rate": 512000, "speed_code": "B512000" },
-        { "rate": 9216000, "speed_code": "B921600" }
-      ],
-      "default_baudrate_fallback": 115200
+      {
+        "rate": 512000,
+        "speed_code": "B512000"
+      },
+      {
+        "rate": 9216000,
+        "speed_code": "B921600"
+      }
+    ],
+    "default_baudrate_fallback": 115200
   },
-
   "mqtt_config": {
     "broker_host": "demo.thingsboard.io",
     "broker_port": 1883,
