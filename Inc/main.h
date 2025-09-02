@@ -16,8 +16,8 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include <time.h>
-#include <sys/time.h>      // ADDED
-#include <stdint.h>        // ADDED
+#include <sys/time.h> // ADDED
+#include <stdint.h>   // ADDED
 
 // Include necessary lib for MQTT
 #include <mosquitto.h>
@@ -30,10 +30,9 @@
 #include <json-c/json.h>
 
 // ===== ADDITIONAL HEADERS FOR ROBUST FILE OPERATIONS =====
-#include <sys/stat.h>     // for stat(), mkdir()
-#include <fcntl.h>        // for open(), O_* flags  
-#include <errno.h>        // for errno, EEXIST
-#include <unistd.h>       // for fsync(), close()
-
+#include <sys/stat.h> // for stat(), mkdir()
+#include <fcntl.h>    // for open(), O_* flags
+#include <errno.h>    // for errno, EEXIST
+#include <unistd.h>   // for fsync(), close()
 
 #endif
