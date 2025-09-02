@@ -313,7 +313,7 @@
         "client_id": "gateway_device_tcp",
         "protocol_version": "1.0",
         "data_format": "json",
-        "send_interval": 30,
+        "send_interval": 1,
         "connection_timeout": 50,
         "reconnect_delay_ms": 5000,
         "loop_interval_ms": 100,
