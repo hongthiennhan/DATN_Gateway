@@ -308,7 +308,7 @@
     "tcp_config": {
         "server_host": "192.168.1.11",
         "server_port": 8765,
-        "config_server_host": "localhost",
+        "config_server_host": "192.168.1.11",
         "config_server_port": 8766,
         "client_id": "gateway_device_tcp",
         "protocol_version": "1.0",
