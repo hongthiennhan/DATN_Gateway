@@ -12,12 +12,8 @@ thread_pause_t tcp_pause = {
     .cond = PTHREAD_COND_INITIALIZER};
 
 // Forward declarations
-static void tcp_process_single_message(const char *message);
-static void tcp_process_config_update(json_object *config_obj);
-static void tcp_send_pong_response(void);
 static void process_tcp_control_command(const char *payload);
 static void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data);
-static void tcp_process_received_data(const char *data, size_t len);
 
 // Get local IP address - optimized but keeping full functionality
 char *tcp_get_local_ip(void)
@@ -171,7 +167,7 @@ static int check_and_reload_config(void)
 }
 
 // TCP initialization - keeping all config validation
-int tcp_init(void)
+static int tcp_init(void)
 {
     mg_mgr_init(&tcp_mgr);
     tcp_connection = NULL;
@@ -194,7 +190,7 @@ int tcp_init(void)
 }
 
 // TCP connect - preserving all config usage
-int tcp_connect(const char *server_url)
+static int tcp_connect(const char *server_url)
 {
     tcp_config_t *config = get_tcp_config();
     if (!config)
@@ -236,7 +232,7 @@ void tcp_close(void)
 }
 
 // TCP reconnect
-int tcp_reconnect(void)
+static int tcp_reconnect(void)
 {
     tcp_config_t *config = get_tcp_config();
     if (!config)
@@ -254,59 +250,6 @@ int tcp_reconnect(void)
     tcp_connection = mg_connect(&tcp_mgr, url, tcp_event_handler, NULL);
 
     return tcp_connection ? 0 : -1;
-}
-
-// Event handler - keeping all config features
-void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data)
-{
-    switch (ev)
-    {
-    case MG_EV_CONNECT:
-    {
-        tcp_connected = 1;
-        tcp_connection = c;
-
-        tcp_config_t *config = get_tcp_config();
-        if (config && config->features.status_reporting)
-        {
-            system_info_t *sys_info = get_system_info();
-            if (sys_info)
-            {
-                char handshake[512];
-                snprintf(handshake, sizeof(handshake),
-                         "{\"type\":\"handshake\",\"client_id\":\"%s\",\"protocol_version\":\"%s\","
-                         "\"gateway_ip\":\"%s\",\"firmware_version\":\"%s\",\"device_type\":\"%s\"}%s",
-                         config->client_id, config->protocol_version, tcp_get_local_ip(),
-                         sys_info->firmware_version, sys_info->device_type,
-                         config->protocol_settings.message_delimiter);
-                mg_send(c, handshake, strlen(handshake));
-            }
-        }
-#ifdef DEBUG
-        printf("TCP: Connected to server\n");
-#endif
-        break;
-    }
-
-    case MG_EV_READ:
-    {
-        if (c->recv.len > 0)
-        {
-            tcp_process_received_data((const char *)c->recv.buf, c->recv.len);
-            mg_iobuf_del(&c->recv, 0, c->recv.len);
-        }
-        break;
-    }
-
-    case MG_EV_CLOSE:
-    case MG_EV_ERROR:
-        tcp_connected = 0;
-        tcp_connection = NULL;
-#ifdef DEBUG
-        printf("TCP: Connection %s\n", ev == MG_EV_CLOSE ? "closed" : "error");
-#endif
-        break;
-    }
 }
 
 // Send data - keeping all protocol settings
@@ -335,43 +278,41 @@ int tcp_send_data(const char *data, size_t len)
     return (sent == total_len) ? 0 : -1;
 }
 
-// Process received data - keeping message delimiter handling
-void tcp_process_received_data(const char *data, size_t len)
+// Config update - keeping atomic write
+static void tcp_process_config_update(json_object *config_obj)
 {
-    if (!data || len == 0)
+    json_object *config_data_obj;
+    if (!json_object_object_get_ex(config_obj, "config", &config_data_obj))
         return;
 
+    const char *config_str = json_object_to_json_string(config_data_obj);
+    if (!config_str)
+        return;
+
+    if (atomic_write_json_file(CONFIG_DIR, CONFIG_FILE, config_str, strlen(config_str)) == 0)
+    {
+        pthread_mutex_lock(&config_mutex);
+        config_reloading = 1;
+        pthread_mutex_unlock(&config_mutex);
+#ifdef DEBUG
+        printf("TCP: Configuration updated successfully\n");
+#endif
+    }
+}
+
+// Pong response
+void tcp_send_pong_response(void)
+{
     tcp_config_t *config = get_tcp_config();
     if (!config)
         return;
 
-    char *data_str = malloc(len + 1);
-    if (!data_str)
-        return;
+    char pong_msg[256];
+    snprintf(pong_msg, sizeof(pong_msg),
+             "{\"type\":\"pong\",\"client_id\":\"%s\",\"timestamp\":%ld}",
+             config->client_id, time(NULL));
 
-    memcpy(data_str, data, len);
-    data_str[len] = '\0';
-
-    char *delimiter = config->protocol_settings.message_delimiter;
-    char *message_start = data_str;
-    char *message_end;
-
-    while ((message_end = strstr(message_start, delimiter)) != NULL)
-    {
-        *message_end = '\0';
-        if (strlen(message_start) > 0)
-        {
-            tcp_process_single_message(message_start);
-        }
-        message_start = message_end + strlen(delimiter);
-    }
-
-    if (strlen(message_start) > 0)
-    {
-        tcp_process_single_message(message_start);
-    }
-
-    free(data_str);
+    tcp_send_data(pong_msg, strlen(pong_msg));
 }
 
 // Process single message - keeping all feature flags
@@ -423,41 +364,96 @@ static void tcp_process_single_message(const char *message)
     json_object_put(root);
 }
 
-// Config update - keeping atomic write
-static void tcp_process_config_update(json_object *config_obj)
+// Process received data - keeping message delimiter handling
+void tcp_process_received_data(const char *data, size_t len)
 {
-    json_object *config_data_obj;
-    if (!json_object_object_get_ex(config_obj, "config", &config_data_obj))
+    if (!data || len == 0)
         return;
 
-    const char *config_str = json_object_to_json_string(config_data_obj);
-    if (!config_str)
-        return;
-
-    if (atomic_write_json_file(CONFIG_DIR, CONFIG_FILE, config_str, strlen(config_str)) == 0)
-    {
-        pthread_mutex_lock(&config_mutex);
-        config_reloading = 1;
-        pthread_mutex_unlock(&config_mutex);
-#ifdef DEBUG
-        printf("TCP: Configuration updated successfully\n");
-#endif
-    }
-}
-
-// Pong response
-void tcp_send_pong_response(void)
-{
     tcp_config_t *config = get_tcp_config();
     if (!config)
         return;
 
-    char pong_msg[256];
-    snprintf(pong_msg, sizeof(pong_msg),
-             "{\"type\":\"pong\",\"client_id\":\"%s\",\"timestamp\":%ld}",
-             config->client_id, time(NULL));
+    char *data_str = malloc(len + 1);
+    if (!data_str)
+        return;
 
-    tcp_send_data(pong_msg, strlen(pong_msg));
+    memcpy(data_str, data, len);
+    data_str[len] = '\0';
+
+    char *delimiter = config->protocol_settings.message_delimiter;
+    char *message_start = data_str;
+    char *message_end;
+
+    while ((message_end = strstr(message_start, delimiter)) != NULL)
+    {
+        *message_end = '\0';
+        if (strlen(message_start) > 0)
+        {
+            tcp_process_single_message(message_start);
+        }
+        message_start = message_end + strlen(delimiter);
+    }
+
+    if (strlen(message_start) > 0)
+    {
+        tcp_process_single_message(message_start);
+    }
+
+    free(data_str);
+}
+
+// Event handler - keeping all config features
+void tcp_event_handler(struct mg_connection *c, int ev, void *ev_data)
+{
+    switch (ev)
+    {
+    case MG_EV_CONNECT:
+    {
+        tcp_connected = 1;
+        tcp_connection = c;
+
+        tcp_config_t *config = get_tcp_config();
+        if (config && config->features.status_reporting)
+        {
+            system_info_t *sys_info = get_system_info();
+            if (sys_info)
+            {
+                char handshake[512];
+                snprintf(handshake, sizeof(handshake),
+                         "{\"client_id\":\"%s\",\"protocol_version\":\"%s\","
+                         "\"gateway_ip\":\"%s\",\"firmware_version\":\"%s\",\"device_type\":\"%s\"}%s",
+                         config->client_id, config->protocol_version, tcp_get_local_ip(),
+                         sys_info->firmware_version, sys_info->device_type,
+                         config->protocol_settings.message_delimiter);
+                mg_send(c, handshake, strlen(handshake));
+            }
+        }
+#ifdef DEBUG
+        printf("TCP: Connected to server\n");
+#endif
+        break;
+    }
+
+    case MG_EV_READ:
+    {
+        if (c->recv.len > 0)
+        {
+            tcp_process_received_data((const char *)c->recv.buf, c->recv.len);
+            mg_iobuf_del(&c->recv, 0, c->recv.len);
+        }
+        break;
+    }
+
+    case MG_EV_CLOSE:
+    case MG_EV_ERROR:
+        tcp_connected = 0;
+        tcp_connection = NULL;
+#ifdef DEBUG
+        printf("TCP: Connection %s\n", ev == MG_EV_CLOSE ? "closed" : "error");
+#endif
+        break;
+    }
 }
 
 // Control command processing - keeping all methods
