@@ -9,17 +9,16 @@
 
 #define CAN_CUSTOM_HEADER 0xA0
 
-typedef struct {
+typedef struct
+{
     uint8_t header;
-    uint16_t ID; // 11 bit identifier
-    uint8_t RTR; // 1 bit Remote Transmission Request
-    uint8_t IDE; // 1 bit Identifier Extension
-    uint8_t reserved; // 1 bits reserved
-    uint8_t DLC; // 4 bits Data Length Code
-    uint8_t* data; // 0 - 8 bytes of data
+    uint16_t ID;   // 11 bit identifier
+    uint8_t DLC;   // 4 bits Data Length Code
+    uint8_t *data; // 0 - 8 bytes of data
 } CAN_Message_t;
 
-typedef struct{
+typedef struct
+{
     uint8_t header;
     uint8_t command;
     uint16_t id;
@@ -32,7 +31,7 @@ extern int can_fd;
 
 void CAN_Init(speed_t baudrate, char *device);
 void CAN_Write_Data(uint8_t *data, size_t len);
-unsigned char* CAN_Read_Response(uint32_t timeout_ms, uint16_t* bytes_read_out);
+unsigned char *CAN_Read_Response(uint32_t timeout_ms, uint16_t *bytes_read_out);
 extern int Check_CAN_Data_Available(void);
 void CAN_USB_to_Byte(CAN_Message_USB_t *usb_msg, uint8_t *byte_array);
 void CAN_Custom_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array);

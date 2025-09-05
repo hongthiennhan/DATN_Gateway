@@ -423,11 +423,8 @@ void *can_thread_func(void *arg)
                             can_msg_custom.header = CAN_CUSTOM_HEADER;
                             can_msg_custom.ID = (command_buffer[0] << 8) | command_buffer[1];
                             can_msg_custom.DLC = cmd_length - 2;
-                            can_msg_custom.RTR = 0;
-                            can_msg_custom.IDE = 0;
-                            can_msg_custom.reserved = 0;
                             can_msg_custom.data = command_buffer + 2;
-                            data_len = can_msg_custom.DLC + 7;
+                            data_len = can_msg_custom.DLC + 4;
                             CAN_Custom_to_Byte(&can_msg_custom, write_buffer);
                         }
 
@@ -568,11 +565,8 @@ void *can_thread_func(void *arg)
                             can_msg_custom.header = CAN_CUSTOM_HEADER;
                             can_msg_custom.ID = (command_buffer[0] << 8) | command_buffer[1];
                             can_msg_custom.DLC = cmd_length - 2;
-                            can_msg_custom.RTR = 0;
-                            can_msg_custom.IDE = 0;
-                            can_msg_custom.reserved = 0;
                             can_msg_custom.data = command_buffer + 2;
-                            data_len = can_msg_custom.DLC + 7;
+                            data_len = can_msg_custom.DLC + 4;
                             CAN_Custom_to_Byte(&can_msg_custom, write_buffer);
                         }
                     }

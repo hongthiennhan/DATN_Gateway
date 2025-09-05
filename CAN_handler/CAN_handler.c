@@ -235,12 +235,9 @@ void CAN_Custom_to_Byte(CAN_Message_t *can_msg, uint8_t *byte_array)
     byte_array[0] = can_msg->header;
     byte_array[1] = can_msg->ID & 0xFF;        // Low byte of ID
     byte_array[2] = (can_msg->ID >> 8) & 0xFF; // High byte of ID
-    byte_array[3] = can_msg->RTR;
-    byte_array[4] = can_msg->IDE;
-    byte_array[5] = can_msg->reserved;
-    byte_array[6] = can_msg->DLC;
+    byte_array[3] = can_msg->DLC;
     for (int i = 0; i < can_msg->DLC; i++)
     {
-        byte_array[7 + i] = can_msg->data[i];
+        byte_array[4 + i] = can_msg->data[i];
     }
 }
