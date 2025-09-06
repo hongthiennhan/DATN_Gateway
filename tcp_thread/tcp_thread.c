@@ -708,6 +708,9 @@ void *tcp_thread_func(void *arg)
     int connection_timeout = config->connection_timeout;
     while (!tcp_connected && connection_timeout > 0)
     {
+#ifdef DEBUG
+        printf("TCP: Waiting for connection...\n");
+#endif
         mg_mgr_poll(&tcp_mgr, 100);
         connection_timeout--;
     }
