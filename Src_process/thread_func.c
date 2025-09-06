@@ -760,10 +760,12 @@ void *ui_thread_func(void *arg)
                         {
                             attron(COLOR_PAIR(1));
                         }
-                        if (i == 0)
+                        if (i == 0 || i == 3)
                         {
+                            attron(COLOR_PAIR(2)); // Green for implemented
                             mvprintw(5 + i, 2, "%d. %s %s", i + 1, comm_types[i],
                                      (i == (int)get_communication_type()) ? "[CURRENT]" : "");
+                            attroff(COLOR_PAIR(2));
                         }
                         else
                         {

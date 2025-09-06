@@ -1,7 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#define DEBUG
+// #define DEBUG
 
 #include <stdio.h>
 #include <pthread.h>
