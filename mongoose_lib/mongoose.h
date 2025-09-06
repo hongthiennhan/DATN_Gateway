@@ -1222,17 +1222,15 @@ extern "C"
 #define mg_log_set(level_) mg_log_level = (level_)
 
 #if MG_ENABLE_LOG
-#define MG_LOG(level, args) \
-  #ifdef DEBUG
-  do
-  {
-    if ((level) <= mg_log_level)
-    {
-      mg_log_prefix((level), __FILE__, __LINE__, __func__);
-      mg_log args;
-    }
+#define MG_LOG(level, args)                                 \
+  do                                                        \
+  {                                                         \
+    if ((level) <= mg_log_level)                            \
+    {                                                       \
+      mg_log_prefix((level), __FILE__, __LINE__, __func__); \
+      mg_log args;                                          \
+    }                                                       \
   } while (0)
-#endif
 #else
 #define MG_LOG(level, args) \
   do                        \
@@ -1247,7 +1245,7 @@ extern "C"
 #define MG_DEBUG(args) MG_LOG(MG_LL_DEBUG, args)
 #define MG_VERBOSE(args) MG_LOG(MG_LL_VERBOSE, args)
 
-      struct mg_timer
+  struct mg_timer
   {
     uint64_t period_ms;       // Timer period in milliseconds
     uint64_t expire;          // Expiration timestamp in milliseconds
@@ -2325,8 +2323,8 @@ endianness. */
 
 #elif (MG_UECC_WORD_SIZE == 4)
 
-typedef uint32_t mg_uecc_word_t;
-typedef uint64_t mg_uecc_dword_t;
+  typedef uint32_t mg_uecc_word_t;
+  typedef uint64_t mg_uecc_dword_t;
 
 #define HIGH_BIT_SET 0x80000000
 #define MG_UECC_WORD_BITS 32
@@ -2335,7 +2333,7 @@ typedef uint64_t mg_uecc_dword_t;
 
 #elif (MG_UECC_WORD_SIZE == 8)
 
-typedef uint64_t mg_uecc_word_t;
+  typedef uint64_t mg_uecc_word_t;
 
 #define HIGH_BIT_SET 0x8000000000000000U
 #define MG_UECC_WORD_BITS 64
