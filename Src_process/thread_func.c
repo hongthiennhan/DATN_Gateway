@@ -758,17 +758,21 @@ void *ui_thread_func(void *arg)
                     {
                         bool is_highlighted = (i == comm_highlight);
                         int pair_to_use;
-                        if (i == 0 || i == 3) // Implemented
-                        {
-                            pair_to_use = is_highlighted ? 6 : 2; // Green on white if highlighted, else green on black
+                        if (i == 0 || i == 3)
+                        { // Implemented
+                            pair_to_use = is_highlighted ? 6 : 2;
                         }
-                        else // Not implemented
-                        {
-                            pair_to_use = is_highlighted ? 7 : 3; // Red on white if highlighted, else red on black
+                        else
+                        { // Not implemented
+                            pair_to_use = is_highlighted ? 7 : 3;
                         }
                         attron(COLOR_PAIR(pair_to_use));
+                        if (is_highlighted)
+                            attron(A_BOLD); // Add bold for visibility
                         mvprintw(5 + i, 2, "%d. %s %s", i + 1, comm_types[i],
                                  (i == (int)get_communication_type()) ? "[CURRENT]" : "");
+                        if (is_highlighted)
+                            attroff(A_BOLD);
                         attroff(COLOR_PAIR(pair_to_use));
                     }
 
