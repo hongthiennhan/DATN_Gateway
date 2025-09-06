@@ -1242,7 +1242,15 @@ extern "C"
 
 #define MG_ERROR(args) MG_LOG(MG_LL_ERROR, args)
 #define MG_INFO(args) MG_LOG(MG_LL_INFO, args)
+#ifdef DEBUG
 #define MG_DEBUG(args) MG_LOG(MG_LL_DEBUG, args)
+#else
+#define MG_DEBUG(args) \
+  do                   \
+  {                    \
+    (void)(args);      \
+  } while (0)
+#endif
 #define MG_VERBOSE(args) MG_LOG(MG_LL_VERBOSE, args)
 
   struct mg_timer
