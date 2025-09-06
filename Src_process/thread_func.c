@@ -756,26 +756,21 @@ void *ui_thread_func(void *arg)
                 {
                     for (int i = 0; i < COMM_TYPE_COUNT; i++)
                     {
-                        bool is_highlighted = (i == comm_highlight);
-                        int pair_to_use;
-                        if (i == 0 || i == 3)
-                        { // Implemented
-                            pair_to_use = is_highlighted ? 6 : 2;
+                        if (i == comm_highlight)
+                        {
+                            attron(COLOR_PAIR(1));
+                            mvprintw(5 + i, 2, "%d. %s", i + 1, comm_types[i]);
+                            attroff(COLOR_PAIR(1));
                         }
                         else
-                        { // Not implemented
-                            pair_to_use = is_highlighted ? 7 : 3;
+                        {
+                            if (i == 0 || i == 3)
+                                attron(COLOR_PAIR(2));
+                            mvprintw(5 + i, 2, "%d. %s", i + 1, comm_types[i]);
+                            if (i == 0 || i == 3)
+                                attroff(COLOR_PAIR(2));
                         }
-                        attron(COLOR_PAIR(pair_to_use));
-                        if (is_highlighted)
-                            attron(A_BOLD); // Add bold for visibility
-                        mvprintw(5 + i, 2, "%d. %s %s", i + 1, comm_types[i],
-                                 (i == (int)get_communication_type()) ? "[CURRENT]" : "");
-                        if (is_highlighted)
-                            attroff(A_BOLD);
-                        attroff(COLOR_PAIR(pair_to_use));
                     }
-
                     mvprintw(5 + COMM_TYPE_COUNT + 2, 0, "Use UP/DOWN to select, ENTER to confirm, ESC to cancel");
                     refresh();
 
