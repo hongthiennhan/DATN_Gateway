@@ -756,27 +756,20 @@ void *ui_thread_func(void *arg)
                 {
                     for (int i = 0; i < COMM_TYPE_COUNT; i++)
                     {
-                        if (i == comm_highlight)
+                        bool is_highlighted = (i == comm_highlight);
+                        int pair_to_use;
+                        if (i == 0 || i == 3) // Implemented
                         {
-                            attron(COLOR_PAIR(1));
+                            pair_to_use = is_highlighted ? 6 : 2; // Green on white if highlighted, else green on black
                         }
-                        if (i == 0 || i == 3)
+                        else // Not implemented
                         {
-                            attron(COLOR_PAIR(2)); // Green for implemented
-                            mvprintw(5 + i, 2, "%d. %s %s", i + 1, comm_types[i],
-                                     (i == (int)get_communication_type()) ? "[CURRENT]" : "");
-                            attroff(COLOR_PAIR(2));
+                            pair_to_use = is_highlighted ? 7 : 3; // Red on white if highlighted, else red on black
                         }
-                        else
-                        {
-                            attron(COLOR_PAIR(3)); // Red for not implemented
-                            mvprintw(5 + i, 2, "%d. %s", i + 1, comm_types[i]);
-                            attroff(COLOR_PAIR(3));
-                        }
-                        if (i == comm_highlight)
-                        {
-                            attroff(COLOR_PAIR(1));
-                        }
+                        attron(COLOR_PAIR(pair_to_use));
+                        mvprintw(5 + i, 2, "%d. %s %s", i + 1, comm_types[i],
+                                 (i == (int)get_communication_type()) ? "[CURRENT]" : "");
+                        attroff(COLOR_PAIR(pair_to_use));
                     }
 
                     mvprintw(5 + COMM_TYPE_COUNT + 2, 0, "Use UP/DOWN to select, ENTER to confirm, ESC to cancel");
