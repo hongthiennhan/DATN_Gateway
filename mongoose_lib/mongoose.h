@@ -22,7 +22,7 @@
 
 #define MG_VERSION "7.19"
 
-// #define DEBUG
+#define DEBUG
 
 #ifdef __cplusplus
 extern "C"
