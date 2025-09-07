@@ -52,11 +52,12 @@ set(SOURCES_2
     mongoose_lib/mongoose.c
 )
 
+set (TARGET main_app)
 # Add main executable
-add_executable(main_app ${SOURCES_2})
+add_executable(${TARGET} ${SOURCES_2})
 
 # Include directories for main_app (UPDATED: Added JSON_C include dirs)
-target_include_directories(main_app PRIVATE 
+target_include_directories(${TARGET} PRIVATE 
     ${INCLUDE_DIRS}
     ${GPIOD_INCLUDE_DIRS}
     ${NCURSES_INCLUDE_DIRS}
@@ -65,15 +66,20 @@ target_include_directories(main_app PRIVATE
 )
 
 # Link libraries (UPDATED: Added JSON_C libraries)
-target_link_libraries(main_app 
+target_link_libraries(${TARGET} 
     ${GPIOD_LIBRARIES} 
     ${NCURSES_LIBRARIES} 
     ${MOSQUITTO_LIBRARIES}
     ${JSON_C_LIBRARIES}
 )
 
+# Add compliler defiinitions
+target_compile_definitions(${TARGET} PRIVATE 
+    -DDEBUG
+)
+
 # NEW: Add compiler flags for all dependencies
-target_compile_options(main_app PRIVATE 
+target_compile_options(${TARGET} PRIVATE 
     ${GPIOD_CFLAGS_OTHER}
     ${NCURSES_CFLAGS_OTHER}
     ${MOSQUITTO_CFLAGS_OTHER}
@@ -84,5 +90,5 @@ target_compile_options(main_app PRIVATE
 configure_file(${CMAKE_SOURCE_DIR}/nodes_config.json ${CMAKE_BINARY_DIR}/nodes_config.json COPYONLY)
 
 # NEW: Install targets
-install(TARGETS main_app DESTINATION bin)
+install(TARGETS ${TARGET} DESTINATION bin)
 install(FILES nodes_config.json DESTINATION bin)
