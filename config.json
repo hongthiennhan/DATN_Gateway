@@ -130,7 +130,7 @@
                     "command": "0x00 0x05 0xAA 0xBB 0xCC",
                     "expected_response": "None",
                     "timeout_ms": 100,
-                    "description": "Read Input Value"
+                    "description": "Read Input Values"
                 }
             ],
             "menu_items": [
