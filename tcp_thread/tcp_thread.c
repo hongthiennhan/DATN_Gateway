@@ -196,7 +196,7 @@ static int tcp_connect(const char *server_url)
     if (!config)
         return -1;
 
-    char url[512];
+    char url[256];
     if (server_url && strlen(server_url) > 0)
     {
         snprintf(url, sizeof(url), "%s", server_url);
@@ -245,7 +245,7 @@ static int tcp_reconnect(void)
     }
     tcp_connected = 0;
 
-    char url[512];
+    char url[256];
     snprintf(url, sizeof(url), "tcp://%s:%d", config->server_host, config->server_port);
     tcp_connection = mg_connect(&tcp_mgr, url, tcp_event_handler, NULL);
 
