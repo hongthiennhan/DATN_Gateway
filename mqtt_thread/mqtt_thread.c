@@ -669,32 +669,45 @@ static int request_config_json_robust(void)
  */
 static void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
+    // Get the current MQTT configuration
     mqtt_config_t *config = get_mqtt_config();
     if (!config)
         return;
 
+    // Allocate a temporary buffer for building JSON parts
     char *temp_buffer = malloc(1024);
     if (!temp_buffer)
         return;
 
-    // Start JSON with timestamp
+    // CRITICAL: Clear the payload buffer completely to prevent overflow
+    memset(payload, 0, payload_size);
+
+    // Track current position in payload buffer
+    size_t current_offset = 0;
+
+    // Initialize the JSON payload
     if (config->system_fields.include_timestamp)
     {
-        snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);
+        // Start JSON with timestamp field
+        current_offset = snprintf(payload, payload_size, "{\"timestamp\":%ld000", timestamp);
     }
     else
     {
-        snprintf(payload, payload_size, "{");
+        // Start JSON without timestamp
+        current_offset = snprintf(payload, payload_size, "{");
     }
 
-    // Add data from detected nodes - KHÔNG LOCK config_mutex nữa
+    // Append telemetry data from each detected node
+    // No need to lock the config mutex here to avoid deadlock
     for (int i = 0; i < get_node_count(); i++)
     {
         node_config_t *node = get_node_by_index(i);
         if (!node || !node->mqtt_data)
+        {
             continue;
+        }
 
-        // Chỉ trylock node mutex thôi
+        // Try to lock node data mutex for safe access (non-blocking)
         if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0)
         {
             if (node->mqtt_data->data)
@@ -702,42 +715,72 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
                 raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
                 if (raw_data && raw_data->data && raw_data->length > 0)
                 {
-                    // Convert to hex string
+                    // Convert raw binary data to hex string
                     char *hex_str = malloc(raw_data->length * 2 + 1);
                     if (hex_str)
                     {
+                        // Convert each byte to 2-character hex representation
                         for (int j = 0; j < raw_data->length; j++)
                         {
                             sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
                         }
                         hex_str[raw_data->length * 2] = '\0';
-                        snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
-                                 node->node_id, hex_str, node->node_id, node->com_type);
-                        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+
+                        // Build the JSON fields for node data and type
+                        int written = snprintf(temp_buffer, 1024,
+                                               ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
+                                               node->node_id, hex_str, node->node_id, node->com_type);
+
+                        // Safely append to main payload buffer
+                        if (current_offset + written < payload_size - 2)
+                        { // Reserve space for "}"
+                            memcpy(payload + current_offset, temp_buffer, written);
+                            current_offset += written;
+                        }
+
                         free(hex_str);
                     }
                 }
             }
             pthread_mutex_unlock(&node->mqtt_data->mutex);
         }
-        // Nếu trylock fail thì skip, đừng block
+        // If trylock fails, skip this node to avoid blocking
     }
 
-    // Add system info
+    // Append system-level information if enabled in config
     if (config->system_fields.include_gateway_ip)
     {
-        snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", mqtt_get_local_ip());
-        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+        int written = snprintf(temp_buffer, 1024, ",\"gateway_ip\":\"%s\"", mqtt_get_local_ip());
+        if (current_offset + written < payload_size - 2)
+        {
+            memcpy(payload + current_offset, temp_buffer, written);
+            current_offset += written;
+        }
     }
 
     if (config->system_fields.include_node_count)
     {
-        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", get_node_count());
-        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+        int written = snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", get_node_count());
+        if (current_offset + written < payload_size - 2)
+        {
+            memcpy(payload + current_offset, temp_buffer, written);
+            current_offset += written;
+        }
     }
 
-    strncat(payload, "}", payload_size - strlen(payload) - 1);
+    // Close the JSON object properly
+    if (current_offset < payload_size - 1)
+    {
+        payload[current_offset] = '}';
+        payload[current_offset + 1] = '\0';
+    }
+
+    // Clean up allocated memory
     free(temp_buffer);
+
+#ifdef DEBUG
+    printf("Telemetry payload built: %zu bytes\n", strlen(payload));
+#endif
 }
 
 /**
