@@ -282,10 +282,10 @@
         "default_baudrate_fallback": 115200
     },
     "mqtt_config": {
-        "broker_host": "demo.thingsboard.io",
+        "broker_host": "192.168.1.11",
         "broker_port": 1883,
         "client_id": "gateway_device",
-        "username": "txg2524a0jho64ow0443",
+        "username": "",
         "password": "",
         "topic_telemetry": "v1/devices/me/telemetry",
         "topic_attributes": "v1/devices/me/attributes",
