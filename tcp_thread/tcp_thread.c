@@ -253,7 +253,7 @@ static int tcp_reconnect(void)
 }
 
 // Send data - keeping all protocol settings
-int tcp_send_data(const char *data, size_t len)
+static int tcp_send_data(const char *data, size_t len)
 {
     if (!data || len == 0 || !tcp_connection || !tcp_connected)
         return -1;
@@ -365,7 +365,7 @@ static void tcp_process_single_message(const char *message)
 }
 
 // Process received data - keeping message delimiter handling
-void tcp_process_received_data(const char *data, size_t len)
+static void tcp_process_received_data(const char *data, size_t len)
 {
     if (!data || len == 0)
         return;
@@ -506,7 +506,7 @@ static void process_tcp_control_command(const char *payload)
 }
 
 // Build telemetry payload - KEEPING FULL ORIGINAL IMPLEMENTATION
-void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
+static void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
     if (!payload || payload_size == 0)
         return;
