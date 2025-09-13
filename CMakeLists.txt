@@ -75,7 +75,7 @@ target_link_libraries(${TARGET}
 
 # Add compliler defiinitions
 target_compile_definitions(${TARGET} PRIVATE 
-    # -DDEBUG
+    -DDEBUG
 )
 
 # NEW: Add compiler flags for all dependencies
