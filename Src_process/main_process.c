@@ -72,8 +72,8 @@ int main(void)
     // pthread_t uart_thread;
     // pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
     // // Start UI thread
-    // pthread_t ui_thread;
-    // pthread_create(&ui_thread, NULL, ui_thread_func, ui_args);
+    // pthread_t control_thread;
+    // pthread_create(&control_thread, NULL, control_thread_func, ui_args);
     // Start MQTT thread
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
@@ -89,7 +89,7 @@ int main(void)
 
     // Main waits for threads to finish (does nothing else)
     // pthread_join(uart_thread, NULL);
-    // pthread_join(ui_thread, NULL);
+    // pthread_join(control_thread, NULL);
     pthread_join(mqtt_thread, NULL);
     // pthread_join(tcp_thread, NULL);
     // pthread_join(can_thread, NULL);

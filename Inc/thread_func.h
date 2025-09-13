@@ -3,11 +3,11 @@
 
 #include "main.h"
 #include "uart_handler.h"
-#include "node_config.h"  // Include to get node_config_t and menu_item_t types
+#include "node_config.h"    // Include to get node_config_t and menu_item_t types
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
-#include "CAN_handler.h" // Include CAN handler for CAN data types
-#include "mqtt_thread.h" // Include MQTT thread header for MQTT handling
-#include "tcp_thread.h" // Include TCP thread header for TCP handling
+#include "CAN_handler.h"    // Include CAN handler for CAN data types
+#include "mqtt_thread.h"    // Include MQTT thread header for MQTT handling
+#include "tcp_thread.h"     // Include TCP thread header for TCP handling
 // ========== External declarations for shared state ==========
 extern volatile uint8_t is_busy;
 extern pthread_mutex_t command_mutex;
@@ -24,7 +24,7 @@ extern thread_pause_t can_pause;
 
 // ========== Function prototypes ==========
 void *uart_thread_func(void *arg);
-void *ui_thread_func(void *arg);
+void *control_thread_func(void *arg);
 void *modbus_thread_func(void *arg);
 void *can_thread_func(void *arg);
 

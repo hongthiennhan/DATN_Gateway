@@ -581,7 +581,7 @@ void *can_thread_func(void *arg)
 }
 
 // ==================== UI THREAD - Enhanced config menu ====================
-void *ui_thread_func(void *arg)
+void *control_thread_func(void *arg)
 {
     uint32_t baudrate = *(uint32_t *)((void **)arg)[0];
     char *device = (char *)((void **)arg)[1];
