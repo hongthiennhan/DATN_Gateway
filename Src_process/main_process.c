@@ -68,32 +68,32 @@ int main(void)
     Modbus_Init(UART_map_to_speed(baudrate), device);
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
-    // // Start UART thread
-    // pthread_t uart_thread;
-    // pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
-    // // Start UI thread
-    // pthread_t control_thread;
-    // pthread_create(&control_thread, NULL, control_thread_func, ui_args);
+    // Start UART thread
+    pthread_t uart_thread;
+    pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
+    // Start UI thread
+    pthread_t control_thread;
+    pthread_create(&control_thread, NULL, control_thread_func, ui_args);
     // Start MQTT thread
     pthread_t mqtt_thread;
     pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
-    // // Start Modbus thread
-    // pthread_t modbus_thread;
-    // pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
-    // // Start CAN thread
-    // pthread_t can_thread;
-    // pthread_create(&can_thread, NULL, can_thread_func, NULL);
-    // // Start TCP thread
-    // pthread_t tcp_thread;
-    // pthread_create(&tcp_thread, NULL, tcp_thread_func, NULL);
+    // Start Modbus thread
+    pthread_t modbus_thread;
+    pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
+    // Start CAN thread
+    pthread_t can_thread;
+    pthread_create(&can_thread, NULL, can_thread_func, NULL);
+    // Start TCP thread
+    pthread_t tcp_thread;
+    pthread_create(&tcp_thread, NULL, tcp_thread_func, NULL);
 
     // Main waits for threads to finish (does nothing else)
-    // pthread_join(uart_thread, NULL);
-    // pthread_join(control_thread, NULL);
+    pthread_join(uart_thread, NULL);
+    pthread_join(control_thread, NULL);
     pthread_join(mqtt_thread, NULL);
-    // pthread_join(tcp_thread, NULL);
-    // pthread_join(can_thread, NULL);
-    // pthread_join(modbus_thread, NULL);
+    pthread_join(tcp_thread, NULL);
+    pthread_join(can_thread, NULL);
+    pthread_join(modbus_thread, NULL);
     // Cleanup the device string
     free(device);
     return 0;
