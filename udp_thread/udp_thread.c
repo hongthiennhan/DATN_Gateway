@@ -189,12 +189,6 @@ static void udp_process_single_message(const char *message)
     if (!config)
         return;
 
-    // Validate JSON format if required
-    if (strcmp(config->data_format, "json") == 0 && !validate_json_basic(message, strlen(message)))
-    {
-        return;
-    }
-
     json_object *root = json_tokener_parse(message);
     if (!root)
         return;
