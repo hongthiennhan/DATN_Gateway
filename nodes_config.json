@@ -345,5 +345,53 @@
       "telemetry_upload": true,
       "status_reporting": true
     }
+  },
+  "udp_config": {
+    "server_host": "192.168.1.11",
+    "server_port": 8767,
+    "client_id": "gateway_device_udp",
+    "protocol_version": "1.0",
+    "data_format": "json",
+    "send_interval": 1,
+    "connection_timeout": 50,
+    "reconnect_delay_ms": 3000,
+    "loop_interval_ms": 100,
+    "payload_buffer_size": 2048,
+    "receive_buffer_size": 1024,
+    "socket_options": {
+      "broadcast": false,
+      "reuse_addr": true,
+      "reuse_port": false,
+      "receive_timeout_ms": 5000,
+      "send_timeout_ms": 3000
+    },
+    "system_fields": {
+      "data_source": "gateway_device_udp",
+      "include_timestamp": true,
+      "include_gateway_ip": true,
+      "include_node_count": true,
+      "include_system_info": true
+    },
+    "protocol_settings": {
+      "message_delimiter": "\n",
+      "max_message_size": 4096,
+      "compression_enabled": false,
+      "encryption_enabled": false,
+      "checksum_enabled": false
+    },
+    "features": {
+      "control_commands": true,
+      "telemetry_upload": true,
+      "status_reporting": true,
+      "broadcast_discovery": false,
+      "multicast_support": false
+    },
+    "reliability": {
+      "acknowledgment_required": false,
+      "retry_count": 3,
+      "retry_delay_ms": 1000,
+      "duplicate_detection": true,
+      "sequence_numbers": false
+    }
   }
 }
