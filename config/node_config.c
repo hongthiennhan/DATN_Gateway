@@ -196,6 +196,8 @@ static uint32_t parse_node_config(json_object *node_obj, node_config_t *node)
     node->detected = 0;
     node->last_detection = 0;
     node->mqtt_data = allocate_shared_data();
+    node->tcp_data = allocate_shared_data();
+    node->udp_data = allocate_shared_data();
     return 0;
 }
 
@@ -731,298 +733,461 @@ int load_nodes_config(const char *config_file)
             if (json_object_object_get_ex(features_obj, "status_reporting", &temp_obj))
                 node_registry.tcp_config.features.status_reporting = (uint8_t)json_object_get_boolean(temp_obj);
         }
-        // Parse nodes array
-        json_object *nodes_array;
-        if (json_object_object_get_ex(effective_root, "nodes", &nodes_array) ||
-            json_object_object_get_ex(effective_root, "node", &nodes_array))
+
+        // Parse UDP config
+        json_object *udp_obj;
+        if (json_object_object_get_ex(effective_root, "udp_config", &udp_obj))
         {
-            uint32_t array_len = json_object_array_length(nodes_array);
-            if (array_len > 0)
+            json_object *temp_obj;
+
+            // Parse basic UDP fields
+            if (json_object_object_get_ex(udp_obj, "server_host", &temp_obj))
             {
-                node_registry.nodes = malloc(sizeof(node_config_t) * array_len);
-                if (!node_registry.nodes)
+                safe_strncpy(node_registry.udp_config.server_host,
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.udp_config.server_host));
+            }
+
+            if (json_object_object_get_ex(udp_obj, "server_port", &temp_obj))
+                node_registry.udp_config.server_port = (uint16_t)json_object_get_int(temp_obj);
+
+            if (json_object_object_get_ex(udp_obj, "client_id", &temp_obj))
+            {
+                safe_strncpy(node_registry.udp_config.client_id,
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.udp_config.client_id));
+            }
+
+            if (json_object_object_get_ex(udp_obj, "protocol_version", &temp_obj))
+            {
+                safe_strncpy(node_registry.udp_config.protocol_version,
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.udp_config.protocol_version));
+            }
+
+            if (json_object_object_get_ex(udp_obj, "data_format", &temp_obj))
+            {
+                safe_strncpy(node_registry.udp_config.data_format,
+                             json_object_get_string(temp_obj),
+                             sizeof(node_registry.udp_config.data_format));
+            }
+
+            // Parse timing and buffer fields
+            if (json_object_object_get_ex(udp_obj, "send_interval", &temp_obj))
+                node_registry.udp_config.send_interval = (uint16_t)json_object_get_int(temp_obj);
+
+            if (json_object_object_get_ex(udp_obj, "connection_timeout", &temp_obj))
+                node_registry.udp_config.connection_timeout = (uint16_t)json_object_get_int(temp_obj);
+
+            if (json_object_object_get_ex(udp_obj, "reconnect_delay_ms", &temp_obj))
+                node_registry.udp_config.reconnect_delay_ms = (uint16_t)json_object_get_int(temp_obj);
+
+            if (json_object_object_get_ex(udp_obj, "loop_interval_ms", &temp_obj))
+                node_registry.udp_config.loop_interval_ms = (uint16_t)json_object_get_int(temp_obj);
+
+            if (json_object_object_get_ex(udp_obj, "payload_buffer_size", &temp_obj))
+                node_registry.udp_config.payload_buffer_size = (uint16_t)json_object_get_int(temp_obj);
+
+            if (json_object_object_get_ex(udp_obj, "receive_buffer_size", &temp_obj))
+                node_registry.udp_config.receive_buffer_size = (uint16_t)json_object_get_int(temp_obj);
+
+            // Parse nested socket_options object
+            json_object *socket_options_obj;
+            if (json_object_object_get_ex(udp_obj, "socket_options", &socket_options_obj))
+            {
+                if (json_object_object_get_ex(socket_options_obj, "broadcast", &temp_obj))
+                    node_registry.udp_config.socket_options.broadcast = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(socket_options_obj, "reuse_addr", &temp_obj))
+                    node_registry.udp_config.socket_options.reuse_addr = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(socket_options_obj, "reuse_port", &temp_obj))
+                    node_registry.udp_config.socket_options.reuse_port = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(socket_options_obj, "receive_timeout_ms", &temp_obj))
+                    node_registry.udp_config.socket_options.receive_timeout_ms = (uint16_t)json_object_get_int(temp_obj);
+
+                if (json_object_object_get_ex(socket_options_obj, "send_timeout_ms", &temp_obj))
+                    node_registry.udp_config.socket_options.send_timeout_ms = (uint16_t)json_object_get_int(temp_obj);
+            }
+
+            // Parse nested system_fields object
+            json_object *udp_system_fields_obj;
+            if (json_object_object_get_ex(udp_obj, "system_fields", &udp_system_fields_obj))
+            {
+                if (json_object_object_get_ex(udp_system_fields_obj, "data_source", &temp_obj))
                 {
-#ifdef DEBUG
-                    printf("Error: Failed to allocate memory for nodes\n");
-#endif
-                    json_object_put(root);
-                    return -1;
+                    safe_strncpy(node_registry.udp_config.system_fields.data_source,
+                                 json_object_get_string(temp_obj),
+                                 sizeof(node_registry.udp_config.system_fields.data_source));
                 }
-                node_registry.capacity = array_len;
-                node_registry.count = 0;
-                for (uint32_t i = 0; i < array_len; i++)
+
+                if (json_object_object_get_ex(udp_system_fields_obj, "include_timestamp", &temp_obj))
+                    node_registry.udp_config.system_fields.include_timestamp = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_system_fields_obj, "include_gateway_ip", &temp_obj))
+                    node_registry.udp_config.system_fields.include_gateway_ip = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_system_fields_obj, "include_node_count", &temp_obj))
+                    node_registry.udp_config.system_fields.include_node_count = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_system_fields_obj, "include_system_info", &temp_obj))
+                    node_registry.udp_config.system_fields.include_system_info = (uint8_t)json_object_get_boolean(temp_obj);
+            }
+
+            // Parse nested protocol_settings object
+            json_object *udp_protocol_settings_obj;
+            if (json_object_object_get_ex(udp_obj, "protocol_settings", &udp_protocol_settings_obj))
+            {
+                if (json_object_object_get_ex(udp_protocol_settings_obj, "message_delimiter", &temp_obj))
                 {
-                    json_object *node_obj = json_object_array_get_idx(nodes_array, i);
-                    if (parse_node_config(node_obj, &node_registry.nodes[i]) == 0)
-                    {
-                        node_registry.count++;
-                    }
-                    else
+                    safe_strncpy(node_registry.udp_config.protocol_settings.message_delimiter,
+                                 json_object_get_string(temp_obj),
+                                 sizeof(node_registry.udp_config.protocol_settings.message_delimiter));
+                }
+
+                if (json_object_object_get_ex(udp_protocol_settings_obj, "max_message_size", &temp_obj))
+                    node_registry.udp_config.protocol_settings.max_message_size = (uint16_t)json_object_get_int(temp_obj);
+
+                if (json_object_object_get_ex(udp_protocol_settings_obj, "compression_enabled", &temp_obj))
+                    node_registry.udp_config.protocol_settings.compression_enabled = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_protocol_settings_obj, "encryption_enabled", &temp_obj))
+                    node_registry.udp_config.protocol_settings.encryption_enabled = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_protocol_settings_obj, "checksum_enabled", &temp_obj))
+                    node_registry.udp_config.protocol_settings.checksum_enabled = (uint8_t)json_object_get_boolean(temp_obj);
+            }
+
+            // Parse nested features object
+            json_object *udp_features_obj;
+            if (json_object_object_get_ex(udp_obj, "features", &udp_features_obj))
+            {
+                if (json_object_object_get_ex(udp_features_obj, "control_commands", &temp_obj))
+                    node_registry.udp_config.features.control_commands = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_features_obj, "telemetry_upload", &temp_obj))
+                    node_registry.udp_config.features.telemetry_upload = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_features_obj, "status_reporting", &temp_obj))
+                    node_registry.udp_config.features.status_reporting = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_features_obj, "broadcast_discovery", &temp_obj))
+                    node_registry.udp_config.features.broadcast_discovery = (uint8_t)json_object_get_boolean(temp_obj);
+
+                if (json_object_object_get_ex(udp_features_obj, "multicast_support", &temp_obj))
+                    node_registry.udp_config.features.multicast_support = (uint8_t)json_object_get_boolean(temp_obj);
+            }
+            // Parse nodes array
+            json_object *nodes_array;
+            if (json_object_object_get_ex(effective_root, "nodes", &nodes_array) ||
+                json_object_object_get_ex(effective_root, "node", &nodes_array))
+            {
+                uint32_t array_len = json_object_array_length(nodes_array);
+                if (array_len > 0)
+                {
+                    node_registry.nodes = malloc(sizeof(node_config_t) * array_len);
+                    if (!node_registry.nodes)
                     {
 #ifdef DEBUG
-                        printf("Warning: Failed to parse node at index %d\n", i);
+                        printf("Error: Failed to allocate memory for nodes\n");
 #endif
+                        json_object_put(root);
+                        return -1;
+                    }
+                    node_registry.capacity = array_len;
+                    node_registry.count = 0;
+                    for (uint32_t i = 0; i < array_len; i++)
+                    {
+                        json_object *node_obj = json_object_array_get_idx(nodes_array, i);
+                        if (parse_node_config(node_obj, &node_registry.nodes[i]) == 0)
+                        {
+                            node_registry.count++;
+                        }
+                        else
+                        {
+#ifdef DEBUG
+                            printf("Warning: Failed to parse node at index %d\n", i);
+#endif
+                        }
                     }
                 }
             }
-        }
-        json_object_put(root);
+            json_object_put(root);
 #ifdef DEBUG
-        printf("Configuration loaded: %d nodes\n", node_registry.count);
-        // DEBUG: Validate broker_host after parsing
-        printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n",
-               node_registry.mqtt_config.broker_host,
-               strlen(node_registry.mqtt_config.broker_host));
-        printf("MQTT broker: %s:%d\n", node_registry.mqtt_config.broker_host,
-               node_registry.mqtt_config.broker_port);
+            printf("Configuration loaded: %d nodes\n", node_registry.count);
+            // DEBUG: Validate broker_host after parsing
+            printf("DEBUG: Broker host after parsing: '%s' (len=%zu)\n",
+                   node_registry.mqtt_config.broker_host,
+                   strlen(node_registry.mqtt_config.broker_host));
+            printf("MQTT broker: %s:%d\n", node_registry.mqtt_config.broker_host,
+                   node_registry.mqtt_config.broker_port);
 #endif
-        return 0;
+            return 0;
+        }
     }
-}
-// Standard getter functions
-node_config_t *get_node_by_id(uint32_t node_id)
-{
-    for (uint32_t i = 0; i < node_registry.count; i++)
+    // Standard getter functions
+    node_config_t *get_node_by_id(uint32_t node_id)
     {
-        if (node_registry.nodes[i].node_id == node_id)
+        for (uint32_t i = 0; i < node_registry.count; i++)
         {
-            return &node_registry.nodes[i];
+            if (node_registry.nodes[i].node_id == node_id)
+            {
+                return &node_registry.nodes[i];
+            }
         }
-    }
-    return NULL;
-}
-
-node_config_t *get_node_by_index(uint32_t index)
-{
-    if (index >= 0 && index < node_registry.count)
-    {
-        return &node_registry.nodes[index];
-    }
-    return NULL;
-}
-
-uint32_t get_node_count(void)
-{
-    return node_registry.count;
-}
-
-menu_item_t *get_menu_item_by_cmd(node_config_t *node, uint32_t cmd)
-{
-    if (!node)
-        return NULL;
-    for (uint32_t i = 0; i < node->menu_count; i++)
-    {
-        if (node->menu_items[i].cmd == cmd)
-        {
-            return &node->menu_items[i];
-        }
-    }
-    return NULL;
-}
-
-// System config getters
-uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
-uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
-const char *get_default_device(void) { return node_registry.default_device; }
-uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
-
-// Detection getters
-system_info_t *get_system_info(void) { return &node_registry.system_info; }
-uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
-modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
-can_config_t *get_can_config(void) { return &node_registry.can_config; }
-mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
-tcp_config_t *get_tcp_config(void) { return &node_registry.tcp_config; }
-
-// Control queue functions
-int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
-{
-    pthread_mutex_lock(&node_registry.control_queue.mutex);
-    if (node_registry.control_queue.count >= 100)
-    {
-#ifdef DEBUG
-        printf("Warning: Control queue full\n");
-#endif
-        pthread_mutex_unlock(&node_registry.control_queue.mutex);
-        return -1;
-    }
-    server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
-    cmd->node_id = node_id;
-    cmd->cmd_id = cmd_id;
-    if (params)
-    {
-        safe_strncpy(cmd->params, params, sizeof(cmd->params));
-    }
-    else
-    {
-        cmd->params[0] = '\0';
-    }
-    cmd->timestamp = time(NULL);
-    cmd->processed = 0;
-    node_registry.control_queue.tail = (node_registry.control_queue.tail + 1) % 100;
-    node_registry.control_queue.count++;
-    pthread_cond_signal(&node_registry.control_queue.cond);
-    pthread_mutex_unlock(&node_registry.control_queue.mutex);
-    return 0;
-}
-
-int get_control_command(server_control_cmd_t *cmd)
-{
-    if (!cmd)
-        return -1;
-    pthread_mutex_lock(&node_registry.control_queue.mutex);
-    if (node_registry.control_queue.count == 0)
-    {
-        pthread_mutex_unlock(&node_registry.control_queue.mutex);
-        return -1;
-    }
-    *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
-    node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
-    node_registry.control_queue.count--;
-    pthread_mutex_unlock(&node_registry.control_queue.mutex);
-    return 0;
-}
-
-communication_type_t get_communication_type(void)
-{
-    return node_registry.communication_type;
-}
-
-void set_communication_type(communication_type_t type)
-{
-    if (type >= 0 && type < COMM_TYPE_COUNT)
-    {
-        node_registry.communication_type = type;
-    }
-}
-
-const char *get_communication_type_name(communication_type_t type)
-{
-    switch (type)
-    {
-    case COMM_TYPE_MQTT:
-        return "MQTT";
-    case COMM_TYPE_HTTP:
-        return "HTTP";
-    case COMM_TYPE_WEBSOCKET:
-        return "WebSocket";
-    case COMM_TYPE_TCP:
-        return "TCP";
-    default:
-        return "Unknown";
-    }
-}
-
-/**
- * Cleanup all resources
- */
-void cleanup_nodes_config(void)
-{
-    for (uint32_t i = 0; i < node_registry.count; i++)
-    {
-        node_config_t *node = &node_registry.nodes[i];
-        if (node->menu_items)
-        {
-            free(node->menu_items);
-        }
-        if (node->detection_commands)
-        {
-            free(node->detection_commands);
-        }
-        if (node->mqtt_data)
-        {
-            free_shared_data(node->mqtt_data);
-        }
-    }
-    if (node_registry.nodes)
-    {
-        free(node_registry.nodes);
-    }
-    if (node_registry.uart_config.supported_baudrates)
-    {
-        free(node_registry.uart_config.supported_baudrates);
-    }
-    pthread_mutex_destroy(&node_registry.control_queue.mutex);
-    pthread_cond_destroy(&node_registry.control_queue.cond);
-    memset(&node_registry, 0, sizeof(node_registry));
-#ifdef DEBUG
-    printf("Configuration cleanup completed\n");
-#endif
-}
-
-// Thread-safe config reload
-int safe_reload_config(void)
-{
-#ifdef DEBUG
-    printf("Starting safe config reload\n");
-#endif
-
-    // Signal all threads that config is reloading
-    pthread_mutex_lock(&config_mutex);
-    config_reloading = 1;
-
-    // Give other threads time to finish current operations
-    pthread_mutex_unlock(&config_mutex);
-    usleep(200 * 1000); // 200ms
-
-    // Now acquire lock for full reload
-    pthread_mutex_lock(&config_mutex);
-
-#ifdef DEBUG
-    printf("Cleaning up old config\n");
-#endif
-    cleanup_nodes_config();
-
-#ifdef DEBUG
-    printf("Loading new config\n");
-#endif
-    uint32_t load_result = 0;
-    char config_path[64];
-    snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
-    char backup_path[64];
-    snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
-    if (load_nodes_config(config_path) == 0)
-    {
-        load_result = 1;
-    }
-    else if (load_nodes_config(backup_path) == 0)
-    {
-        load_result = 1;
-    }
-
-    config_reloading = 0;
-    pthread_mutex_unlock(&config_mutex);
-
-#ifdef DEBUG
-    printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
-#endif
-
-    return load_result ? 0 : -1;
-}
-
-// Safe node access functions
-node_config_t *safe_get_node_by_index(uint32_t index)
-{
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading)
-    {
-        pthread_mutex_unlock(&config_mutex);
         return NULL;
     }
-    node_config_t *node = get_node_by_index(index);
-    pthread_mutex_unlock(&config_mutex);
-    return node;
-}
 
-uint32_t safe_get_node_count(void)
-{
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading)
+    node_config_t *get_node_by_index(uint32_t index)
     {
-        pthread_mutex_unlock(&config_mutex);
+        if (index >= 0 && index < node_registry.count)
+        {
+            return &node_registry.nodes[index];
+        }
+        return NULL;
+    }
+
+    uint32_t get_node_count(void)
+    {
+        return node_registry.count;
+    }
+
+    menu_item_t *get_menu_item_by_cmd(node_config_t * node, uint32_t cmd)
+    {
+        if (!node)
+            return NULL;
+        for (uint32_t i = 0; i < node->menu_count; i++)
+        {
+            if (node->menu_items[i].cmd == cmd)
+            {
+                return &node->menu_items[i];
+            }
+        }
+        return NULL;
+    }
+
+    // System config getters
+    uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
+    uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
+    const char *get_default_device(void) { return node_registry.default_device; }
+    uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
+
+    // Detection getters
+    system_info_t *get_system_info(void) { return &node_registry.system_info; }
+    uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
+    modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
+    can_config_t *get_can_config(void) { return &node_registry.can_config; }
+    mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
+    tcp_config_t *get_tcp_config(void) { return &node_registry.tcp_config; }
+    udp_config_t *get_udp_config(void) { return &node_registry.udp_config; }
+
+    // Control queue functions
+    int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
+    {
+        pthread_mutex_lock(&node_registry.control_queue.mutex);
+        if (node_registry.control_queue.count >= 100)
+        {
+#ifdef DEBUG
+            printf("Warning: Control queue full\n");
+#endif
+            pthread_mutex_unlock(&node_registry.control_queue.mutex);
+            return -1;
+        }
+        server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
+        cmd->node_id = node_id;
+        cmd->cmd_id = cmd_id;
+        if (params)
+        {
+            safe_strncpy(cmd->params, params, sizeof(cmd->params));
+        }
+        else
+        {
+            cmd->params[0] = '\0';
+        }
+        cmd->timestamp = time(NULL);
+        cmd->processed = 0;
+        node_registry.control_queue.tail = (node_registry.control_queue.tail + 1) % 100;
+        node_registry.control_queue.count++;
+        pthread_cond_signal(&node_registry.control_queue.cond);
+        pthread_mutex_unlock(&node_registry.control_queue.mutex);
         return 0;
     }
-    uint32_t count = get_node_count();
-    pthread_mutex_unlock(&config_mutex);
-    return count;
-}
+
+    int get_control_command(server_control_cmd_t * cmd)
+    {
+        if (!cmd)
+            return -1;
+        pthread_mutex_lock(&node_registry.control_queue.mutex);
+        if (node_registry.control_queue.count == 0)
+        {
+            pthread_mutex_unlock(&node_registry.control_queue.mutex);
+            return -1;
+        }
+        *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
+        node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
+        node_registry.control_queue.count--;
+        pthread_mutex_unlock(&node_registry.control_queue.mutex);
+        return 0;
+    }
+
+    communication_type_t get_communication_type(void)
+    {
+        return node_registry.communication_type;
+    }
+
+    void set_communication_type(communication_type_t type)
+    {
+        if (type >= 0 && type < COMM_TYPE_COUNT)
+        {
+            node_registry.communication_type = type;
+        }
+    }
+
+    const char *get_communication_type_name(communication_type_t type)
+    {
+        switch (type)
+        {
+        case COMM_TYPE_MQTT:
+            return "MQTT";
+        case COMM_TYPE_HTTP:
+            return "HTTP";
+        case COMM_TYPE_WEBSOCKET:
+            return "WebSocket";
+        case COMM_TYPE_TCP:
+            return "TCP";
+        default:
+            return "Unknown";
+        }
+    }
+
+    /**
+     * Cleanup all resources
+     */
+    void cleanup_nodes_config(void)
+    {
+        for (uint32_t i = 0; i < node_registry.count; i++)
+        {
+            node_config_t *node = &node_registry.nodes[i];
+
+            if (node->menu_items)
+            {
+                free(node->menu_items);
+            }
+
+            if (node->detection_commands)
+            {
+                free(node->detection_commands);
+            }
+
+            if (node->mqtt_data)
+            {
+                free_shared_data(node->mqtt_data);
+            }
+
+            if (node->tcp_data)
+            {
+                free_shared_data(node->tcp_data);
+            }
+
+            if (node->udp_data)
+            { // ADD THIS BLOCK
+                free_shared_data(node->udp_data);
+            }
+        }
+
+        if (node_registry.nodes)
+        {
+            free(node_registry.nodes);
+        }
+
+        if (node_registry.uart_config.supported_baudrates)
+        {
+            free(node_registry.uart_config.supported_baudrates);
+        }
+
+        pthread_mutex_destroy(&node_registry.control_queue.mutex);
+        pthread_cond_destroy(&node_registry.control_queue.cond);
+        memset(&node_registry, 0, sizeof(node_registry));
+
+#ifdef DEBUG
+        printf("Configuration cleanup completed\n");
+#endif
+    }
+
+    // Thread-safe config reload
+    int safe_reload_config(void)
+    {
+#ifdef DEBUG
+        printf("Starting safe config reload\n");
+#endif
+
+        // Signal all threads that config is reloading
+        pthread_mutex_lock(&config_mutex);
+        config_reloading = 1;
+
+        // Give other threads time to finish current operations
+        pthread_mutex_unlock(&config_mutex);
+        usleep(200 * 1000); // 200ms
+
+        // Now acquire lock for full reload
+        pthread_mutex_lock(&config_mutex);
+
+#ifdef DEBUG
+        printf("Cleaning up old config\n");
+#endif
+        cleanup_nodes_config();
+
+#ifdef DEBUG
+        printf("Loading new config\n");
+#endif
+        uint32_t load_result = 0;
+        char config_path[64];
+        snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
+        char backup_path[64];
+        snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
+        if (load_nodes_config(config_path) == 0)
+        {
+            load_result = 1;
+        }
+        else if (load_nodes_config(backup_path) == 0)
+        {
+            load_result = 1;
+        }
+
+        config_reloading = 0;
+        pthread_mutex_unlock(&config_mutex);
+
+#ifdef DEBUG
+        printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
+#endif
+
+        return load_result ? 0 : -1;
+    }
+
+    // Safe node access functions
+    node_config_t *safe_get_node_by_index(uint32_t index)
+    {
+        pthread_mutex_lock(&config_mutex);
+        if (config_reloading)
+        {
+            pthread_mutex_unlock(&config_mutex);
+            return NULL;
+        }
+        node_config_t *node = get_node_by_index(index);
+        pthread_mutex_unlock(&config_mutex);
+        return node;
+    }
+
+    uint32_t safe_get_node_count(void)
+    {
+        pthread_mutex_lock(&config_mutex);
+        if (config_reloading)
+        {
+            pthread_mutex_unlock(&config_mutex);
+            return 0;
+        }
+        uint32_t count = get_node_count();
+        pthread_mutex_unlock(&config_mutex);
+        return count;
+    }

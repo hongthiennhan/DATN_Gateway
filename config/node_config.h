@@ -178,6 +178,61 @@ typedef struct
 
 typedef struct
 {
+    uint8_t broadcast;
+    uint8_t reuse_addr;
+    uint8_t reuse_port;
+    uint16_t receive_timeout_ms;
+    uint16_t send_timeout_ms;
+} udp_socket_options_t;
+
+typedef struct
+{
+    char data_source[64];
+    uint8_t include_timestamp;
+    uint8_t include_gateway_ip;
+    uint8_t include_node_count;
+    uint8_t include_system_info;
+} udp_system_fields_t;
+
+typedef struct
+{
+    char message_delimiter[8];
+    uint16_t max_message_size;
+    uint8_t compression_enabled;
+    uint8_t encryption_enabled;
+    uint8_t checksum_enabled;
+} udp_protocol_settings_t;
+
+typedef struct
+{
+    uint8_t control_commands;
+    uint8_t telemetry_upload;
+    uint8_t status_reporting;
+    uint8_t broadcast_discovery;
+    uint8_t multicast_support;
+} udp_features_t;
+
+typedef struct
+{
+    char server_host[128];
+    uint16_t server_port;
+    char client_id[64];
+    char protocol_version[16];
+    char data_format[16];
+    uint16_t send_interval;
+    uint16_t connection_timeout;
+    uint16_t reconnect_delay_ms;
+    uint16_t loop_interval_ms;
+    uint16_t payload_buffer_size;
+    uint16_t receive_buffer_size;
+    udp_socket_options_t socket_options;
+    udp_system_fields_t system_fields;
+    udp_protocol_settings_t protocol_settings;
+    udp_features_t features;
+} udp_config_t;
+
+typedef struct
+{
     uint32_t rate;
     char speed_code[16];
 } baudrate_mapping_t;
@@ -237,6 +292,7 @@ typedef struct
     // Runtime data
     shared_data_t *mqtt_data;
     shared_data_t *tcp_data;
+    shared_data_t *udp_data;
 } node_config_t;
 
 typedef struct
@@ -270,6 +326,9 @@ typedef struct
 
     // TCP config
     tcp_config_t tcp_config;
+
+    // UDP config
+    udp_config_t udp_config;
 
     // Control queue
     control_queue_t control_queue;
@@ -307,6 +366,9 @@ mqtt_config_t *get_mqtt_config(void);
 
 // TCP config getters
 tcp_config_t *get_tcp_config(void);
+
+// UDP config getters
+udp_config_t *get_udp_config(void);
 
 // Control queue functions
 int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params);
