@@ -926,268 +926,269 @@ int load_nodes_config(const char *config_file)
             return 0;
         }
     }
-    // Standard getter functions
-    node_config_t *get_node_by_id(uint32_t node_id)
+}
+// Standard getter functions
+node_config_t *get_node_by_id(uint32_t node_id)
+{
+    for (uint32_t i = 0; i < node_registry.count; i++)
     {
-        for (uint32_t i = 0; i < node_registry.count; i++)
+        if (node_registry.nodes[i].node_id == node_id)
         {
-            if (node_registry.nodes[i].node_id == node_id)
-            {
-                return &node_registry.nodes[i];
-            }
+            return &node_registry.nodes[i];
         }
-        return NULL;
     }
+    return NULL;
+}
 
-    node_config_t *get_node_by_index(uint32_t index)
+node_config_t *get_node_by_index(uint32_t index)
+{
+    if (index >= 0 && index < node_registry.count)
     {
-        if (index >= 0 && index < node_registry.count)
+        return &node_registry.nodes[index];
+    }
+    return NULL;
+}
+
+uint32_t get_node_count(void)
+{
+    return node_registry.count;
+}
+
+menu_item_t *get_menu_item_by_cmd(node_config_t *node, uint32_t cmd)
+{
+    if (!node)
+        return NULL;
+    for (uint32_t i = 0; i < node->menu_count; i++)
+    {
+        if (node->menu_items[i].cmd == cmd)
         {
-            return &node_registry.nodes[index];
+            return &node->menu_items[i];
         }
-        return NULL;
     }
+    return NULL;
+}
 
-    uint32_t get_node_count(void)
+// System config getters
+uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
+uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
+const char *get_default_device(void) { return node_registry.default_device; }
+uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
+
+// Detection getters
+system_info_t *get_system_info(void) { return &node_registry.system_info; }
+uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
+modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
+can_config_t *get_can_config(void) { return &node_registry.can_config; }
+mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
+tcp_config_t *get_tcp_config(void) { return &node_registry.tcp_config; }
+udp_config_t *get_udp_config(void) { return &node_registry.udp_config; }
+
+// Control queue functions
+int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
+{
+    pthread_mutex_lock(&node_registry.control_queue.mutex);
+    if (node_registry.control_queue.count >= 100)
     {
-        return node_registry.count;
-    }
-
-    menu_item_t *get_menu_item_by_cmd(node_config_t * node, uint32_t cmd)
-    {
-        if (!node)
-            return NULL;
-        for (uint32_t i = 0; i < node->menu_count; i++)
-        {
-            if (node->menu_items[i].cmd == cmd)
-            {
-                return &node->menu_items[i];
-            }
-        }
-        return NULL;
-    }
-
-    // System config getters
-    uint32_t get_ui_refresh_delay(void) { return node_registry.ui_refresh_delay; }
-    uint32_t get_default_baudrate(void) { return node_registry.default_baudrate; }
-    const char *get_default_device(void) { return node_registry.default_device; }
-    uint32_t get_startup_clear_duration(void) { return node_registry.startup_clear_duration; }
-
-    // Detection getters
-    system_info_t *get_system_info(void) { return &node_registry.system_info; }
-    uart_config_t *get_uart_config(void) { return &node_registry.uart_config; }
-    modbus_config_t *get_modbus_config(void) { return &node_registry.modbus_config; }
-    can_config_t *get_can_config(void) { return &node_registry.can_config; }
-    mqtt_config_t *get_mqtt_config(void) { return &node_registry.mqtt_config; }
-    tcp_config_t *get_tcp_config(void) { return &node_registry.tcp_config; }
-    udp_config_t *get_udp_config(void) { return &node_registry.udp_config; }
-
-    // Control queue functions
-    int add_control_command(uint32_t node_id, uint32_t cmd_id, const char *params)
-    {
-        pthread_mutex_lock(&node_registry.control_queue.mutex);
-        if (node_registry.control_queue.count >= 100)
-        {
 #ifdef DEBUG
-            printf("Warning: Control queue full\n");
+        printf("Warning: Control queue full\n");
 #endif
-            pthread_mutex_unlock(&node_registry.control_queue.mutex);
-            return -1;
-        }
-        server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
-        cmd->node_id = node_id;
-        cmd->cmd_id = cmd_id;
-        if (params)
-        {
-            safe_strncpy(cmd->params, params, sizeof(cmd->params));
-        }
-        else
-        {
-            cmd->params[0] = '\0';
-        }
-        cmd->timestamp = time(NULL);
-        cmd->processed = 0;
-        node_registry.control_queue.tail = (node_registry.control_queue.tail + 1) % 100;
-        node_registry.control_queue.count++;
-        pthread_cond_signal(&node_registry.control_queue.cond);
         pthread_mutex_unlock(&node_registry.control_queue.mutex);
+        return -1;
+    }
+    server_control_cmd_t *cmd = &node_registry.control_queue.commands[node_registry.control_queue.tail];
+    cmd->node_id = node_id;
+    cmd->cmd_id = cmd_id;
+    if (params)
+    {
+        safe_strncpy(cmd->params, params, sizeof(cmd->params));
+    }
+    else
+    {
+        cmd->params[0] = '\0';
+    }
+    cmd->timestamp = time(NULL);
+    cmd->processed = 0;
+    node_registry.control_queue.tail = (node_registry.control_queue.tail + 1) % 100;
+    node_registry.control_queue.count++;
+    pthread_cond_signal(&node_registry.control_queue.cond);
+    pthread_mutex_unlock(&node_registry.control_queue.mutex);
+    return 0;
+}
+
+int get_control_command(server_control_cmd_t *cmd)
+{
+    if (!cmd)
+        return -1;
+    pthread_mutex_lock(&node_registry.control_queue.mutex);
+    if (node_registry.control_queue.count == 0)
+    {
+        pthread_mutex_unlock(&node_registry.control_queue.mutex);
+        return -1;
+    }
+    *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
+    node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
+    node_registry.control_queue.count--;
+    pthread_mutex_unlock(&node_registry.control_queue.mutex);
+    return 0;
+}
+
+communication_type_t get_communication_type(void)
+{
+    return node_registry.communication_type;
+}
+
+void set_communication_type(communication_type_t type)
+{
+    if (type >= 0 && type < COMM_TYPE_COUNT)
+    {
+        node_registry.communication_type = type;
+    }
+}
+
+const char *get_communication_type_name(communication_type_t type)
+{
+    switch (type)
+    {
+    case COMM_TYPE_MQTT:
+        return "MQTT";
+    case COMM_TYPE_HTTP:
+        return "HTTP";
+    case COMM_TYPE_WEBSOCKET:
+        return "WebSocket";
+    case COMM_TYPE_TCP:
+        return "TCP";
+    default:
+        return "Unknown";
+    }
+}
+
+/**
+ * Cleanup all resources
+ */
+void cleanup_nodes_config(void)
+{
+    for (uint32_t i = 0; i < node_registry.count; i++)
+    {
+        node_config_t *node = &node_registry.nodes[i];
+
+        if (node->menu_items)
+        {
+            free(node->menu_items);
+        }
+
+        if (node->detection_commands)
+        {
+            free(node->detection_commands);
+        }
+
+        if (node->mqtt_data)
+        {
+            free_shared_data(node->mqtt_data);
+        }
+
+        if (node->tcp_data)
+        {
+            free_shared_data(node->tcp_data);
+        }
+
+        if (node->udp_data)
+        { // ADD THIS BLOCK
+            free_shared_data(node->udp_data);
+        }
+    }
+
+    if (node_registry.nodes)
+    {
+        free(node_registry.nodes);
+    }
+
+    if (node_registry.uart_config.supported_baudrates)
+    {
+        free(node_registry.uart_config.supported_baudrates);
+    }
+
+    pthread_mutex_destroy(&node_registry.control_queue.mutex);
+    pthread_cond_destroy(&node_registry.control_queue.cond);
+    memset(&node_registry, 0, sizeof(node_registry));
+
+#ifdef DEBUG
+    printf("Configuration cleanup completed\n");
+#endif
+}
+
+// Thread-safe config reload
+int safe_reload_config(void)
+{
+#ifdef DEBUG
+    printf("Starting safe config reload\n");
+#endif
+
+    // Signal all threads that config is reloading
+    pthread_mutex_lock(&config_mutex);
+    config_reloading = 1;
+
+    // Give other threads time to finish current operations
+    pthread_mutex_unlock(&config_mutex);
+    usleep(200 * 1000); // 200ms
+
+    // Now acquire lock for full reload
+    pthread_mutex_lock(&config_mutex);
+
+#ifdef DEBUG
+    printf("Cleaning up old config\n");
+#endif
+    cleanup_nodes_config();
+
+#ifdef DEBUG
+    printf("Loading new config\n");
+#endif
+    uint32_t load_result = 0;
+    char config_path[64];
+    snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
+    char backup_path[64];
+    snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
+    if (load_nodes_config(config_path) == 0)
+    {
+        load_result = 1;
+    }
+    else if (load_nodes_config(backup_path) == 0)
+    {
+        load_result = 1;
+    }
+
+    config_reloading = 0;
+    pthread_mutex_unlock(&config_mutex);
+
+#ifdef DEBUG
+    printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
+#endif
+
+    return load_result ? 0 : -1;
+}
+
+// Safe node access functions
+node_config_t *safe_get_node_by_index(uint32_t index)
+{
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading)
+    {
+        pthread_mutex_unlock(&config_mutex);
+        return NULL;
+    }
+    node_config_t *node = get_node_by_index(index);
+    pthread_mutex_unlock(&config_mutex);
+    return node;
+}
+
+uint32_t safe_get_node_count(void)
+{
+    pthread_mutex_lock(&config_mutex);
+    if (config_reloading)
+    {
+        pthread_mutex_unlock(&config_mutex);
         return 0;
     }
-
-    int get_control_command(server_control_cmd_t * cmd)
-    {
-        if (!cmd)
-            return -1;
-        pthread_mutex_lock(&node_registry.control_queue.mutex);
-        if (node_registry.control_queue.count == 0)
-        {
-            pthread_mutex_unlock(&node_registry.control_queue.mutex);
-            return -1;
-        }
-        *cmd = node_registry.control_queue.commands[node_registry.control_queue.head];
-        node_registry.control_queue.head = (node_registry.control_queue.head + 1) % 100;
-        node_registry.control_queue.count--;
-        pthread_mutex_unlock(&node_registry.control_queue.mutex);
-        return 0;
-    }
-
-    communication_type_t get_communication_type(void)
-    {
-        return node_registry.communication_type;
-    }
-
-    void set_communication_type(communication_type_t type)
-    {
-        if (type >= 0 && type < COMM_TYPE_COUNT)
-        {
-            node_registry.communication_type = type;
-        }
-    }
-
-    const char *get_communication_type_name(communication_type_t type)
-    {
-        switch (type)
-        {
-        case COMM_TYPE_MQTT:
-            return "MQTT";
-        case COMM_TYPE_HTTP:
-            return "HTTP";
-        case COMM_TYPE_WEBSOCKET:
-            return "WebSocket";
-        case COMM_TYPE_TCP:
-            return "TCP";
-        default:
-            return "Unknown";
-        }
-    }
-
-    /**
-     * Cleanup all resources
-     */
-    void cleanup_nodes_config(void)
-    {
-        for (uint32_t i = 0; i < node_registry.count; i++)
-        {
-            node_config_t *node = &node_registry.nodes[i];
-
-            if (node->menu_items)
-            {
-                free(node->menu_items);
-            }
-
-            if (node->detection_commands)
-            {
-                free(node->detection_commands);
-            }
-
-            if (node->mqtt_data)
-            {
-                free_shared_data(node->mqtt_data);
-            }
-
-            if (node->tcp_data)
-            {
-                free_shared_data(node->tcp_data);
-            }
-
-            if (node->udp_data)
-            { // ADD THIS BLOCK
-                free_shared_data(node->udp_data);
-            }
-        }
-
-        if (node_registry.nodes)
-        {
-            free(node_registry.nodes);
-        }
-
-        if (node_registry.uart_config.supported_baudrates)
-        {
-            free(node_registry.uart_config.supported_baudrates);
-        }
-
-        pthread_mutex_destroy(&node_registry.control_queue.mutex);
-        pthread_cond_destroy(&node_registry.control_queue.cond);
-        memset(&node_registry, 0, sizeof(node_registry));
-
-#ifdef DEBUG
-        printf("Configuration cleanup completed\n");
-#endif
-    }
-
-    // Thread-safe config reload
-    int safe_reload_config(void)
-    {
-#ifdef DEBUG
-        printf("Starting safe config reload\n");
-#endif
-
-        // Signal all threads that config is reloading
-        pthread_mutex_lock(&config_mutex);
-        config_reloading = 1;
-
-        // Give other threads time to finish current operations
-        pthread_mutex_unlock(&config_mutex);
-        usleep(200 * 1000); // 200ms
-
-        // Now acquire lock for full reload
-        pthread_mutex_lock(&config_mutex);
-
-#ifdef DEBUG
-        printf("Cleaning up old config\n");
-#endif
-        cleanup_nodes_config();
-
-#ifdef DEBUG
-        printf("Loading new config\n");
-#endif
-        uint32_t load_result = 0;
-        char config_path[64];
-        snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
-        char backup_path[64];
-        snprintf(backup_path, sizeof(backup_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
-        if (load_nodes_config(config_path) == 0)
-        {
-            load_result = 1;
-        }
-        else if (load_nodes_config(backup_path) == 0)
-        {
-            load_result = 1;
-        }
-
-        config_reloading = 0;
-        pthread_mutex_unlock(&config_mutex);
-
-#ifdef DEBUG
-        printf("Config reload completed: %s\n", load_result ? "SUCCESS" : "FAILED");
-#endif
-
-        return load_result ? 0 : -1;
-    }
-
-    // Safe node access functions
-    node_config_t *safe_get_node_by_index(uint32_t index)
-    {
-        pthread_mutex_lock(&config_mutex);
-        if (config_reloading)
-        {
-            pthread_mutex_unlock(&config_mutex);
-            return NULL;
-        }
-        node_config_t *node = get_node_by_index(index);
-        pthread_mutex_unlock(&config_mutex);
-        return node;
-    }
-
-    uint32_t safe_get_node_count(void)
-    {
-        pthread_mutex_lock(&config_mutex);
-        if (config_reloading)
-        {
-            pthread_mutex_unlock(&config_mutex);
-            return 0;
-        }
-        uint32_t count = get_node_count();
-        pthread_mutex_unlock(&config_mutex);
-        return count;
-    }
+    uint32_t count = get_node_count();
+    pthread_mutex_unlock(&config_mutex);
+    return count;
+}
