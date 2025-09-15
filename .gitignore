@@ -40,3 +40,7 @@ main.synctex(busy)
 
 # Ignore build directories
 build/
+
+#ignore temp files
+*.~ml
+*.uml
