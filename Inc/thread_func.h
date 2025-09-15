@@ -8,6 +8,7 @@
 #include "CAN_handler.h"    // Include CAN handler for CAN data types
 #include "mqtt_thread.h"    // Include MQTT thread header for MQTT handling
 #include "tcp_thread.h"     // Include TCP thread header for TCP handling
+#include "udp_thread.h"     // Include UDP thread header for UDP handling
 // ========== External declarations for shared state ==========
 extern volatile uint8_t is_busy;
 extern pthread_mutex_t command_mutex;
