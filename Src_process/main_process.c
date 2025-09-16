@@ -11,11 +11,6 @@ static struct option long_options[] = {
 // Function to clean up resources on exit
 void cleanup_on_exit(void)
 {
-    // Close UART
-    if (uart_fd >= 0)
-    {
-        close(uart_fd);
-    }
 
     // Cleanup node config
     cleanup_nodes_config();
@@ -60,11 +55,6 @@ int main(void)
     // Get default values from config instead of hard-coding
     uint32_t baudrate = get_default_baudrate();
     char *device = strdup(get_default_device());
-
-    // Uart_Init(UART_map_to_speed(baudrate), device);
-    // Use config value instead of hard-coded timeout
-    // Fixed: Clear_Startup_UART with uint32_t parameter
-    // Clear_Startup_UART(uart_fd, (uint32_t)get_startup_clear_duration());
     Modbus_Init(UART_map_to_speed(baudrate), device);
     // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
     void *ui_args[2] = {&baudrate, device};
