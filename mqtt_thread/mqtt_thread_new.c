@@ -1,5 +1,6 @@
 #include "mongoose.h"
 #include "thread_func.h"
+#include "gateway_config.h"
 
 // Config update tracking
 static volatile int config_updated = 0;
@@ -15,17 +16,18 @@ thread_pause_t mqtt_pause = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .cond = PTHREAD_COND_INITIALIZER};
 
+// Constants
+#define CONFIG_DIR "./config"
+#define CONFIG_FILE "gateway_config.json"
+#define FALLBACK_CONFIG_FILE "config_backup.json"
+#define MAX_JSON_SIZE (64 * 1024)
+
 // Safe MQTT config access with mutex protection
 mqtt_config_t *safe_get_mqtt_config(void)
 {
-    pthread_mutex_lock(&config_mutex);
-    if (config_reloading)
-    {
-        pthread_mutex_unlock(&config_mutex);
-        return NULL;
-    }
+    pthread_mutex_lock(&gateway_config_mutex);
     mqtt_config_t *config = get_mqtt_config();
-    pthread_mutex_unlock(&config_mutex);
+    pthread_mutex_unlock(&gateway_config_mutex);
     return config;
 }
 
@@ -34,7 +36,6 @@ char *mqtt_get_local_ip()
 {
     static char ip_str[INET_ADDRSTRLEN];
     struct ifaddrs *ifaddrs_ptr, *ifa;
-
     if (getifaddrs(&ifaddrs_ptr) == -1)
     {
         strcpy(ip_str, "127.0.0.1");
@@ -46,12 +47,10 @@ char *mqtt_get_local_ip()
     {
         if (ifa->ifa_addr == NULL)
             continue;
-
         if (ifa->ifa_addr->sa_family == AF_INET)
         {
             struct sockaddr_in *addr_in = (struct sockaddr_in *)ifa->ifa_addr;
             char *addr_str = inet_ntoa(addr_in->sin_addr);
-
             if (strncmp(addr_str, "127.", 4) != 0 && strncmp(addr_str, "169.254.", 8) != 0)
             {
                 strcpy(ip_str, addr_str);
@@ -60,7 +59,6 @@ char *mqtt_get_local_ip()
             }
         }
     }
-
     freeifaddrs(ifaddrs_ptr);
     strcpy(ip_str, "127.0.0.1");
     return ip_str;
@@ -70,7 +68,6 @@ char *mqtt_get_local_ip()
 static int ensure_directory_exists(const char *dir)
 {
     struct stat st;
-
     if (stat(dir, &st) == 0)
     {
         if (S_ISDIR(st.st_mode))
@@ -85,7 +82,6 @@ static int ensure_directory_exists(const char *dir)
             return -1;
         }
     }
-
     if (mkdir(dir, 0755) == 0)
     {
 #ifdef DEBUG
@@ -93,12 +89,10 @@ static int ensure_directory_exists(const char *dir)
 #endif
         return 0;
     }
-
     if (errno == EEXIST)
     {
         return ensure_directory_exists(dir);
     }
-
 #ifdef DEBUG
     fprintf(stderr, "ERROR: Cannot create directory %s: %s\n", dir, strerror(errno));
 #endif
@@ -115,7 +109,6 @@ static int validate_json_basic(const void *data, size_t size)
 #endif
         return 0;
     }
-
     if (size > MAX_JSON_SIZE)
     {
 #ifdef DEBUG
@@ -123,7 +116,6 @@ static int validate_json_basic(const void *data, size_t size)
 #endif
         return 0;
     }
-
     const char *json_str = (const char *)data;
     if (json_str[0] != '{')
     {
@@ -148,7 +140,6 @@ static int validate_json_basic(const void *data, size_t size)
             break;
         }
     }
-
     if (!found_closing)
     {
 #ifdef DEBUG
@@ -156,7 +147,6 @@ static int validate_json_basic(const void *data, size_t size)
 #endif
         return 0;
     }
-
 #ifdef DEBUG
     printf("JSON validation passed: %zu bytes\n", size);
 #endif
@@ -170,11 +160,9 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     {
         return -1;
     }
-
-    char current_path[64], new_path[64], backup_path[64];
+    char current_path[64], new_path[64];
     snprintf(current_path, sizeof(current_path), "%s/%s", dir, filename);
     snprintf(new_path, sizeof(new_path), "%s/%s.new", dir, filename);
-    snprintf(backup_path, sizeof(backup_path), "%s/config_backup.json", dir);
 
     // Delete old config file if it exists
     if (access(current_path, F_OK) == 0)
@@ -234,7 +222,6 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         unlink(new_path);
         return -1;
     }
-
     close(fd);
 
     // Atomically rename new file to current filename
@@ -246,7 +233,6 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
         unlink(new_path);
         return -1;
     }
-
 #ifdef DEBUG
     printf("New config file created successfully: %s\n", current_path);
 #endif
@@ -280,47 +266,40 @@ static void process_control_command(const char *payload)
     printf("Processing control method: %s\n", method);
 #endif
 
-    if (strcmp(method, "executeCommand") == 0)
+    if (strcmp(method, "reloadConfig") == 0)
     {
+        // Reload gateway configuration
         if (json_object_object_get_ex(root, "params", &params_obj))
         {
-            json_object *node_id_obj, *cmd_id_obj, *params_str_obj;
-
-            if (json_object_object_get_ex(params_obj, "nodeId", &node_id_obj) &&
-                json_object_object_get_ex(params_obj, "cmdId", &cmd_id_obj))
+            json_object *config_path_obj;
+            if (json_object_object_get_ex(params_obj, "configPath", &config_path_obj))
             {
-
-                int node_id = json_object_get_int(node_id_obj);
-                int cmd_id = json_object_get_int(cmd_id_obj);
-                const char *params_str = "";
-
-                if (json_object_object_get_ex(params_obj, "params", &params_str_obj))
-                {
-                    params_str = json_object_get_string(params_str_obj);
-                }
-
+                const char *config_path = json_object_get_string(config_path_obj);
 #ifdef DEBUG
-                printf("Server command: node=%d, cmd=%d, params=%s\n",
-                       node_id, cmd_id, params_str);
+                printf("Reloading config from: %s\n", config_path);
 #endif
-
-                // Queue command for execution
-                if (add_control_command(node_id, cmd_id, params_str) == 0)
+                if (load_gateway_config(config_path) == 0)
                 {
 #ifdef DEBUG
-                    printf("Command queued successfully\n");
+                    printf("Gateway config reloaded successfully\n");
 #endif
                 }
                 else
                 {
 #ifdef DEBUG
-                    printf("Failed to queue command\n");
+                    printf("Failed to reload gateway config\n");
 #endif
                 }
             }
         }
     }
-
+    else if (strcmp(method, "getStatus") == 0)
+    {
+#ifdef DEBUG
+        printf("Status request received\n");
+#endif
+        // Status request handled
+    }
     json_object_put(root);
 }
 
@@ -330,14 +309,12 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
     switch (ev)
     {
     case MG_EV_MQTT_OPEN:
-    {
         // Connected to the broker
         mqtt_connected = 1;
 #ifdef DEBUG
         printf("MQTT connected successfully\n");
 #endif
-
-        mqtt_config_t *config = get_mqtt_config();
+        mqtt_config_t *config = safe_get_mqtt_config();
         system_info_t *sys_info = get_system_info();
         if (!config || !sys_info)
             return;
@@ -374,14 +351,13 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
                      "\"device_type\":\"%s\","
                      "\"manufacturer\":\"%s\","
                      "\"model\":\"%s\","
-                     "\"node_count\":%d"
+                     "\"status\":\"online\""
                      "}",
                      mqtt_get_local_ip(),
                      sys_info->firmware_version,
                      sys_info->device_type,
                      sys_info->manufacturer,
-                     sys_info->model,
-                     get_node_count());
+                     sys_info->model);
 
             struct mg_mqtt_opts pub_opts = {0};
             pub_opts.topic = mg_str(config->topic_attributes);
@@ -392,30 +368,17 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
             free(attributes);
         }
         break;
-    }
 
     case MG_EV_MQTT_MSG:
-    {
         // Received MQTT message event
         struct mg_mqtt_message *mm = (struct mg_mqtt_message *)ev_data;
 #ifdef DEBUG
         printf("MQTT message on topic: %.*s\n", (int)mm->topic.len, mm->topic.buf);
 #endif
 
-        // Protect config with mutex
-        pthread_mutex_lock(&config_mutex);
-        if (config_reloading)
-        {
-            pthread_mutex_unlock(&config_mutex);
+        mqtt_config_t *msg_config = safe_get_mqtt_config();
+        if (!msg_config)
             return;
-        }
-
-        mqtt_config_t *config = get_mqtt_config();
-        if (!config)
-        {
-            pthread_mutex_unlock(&config_mutex);
-            return;
-        }
 
         // Copy topic string safely
         char topic_str[256] = {0};
@@ -423,21 +386,13 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
         memcpy(topic_str, mm->topic.buf, topic_len);
         topic_str[topic_len] = '\0';
 
-        char topic_control[256] = {0};
-        if (config->topic_control && strlen(config->topic_control) > 0)
-        {
-            strncpy(topic_control, config->topic_control, sizeof(topic_control) - 1);
-        }
-        pthread_mutex_unlock(&config_mutex);
-
         // Check if message is from control topics
-        if ((strlen(topic_control) > 0 && strstr(topic_str, topic_control)) ||
+        if ((strlen(msg_config->topic_control) > 0 && strstr(topic_str, msg_config->topic_control)) ||
             strstr(topic_str, "v1/devices/me/rpc/request/"))
         {
 #ifdef DEBUG
             printf("Processing control command\n");
 #endif
-
             // Process payload
             if (mm->data.len > 0)
             {
@@ -460,10 +415,8 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
 #ifdef DEBUG
             printf("Processing config update\n");
 #endif
-
             const void *payload = mm->data.buf;
             size_t payload_size = mm->data.len;
-
             if (!validate_json_basic(payload, payload_size))
             {
 #ifdef DEBUG
@@ -471,7 +424,6 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
 #endif
                 return;
             }
-
             int result = atomic_write_json_file(CONFIG_DIR, CONFIG_FILE, payload, payload_size);
             if (result == 0)
             {
@@ -486,10 +438,8 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
             }
         }
         break;
-    }
 
     case MG_EV_CLOSE:
-    {
         // Connection closed
         mqtt_connected = 0;
         mqtt_connection = NULL;
@@ -497,10 +447,8 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
         printf("MQTT disconnected\n");
 #endif
         break;
-    }
 
     case MG_EV_ERROR:
-    {
         // Connection error
         mqtt_connected = 0;
         mqtt_connection = NULL;
@@ -508,7 +456,6 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
         printf("MQTT connection error\n");
 #endif
         break;
-    }
     }
 }
 
@@ -526,19 +473,15 @@ static int check_and_reload_config(void)
     if (!should_reload)
         return 0;
 
-    pthread_mutex_lock(&config_mutex);
-    config_reloading = 1;
-
 #ifdef DEBUG
     printf("Reloading config from server update\n");
 #endif
-
-    cleanup_nodes_config();
+    cleanup_gateway_config();
     char config_path[64];
     snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, CONFIG_FILE);
 
     int result = 0;
-    if (load_nodes_config(config_path) == 0)
+    if (load_gateway_config(config_path) == 0)
     {
 #ifdef DEBUG
         printf("Config reloaded successfully\n");
@@ -551,36 +494,27 @@ static int check_and_reload_config(void)
         fprintf(stderr, "Failed to reload config, using fallback\n");
 #endif
         // Try fallback configs
-        if (load_nodes_config(config_path) != 0)
-        {
-            snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
-            load_nodes_config(config_path);
-        }
+        snprintf(config_path, sizeof(config_path), "%s/%s", CONFIG_DIR, FALLBACK_CONFIG_FILE);
+        load_gateway_config(config_path);
     }
-
-    config_reloading = 0;
-    pthread_mutex_unlock(&config_mutex);
     return result;
 }
 
 // Request config from server
 static int request_config_json_robust(void)
 {
-    pthread_mutex_lock(&config_mutex);
-    mqtt_config_t *cfg = get_mqtt_config();
+    mqtt_config_t *cfg = safe_get_mqtt_config();
     if (!cfg || !mqtt_connection || !mqtt_connected)
     {
 #ifdef DEBUG
         fprintf(stderr, "ERROR: Cannot request config - MQTT not ready\n");
 #endif
-        pthread_mutex_unlock(&config_mutex);
         return 0;
     }
 
 #ifdef DEBUG
     printf("Requesting config from server\n");
 #endif
-
     // Subscribe to config topics
     struct mg_mqtt_opts attr_resp_opts = {0};
     attr_resp_opts.topic = mg_str("v1/devices/me/attributes/response/+");
@@ -604,16 +538,15 @@ static int request_config_json_robust(void)
 #ifdef DEBUG
     printf("Config request sent\n");
 #endif
-
-    pthread_mutex_unlock(&config_mutex);
     return 1;
 }
 
-// Build telemetry payload with node data
+// Build telemetry payload with gateway system data
 static void build_telemetry_payload(char *payload, size_t payload_size, time_t timestamp)
 {
-    mqtt_config_t *config = get_mqtt_config();
-    if (!config)
+    mqtt_config_t *config = safe_get_mqtt_config();
+    system_info_t *sys_info = get_system_info();
+    if (!config || !sys_info)
         return;
 
     char *temp_buffer = malloc(1024);
@@ -630,42 +563,18 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
         snprintf(payload, payload_size, "{");
     }
 
-    // Add data from detected nodes - no config mutex lock
-    for (int i = 0; i < get_node_count(); i++)
-    {
-        node_config_t *node = get_node_by_index(i);
-        if (!node || !node->mqtt_data)
-            continue;
+    // Add gateway system information
+    snprintf(temp_buffer, 1024, ",\"firmware_version\":\"%s\"", sys_info->firmware_version);
+    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
 
-        // Only trylock node mutex
-        if (pthread_mutex_trylock(&node->mqtt_data->mutex) == 0)
-        {
-            if (node->mqtt_data->data)
-            {
-                raw_data_t *raw_data = (raw_data_t *)node->mqtt_data->data;
-                if (raw_data && raw_data->data && raw_data->length > 0)
-                {
-                    // Convert to hex string
-                    char *hex_str = malloc(raw_data->length * 2 + 1);
-                    if (hex_str)
-                    {
-                        for (int j = 0; j < raw_data->length; j++)
-                        {
-                            sprintf(hex_str + j * 2, "%02X", raw_data->data[j]);
-                        }
-                        hex_str[raw_data->length * 2] = '\0';
+    snprintf(temp_buffer, 1024, ",\"device_type\":\"%s\"", sys_info->device_type);
+    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
 
-                        snprintf(temp_buffer, 1024, ",\"node%d_data\":\"%s\",\"node%d_type\":\"%s\"",
-                                 node->node_id, hex_str, node->node_id, node->com_type);
-                        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-                        free(hex_str);
-                    }
-                }
-            }
-            pthread_mutex_unlock(&node->mqtt_data->mutex);
-        }
-        // If trylock fails, skip this node
-    }
+    snprintf(temp_buffer, 1024, ",\"manufacturer\":\"%s\"", sys_info->manufacturer);
+    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
+
+    snprintf(temp_buffer, 1024, ",\"model\":\"%s\"", sys_info->model);
+    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
 
     // Add system info
     if (config->system_fields.include_gateway_ip)
@@ -674,11 +583,9 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
         strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
     }
 
-    if (config->system_fields.include_node_count)
-    {
-        snprintf(temp_buffer, 1024, ",\"detected_nodes\":%d", get_node_count());
-        strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-    }
+    // Add status
+    snprintf(temp_buffer, 1024, ",\"status\":\"online\"");
+    strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
 
     strncat(payload, "}", payload_size - strlen(payload) - 1);
     free(temp_buffer);
@@ -687,7 +594,7 @@ static void build_telemetry_payload(char *payload, size_t payload_size, time_t t
 // MQTT main thread function
 void *mqtt_thread_func(void *arg)
 {
-    mqtt_config_t *config = get_mqtt_config();
+    mqtt_config_t *config = safe_get_mqtt_config();
     if (!config)
     {
 #ifdef DEBUG
@@ -698,6 +605,7 @@ void *mqtt_thread_func(void *arg)
 
     // Init Mongoose manager
     mg_mgr_init(&mqtt_mgr);
+
     // Build Connection URL
     char url[512];
     if (strlen(config->username) > 0)
@@ -720,7 +628,7 @@ void *mqtt_thread_func(void *arg)
     struct mg_mqtt_opts opts = {
         .client_id = mg_str(config->client_id),
         .user = mg_str(config->username), // Explicit username
-        .pass = mg_str(""),               // Empty password for ThingsBoard
+        .pass = mg_str(config->password), // Use configured password
         .clean = true,                    // Clean session
         .keepalive = 60,                  // Keep alive timeout
         .version = 4                      // MQTT 3.1.1
@@ -743,7 +651,6 @@ void *mqtt_thread_func(void *arg)
     {
         mg_mgr_poll(&mqtt_mgr, 100); // 100 ms poll
         connection_timeout--;
-
         if (connection_timeout % 10 == 0 && connection_timeout > 0)
         {
 #ifdef DEBUG
@@ -761,7 +668,7 @@ void *mqtt_thread_func(void *arg)
         return NULL;
     }
 
-// Request initial config
+    // Request initial config
 #ifdef DEBUG
     printf("Requesting initial config\n");
 #endif
@@ -777,11 +684,16 @@ void *mqtt_thread_func(void *arg)
     time_t last_publish = 0, last_status = 0;
     char *telemetry_payload = malloc(config->payload_buffer_size);
     char *status_payload = malloc(config->payload_buffer_size);
+
     if (!telemetry_payload || !status_payload)
     {
 #ifdef DEBUG
         printf("Memory allocation failed\n");
 #endif
+        if (telemetry_payload)
+            free(telemetry_payload);
+        if (status_payload)
+            free(status_payload);
         mg_mgr_free(&mqtt_mgr);
         return NULL;
     }
@@ -798,11 +710,20 @@ void *mqtt_thread_func(void *arg)
 
         // Poll events
         mg_mgr_poll(&mqtt_mgr, 100);
-
         time_t current_time = time(NULL);
 
         // Reload config if updated
         check_and_reload_config();
+
+        // Get current config (may have been reloaded)
+        config = safe_get_mqtt_config();
+        if (!config)
+        {
+#ifdef DEBUG
+            printf("Config no longer available, exiting MQTT thread\n");
+#endif
+            break;
+        }
 
         // Publish telemetry at interval
         if (current_time - last_publish >= config->publish_interval)
@@ -817,7 +738,6 @@ void *mqtt_thread_func(void *arg)
                 pub_opts.retain = false;
                 mg_mqtt_pub(mqtt_connection, &pub_opts);
                 last_publish = current_time;
-
 #ifdef DEBUG
                 printf("Telemetry published: %s\n", telemetry_payload);
 #endif
@@ -828,8 +748,8 @@ void *mqtt_thread_func(void *arg)
         if (strlen(config->topic_status) > 0 && (current_time - last_status) >= 60)
         {
             snprintf(status_payload, config->payload_buffer_size,
-                     "{\"status\":\"online\",\"timestamp\":%ld000,\"detected_nodes\":%d}",
-                     current_time, get_node_count());
+                     "{\"status\":\"online\",\"timestamp\":%ld000,\"gateway_ip\":\"%s\"}",
+                     current_time, mqtt_get_local_ip());
             if (mqtt_connection && mqtt_connected)
             {
                 struct mg_mqtt_opts pub_opts = {0};
@@ -847,19 +767,16 @@ void *mqtt_thread_func(void *arg)
 #ifdef DEBUG
             printf("MQTT: Connection lost, attempting reconnect...\n");
 #endif
-
             // Clear existing connection
             if (mqtt_connection)
             {
                 mg_mgr_poll(&mqtt_mgr, 0); // Process any pending events
                 mqtt_connection = NULL;
             }
-
             // Create new connection
             mqtt_connection = mg_mqtt_connect(&mqtt_mgr, url, &opts, mqtt_event_handler, NULL);
-
             // Wait before next attempt
-            usleep(5000 * 1000); // 5 seconds delay
+            usleep(config->reconnect_delay_ms * 1000);
         }
 
         usleep(config->loop_interval_ms * 1000);
@@ -870,47 +787,4 @@ void *mqtt_thread_func(void *arg)
     free(status_payload);
     mg_mgr_free(&mqtt_mgr);
     return NULL;
-}
-
-/**
- * Update MQTT data with received response
- */
-void update_mqtt_data_from_response(node_config_t *node, unsigned char *resp, uint16_t resp_len)
-{
-    if (!node || !node->mqtt_data || !resp || resp_len == 0)
-        return;
-
-    pthread_mutex_lock(&node->mqtt_data->mutex);
-
-    // Free old data if exists
-    if (node->mqtt_data->data)
-    {
-        raw_data_t *old_data = (raw_data_t *)node->mqtt_data->data;
-        if (old_data->data)
-        {
-            free(old_data->data);
-        }
-        free(old_data);
-    }
-
-    // Store new raw data
-    raw_data_t *raw_data = malloc(sizeof(raw_data_t));
-    if (raw_data)
-    {
-        raw_data->length = resp_len;
-        raw_data->timestamp = time(NULL); // ADD timestamp
-        raw_data->data = malloc(resp_len);
-        if (raw_data->data)
-        {
-            memcpy(raw_data->data, resp, resp_len);
-            node->mqtt_data->data = raw_data;
-            pthread_cond_signal(&node->mqtt_data->cond);
-        }
-        else
-        {
-            free(raw_data);
-        }
-    }
-
-    pthread_mutex_unlock(&node->mqtt_data->mutex);
 }

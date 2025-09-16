@@ -39,14 +39,14 @@ set(INCLUDE_DIRS
     udp_thread
 )
 
-# Source files for main application (UPDATED: Added node_config.c)
+# Source files for main application
 set(SOURCES_2
     Src_process/main_process.c
     Src_process/thread_func.c
     mqtt_thread/mqtt_thread_new.c
     tcp_thread/tcp_thread.c
     udp_thread/udp_thread.c
-    config/node_config.c
+    config/gateway_config.c
     uart_handler/uart_handler.c
     modbus_handler/modbus_handler.c
     CAN_handler/CAN_handler.c
