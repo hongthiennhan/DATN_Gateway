@@ -7,6 +7,13 @@
 #define MAX_ADDR_LEN 8
 #define MAX_HEADER_LEN 8
 
+// Constants
+#define CONFIG_DIR "./config"
+#define CONFIG_FILE "gateway_config.json"
+#define FALLBACK_CONFIG_FILE "config_backup.json"
+#define MAX_JSON_SIZE (64 * 1024)
+#define MAX_RECEIVED_DATA_SIZE 2048
+
 // Module configuration structure
 typedef struct
 {
