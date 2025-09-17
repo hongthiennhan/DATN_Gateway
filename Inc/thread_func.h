@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "uart_handler.h"
-#include "node_config.h"    // Include to get node_config_t and menu_item_t types
+#include "gateway_config.h" // Include to get node_config_t and menu_item_t types
 #include "modbus_handler.h" // Include Modbus handler for Modbus data types
 #include "CAN_handler.h"    // Include CAN handler for CAN data types
 #include "mqtt_thread.h"    // Include MQTT thread header for MQTT handling

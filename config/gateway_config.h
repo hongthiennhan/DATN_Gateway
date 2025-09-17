@@ -258,6 +258,14 @@ typedef struct
     udp_config_t udp_config;       // UDP configuration
 } gateway_config_t;
 
+// Thread pause control structure
+struct thread_pause_t
+{
+    bool is_paused;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+};
+
 // Global mutex for thread safety
 extern pthread_mutex_t gateway_config_mutex;
 
