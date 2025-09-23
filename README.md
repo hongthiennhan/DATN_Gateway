@@ -1,9 +1,9 @@
 ### Sơ đồ hệ thống (sơ đồ chức năng):
 ![Function diagram](./images/Task_1_Function_diagram.png)
 
-## Sơ đồ State Machine Hệ thống
+## Sơ đồ State Diagram Hệ thống
 
-### Main Thread Activity Diagram
+### Main Thread State Diagram
 ```mermaid
 stateDiagram-v2
     [*] --> RegisterCleanup: Register cleanup_on_exit()
@@ -36,211 +36,22 @@ stateDiagram-v2
     end note
 ```
 
-### UI (Controller / Configarator) Thread Activity Diagram
+### Command Thread Acitivity Diagram
 ```mermaid
-stateDiagram-v2
-    [*] --> InitNCurses: Initialize ncurses + colors
-    InitNCurses --> PauseThreads: Pause UART + Modbus threads
-    PauseThreads --> MainMenuLoop: Enter main menu loop
-    
-    state MainMenuLoop {
-        [*] --> DrawHeader: Display header + system info
-        DrawHeader --> DrawMenu: Display 7 menu options
-        DrawMenu --> ShowStatus: Show status + last data
-        ShowStatus --> WaitInput: Wait for key input (100ms timeout)
-        
-        WaitInput --> HandleUp: KEY_UP
-        WaitInput --> HandleDown: KEY_DOWN  
-        WaitInput --> HandleEnter: ENTER key
-        WaitInput --> HandleQuit: 'q'/'Q' key
-        WaitInput --> HandleRefresh: 'r'/'R' key
-        WaitInput --> DrawHeader: Timeout - Auto refresh
-        
-        HandleUp --> DrawHeader: Move highlight up
-        HandleDown --> DrawHeader: Move highlight down
-        HandleRefresh --> DrawHeader: Force refresh
-        HandleQuit --> ExitProgram: End ncurses + exit(0)
-        
-        state HandleEnter {
-            [*] --> CheckMenuIndex: Check selected option (0-6)
-            
-            CheckMenuIndex --> ViewSystemStatus: Option 0
-            ViewSystemStatus --> ShowSystemInfo: Display firmware, device, nodes
-            ShowSystemInfo --> WaitAnyKey: Press any key to continue
-            
-            CheckMenuIndex --> ViewCommConfig: Option 1  
-            ViewCommConfig --> ShowMQTTConfig: Display broker, topics, QoS
-            ShowMQTTConfig --> WaitAnyKey
-            
-            CheckMenuIndex --> SelectCommType: Option 2
-            SelectCommType --> CommTypeMenu: Show MQTT/HTTP/WebSocket/TCP
-            CommTypeMenu --> SetMQTT: Only MQTT implemented
-            CommTypeMenu --> NotImplemented: Others not implemented
-            SetMQTT --> WaitAnyKey
-            NotImplemented --> WaitAnyKey
-            
-            CheckMenuIndex --> ReloadConfig: Option 3
-            ReloadConfig --> CallSafeReload: safe_reload_config()
-            CallSafeReload --> ShowReloadResult: Success/Failure message
-            ShowReloadResult --> WaitAnyKey
-            
-            CheckMenuIndex --> ViewNodeConfig: Option 4
-            ViewNodeConfig --> ShowNodeList: Display nodes + detection status
-            ShowNodeList --> ShowLastDataTime: Show last data received time
-            ShowLastDataTime --> WaitAnyKey
-            
-            CheckMenuIndex --> SelectNodeCommType: Option 5
-            SelectNodeCommType --> NodeCommMenu: UART/Modbus/CAN USB/CAN CUSTOM
-            NodeCommMenu --> InitUART: Select UART
-            NodeCommMenu --> InitModbus: Select Modbus  
-            NodeCommMenu --> InitCAN: Select CAN
-            InitUART --> ResumeUART: Resume UART, pause others
-            InitModbus --> ResumeModbus: Resume Modbus, pause others
-            InitCAN --> SetCANType: Set CAN_TYPE + Resume CAN
-            ResumeUART --> WaitAnyKey
-            ResumeModbus --> WaitAnyKey
-            SetCANType --> WaitAnyKey
-            
-            CheckMenuIndex --> ExitProgram: Option 6
-            
-            WaitAnyKey --> [*]: Return to main menu
-        }
-        
-        ExitProgram --> [*]: End ncurses + exit(0)
-    }
 
 ```
 
-### UART Communication Thread ACtivity Diagram
+### Communicate Thread State Diagram
 ```mermaid
-stateDiagram-v2
-    [*] --> InitUART: UART thread started - passive listening
-    InitUART --> UARTMainLoop: Enter main loop
-    
-    state UARTMainLoop {
-        [*] --> CheckPause: Check pause condition
-        CheckPause --> WaitResume: Thread paused
-        CheckPause --> CheckReload: Thread active
-        WaitResume --> CheckPause: Wait for cond signal
-        
-        CheckReload --> SkipProcessing: Config reloading
-        CheckReload --> CheckDetectionTime: Config ready
-        SkipProcessing --> SleepUART: Sleep 100ms
-        
-        CheckDetectionTime --> NodeDetectionXs: Xs elapsed
-        CheckDetectionTime --> CheckAutoData: < Xs
-        
-        NodeDetectionXs --> SendDetectionCmd: For each UART node
-        SendDetectionCmd --> ReadDetectionResp: Timeout from JSON config
-        ReadDetectionResp --> ValidateResponse: Check expected_response
-        ValidateResponse --> MarkDetected: Response matches
-        ValidateResponse --> MarkNotDetected: No match/No response
-        MarkDetected --> NextNode: Continue loop
-        MarkNotDetected --> NextNode
-        NextNode --> CheckAutoData: Detection cycle complete
-        
-        CheckAutoData --> ReadAutoData: UART data available
-        CheckAutoData --> CheckServerCmd: No data available
-        ReadAutoData --> ProcessAutoData: Assign to first detected UART node
-        ProcessAutoData --> UpdateMQTTData: update_mqtt_data_from_response()
-        UpdateMQTTData --> UpdateUIStatus: Update status + hex display (max 50 bytes)
-        UpdateUIStatus --> CheckServerCmd
-        
-        CheckServerCmd --> ExecuteServerCmd: Control command pending
-        CheckServerCmd --> SleepUART: No command
-        ExecuteServerCmd --> SendUARTCmd: hex_string_to_uint8 + UART_Write_Command
-        SendUARTCmd --> SleepUART: No response read for server commands
-        
-        SleepUART --> CheckPause: Sleep 100ms
-    }
 
 ```
 
-### MODBUS Communication Thread Activity Diagram
+### Controller / Configarator Thread State Diagram
 ```mermaid
-stateDiagram-v2
-    [*] --> InitModbus: Modbus thread started - active polling
-    InitModbus --> ModbusMainLoop: Enter main loop
-    
-    state ModbusMainLoop {
-        [*] --> CheckModbusPause: Check pause condition
-        CheckModbusPause --> WaitModbusResume: Thread paused
-        CheckModbusPause --> CheckModbusReload: Thread active
-        WaitModbusResume --> CheckModbusPause: Wait for cond signal
-        
-        CheckModbusReload --> SkipModbusProcessing: Config reloading
-        CheckModbusReload --> CheckModbusTime: Config ready
-        SkipModbusProcessing --> SleepModbus: Sleep 1000ms during reload
-        
-        CheckModbusTime --> ModbusPolling1s: 1s elapsed
-        CheckModbusTime --> CheckModbusServerCmd: < 1s
-        
-        ModbusPolling1s --> BuildModbusFrame: For each Modbus node
-        BuildModbusFrame --> SendModbusFrame: Modbus_Write_Frame()
-        SendModbusFrame --> ReadModbusResp: Modbus_Read_Response()
-        ReadModbusResp --> ProcessModbusData: Format display + count
-        ProcessModbusData --> UpdateModbusMQTT: update_mqtt_data_from_response()
-        UpdateModbusMQTT --> UpdateModbusUI: Update status + receive counter
-        UpdateModbusUI --> NextModbusNode: Sleep 5ms between nodes
-        NextModbusNode --> CheckModbusServerCmd: Polling complete
-        
-        CheckModbusServerCmd --> ExecuteModbusCmd: Control command pending
-        CheckModbusServerCmd --> SleepModbus: No command
-        ExecuteModbusCmd --> SendModbusServerCmd: hex_string_to_bytes + Modbus_Write_Frame
-        SendModbusServerCmd --> SleepModbus: No response read for server commands
-        
-        SleepModbus --> CheckModbusPause: Sleep 100ms
-    }
 
 ```
 
-### CAN Communication Thread Acitivity Diagram
-```mermaid
-stateDiagram-v2
-    [*] --> InitCAN: CAN thread started - mixed mode
-    InitCAN --> CANMainLoop: Enter main loop
-    
-    state CANMainLoop {
-        [*] --> CheckCANPause: Check pause condition
-        CheckCANPause --> WaitCANResume: Thread paused
-        CheckCANPause --> CheckCANReload: Thread active
-        WaitCANResume --> CheckCANPause: Wait for cond signal
-        
-        CheckCANReload --> SkipCANProcessing: Config reloading
-        CheckCANReload --> CheckCANDetectionTime: Config ready
-        SkipCANProcessing --> SleepCAN: Sleep 100ms during reload
-        
-        CheckCANDetectionTime --> CANDetection2s: 2s elapsed
-        CheckCANDetectionTime --> CheckCANAutoData: < 2s
-        
-        CANDetection2s --> ParseCANCommand: For each CAN node
-        ParseCANCommand --> BuildCANFrame: USB/Custom format based on CAN_TYPE
-        BuildCANFrame --> SendCANFrame: CAN_Write_Data()
-        SendCANFrame --> ReadCANResp: CAN_Read_Response()
-        ReadCANResp --> ProcessCANData: Mark detected + update MQTT
-        ProcessCANData --> UpdateCANUI: Update status + hex display
-        UpdateCANUI --> NextCANNode: Sleep 5ms between nodes
-        NextCANNode --> CheckCANAutoData: Detection complete
-        
-        CheckCANAutoData --> ReadCANAutoData: CAN data available
-        CheckCANAutoData --> CheckCANServerCmd: No data available
-        ReadCANAutoData --> ProcessCANAutoData: Assign to first detected CAN node
-        ProcessCANAutoData --> UpdateCANMQTTData: update_mqtt_data_from_response()
-        UpdateCANMQTTData --> UpdateCANStatus: Update status display
-        UpdateCANStatus --> CheckCANServerCmd
-        
-        CheckCANServerCmd --> ExecuteCANCmd: Control command pending
-        CheckCANServerCmd --> SleepCAN: No command
-        ExecuteCANCmd --> BuildCANServerCmd: Build CAN frame for server command
-        BuildCANServerCmd --> SendCANServerCmd: CAN_Write_Data()
-        SendCANServerCmd --> SleepCAN: No response read
-        
-        SleepCAN --> CheckCANPause: Sleep 100ms
-    }
-```
-
-
-### MQTT Send to thingsboard Thread State Machine:
+### MQTT Send to thingsboard Thread State Diagram:
 ```mermaid
 stateDiagram-v2
     [*] --> LoadMQTTConfig: Load MQTT config
@@ -331,28 +142,174 @@ stateDiagram-v2
 ```
 ---
 
-### TCP Send to linux server state machine:
+### TCP Thread State Diagram:
 ```mermaid
 stateDiagram-v2
-    [*] --> InitMgr : Initialize Manager
-    InitMgr --> CreateConn : Create TCP Connection
-    CreateConn --> Connected
-    Connected --> PreparePayload : Prepare JSON Payload
-    PreparePayload --> SendData : Send Data
-    SendData --> ReceiveData : Wait and Receive Data
-    ReceiveData --> ProcessIncomingData : Handle Incoming Data
-    ProcessIncomingData --> CheckConnection : Check Connection Status
-    CheckConnection --> Connected : If Alive
-    CheckConnection --> Reconnect : If Disconnected
-    Reconnect --> CreateConn : Reconnect
-    Connected --> Pause : Check for Pause Event
-    Pause --> Connected : Resume
-    SendData --> Sleep : Sleep before next send
-    Sleep --> PreparePayload : Loop
+    [*] --> LoadTCPConfig: Load TCP config
+    LoadTCPConfig --> NoTCPConfig: Config missing
+    LoadTCPConfig --> InitTCPMgr: Config available
 
-    note left of InitMgr : Initialize TCP Manager
-    note right of CreateConn : Connect to Server
-    note right of PreparePayload : Build telemetry JSON payload
-    note right of ProcessIncomingData : Process control or config commands
+    NoTCPConfig --> [*]: Exit thread
 
+    InitTCPMgr --> InitACKSystem: Initialize Mongoose manager
+    InitACKSystem --> CreateTCPConnection: Initialize ACK tracking system
+    CreateTCPConnection --> ConnectionFailed: Connection failed
+    CreateTCPConnection --> WaitConnection: Wait for connection
+
+    ConnectionFailed --> TCPCleanup: Cleanup resources
+    TCPCleanup --> [*]
+
+    WaitConnection --> ConnectionTimeout: Timeout expired
+    WaitConnection --> Connected: Connected successfully
+
+    ConnectionTimeout --> TCPCleanup
+
+    Connected --> SendHandshake: Send client handshake + protocol info
+    SendHandshake --> AllocateBuffers: Allocate telemetry payload buffers
+    AllocateBuffers --> BufferFailed: Allocation failed
+    AllocateBuffers --> MainTCPLoop: Enter main loop
+
+    BufferFailed --> TCPCleanup
+
+    state MainTCPLoop {
+        [*] --> CheckTCPPause: Check pause condition
+        CheckTCPPause --> WaitTCPResume: Thread paused
+        CheckTCPPause --> PollTCPEvents: Thread active
+        WaitTCPResume --> CheckTCPPause: Wait for cond signal
+
+        PollTCPEvents --> ProcessACKMessages: Process TCP events
+        ProcessACKMessages --> CheckMessageTimeouts: Handle incoming ACKs
+        CheckMessageTimeouts --> RetryFailedMessages: Check ACK timeouts
+        RetryFailedMessages --> CheckPublishTime: Retry unacknowledged messages
+        
+        CheckPublishTime --> PublishTelemetry: send_interval elapsed
+        CheckPublishTime --> CheckReconnection: < send_interval
+
+        PublishTelemetry --> GenerateMessageID: Create JSON payload
+        GenerateMessageID --> BuildTelemetryPayload: Generate unique message ID
+        BuildTelemetryPayload --> SendTCPDataWithACK: Add message ID to JSON
+        SendTCPDataWithACK --> StorePendingMessage: TCP send with delimiter + ACK tracking
+        StorePendingMessage --> UpdatePublishTime: Store for ACK verification
+        UpdatePublishTime --> CheckReconnection: last_publish = current_time
+
+        CheckReconnection --> HandleReconnect: !tcp_connected
+        CheckReconnection --> SleepTCP: Connected
+        HandleReconnect --> ReconnectAttempt: TCP reconnect
+        ReconnectAttempt --> SleepReconnect: Sleep reconnect_delay_ms
+        SleepReconnect --> SleepTCP
+        SleepTCP --> CheckTCPPause: Sleep loop_interval_ms
+    }
+
+    note right of InitACKSystem
+        ACK System Initialization:
+        - Clear pending messages array
+        - Reset message ID counter
+        - Initialize ACK tracking mutex
+        - Set timeout and retry parameters
+    end note
+
+    note right of MainTCPLoop
+        Enhanced TCP Features:
+        - Application-level acknowledgment
+        - Message ID tracking (unique per message)
+        - 5-second ACK timeout with 3 retry attempts
+        - Pending message queue (max 16 messages)
+        - Automatic ACK response for received messages
+        - End-to-end delivery confirmation
+        - Thread-safe ACK processing
+        - Message cleanup after acknowledgment
+    end note
+
+    note right of SendTCPDataWithACK
+        Enhanced TCP Protocol:
+        - JSON with embedded message_id
+        - {"message_id":123,"timestamp":...,"data":...}
+        - ACK format: {"type":"ack","message_id":123}
+        - Automatic retry on timeout
+        - Delivery status tracking
+        - Backward compatibility support
+    end note
+
+    note right of ProcessACKMessages
+        ACK Message Handling:
+        - Detect incoming ACK messages
+        - Extract message_id from ACK
+        - Mark corresponding message as acknowledged
+        - Remove from pending message queue
+        - Send ACK response for received messages
+        - Process ping/pong responses
+    end note
+```
+
+### UDP Thread State Diagram:
+```mermaid
+stateDiagram-v2
+    [*] --> LoadUDPConfig: Load UDP config
+    LoadUDPConfig --> NoUDPConfig: Config missing
+    LoadUDPConfig --> InitUDPMgr: Config available
+
+    NoUDPConfig --> [*]: Exit thread
+
+    InitUDPMgr --> CreateUDPConnection: Initialize Mongoose manager
+    CreateUDPConnection --> ConnectionFailed: Connection failed
+    CreateUDPConnection --> WaitConnection: Wait for connection
+
+    ConnectionFailed --> UDPCleanup: Cleanup resources
+    UDPCleanup --> [*]
+
+    WaitConnection --> ConnectionTimeout: Timeout expired
+    WaitConnection --> Connected: Connected successfully
+
+    ConnectionTimeout --> UDPCleanup
+
+    Connected --> SendHandshake: Send client handshake + protocol info
+    SendHandshake --> AllocateBuffers: Allocate telemetry payload buffers
+    AllocateBuffers --> BufferFailed: Allocation failed
+    AllocateBuffers --> MainUDPLoop: Enter main loop
+
+    BufferFailed --> UDPCleanup
+
+    state MainUDPLoop {
+        [*] --> CheckUDPPause: Check pause condition
+        CheckUDPPause --> WaitUDPResume: Thread paused
+        CheckUDPPause --> PollUDPEvents: Thread active
+        WaitUDPResume --> CheckUDPPause: Wait for cond signal
+
+        PollUDPEvents --> CheckPublishTime: Process UDP events
+        CheckPublishTime --> PublishTelemetry: send_interval elapsed
+        CheckPublishTime --> CheckReconnection: < send_interval
+
+        PublishTelemetry --> BuildTelemetryPayload: Create JSON payload
+        BuildTelemetryPayload --> SendUDPPacket: UDP send with delimiter
+        SendUDPPacket --> UpdatePublishTime: last_publish = current_time
+        UpdatePublishTime --> CheckReconnection
+
+        CheckReconnection --> HandleReconnect: !udp_connected
+        CheckReconnection --> SleepUDP: Connected
+        HandleReconnect --> ReconnectAttempt: UDP reconnect
+        ReconnectAttempt --> SleepReconnect: Sleep reconnect_delay_ms
+        SleepReconnect --> SleepUDP
+        SleepUDP --> CheckUDPPause: Sleep loop_interval_ms
+    }
+
+    note right of MainUDPLoop
+        UDP Features:
+        - Mongoose library integration
+        - JSON-based telemetry protocol
+        - Gateway system info + received data
+        - Ping/pong response handling
+        - Connection-like semantics over UDP
+        - Message delimiter configuration
+        - Thread pause/resume support
+    end note
+
+    note right of SendHandshake
+        UDP Protocol:
+        - Client handshake with gateway info
+        - JSON telemetry with escaped strings
+        - Hex representation of received data
+        - Configurable message delimiters
+        - Connectionless but connection-tracked
+        - Status reporting capability
+    end note
 ```
