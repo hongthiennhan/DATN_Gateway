@@ -43,6 +43,5 @@ build/
 
 #ignore temp files
 *.~ml
-*.uml
 
 scrap.h
