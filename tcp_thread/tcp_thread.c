@@ -504,6 +504,27 @@ static void tcp_send_pong_response(void)
     printf("TCP: Sent pong response\n");
 #endif
 }
+// Update downlink data from server
+static void tcp_update_downlink_data(unsigned char *downlink_buffer, size_t buffer_size,
+                                     const unsigned char *data, uint16_t data_len)
+{
+    if (!downlink_buffer || !data || data_len == 0 || buffer_size == 0)
+        return;
+
+    pthread_mutex_lock(&downlink_mutex);
+
+    // Store raw downlink data (limit to ACTUAL buffer size)
+    size_t copy_len = data_len < buffer_size - 1 ? data_len : buffer_size - 1;
+    memcpy(downlink_buffer, data, copy_len);
+    downlink_buffer[copy_len] = '\0';
+    check_downlink = 1; // Indicate new downlink data is available
+
+    pthread_mutex_unlock(&downlink_mutex);
+
+#ifdef DEBUG
+    printf("TCP: Stored downlink data - %d bytes\n", (int)copy_len);
+#endif
+}
 
 // Process received data with ACK handling
 static void tcp_process_received_data(const char *data, size_t len)
@@ -537,8 +558,9 @@ static void tcp_process_received_data(const char *data, size_t len)
     }
     else
     {
-        // Store received data for telemetry
-        tcp_update_received_data((const unsigned char *)data, len);
+        // Store received data for external processing
+        tcp_update_downlink_data(downlink_data, sizeof(downlink_data),
+                                 (const unsigned char *)data, len);
 
         // Extract message ID from received message and send ACK
         const char *id_start = strstr(msg, "\"message_id\":");

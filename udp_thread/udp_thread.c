@@ -260,15 +260,35 @@ void clear_udp_received_data(void)
     pthread_mutex_unlock(&udp_data_mutex);
 }
 
+// Update downlink data from server
+static void udp_update_downlink_data(unsigned char *downlink_buffer, size_t buffer_size,
+                                     const unsigned char *data, uint16_t data_len)
+{
+    if (!downlink_buffer || !data || data_len == 0 || buffer_size == 0)
+        return;
+
+    pthread_mutex_lock(&downlink_mutex);
+
+    // Store raw downlink data (limit to ACTUAL buffer size)
+    size_t copy_len = data_len < buffer_size - 1 ? data_len : buffer_size - 1;
+    memcpy(downlink_buffer, data, copy_len);
+    downlink_buffer[copy_len] = '\0';
+    check_downlink = 1; // Indicate new downlink data is available
+    pthread_mutex_unlock(&downlink_mutex);
+
+#ifdef DEBUG
+    printf("UDP: Stored downlink data - %d bytes\n", (int)copy_len);
+#endif
+}
+
 // Process received UDP data - simplified without JSON parsing
 static void udp_process_received_data(const char *data, size_t len)
 {
     if (!data || len == 0)
         return;
-
-    // Store received data for telemetry
-    update_udp_received_data((const unsigned char *)data, len);
-
+    // Store received data for external processing
+    udp_update_downlink_data(downlink_data, sizeof(downlink_data),
+                             (const unsigned char *)data, len);
     // Create null-terminated string for ping detection
     char *msg = malloc(len + 1);
     if (!msg)

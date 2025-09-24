@@ -14,21 +14,18 @@ extern volatile uint8_t is_busy;
 extern pthread_mutex_t command_mutex;
 extern char status_response[256];
 extern uint32_t status_color;
-extern unsigned char receive_data[512];
-extern unsigned char send_data[512];
+extern unsigned char uplink_data[512];
+extern pthread_mutex_t uplink_mutex;
+extern uint8_t check_uplink;
+extern unsigned char downlink_data[512];
+extern pthread_mutex_t downlink_mutex;
+extern uint8_t check_downlink;
 extern pthread_cond_t cond;
 
 // Pause control for threads
 extern thread_pause_t uart_pause;
 extern thread_pause_t modbus_pause;
 extern thread_pause_t can_pause;
-
-// ========== Function prototypes ==========
-void *uart_thread_func(void *arg);
-void *control_thread_func(void *arg);
-void *modbus_thread_func(void *arg);
-void *can_thread_func(void *arg);
-
 // Utility function
 uint8_t hex_string_to_uint8(const char *hex_str);
 size_t hex_string_to_bytes(const char *hex_str, uint8_t *output, size_t max_bytes);

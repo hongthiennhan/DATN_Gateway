@@ -158,7 +158,7 @@
         "topic_telemetry": "v1/devices/me/telemetry",
         "topic_attributes": "v1/devices/me/attributes",
         "topic_control": "v1/devices/me/rpc/request/+",
-        "topic_status": "v1/devices/me/attributes",
+        "topic_status": "v1/devices/me/attributes/response/+",
         "qos": 1,
         "publish_interval": 1,
         "connection_timeout": 50,

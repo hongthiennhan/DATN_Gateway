@@ -36,9 +36,10 @@ stateDiagram-v2
     end note
 ```
 
-### Command Thread Acitivity Diagram
+### Config Thread State Diagram
 ```mermaid
-
+stateDiagram-v2  
+    [*] --> Init
 ```
 
 ### Communicate Thread State Diagram
@@ -46,7 +47,7 @@ stateDiagram-v2
 
 ```
 
-### Controller / Configarator Thread State Diagram
+### Data Control Thread State Diagram
 ```mermaid
 
 ```

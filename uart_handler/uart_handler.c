@@ -137,19 +137,6 @@ unsigned char *UART_Read_Response(uint32_t timeout_ms, uint16_t *bytes_read_out)
     return buffer;
 }
 
-void UART_Write_Command(uint8_t cmd)
-{
-    if (pthread_mutex_lock(&uart_mutex) != 0)
-        return;
-    if (uart_fd == -1)
-    {
-        pthread_mutex_unlock(&uart_mutex);
-        return;
-    }
-    uint16_t bytes_written = write(uart_fd, &cmd, 1);
-    pthread_mutex_unlock(&uart_mutex);
-}
-
 void UART_Write_Data(uint8_t *data, size_t len)
 {
     if (pthread_mutex_lock(&uart_mutex) != 0)

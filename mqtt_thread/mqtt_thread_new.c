@@ -331,78 +331,27 @@ static int atomic_write_json_file(const char *dir, const char *filename, const v
     return 0;
 }
 
-// Process control command from server
-static void process_control_command(const char *payload)
+// Update downlink data from server
+static void mqtt_update_downlink_data(unsigned char *downlink_buffer, size_t buffer_size,
+                                      const unsigned char *data, uint16_t data_len)
 {
-    json_object *root = json_tokener_parse(payload);
-    if (!root)
-    {
-#ifdef DEBUG
-        printf("ERROR: Invalid JSON in control command\n");
-#endif
+    if (!downlink_buffer || !data || data_len == 0 || buffer_size == 0)
         return;
-    }
 
-    json_object *method_obj, *params_obj;
-    if (!json_object_object_get_ex(root, "method", &method_obj))
-    {
-#ifdef DEBUG
-        printf("ERROR: No method in control command\n");
-#endif
-        json_object_put(root);
-        return;
-    }
+    pthread_mutex_lock(&downlink_mutex);
 
-    const char *method = json_object_get_string(method_obj);
-#ifdef DEBUG
-    printf("Processing control method: %s\n", method);
-#endif
+    // Store raw downlink data (limit to ACTUAL buffer size)
+    size_t copy_len = data_len < buffer_size - 1 ? data_len : buffer_size - 1;
+    memcpy(downlink_buffer, data, copy_len);
+    downlink_buffer[copy_len] = '\0';
+    check_downlink = 1; // Indicate new downlink data is available
 
-    if (strcmp(method, "reloadConfig") == 0)
-    {
-        // Reload gateway configuration
-        if (json_object_object_get_ex(root, "params", &params_obj))
-        {
-            json_object *config_path_obj;
-            if (json_object_object_get_ex(params_obj, "configPath", &config_path_obj))
-            {
-                const char *config_path = json_object_get_string(config_path_obj);
-#ifdef DEBUG
-                printf("Reloading config from: %s\n", config_path);
-#endif
-                if (load_gateway_config(config_path) == 0)
-                {
-#ifdef DEBUG
-                    printf("Gateway config reloaded successfully\n");
-#endif
-                }
-                else
-                {
-#ifdef DEBUG
-                    printf("Failed to reload gateway config\n");
-#endif
-                }
-            }
-        }
-    }
-    else if (strcmp(method, "clearData") == 0)
-    {
-        mqtt_clear_received_data();
-#ifdef DEBUG
-        printf("MQTT: Received data cleared\n");
-#endif
-    }
-    else if (strcmp(method, "getStatus") == 0)
-    {
-#ifdef DEBUG
-        printf("Status request received\n");
-#endif
-        // Status request handled
-    }
+    pthread_mutex_unlock(&downlink_mutex);
 
-    json_object_put(root);
+#ifdef DEBUG
+    printf("MQTT: Stored downlink data - %d bytes\n", (int)copy_len);
+#endif
 }
-
 // MQTT event handler for Mongoose
 static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
 {
@@ -430,12 +379,6 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
             printf("Subscribed to control topic: %s\n", config->topic_control);
 #endif
         }
-
-        // Subscribe to RPC request topic
-        struct mg_mqtt_opts rpc_opts = {0};
-        rpc_opts.topic = mg_str("v1/devices/me/rpc/request/+");
-        rpc_opts.qos = config->qos;
-        mg_mqtt_sub(c, &rpc_opts);
 #ifdef DEBUG
         printf("Subscribed to RPC requests\n");
 #endif
@@ -490,32 +433,18 @@ static void mqtt_event_handler(struct mg_connection *c, int ev, void *ev_data)
         int topic_len = (mm->topic.len < 255) ? mm->topic.len : 255;
         memcpy(topic_str, mm->topic.buf, topic_len);
         topic_str[topic_len] = '\0';
-
-        // Check if message is from control topics
-        if ((strlen(msg_config->topic_control) > 0 && strstr(topic_str, msg_config->topic_control)) ||
-            strstr(topic_str, "v1/devices/me/rpc/request/"))
+        if (strlen(msg_config->topic_control) > 0 &&
+            strncmp(topic_str, msg_config->topic_control, strlen(msg_config->topic_control) - 1) == 0)
         {
-#ifdef DEBUG
-            printf("Processing control command\n");
-#endif
-            // Process payload
-            if (mm->data.len > 0)
-            {
-                char *payload_str = malloc(mm->data.len + 1);
-                if (payload_str)
-                {
-                    memcpy(payload_str, mm->data.buf, mm->data.len);
-                    payload_str[mm->data.len] = '\0';
-                    process_control_command(payload_str);
-                    free(payload_str);
-                }
-            }
-            return;
+            mqtt_update_downlink_data(downlink_data, sizeof(downlink_data),
+                                      (const unsigned char *)mm->data.buf, mm->data.len);
         }
 
         // Check for config update topics
-        if (strstr(topic_str, "v1/devices/me/attributes/response/") ||
-            strcmp(topic_str, "v1/devices/me/attributes") == 0)
+        if ((strlen(msg_config->topic_status) > 0 &&
+             strncmp(topic_str, msg_config->topic_status, strlen(msg_config->topic_status) - 1) == 0) ||
+            (strlen(msg_config->topic_attributes) > 0 &&
+             strncmp(topic_str, msg_config->topic_attributes, strlen(msg_config->topic_attributes)) == 0))
         {
 #ifdef DEBUG
             printf("Processing config update\n");
