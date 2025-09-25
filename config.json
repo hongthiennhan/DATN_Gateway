@@ -25,7 +25,8 @@
         "uart_wait_timeout": 1000,
         "default_baudrate": 115200,
         "default_device": "/dev/ttyUSB0",
-        "startup_clear_duration": 10000
+        "startup_clear_duration": 10000,
+        "server_com_type": "MQTT"
     },
     "system_info": {
         "firmware_version": "1.0.0",

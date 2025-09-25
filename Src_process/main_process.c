@@ -1,93 +1,73 @@
 #include "main.h"
-#include "uart_handler.h"
-#include "thread_func.h"
 #include "node_config.h"
+#include "thread_func.h"
+#include "uart_handler.h"
 
 #define DEBUG_MAIN
 
-static struct option long_options[] = {
-    {0, 0, 0, 0}};
+static struct option long_options[] = {{0, 0, 0, 0}};
 
 // Function to clean up resources on exit
-void cleanup_on_exit(void)
-{
+void cleanup_on_exit(void) {
 
-    // Cleanup node config
-    cleanup_nodes_config();
+  // Cleanup node config
+  cleanup_nodes_config();
 
 #ifdef DEBUG
-    printf("Cleanup completed\n");
+  printf("Cleanup completed\n");
 #endif
 }
 
 // ==================== MAIN FUNCTION ====================
-int main(void)
-{
-    atexit(cleanup_on_exit); // Register cleanup function to be called on exit
-    uint8_t load_try = 0;
-    // Load node configuration FIRST
-    if (load_nodes_config("../config.json") != 0)
-    {
+int main(void) {
+  atexit(cleanup_on_exit); // Register cleanup function to be called on exit
+  uint8_t load_try = 0;
+  // Load node configuration FIRST
+  if (load_nodes_config("../config.json") != 0) {
 #ifdef DEBUG_MAIN
-        fprintf(stderr, "Failed to load node configuration\n");
+    fprintf(stderr, "Failed to load node configuration\n");
 #endif
-        load_try = 1;
-    }
-    else
-    {
+    load_try = 1;
+  } else {
 #ifdef DEBUG_MAIN
-        printf("Node configuration loaded successfully\n");
+    printf("Node configuration loaded successfully\n");
 #endif
-    }
+  }
 
-    // If first load failed, try fallback config
-    if (load_try == 1)
-    {
-        if (load_nodes_config("../nodes_config.json") != 0)
-        {
+  // If first load failed, try fallback config
+  if (load_try == 1) {
+    if (load_nodes_config("../nodes_config.json") != 0) {
 #ifdef DEBUG_MAIN
-            fprintf(stderr, "Failed to load node configuration from fallback\n");
+      fprintf(stderr, "Failed to load node configuration from fallback\n");
 #endif
-            return -1;
-        }
+      return -1;
     }
+  }
 
-    // Get default values from config instead of hard-coding
-    uint32_t baudrate = get_default_baudrate();
-    char *device = strdup(get_default_device());
-    Modbus_Init(UART_map_to_speed(baudrate), device);
-    // Prepare arguments for UI thread: baudrate and device only (node selection moved to UI thread)
-    void *ui_args[2] = {&baudrate, device};
-    // // Start UART thread
-    // pthread_t uart_thread;
-    // pthread_create(&uart_thread, NULL, uart_thread_func, NULL);
-    // // Start UI thread
-    // pthread_t control_thread;
-    // pthread_create(&control_thread, NULL, control_thread_func, ui_args);
-    // // Start MQTT thread
-    // pthread_t mqtt_thread;
-    // pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
-    // // Start Modbus thread
-    // pthread_t modbus_thread;
-    // pthread_create(&modbus_thread, NULL, modbus_thread_func, NULL);
-    // // Start CAN thread
-    // pthread_t can_thread;
-    // pthread_create(&can_thread, NULL, can_thread_func, NULL);
-    // // Start TCP thread
-    // pthread_t tcp_thread;
-    // pthread_create(&tcp_thread, NULL, tcp_thread_func, NULL);
-    pthread_t udp_thread;
-    pthread_create(&udp_thread, NULL, udp_thread_func, NULL);
+  //   // Start Data thread
+  //   pthread_t data_thread;
+  //   pthread_create(&data_thread, NULL, data_thread_func, NULL);
+  //   // Start Config thread
+  //   pthread_t config_thread;
+  //   pthread_create(&config_thread, NULL, config_thread_func, NULL);
+  //   // Start MQTT thread
+  //   pthread_t mqtt_thread;
+  //   pthread_create(&mqtt_thread, NULL, mqtt_thread_func, NULL);
+  //   // Start TCP thread
+  //   pthread_t tcp_thread;
+  //   pthread_create(&tcp_thread, NULL, tcp_thread_func, NULL);
+  pthread_t udp_thread;
+  pthread_create(&udp_thread, NULL, udp_thread_func, NULL);
 
-    // Main waits for threads to finish (does nothing else)
-    // pthread_join(uart_thread, NULL);
-    // pthread_join(control_thread, NULL);
-    // pthread_join(mqtt_thread, NULL);
-    // pthread_join(tcp_thread, NULL);
-    // pthread_join(can_thread, NULL);
-    // pthread_join(modbus_thread, NULL);
-    pthread_join(udp_thread, NULL);
-    // Cleanup the device string
-    free(device);
-    return 0;
+  // Main waits for threads to finish (does nothing else)
+  // pthread_join(uart_thread, NULL);
+  // pthread_join(control_thread, NULL);
+  // pthread_join(mqtt_thread, NULL);
+  // pthread_join(tcp_thread, NULL);
+  // pthread_join(can_thread, NULL);
+  // pthread_join(modbus_thread, NULL);
+  pthread_join(udp_thread, NULL);
+  // Cleanup the device string
+  free(device);
+  return 0;
 }

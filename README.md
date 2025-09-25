@@ -42,11 +42,6 @@ stateDiagram-v2
     [*] --> Init
 ```
 
-### Communicate Thread State Diagram
-```mermaid
-
-```
-
 ### Data Control Thread State Diagram
 ```mermaid
 
