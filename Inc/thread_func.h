@@ -29,10 +29,7 @@ extern pthread_mutex_t config_update_mutex;
 
 extern void *data_thread_func(void *arg);
 extern void *config_thread_func(void *arg);
-// Utility function
-uint8_t hex_string_to_uint8(const char *hex_str);
-size_t hex_string_to_bytes(const char *hex_str, uint8_t *output,
-                           size_t max_bytes);
+// Utility functions
 void pause_thread(thread_pause_t *pause_ctrl);
 void resume_thread(thread_pause_t *pause_ctrl);
 #endif // THREAD_FUNC_H
