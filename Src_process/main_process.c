@@ -53,6 +53,10 @@ int main(void) {
   pthread_join(mqtt_thread, NULL);
   pthread_join(tcp_thread, NULL);
   pthread_join(udp_thread, NULL);
+
+  pause_thread(&mqtt_pause);
+  pause_thread(&tcp_pause);
+  pause_thread(&udp_pause);
   // Cleanup the device string
   free(device);
   return 0;
