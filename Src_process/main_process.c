@@ -50,13 +50,12 @@ int main(void) {
   pthread_create(&udp_thread, NULL, udp_thread_func, NULL);
 
   // Main waits for threads to finish (does nothing else)
+  pthread_join(data_thread, NULL);
+  pthread_join(config_thread, NULL);
   pthread_join(mqtt_thread, NULL);
   pthread_join(tcp_thread, NULL);
   pthread_join(udp_thread, NULL);
 
-  pause_thread(&mqtt_pause);
-  pause_thread(&tcp_pause);
-  pause_thread(&udp_pause);
   // Cleanup the device string
   free(device);
   return 0;
