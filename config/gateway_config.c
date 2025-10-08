@@ -69,6 +69,12 @@ int load_gateway_config(const char *config_file) {
     return -1;
   }
 
+  if (jsonobject_object_get_ex(root, "shared", &shared)) {
+    if (jsonobject_object_get_ex(root, "config", &config)) {
+      root = config;
+    }
+  }
+
   // Initialize configuration structure
   memset(&gateway_config, 0, sizeof(gateway_config_t));
 
