@@ -30,9 +30,7 @@ message(STATUS "JSON_C libraries: ${JSON_C_LIBRARIES}")
 set(INCLUDE_DIRS
     uart_handler
     config
-    modbus_handler
     Inc
-    CAN_handler
     mongoose_lib
     mqtt_thread
     tcp_thread
@@ -48,8 +46,6 @@ set(SOURCES_2
     udp_thread/udp_thread.c
     config/gateway_config.c
     uart_handler/uart_handler.c
-    modbus_handler/modbus_handler.c
-    CAN_handler/CAN_handler.c
     mongoose_lib/mongoose.c
 )
 
