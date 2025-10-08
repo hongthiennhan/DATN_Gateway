@@ -60,16 +60,25 @@ void *config_thread_func(void *arg) {
         pause_thread(&tcp_pause);
         resume_thread(&mqtt_pause);
         pause_thread(&udp_pause);
+#ifdef DEBUG
+        printf("Config thread: Switched to MQTT, TCP and UDP threads paused\n");
+#endif
       } else if (strncmp(server_type, "TCP", 3) == 0) {
         server_check = 2;
         resume_thread(&tcp_pause);
         pause_thread(&mqtt_pause);
         pause_thread(&udp_pause);
+#ifdef DEBUG
+        printf("Config thread: Switched to TCP, MQTT and UDP threads paused\n");
+#endif
       } else if (strncmp(server_type, "UDP", 3) == 0) {
         server_check = 3;
         pause_thread(&tcp_pause);
         pause_thread(&mqtt_pause);
         resume_thread(&udp_pause);
+#ifdef DEBUG
+        printf("Config thread: Switched to UDP, MQTT and TCP threads paused\n");
+#endif
       }
     }
   }
