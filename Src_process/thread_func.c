@@ -1,16 +1,6 @@
 #include "thread_func.h"
 // Shared state between threads
-volatile uint8_t is_busy = 0;
-pthread_mutex_t command_mutex = PTHREAD_MUTEX_INITIALIZER;
-char status_response[256] = "System ready";
-uint32_t status_color = 2;
-unsigned char uplink_data[512] = {0};
-pthread_mutex_t uplink_mutex = PTHREAD_MUTEX_INITIALIZER;
-uint8_t check_uplink = 0;
-unsigned char downlink_data[512] = {0};
-pthread_mutex_t downlink_mutex = PTHREAD_MUTEX_INITIALIZER;
-uint8_t check_downlink = 0;
-uint8_t CAN_TYPE = 0; // 0: USB, 1: CUSTOM
+static uint8_t server_check = 1;
 
 thread_pause_t config_thread_pause = {.is_paused = false,
                                       .mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -27,7 +17,13 @@ void *data_thread_func(void *arg) {
     if (Check_UART_Data_Available()) {
       data_buffer = UART_Read_Response(1000, &data_len);
       if (data_buffer != NULL && data_len > 0) {
-        update_mqtt_data_from_response(node, data_buffer, data_len);
+        if (server_check == 1) {
+          update_mqtt_received_data(data_buffer, data_len);
+        } else if (server_check == 2) {
+          update_tcp_received_data(data_buffer, data_len);
+        } else if (server_check == 3) {
+          update_udp_received_data(data_buffer, data_len);
+        }
 #ifdef DEBUG
         printf("Data thread received %d bytes from UART\n", data_len);
 #endif
@@ -49,14 +45,17 @@ void *config_thread_func(void *arg) {
       system_config_t *sys_config = get_system_config();
       char *server_type = sys_config->server_com_type;
       if (strncmp(server_type, "MQTT", 4) == 0) {
+        server_check = 1;
         pause_thread(&tcp_pause);
         resume_thread(&mqtt_pause);
         pause_thread(&udp_pause);
       } else if (strncmp(server_type, "TCP", 3) == 0) {
+        server_check = 2;
         resume_thread(&tcp_pause);
         pause_thread(&mqtt_pause);
         pause_thread(&udp_pause);
       } else if (strncmp(server_type, "UDP", 3) == 0) {
+        server_check = 3;
         pause_thread(&tcp_pause);
         pause_thread(&mqtt_pause);
         resume_thread(&udp_pause);
