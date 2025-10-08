@@ -8,7 +8,7 @@
 #define MAX_HEADER_LEN 8
 
 // Constants
-#define CONFIG_DIR ""
+#define CONFIG_DIR ".."
 #define CONFIG_FILE "config.json"
 #define FALLBACK_CONFIG_FILE "config_backup.json"
 #define MAX_JSON_SIZE (64 * 1024)
