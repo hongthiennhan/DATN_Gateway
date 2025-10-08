@@ -40,6 +40,34 @@ void *data_thread_func(void *arg) {
   return NULL;
 }
 
+static void check_and_start_server_threads(char *server_type) {
+  if (strncmp(server_type, "MQTT", 4) == 0) {
+    server_check = 1;
+    resume_thread(&mqtt_pause);
+    pause_thread(&tcp_pause);
+    pause_thread(&udp_pause);
+#ifdef DEBUG
+    printf("Config thread: Switched to MQTT, TCP and UDP threads paused\n");
+#endif
+  } else if (strncmp(server_type, "TCP", 3) == 0) {
+    server_check = 2;
+    resume_thread(&tcp_pause);
+    pause_thread(&mqtt_pause);
+    pause_thread(&udp_pause);
+#ifdef DEBUG
+    printf("Config thread: Switched to TCP, MQTT and UDP threads paused\n");
+#endif
+  } else if (strncmp(server_type, "UDP", 3) == 0) {
+    server_check = 3;
+    resume_thread(&udp_pause);
+    pause_thread(&tcp_pause);
+    pause_thread(&mqtt_pause);
+#ifdef DEBUG
+    printf("Config thread: Switched to UDP, MQTT and TCP threads paused\n");
+#endif
+  }
+}
+
 void *config_thread_func(void *arg) {
 
   pause_thread(&mqtt_pause);
@@ -54,40 +82,13 @@ void *config_thread_func(void *arg) {
   printf("Config thread: Detected config update, new server type: %s\n",
          server_type);
 #endif
+  check_and_start_server_threads(server_type);
   while (1) {
     int updated = config_updated;
     if (updated) {
-      system_config_t *sys_config = get_system_config();
-      char *server_type = sys_config->server_com_type;
-#ifdef DEBUG
-      printf("Config thread: Detected config update, new server type: %s\n",
-             server_type);
-#endif
-      if (strncmp(server_type, "MQTT", 4) == 0) {
-        server_check = 1;
-        pause_thread(&tcp_pause);
-        resume_thread(&mqtt_pause);
-        pause_thread(&udp_pause);
-#ifdef DEBUG
-        printf("Config thread: Switched to MQTT, TCP and UDP threads paused\n");
-#endif
-      } else if (strncmp(server_type, "TCP", 3) == 0) {
-        server_check = 2;
-        resume_thread(&tcp_pause);
-        pause_thread(&mqtt_pause);
-        pause_thread(&udp_pause);
-#ifdef DEBUG
-        printf("Config thread: Switched to TCP, MQTT and UDP threads paused\n");
-#endif
-      } else if (strncmp(server_type, "UDP", 3) == 0) {
-        server_check = 3;
-        pause_thread(&tcp_pause);
-        pause_thread(&mqtt_pause);
-        resume_thread(&udp_pause);
-#ifdef DEBUG
-        printf("Config thread: Switched to UDP, MQTT and TCP threads paused\n");
-#endif
-      }
+      sys_config = get_system_config();
+      server_type = sys_config->server_com_type;
+      check_and_start_server_threads(server_type);
     }
   }
   return NULL;
