@@ -22,11 +22,11 @@ void *data_thread_func(void *arg) {
       data_buffer = UART_Read_Response(1000, &data_len);
       if (data_buffer != NULL && data_len > 0) {
         if (server_check == 1) {
-          update_mqtt_received_data(data_buffer, data_len);
+          mqtt_update_received_data(data_buffer, data_len);
         } else if (server_check == 2) {
-          update_tcp_received_data(data_buffer, data_len);
+          tcp_update_received_data(data_buffer, data_len);
         } else if (server_check == 3) {
-          update_udp_received_data(data_buffer, data_len);
+          udp_update_received_data(data_buffer, data_len);
         }
 #ifdef DEBUG
         printf("Data thread received %d bytes from UART\n", data_len);

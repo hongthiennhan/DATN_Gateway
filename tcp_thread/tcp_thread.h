@@ -1,10 +1,10 @@
 #ifndef TCP_THREAD_H
 #define TCP_THREAD_H
 
-#include "main.h"
 #include "gateway_config.h"
-#include "thread_func.h"
+#include "main.h"
 #include "mongoose.h"
+#include "thread_func.h"
 
 extern thread_pause_t tcp_pause;
 

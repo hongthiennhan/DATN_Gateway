@@ -1,10 +1,11 @@
 #ifndef UDP_THREAD_H
 #define UDP_THREAD_H
 
-#include "main.h"
 #include "gateway_config.h"
-#include "thread_func.h"
+#include "main.h"
 #include "mongoose.h"
+#include "thread_func.h"
+
 
 extern thread_pause_t udp_pause;
 
@@ -15,7 +16,7 @@ void *udp_thread_func(void *arg);
 char *udp_get_local_ip(void);
 
 // Update received data from external tasks - can be called from other threads
-void update_udp_received_data(const unsigned char *data, uint16_t data_len);
+void udp_update_received_data(const unsigned char *data, uint16_t data_len);
 
 // Clear stored received data
 void clear_udp_received_data(void);
