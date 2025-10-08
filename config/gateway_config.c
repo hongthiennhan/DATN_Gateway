@@ -72,8 +72,8 @@ int load_gateway_config(const char *config_file) {
   json_object *shared = NULL;
   json_object *config = NULL;
 
-  if (jsonobject_object_get_ex(root, "shared", &shared)) {
-    if (jsonobject_object_get_ex(root, "config", &config)) {
+  if (json_object_object_get_ex(root, "shared", &shared)) {
+    if (json_object_object_get_ex(shared, "config", &config)) {
       root = config;
     }
   }
