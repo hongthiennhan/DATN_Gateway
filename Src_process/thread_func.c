@@ -55,6 +55,10 @@ void *config_thread_func(void *arg) {
     if (updated) {
       system_config_t *sys_config = get_system_config();
       char *server_type = sys_config->server_com_type;
+#ifdef DEBUG
+      printf("Config thread: Detected config update, new server type: %s\n",
+             server_type);
+#endif
       if (strncmp(server_type, "MQTT", 4) == 0) {
         server_check = 1;
         pause_thread(&tcp_pause);
