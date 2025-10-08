@@ -21,7 +21,18 @@ thread_pause_t data_thread_pause = {.is_paused = false,
 
 void *data_thread_func(void *arg) {
 
+  uint16_t data_len = 0;
+  unsigned char *data_buffer = NULL;
   while (1) {
+    if (Check_UART_Data_Available()) {
+      data_buffer = UART_Read_Response(1000, &data_len);
+      if (data_buffer != NULL && data_len > 0) {
+        update_mqtt_data_from_response(node, data_buffer, data_len);
+      }
+      free(data_buffer);
+      data_buffer = NULL;
+      data_len = 0;
+    }
   }
   return NULL;
 }

@@ -22,27 +22,33 @@ void cleanup_on_exit(void) {
 int main(void) {
   atexit(cleanup_on_exit); // Register cleanup function to be called on exit
   uint8_t load_try = 0;
-  // Load node configuration FIRST
-  if (load_nodes_config("../config.json") != 0) {
+  // Load gateway configuration FIRST
+  if (load_gateway_config("../config.json") != 0) {
 #ifdef DEBUG_MAIN
-    fprintf(stderr, "Failed to load node configuration\n");
+    fprintf(stderr, "Failed to load gateway configuration\n");
 #endif
     load_try = 1;
   } else {
 #ifdef DEBUG_MAIN
-    printf("Node configuration loaded successfully\n");
+    printf("Gateway configuration loaded successfully\n");
 #endif
   }
 
   // If first load failed, try fallback config
   if (load_try == 1) {
-    if (load_nodes_config("../nodes_config.json") != 0) {
+    if (load_gateway_config("../nodes_config.json") != 0) {
 #ifdef DEBUG_MAIN
       fprintf(stderr, "Failed to load node configuration from fallback\n");
 #endif
       return -1;
     }
   }
+
+  system_config_t *sys_config = get_system_config();
+  uint32_t baudrate = sys_config->default_baudrate;
+  char *device = strdup(sys_config->default_device);
+
+  Uart_Init(map_to_speed(baudrate), baudrate);
 
   //   // Start Data thread
   //   pthread_t data_thread;

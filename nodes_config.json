@@ -1,163 +1,10 @@
 {
-  "nodes": [
-    {
-      "id": 1,
-      "name": "Node1 - Sensor Board",
-      "com_type": "UART",
-      "address": "0x01",
-      "detection_commands": [
-        {
-          "command": "0x03",
-          "expected_response": "SENSOR_BOARD_OK",
-          "timeout_ms": 100,
-          "description": "Sensor board identification"
-        }
-      ],
-      "menu_items": [
-        {
-          "cmd": 1,
-          "label": "LED On",
-          "hex_value": "0xA1",
-          "timeout_ms": 0
-        },
-        {
-          "cmd": 2,
-          "label": "LED Off",
-          "hex_value": "0xA2",
-          "timeout_ms": 0
-        }
-      ],
-      "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    },
-    {
-      "id": 2,
-      "name": "Node2 - Display Unit",
-      "com_type": "UART",
-      "address": "0x02",
-      "detection_commands": [
-        {
-          "command": "0x02",
-          "expected_response": "DISPLAY_OK",
-          "timeout_ms": 100,
-          "description": "Display unit identification"
-        }
-      ],
-      "menu_items": [
-        {
-          "cmd": 1,
-          "label": "Display On",
-          "hex_value": "0xA3",
-          "timeout_ms": 0
-        },
-        {
-          "cmd": 2,
-          "label": "Display Off",
-          "hex_value": "0xA4",
-          "timeout_ms": 0
-        }
-      ],
-      "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    },
-    {
-      "id": 3,
-      "name": "Node3 - Sensor Board 2",
-      "com_type": "Modbus",
-      "address": "0x03",
-      "detection_commands": [
-        {
-          "command": "0x01 0x00 0x00 0x00 0x08",
-          "expected_response": "None",
-          "timeout_ms": 200,
-          "description": "Read Output State"
-        }
-      ],
-      "menu_items": [
-        {
-          "cmd": 1,
-          "label": "LED On",
-          "hex_value": "0x05 0x00 0x00 0xFF 0x00",
-          "timeout_ms": 0
-        },
-        {
-          "cmd": 2,
-          "label": "LED Off",
-          "hex_value": "0x05 0x00 0x00 0x00 0x00",
-          "timeout_ms": 0
-        }
-      ],
-      "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    },
-    {
-      "id": 4,
-      "name": "Node4 - Sensor Board 3",
-      "address": "0x04",
-      "com_type": "Modbus",
-      "detection_commands": [
-        {
-          "command": "0x04 0x00 0x00 0x00 0x01",
-          "expected_response": "None",
-          "timeout_ms": 200,
-          "description": "Read Input Value"
-        }
-      ],
-      "menu_items": [
-        {
-          "cmd": 1,
-          "label": "LED On",
-          "hex_value": "0x05 0x00 0x00 0xFF 0x00",
-          "timeout_ms": 0
-        },
-        {
-          "cmd": 2,
-          "label": "LED Off",
-          "hex_value": "0x05 0x00 0x00 0x00 0x00",
-          "timeout_ms": 0
-        }
-      ],
-      "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    },
-    {
-      "id": 5,
-      "name": "Node5 - CAN Test",
-      "com_type": "CAN",
-      "address": "0x00",
-      "detection_commands": [
-        {
-          "command": "0x00 0x05 0xAA 0xBB 0xCC",
-          "expected_response": "None",
-          "timeout_ms": 100,
-          "description": "Read Input Value"
-        }
-      ],
-      "menu_items": [
-        {
-          "cmd": 1,
-          "label": "Activate",
-          "hex_value": "0x00 0x0A 0x00 0x00 0xFF",
-          "timeout_ms": 0
-        },
-        {
-          "cmd": 2,
-          "label": "Deactivate",
-          "hex_value": "0x00 0x0B 0x00 0x00 0xFF",
-          "timeout_ms": 0
-        }
-      ],
-      "data_format": "hex",
-      "reflash_script": "bash -c 'source ../../../esptool-env/bin/activate && esptool --chip esp32 --port /dev/ttyUSB0 write-flash 0x10000 ../hello1.bin && deactivate'"
-    }
-  ],
   "system_config": {
-    "auto_read_command_id": 100,
-    "ui_refresh_delay": 100,
     "uart_wait_timeout": 1000,
     "default_baudrate": 115200,
     "default_device": "/dev/ttyUSB0",
-    "startup_clear_duration": 10000
+    "startup_clear_duration": 10000,
+    "server_com_type": "MQTT"
   },
   "system_info": {
     "firmware_version": "1.0.0",
@@ -282,15 +129,15 @@
     "default_baudrate_fallback": 115200
   },
   "mqtt_config": {
-    "broker_host": "demo.thingsboard.io",
+    "broker_host": "192.168.1.11",
     "broker_port": 1883,
     "client_id": "gateway_device",
-    "username": "txg2524a0jho64ow0443",
+    "username": "",
     "password": "",
     "topic_telemetry": "v1/devices/me/telemetry",
     "topic_attributes": "v1/devices/me/attributes",
     "topic_control": "v1/devices/me/rpc/request/+",
-    "topic_status": "v1/devices/me/attributes",
+    "topic_status": "v1/devices/me/attributes/response/+",
     "qos": 1,
     "publish_interval": 1,
     "connection_timeout": 50,
@@ -385,13 +232,6 @@
       "status_reporting": true,
       "broadcast_discovery": false,
       "multicast_support": false
-    },
-    "reliability": {
-      "acknowledgment_required": false,
-      "retry_count": 3,
-      "retry_delay_ms": 1000,
-      "duplicate_detection": true,
-      "sequence_numbers": false
     }
   }
 }

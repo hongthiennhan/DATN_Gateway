@@ -1,26 +1,4 @@
 {
-    "modules": {
-        "Module_LoRa_E32": {
-            "Command_Header": "0x01",
-            "Address": "0xA1"
-        },
-        "Module_SIM800": {
-            "Command_Header": "0x02",
-            "Address": "0xA2"
-        },
-        "Module_Zigbee": {
-            "Command_Header": "0x03",
-            "Address": "0xA3"
-        },
-        "Module_RFID_RC522": {
-            "Command_Header": "0x11",
-            "Address": "0xB1"
-        },
-        "Module_Display_OLED": {
-            "Command_Header": "0x12",
-            "Address": "0xB2"
-        }
-    },
     "system_config": {
         "uart_wait_timeout": 1000,
         "default_baudrate": 115200,
