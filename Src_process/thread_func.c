@@ -28,6 +28,9 @@ void *data_thread_func(void *arg) {
       data_buffer = UART_Read_Response(1000, &data_len);
       if (data_buffer != NULL && data_len > 0) {
         update_mqtt_data_from_response(node, data_buffer, data_len);
+#ifdef DEBUG
+        printf("Data thread received %d bytes from UART\n", data_len);
+#endif
       }
       free(data_buffer);
       data_buffer = NULL;
@@ -39,6 +42,26 @@ void *data_thread_func(void *arg) {
 
 void *config_thread_func(void *arg) {
   while (1) {
+    pthread_mutex_lock(&config_update_mutex);
+    int updated = config_updated;
+    pthread_mutex_unlock(&config_update_mutex);
+    if (updated) {
+      system_config_t *sys_config = get_system_config();
+      char *server_type = sys_config->server_com_type;
+      if (strncmp(server_type, "MQTT", 4) == 0) {
+        pause_thread(&tcp_pause);
+        resume_thread(&mqtt_pause);
+        pause_thread(&udp_pause);
+      } else if (strncmp(server_type, "TCP", 3) == 0) {
+        resume_thread(&tcp_pause);
+        pause_thread(&mqtt_pause);
+        pause_thread(&udp_pause);
+      } else if (strncmp(server_type, "UDP", 3) == 0) {
+        pause_thread(&tcp_pause);
+        pause_thread(&mqtt_pause);
+        resume_thread(&udp_pause);
+      }
+    }
   }
   return NULL;
 }

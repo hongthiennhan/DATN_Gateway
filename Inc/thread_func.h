@@ -1,12 +1,10 @@
 #ifndef THREAD_FUNC_H
 #define THREAD_FUNC_H
 
-#include "CAN_handler.h"    // Include CAN handler for CAN data types
 #include "gateway_config.h" // Include to get node_config_t and menu_item_t types
 #include "main.h"
-#include "modbus_handler.h" // Include Modbus handler for Modbus data types
-#include "mqtt_thread.h"    // Include MQTT thread header for MQTT handling
-#include "tcp_thread.h"     // Include TCP thread header for TCP handling
+#include "mqtt_thread.h" // Include MQTT thread header for MQTT handling
+#include "tcp_thread.h"  // Include TCP thread header for TCP handling
 #include "uart_handler.h"
 #include "udp_thread.h" // Include UDP thread header for UDP handling
 
@@ -26,6 +24,8 @@ extern pthread_cond_t cond;
 // Pause control for threads
 extern thread_pause_t config_thread_pause;
 extern thread_pause_t data_thread_pause;
+extern volatile uint8_t config_updated;
+extern pthread_mutex_t config_update_mutex;
 
 extern void *data_thread_func(void *arg);
 extern void *config_thread_func(void *arg);
