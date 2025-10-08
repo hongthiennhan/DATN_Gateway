@@ -70,23 +70,6 @@ static void escape_json_string(const char *src, char *dst, size_t dst_size) {
   dst[dst_idx] = '\0';
 }
 
-// Helper function to convert data to hex string
-static char *data_to_hex_string(const unsigned char *data, size_t len) {
-  if (!data || len == 0)
-    return NULL;
-
-  char *hex_str = malloc(len * 2 + 1);
-  if (!hex_str)
-    return NULL;
-
-  for (size_t i = 0; i < len; i++) {
-    sprintf(hex_str + i * 2, "%02X", data[i]);
-  }
-  hex_str[len * 2] = '\0';
-
-  return hex_str;
-}
-
 // Initialize UDP manager and validate configuration
 static int udp_init(void) {
   mg_mgr_init(&udp_mgr);
@@ -400,17 +383,6 @@ static void build_udp_telemetry_payload(char *payload, size_t payload_size,
                        sizeof(escaped_data));
     snprintf(temp_buffer, 2048, ",\"last_received_data\":\"%s\"", escaped_data);
     strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-
-    // Add hex representation
-    char *hex_data =
-        data_to_hex_string((const unsigned char *)udp_last_received_data,
-                           strlen(udp_last_received_data));
-    if (hex_data) {
-      snprintf(temp_buffer, 2048, ",\"last_received_data_hex\":\"%s\"",
-               hex_data);
-      strncat(payload, temp_buffer, payload_size - strlen(payload) - 1);
-      free(hex_data);
-    }
 
     // Add metadata
     snprintf(temp_buffer, 2048, ",\"last_received_time\":%ld",
