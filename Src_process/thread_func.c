@@ -66,6 +66,7 @@ static void check_and_start_server_threads(char *server_type) {
     printf("Config thread: Switched to UDP, MQTT and TCP threads paused\n");
 #endif
   }
+  usleep(100 * 1000);
 }
 
 void *config_thread_func(void *arg) {
@@ -84,12 +85,15 @@ void *config_thread_func(void *arg) {
 #endif
   check_and_start_server_threads(server_type);
   while (1) {
+    pthread_mutex_lock(&config_update_mutex);
     int updated = config_updated;
+    pthread_mutex_unlock(&config_update_mutex);
     if (updated) {
       sys_config = get_system_config();
       server_type = sys_config->server_com_type;
       check_and_start_server_threads(server_type);
     }
+    usleep(500 * 1000);
   }
   return NULL;
 }
