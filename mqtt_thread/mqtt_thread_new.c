@@ -610,6 +610,12 @@ static void build_telemetry_payload(char *payload, size_t payload_size,
 
 // MQTT main thread function
 void *mqtt_thread_func(void *arg) {
+  // Pause thread if needed
+  pthread_mutex_lock(&mqtt_pause.mutex);
+  while (mqtt_pause.is_paused) {
+    pthread_cond_wait(&mqtt_pause.cond, &mqtt_pause.mutex);
+  }
+  pthread_mutex_unlock(&mqtt_pause.mutex);
   mqtt_config_t *config = safe_get_mqtt_config();
   if (!config) {
 #ifdef DEBUG

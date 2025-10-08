@@ -430,6 +430,13 @@ static void build_udp_telemetry_payload(char *payload, size_t payload_size,
 
 // Main UDP thread function - simplified version
 void *udp_thread_func(void *arg) {
+  // Pause thread if needed
+  pthread_mutex_lock(&udp_pause.mutex);
+  while (udp_pause.is_paused) {
+    pthread_cond_wait(&udp_pause.cond, &udp_pause.mutex);
+  }
+  pthread_mutex_unlock(&udp_pause.mutex);
+
   udp_config_t *config = get_udp_config();
   if (!config)
     return NULL;
