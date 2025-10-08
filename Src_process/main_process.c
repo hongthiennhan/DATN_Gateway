@@ -32,7 +32,7 @@ int main(void) {
   uint32_t baudrate = sys_config->default_baudrate;
   char *device = strdup(sys_config->default_device);
 
-  Uart_Init(map_to_speed(baudrate), baudrate);
+  Uart_Init(UART_map_to_speed(baudrate), device);
 
   //   // Start Data thread
   pthread_t data_thread;
