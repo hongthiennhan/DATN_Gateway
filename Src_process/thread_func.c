@@ -1,5 +1,9 @@
 #include "thread_func.h"
 // Shared state between threads
+unsigned char downlink_data[512] = {0};
+pthread_mutex_t downlink_mutex = PTHREAD_MUTEX_INITIALIZER;
+uint8_t check_downlink = 0;
+
 static uint8_t server_check = 1;
 
 thread_pause_t config_thread_pause = {.is_paused = false,
