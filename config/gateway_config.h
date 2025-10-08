@@ -240,11 +240,11 @@ typedef struct {
 } gateway_config_t;
 
 // Thread pause control structure
-struct thread_pause_t {
+typedef struct {
   bool is_paused;
   pthread_mutex_t mutex;
   pthread_cond_t cond;
-};
+} thread_pause_t;
 
 // Global mutex for thread safety
 extern pthread_mutex_t gateway_config_mutex;
