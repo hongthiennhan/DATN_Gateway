@@ -45,6 +45,9 @@ void *config_thread_func(void *arg) {
   pause_thread(&mqtt_pause);
   pause_thread(&tcp_pause);
   pause_thread(&udp_pause);
+#ifdef DEBUG
+  printf("Config thread started, all server threads paused\n");
+#endif
   while (1) {
     pthread_mutex_lock(&config_update_mutex);
     int updated = config_updated;
