@@ -14,21 +14,6 @@
 #define MAX_JSON_SIZE (64 * 1024)
 #define MAX_RECEIVED_DATA_SIZE 2048
 
-// Module configuration structure
-typedef struct {
-  char command_header[MAX_HEADER_LEN]; // Module command header
-  char address[MAX_ADDR_LEN];          // Module address
-} module_config_t;
-
-// All gateway modules
-typedef struct {
-  module_config_t Module_LoRa_E32;     // LoRa E32 module
-  module_config_t Module_SIM800;       // SIM800 GSM module
-  module_config_t Module_Zigbee;       // Zigbee module
-  module_config_t Module_RFID_RC522;   // RFID RC522 module
-  module_config_t Module_Display_OLED; // OLED display module
-} modules_config_t;
-
 // System configuration
 typedef struct {
   uint32_t uart_wait_timeout;       // UART wait timeout in ms
@@ -228,7 +213,6 @@ typedef struct {
 
 // Main gateway configuration
 typedef struct {
-  modules_config_t modules;      // Modules configuration
   system_config_t system_config; // System configuration
   system_info_t system_info;     // System information
   uart_config_t uart_config;     // UART configuration
@@ -256,7 +240,6 @@ void cleanup_gateway_config(void);
 // Getter functions
 system_config_t *get_system_config(void);
 system_info_t *get_system_info(void);
-modules_config_t *get_modules_config(void);
 uart_config_t *get_uart_config(void);
 modbus_config_t *get_modbus_config(void);
 can_config_t *get_can_config(void);

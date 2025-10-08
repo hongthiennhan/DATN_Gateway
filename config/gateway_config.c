@@ -72,31 +72,6 @@ int load_gateway_config(const char *config_file) {
   // Initialize configuration structure
   memset(&gateway_config, 0, sizeof(gateway_config_t));
 
-  // Parse modules configuration
-  json_object *modules_obj = NULL;
-  if (json_object_object_get_ex(root, "modules", &modules_obj)) {
-    json_object *module_obj, *temp_obj;
-
-#define LOAD_MODULE(json_name, struct_field)                                   \
-  if (json_object_object_get_ex(modules_obj, #json_name, &module_obj)) {       \
-    if (json_object_object_get_ex(module_obj, "Command_Header", &temp_obj))    \
-      safe_strncpy(                                                            \
-          gateway_config.modules.struct_field.command_header,                  \
-          json_object_get_string(temp_obj),                                    \
-          sizeof(gateway_config.modules.struct_field.command_header));         \
-    if (json_object_object_get_ex(module_obj, "Address", &temp_obj))           \
-      safe_strncpy(gateway_config.modules.struct_field.address,                \
-                   json_object_get_string(temp_obj),                           \
-                   sizeof(gateway_config.modules.struct_field.address));       \
-  }
-
-    LOAD_MODULE(Module_LoRa_E32, Module_LoRa_E32);
-    LOAD_MODULE(Module_SIM800, Module_SIM800);
-    LOAD_MODULE(Module_Zigbee, Module_Zigbee);
-    LOAD_MODULE(Module_RFID_RC522, Module_RFID_RC522);
-    LOAD_MODULE(Module_Display_OLED, Module_Display_OLED);
-  }
-
   // Parse system configuration
   json_object *system_config_obj = NULL;
   if (json_object_object_get_ex(root, "system_config", &system_config_obj)) {
@@ -702,8 +677,6 @@ system_config_t *get_system_config(void) {
 }
 
 system_info_t *get_system_info(void) { return &gateway_config.system_info; }
-
-modules_config_t *get_modules_config(void) { return &gateway_config.modules; }
 
 uart_config_t *get_uart_config(void) { return &gateway_config.uart_config; }
 
