@@ -21,6 +21,9 @@ void *data_thread_func(void *arg) {
     if (Check_UART_Data_Available()) {
       data_buffer = UART_Read_Response(1000, &data_len);
       if (data_buffer != NULL && data_len > 0) {
+#ifdef DEBUG
+        printf("Data thread received %d bytes from UART\n", data_len);
+#endif
         if (server_check == 1) {
           mqtt_update_received_data(data_buffer, data_len);
         } else if (server_check == 2) {
@@ -28,9 +31,6 @@ void *data_thread_func(void *arg) {
         } else if (server_check == 3) {
           udp_update_received_data(data_buffer, data_len);
         }
-#ifdef DEBUG
-        printf("Data thread received %d bytes from UART\n", data_len);
-#endif
       }
       free(data_buffer);
       data_buffer = NULL;
