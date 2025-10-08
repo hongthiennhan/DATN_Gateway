@@ -48,10 +48,14 @@ void *config_thread_func(void *arg) {
 #ifdef DEBUG
   printf("Config thread started, all server threads paused\n");
 #endif
+  system_config_t *sys_config = get_system_config();
+  char *server_type = sys_config->server_com_type;
+#ifdef DEBUG
+  printf("Config thread: Detected config update, new server type: %s\n",
+         server_type);
+#endif
   while (1) {
-    pthread_mutex_lock(&config_update_mutex);
     int updated = config_updated;
-    pthread_mutex_unlock(&config_update_mutex);
     if (updated) {
       system_config_t *sys_config = get_system_config();
       char *server_type = sys_config->server_com_type;
