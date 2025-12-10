@@ -1,32 +1,65 @@
 \chapter{Phân tích và Thiết kế}
     \section{Phân tích yêu cầu}
+        Mục tiêu cốt lõi là thiết kế một IoT Gateway giải quyết bài toán linh hoạt và khả năng cấu hình nhằm tối ưu chi phí và thời gian triển khai hệ thống cho đa dạng các nhu cầu sử dụng.
+
         \subsection{Yêu cầu chức năng}
             \begin{itemize}
                 \item Khả năng ghép nối phần cứng (Modularity)
                 \begin{itemize}
-                    \item Hệ thống phải hỗ trợ kết nối linh hoạt với các loại module WAN và LAN khác nhau.
-                    \item Cơ chế cho phép thay thế hoặc nâng cấp các module cho các mục đích sử dụng khác nhau mà không cần phải thiết kế lại board mạch chủ (Baseboard).
+                    \item Gateway phải hỗ trợ kết nối linh hoạt với các loại module khác nhau.
+                    \item Có cơ chế cho phép thay thế hoặc nâng cấp các module cho các mục đích sử dụng khác nhau mà không cần phải thiết kế lại board mạch.
+                    \item Gateway phải hỗ trợ các giao thức truyền thông phổ thông như UART, SPI, I2C, USB, \dots
                 \end{itemize}
                 \item Khả năng thu thập và xử lý dữ liệu
                 \begin{itemize}
-                    \item Hệ thống phải có khả năng giao tiếp qua các giao thức truyền thông phổ thông như UART, SPI, I2C, USB, \dots
+                    \item Gateway phải có khả năng đọc dữ liệu cảm biến hoặc các thiết bị đầu cuối thông qua các giao thức truyền thông.
+                    \item \dots\footnote{phần mềm}
                 \end{itemize}
                 \item Khả năng cấu hình (Configurability)
                 \begin{itemize}
-                    \item 
+                    \item Gateway phải được cấu hình thông qua máy tính cá nhân (PC, laptop).
+                    \item \dots\footnote{phần mềm}
                 \end{itemize}
-                \item \dots
+                \item \dots\footnote{phần mềm}
             \end{itemize}
 
         \subsection{Yêu cầu phi chức năng}
+            Ngoài các chức năng chính, IoT Gateway cần đáp ứng tiêu chuẩn về chất lượng hoạt động để phù hợp với ứng dụng thực tế.
             \begin{itemize}
                 \item Độ tin cậy và ổn định
+                \begin{itemize}
+                    \item Gateway cần hoạt động ổn định liên tục trong thời gian dài.
+                    \item Tích hợp cơ chế giám sát để tự động khởi động lại khi gặp lỗi treo hệ thống\dots\footnote{phần mềm}
+                    \item Gateway phải có khả năng xử lý lỗi (mất kết nối, lỗi dữ liệu\dots)\footnote{phần mềm}
+                    \item Gateway có khả năng chống chịu các tác động từ môi trường (ESD, nhiễu điện từ\dots)
+                    \item \dots\footnote{phần mềm}
+                \end{itemize}
                 \item Nguồn điện và năng lượng
-                \item Chi phí
-                \item Kích thước/lắp đặt
+                \begin{itemize}
+                    \item Nguồn điện có độ ổn định cao, bảo vệ quá áp, ngắn mạch\dots
+                    \item Gateway phải tiêu thụ năng lượng thấp để phù hợp với các ứng dụng sử dụng pin.
+                    \item \dots
+                \end{itemize}
+                \item Hiệu năng
+                \begin{itemize}
+                    \item Hiệu năng xử lý trung tâm phải đủ đáp ứng khả năng thu thập và xử lý dữ liệu từ các module kết nối.
+                    \item \dots
+                \end{itemize}
+                \item Tính khả dụng và dễ sử dụng
+                \begin{itemize}
+                    \item Quy trình tháo lắp module phải đơn giản, hạn chế tối đa công cụ phức tạp.
+                    \item Giao diện cấu hình phải thân thiện, dễ hiểu đối với kỹ thuật viên vận hành thông thường, giảm thiểu yêu cầu về kỹ năng lập trình chuyên sâu.
+                    \item \dots\footnote{phần mềm}
+                \end{itemize}
             \end{itemize}
 
-        \subsection{Yêu cầu giới hạn}
+        \subsection{Các ràng buộc thiết kế}
+            \begin{itemize}
+                \item Ràng buộc về chi phí
+                \item Ràng buộc về công Nghiệp
+                \item Ràng buộc về \dots
+            \end{itemize}
+
 
     \section{Giải pháp đề xuất}
     \section{Đặc tả}
