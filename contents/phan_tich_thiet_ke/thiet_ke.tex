@@ -1,15 +1,75 @@
 \section{Thiết kế}
     \subsection{Kiến trúc Hệ thống}
         \subsubsection{Sơ đồ khối Hệ thống}
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.8\textwidth]{figures/Protype_SystemBlockDiagram_Draft-Page-2.drawio.png}
+                \caption{Sơ đồ khối Hệ thống}
+            \end{figure}
+            
         \subsubsection{Mô tả thành phần hệ thống}
-            \paragraph{Baseboard}\par
-            \paragraph{Các Module Adapter}\par
+            Hệ thống được thiết kế theo mô hình Dual-MCU Master-Slave, chia thành 3 miền chức năng chính: Application Domain (Ứng dụng), Network Domain (Mạng lưới xử lý), và Sensing Domain (Cảm biến).
+            \paragraph{Baseboard:}\par
+                Là board chính của hệ thống, chịu trách nhiệm cung cấp nguồn điện ổn định, giao tiếp giữa các thành phần, kết nối với Module Adapter, và chứa các vi điều khiển chính.
+
+            \paragraph{Khối Xử lý trung tâm:}\par
+                Hệ thống sử dụng kiến trúc xử lý song song với hai vi điều khiển chuyên biệt nhằm tối ưu hóa hiệu năng và tài nguyên phần cứng:
+                \begin{itemize}
+                    \item \textbf{MASTER WAN-MCU}
+                    \begin{itemize}
+                        \item Vai trò: Là vi điều khiển chính, chịu trách nhiệm xử lý các tác vụ thuộc Lớp ứng dụng (Application Layer) và điều phối hoạt động cả hệ thống.
+                        \item Chức năng: Xử lý các tác vụ Lớp ứng dụng thông qua WAN Module Adapter, quản lý giao diện người dùng và kết nối đám mây, điều phối luồng dữ liệu chính, và điều phối hoạt động của SLAVE LAN-MCU. MASTER WAN-MCU chịu trách nhiệm cập nhật firmware từ thiết bị cấu hình (Configuration Tools) và từ đám mây (FOTA) cho cả hệ thống.
+                    \end{itemize}
+                    \item \textbf{SLAVE LAN-MCU}
+                    \begin{itemize}
+                        \item Vai trò: Chịu trách nhiệm tương tác trực tiếp với lớp Cảm biến (Sensing Domain), quản lý các kết nối mạng nội bộ thông qua LAN Module Adapter, và lưu trữ dữ liệu.
+                        \item Chức năng: Quản lý các giao thức truyền thông nội bộ và mạng cảm biến, thu thập dữ liệu thô, thực hiện tiền xử lý và lưu trữ cục bộ (Micro SD Card) trước khi gửi lên MASTER WAN-MCU.
+                    \end{itemize}
+                \end{itemize}
+
+            \paragraph{Giao tiếp giữa hai Vi xử lý:}\par
+                Để đảm bảo đồng bộ dữ liệu giữa MASTER WAN-MCU và SLAVE LAN-MCU, hệ thống sử dụng ba đường giao tiếp riêng biệt:
+                \begin{itemize}
+                    \item \textbf{Quad SPI (Request/Data)}: Kênh truyền dữ liệu tốc độ cao, dùng để Slave gửi dữ liệu cảm biến lên Master và Master gửi yêu cầu xuống Slave.
+                    \item \textbf{UART (Firmware Flow)}: Kênh chuyên biệt dùng để nạp firmware cho SLAVE LAN-MCU thông qua MASTER WAN-MCU
+                    \item \textbf{GPIO (Control)}: Các đường tín hiệu điều khiển (Boot, Reset, Interrupt) để đảm bảo đồng bộ trạng thái hoạt động.
+                \end{itemize}
+
+            \paragraph{Khối Module Adapter}\par
+                Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các module, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
+                \begin{itemize}
+                    \item WAN Module Adapter
+                    \begin{itemize}
+                        \item Kết nối với MASTER WAN-MCU.
+                        \item Hỗ trợ các module giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
+                    \end{itemize}
+                    \item LAN1 Module Adapter
+                    \item LAN2 Module Adapter
+                \end{itemize}
+
             \paragraph{Firmware}\par
             \paragraph{Giao diện người dùng}\par
+            \paragraph{Configuration Tools}\par
+            \paragraph{User Interface Devices}\par
+            \paragraph{Cloud Service}\par
+
         \subsubsection{Thiết kế Module hóa}
         \subsubsection{Luồng Dữ liệu và Xử lý dữ liệu}
+
+    \newpage
     \subsection{Hardware}
         \subsubsection{Sơ đồ khối Phần cứng}
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.8\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
+                \caption{Sơ đồ khối Phần cứng}
+            \end{figure}
+            \begin{figure}[h]
+                \centering
+                
+                \includegraphics[width=0.8\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
+                \caption{Sơ đồ khối nguồn}
+            \end{figure}
         \subsubsection{Hệ thống nguồn}
     \subsection{Firmware và Software}
         \dots\footnote{phần mềm}
