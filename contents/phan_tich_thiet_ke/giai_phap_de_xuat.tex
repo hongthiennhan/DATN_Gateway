@@ -1,1 +1,18 @@
 \section{Giải pháp đề xuất}
+    Nhằm đạt được mục têu thiết kế IoT Gateway linh hoạt và khả cấu hình, tối ưu chi phí và thời gian triển khai hệ thống cho đa dạng các nhu cầu sử dụng, nhóm đồ án đưa ra giải pháp sau cho những yêu cầu đã phân tích.
+
+    \subsection{Giải pháp phần cứng}
+        Giải pháp phần cứng tập trung vào việc thiết kế một kiến trúc module, cho phép người dùng và kỹ thuật viên dễ dàng lắp ráp và thay thế các module phần cứng theo nhu cầu sử dụng cụ thể
+        \begin{itemize}
+            \item Thiết kế Baseboard với các khe cắm được chuẩn hóa để kết nối với các Module Adapter khác nhau.
+            \item Phát triển các Module Adapter hỗ trợ kết nối với các module trên thị trường và chuyển đổi để chuẩn hóa với chuẩn giao thức của Module Adapter.
+            \item Nhằm tối ưu chi phí, IoT Gateway được thiết kế để không sử dụng những nhân xử lý quá mạnh mẽ như CPU vừa làm tăng giá thành vừa làm tăng chi phí gia công đáng kể khi thiết kế PCB cho những dòng chip này, nhóm quyết định chỉ sử dụng MCU với những tiêu chí sau:
+            \begin{itemize}
+                \item Giá thành rẻ nhưng hiệu năng đủ mạnh, tài nguyên phân cứng đủ nhiều, hỗ trợ đủ các loại giao thức yêu cầu.
+                \item Hỗ trợ cộng đồng tốt, có nhiều thư viện mã nguồn mở để tận dụng, giúp rút ngắn thời gian phát triển firmware.
+                \item Tiêu thụ năng lượng thấp, phù hợp với các ứng dụng IoT.
+            \end{itemize}
+            \item Do tài nguyên phần cứng của MCU không quá nhiều, lại vừa còn phải chứa đủ chương trình cho nhiều loại chuẩn giao tiếp khác nhau của nhiều loại module trên thị trường, nhóm đồ án đưa ra kiến trúc sử dụng 2 MCU cho 2 nhiệm vụ riêng biệt: một MCU xử lý các tác vụ và giao tiếp với WAN (gọi tắt là WAN-MCU), một MCU xử lý các tác vụ và giao tiếp với LAN (gọi tắt là LAN-MCU), trong đó WAN-MCU đóng vai trò là MCU chính quản lý điều phối toàn bộ hệ thống. Hai MCU này được giao tiếp với nhau qua giao thức tốc độ cao và các tín hiệu điều khiển để điều phối hoạt động giữa hai MCU.
+        \end{itemize}
+    \subsection{Giải pháp phần mềm}
+    \dots\footnote{phần mềm}
