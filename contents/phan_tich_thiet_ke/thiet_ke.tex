@@ -38,17 +38,17 @@
             \paragraph{Khối Module Adapter}\par
                 Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các module, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
                 \begin{itemize}
-                    \item WAN Module Adapter
+                    \item \textbf{WAN Module Adapter}
                     \begin{itemize}
                         \item Kết nối với MASTER WAN-MCU.
                         \item Hỗ trợ các module giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
                     \end{itemize}
-                    \item LAN1 Module Adapter
+                    \item \textbf{LAN1 Module Adapter}
                     \begin{itemize}
                         \item Kết nối với SLAVE LAN-MCU.
                         \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, NB-IoT, \dots
                     \end{itemize}
-                    \item LAN2 Module Adapter
+                    \item \textbf{LAN2 Module Adapter}
                     \begin{itemize}
                         \item Kết nối với SLAVE LAN-MCU.
                         \item Hỗ trợ kết nối các module kết nối có dây như RS-485, CAN, \dots
@@ -133,17 +133,19 @@
         \subsubsection{Sơ đồ khối Phần cứng}
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.8\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
+                \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
                 \caption{Sơ đồ khối Phần cứng}
             \end{figure}
-            
+            \dots
 
+        \newpage
         \subsubsection{Hệ thống nguồn}
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.8\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
+                \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
                 \caption{Sơ đồ hệ thống nguồn}
             \end{figure}
+            \dots
 
         \subsubsection{Thiết kế Mạch nguyên lý (Schematic)}
             \paragraph{Thiết kế Mạch xử lý trung tâm}
@@ -155,8 +157,76 @@
             \paragraph{Thiết kế Mạch Module Adapter}
         
         \subsubsection{Thiết kế PCB}
-            \dots
-            \paragraph{Layout}
+            \paragraph{Stack-up và Impedance control}
+                \begin{enumerate}
+                    \item \textbf{Stack-up:}
+                    \begin{itemize}
+                        \item Lựa chọn Stack-up: Thiết kế có nhiều kênh tín hiệu tốc độ cao, yêu cầu cần kiểm soát trở kháng và chống nhiễu, và yêu cầu nhiều rail nguồn khác nhau. Do đó, lựa chọn Stack-up 6 lớp nhằm đáp ứng các yêu cầu này với cấu trúc sau:
+                        
+                        \begin{longtable}{|l|l|l|}
+                            \hline
+                            \textbf{Layer} & \textbf{Ưu tiên} & \textbf{Mô tả} \\\hline
+                            \endfirsthead
+                            \hline
+                            \textbf{Layer} & \textbf{Ưu tiên} & \textbf{Mô tả} \\\hline
+                            \endhead
+                            \hline
+                            \endfoot
+                            % \hline
+                            \endlastfoot  
+                            
+                            \textbf{Layer 1} & High-speed Signal \& Power & Tín hiệu tốc độ cao và Nguồn \\\hline
+                            \textbf{Layer 2} & Ground Plane & Lớp GND tham chiếu cho tín hiệu tốc độ cao ở Layer 1 \\\hline
+                            \textbf{Layer 3} & Power Plane & Rail nguồn \\\hline
+                            \textbf{Layer 4} & Low-speed Signal & Tín hiệu tốc độ thấp \\\hline
+                            \textbf{Layer 5} & Ground Plane & Lớp GND tham chiếu cho tín hiệu tốc độ cao ở Layer 6 \\\hline
+                            \textbf{Layer 6} & High-speed Signal \& Power & Tín hiệu tốc độ cao và Nguồn \\\hline
+                        \end{longtable}
+                        \item Trong thiết kế stack-up này vừa đảm bảo được có 2 layer cho tín hiệu tốc độ cao và 3 layer cho hệ thống nguồn, là vừa đủ để đảm bảo các yêu cầu về tính toàn vẹn tín hiệu và chống nhiễu, đồng thời vẫn giữ chi phí sản xuất PCB ở mức hợp lý. Ngoài ra, layer 3 (nguồn) và layer 2 (đất) đặt cạnh nhau tạo ra một tụ điện giúp ổn định hệ thống. Nguồn và tín hiệu tốc độ cao nằm cùng layer sẽ được layer tách biệt và được che phủ tránh ảnh hưởng bởi nhiễu chéo, đặc biệt là nguồn switching và tín hiệu tốc độ cao đều có tần số hoạt động rất lớn có thể gây nhiễu chéo.
+                        \item Trong các thiết kế stack-up có các thiết kế tham khảo như sử dụng layer ở trong dùng cho tín hiệu tốc độ cao, ví dụ như thay thế Layer 4 để dùng cho High-speed Signal. Điều này giúp chống nhiễu tốt hơn, mang lại sự ổn định hơn do đồng nhất hơn khi nằm giữa cùng hai vật liệu cách điện giống nhau, thay vì tiếp xúc với không khí như ở layer ngoài cùng. Tuy nhiên, stack-up như vậy buộc layer 3 phải là Ground Plane, điều này làm giảm đi không gian để layer nguồn. Các tín hiệu tốc độ cao như SPI hay USB trong thiết kế cũng chưa đạt tới tần số cao đến mức cần phải bảo vệ nghiệm ngặt mặc dù cũng cần phải đảm bảo trở kháng và các kỹ thuật đảm bảo toàn vẹn tín hiệu. Và việc chỉ có một layer cho tín hiệu tốc độ cao thay vì hai cũng làm giảm đáng kể không gian layout không cần thiết.
+                    \end{itemize}
+                    \item \textbf{Impedance control:}
+                    \begin{itemize}
+                        \item Các tín hiệu tốc độ cao có yêu cầu về trở kháng nhằm đảm bảo tính toàn vẹn tín hiệu và giảm phát xạ EMI. Các tiêu chuẩn trở kháng được áp dụng trong thiết kế:
+                        \begin{itemize}
+                            \item Trở kháng cho tín hiệu Coplanar single-ended: $50\Omega\pm10\%$ cho tín hiệu SDIO, SPI, I2C.
+                            \item Trở kháng cho tín hiệu Coplanar differential-pair: $90\Omega\pm10\%$ cho tín hiệu cặp vi sai USB.
+                        \end{itemize}
+                        \item Để đạt được trở kháng mục tiêu, các tín hiệu phải đi đúng kích thước và cấu trúc dựa trên tính toán từ các thông số vật liệu của stack-up. Dưới đây là bảng thông số và kích thước đường dây:
+                        \begin{figure}[h]
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/impedance_50R.png}
+                            \caption{Kích thước dây cho tín hiệu Coplanar single-ended $50\Omega\pm10\%$ (đơn vị: mm)}
+                        \end{figure}
+                        \begin{figure}[h]
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/impedance_90R.png}
+                            \caption{Kích thước dây cho tín hiệu Coplanar differential-pair $90\Omega\pm10\%$ (đơn vị: mm)}
+                        \end{figure}
+                        \begin{figure}[h]
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/jlcpcb_stackup.png}
+                            \caption{Thông số stack-up theo tiêu chuẩn của đơn vị gia công JLCPCB}
+                        \end{figure}
+                            
+                    \end{itemize}
+                \end{enumerate}
+            \paragraph{Quy hoạch, bố trí linh kiện (Component placement/Floor-planning):}
+                Việc quy hoạch, bố trí linh kiện đảm bảo được những yếu tố:
+                \begin{enumerate}
+                    \item Phân vùng quy hoạch cho các chức năng như khu vực nguồn, khu vực xử lý trung tâm, khu vực ngoại vi, \dots
+                    \item Quy hoạch các khối quan trọng như khối xử lý trung tâm ở vị trí dễ dàng kết nối với các khối khác.
+                    \item Quy hoạch để các tín hiệu tốc độ cao ngắn nhất có thể.
+                    \item Quy hoạch các thành phần dễ gây nhiễu ra xa các khu vực nhạy cảm, hay các thành phần cần được chống nhiễu xa khỏi các khu vực nhiễu mạnh.
+                    \item Quy hoạch cho các khu vực RF ở góc hoặc rìa, đặt đủ xa và chéo góc để giảm hiện tương các sóng vô tuyến giao thoa với nhau.
+                    \item Bố trí các linh kiện theo từng khối chức năng.
+                    \item Bố trí các cổng kết nối hay những thành phần ảnh hưởng đến hình dạng board và kết cấu khung cơ khí.
+                    \item \dots
+                \end{enumerate}
+            \paragraph{Kỹ thuật chống nhiễu/ESD}
+            \paragraph{Kỹ thuật layout Nguồn}
+            \paragraph{Kỹ thuật layout tín hiệu tốc độ cao}
+
         
         \subsubsection{Mô phỏng}
             \paragraph{Impedance Control}
