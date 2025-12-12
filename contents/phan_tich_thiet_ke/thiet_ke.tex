@@ -211,6 +211,7 @@
                             
                     \end{itemize}
                 \end{enumerate}
+                
             \paragraph{Quy hoạch, bố trí linh kiện (Component placement/Floor-planning):}
                 Việc quy hoạch, bố trí linh kiện đảm bảo được những yếu tố:
                 \begin{enumerate}
@@ -223,8 +224,39 @@
                     \item Bố trí các cổng kết nối hay những thành phần ảnh hưởng đến hình dạng board và kết cấu khung cơ khí.
                     \item \dots
                 \end{enumerate}
-            \paragraph{Kỹ thuật chống nhiễu/ESD}
+
+            \paragraph{Kỹ thuật chống nhiễu}
+                \begin{enumerate}
+                    \item \textbf{Nguyên lý lồng Faraday:} Toàn bộ board được phủ GND xung quanh để chống lại nhiễu từ môi trường, các tín hiệu, linh kiện hoạt động ở tần số cao như tín hiệu tốc độ cao hay khối thạch anh cần được phủ ground và dùng via stitching xung quanh để tạo thành một lồng chắn sóng, tránh bị nhiễu và phát xạ ra các thành phần xung quanh.
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[height=0.45\textwidth]{figures/crysal_shielding_2D.png}
+                        \includegraphics[height=0.45\textwidth]{figures/crysal_shielding_3D.png}
+                        \caption{{Phủ GND Shielding và stitching via xung quanh thạch anh.}}
+                    \end{figure}
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.8\textwidth]{figures/USB_shielding_2D.png}
+                        \caption{{Phủ GND Shielding và stitching via xung quanh tín hiệu USB.}}
+                    \end{figure}
+                    \item Tránh tạo vòng lặp lớn, khi mà các tín hiệu đi qua các mặt phẳng đất không liên tục, việc này dẫn đến return path không trở về theo đường có trở kháng nhỏ nhất, tạo ra các vòng lặp lớn gây phát xạ nhiễu.
+                \end{enumerate}
+
             \paragraph{Kỹ thuật layout Nguồn}
+                \begin{enumerate}
+                    \item \textbf{Tối ưu hóa current loop:} Các tụ đầu vào và đầu ra cần được đặt sát nhau nhất có thể và đặt gần cắc chân của IC nguồn hay cuộn cảm. Các linh kiện phải được bố trí sát nhau và giảm tối thiểu diện tích current loop nhằm giảm cảm kháng ký sinh và hạn chế bức xạ EMI.
+                    \item \textbf{Xử lý điểm switching:} Tại các chân đầu ra của các IC nguồn switching là vị trí chuyển mạch tần số cao, vị trí này cần đường đi dây ngắn nhất và rộng có thể nhằm giảm bức xạ điện từ và đảm bảo khả năng chịu dòng xung lớn. Tuyệt đối không đi các đường tín hiệu nào ở gần hay ngay bên dưới vị trí chuyển mạch và cuộn cảm.
+                    \item \textbf{Đường tín hiệu hồi tiếp:} Đường hồi tiếp nên đi tránh xa khỏi điểm switching, phủ GND xung quanh để tạo lớp chắn khỏi nhiễu từ nguồn, GND của đường hồi tiếp phải lấy từ chân GND của IC hoặc Analog GND, không sử dụng Power GND vì GND này đang chịu ảnh hưởng bởi mạch switching có thể làm nhiểu tín hiệu hồi tiếp. Điểm lấy điện áp cho tín hiệu hồi tiếp nên là điểm sau tụ điện đầu ra, là điểm khi nguồn điện đã ổn định
+                    \item \textbf{Bố trí linh kiện:} Các linh kiện phụ trợ như điện trở, tụ điện cho các chức năng soft-start (khởi động mềm), bootstrap, giới hạn dòng cần được đặt sát chân tín hiệu của IC nguồn và sử dụng GND từ chân của IC nguồn hoặc Analog GND.
+                    \item \textbf{Quản lý nhiệt:} Các lớp GND của nguồn nên được bố trí nhiều via ngay dưới pad tản nhiệt của IC và xung quanh các vùng GND xung quanh giúp tản nhiệt nhanh xuống các lớp phủ GND rộng lớn ở các layer bên dưới.
+                    \item \textbf{Thiết kế mạng phân phối nguồn (Power Distribution Network - PDN):} Mục tiêu của thiết kế PDN là duy trì trở kháng thấp trên toàn dải tần số hoạt động, từ DC đến tần số chuyển mạch (Switching Frequency) và tần số xung nhịp của MCU.
+                    \begin{itemize}
+                        \item Các lớp nguồn và đất được bố trí xen kẻ nhau: Layer 1 (Power) - Layer 2 (Ground) - Layer 3 (Power) tạo ra các tụ điện phẳng ký sinh giúp lọc nhiễu và đảm bảo độ ổn định nguồn.
+                        \item Các đường dẫn dòng được layout dạng mặt phẳng hoặc đường mạch rất rộng nhằm giảm điện trở thuần, hạn chế sụt áp và giảm cảm kháng ký sinh.
+                        \item Tụ điện được thiết kế thành dải các tụ có giá trị từ nhỏ đến lớn, gồm các tụ rất nhỏ (18pF) đặt sát ngay chân nguồn IC để triệt tiêu nhiễu cao tần, và các tụ điện lớn cho hoạt động chuyển mạch của nguồn và ổn định điện áp.
+                    \end{itemize}
+                \end{enumerate}
+
             \paragraph{Kỹ thuật layout tín hiệu tốc độ cao}
 
         
