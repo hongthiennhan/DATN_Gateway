@@ -63,9 +63,9 @@
                 Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các module được kết nối.
             \paragraph{Luồng dữ liệu:}\par
                 \begin{itemize}
-                    \item Firmware/FOTA Flow:
-                    \item Request/Data Flow:
-                    \item Control Flow:
+                    \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua MASTER WAN-MCU, sau đó được chuyển tiếp đến SLAVE LAN-MCU qua kênh UART chuyên biệt.
+                    \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua MASTER WAN-MCU đến SLAVE LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại SLAVE LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua MASTER WAN-MCU lên Cloud Service. Các request và dự liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
+                    \item \textbf{Control Flow:} Luồng tín điều khiển từ MASTER WAN-MCU để điều khiển trạng thái hoạt động của SLAVE LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
                 \end{itemize}
 
         \subsubsection{Thiết kế Module hóa}
