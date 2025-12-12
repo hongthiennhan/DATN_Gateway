@@ -3,7 +3,7 @@
         \subsubsection{Sơ đồ khối Hệ thống}
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.8\textwidth]{figures/Protype_SystemBlockDiagram_Draft-Page-2.drawio.png}
+                \includegraphics[width=0.8\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
                 \caption{Sơ đồ khối Hệ thống}
             \end{figure}
             
@@ -44,14 +44,29 @@
                         \item Hỗ trợ các module giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
                     \end{itemize}
                     \item LAN1 Module Adapter
+                    \begin{itemize}
+                        \item Kết nối với SLAVE LAN-MCU.
+                        \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, NB-IoT, \dots
+                    \end{itemize}
                     \item LAN2 Module Adapter
+                    \begin{itemize}
+                        \item Kết nối với SLAVE LAN-MCU.
+                        \item Hỗ trợ kết nối các module kết nối có dây như RS-485, CAN, \dots
+                    \end{itemize}
                 \end{itemize}
 
-            \paragraph{Firmware}\par
-            \paragraph{Giao diện người dùng}\par
-            \paragraph{Configuration Tools}\par
-            \paragraph{User Interface Devices}\par
-            \paragraph{Cloud Service}\par
+            \paragraph{Thiết bị giao diện người dùng (User Interface Devices):}\par
+                Các thiết bị đầu cuối giúp người quản trị tương tác với hệ thống thông qua các giao thức mạng không dây như Wi-Fi hay có dây như Ethernet.
+            \paragraph{Cloud Service:}\par
+                Nền tảng đám mây cung cấp dịch vụ lưu trữ, phân tích dữ liệu và quản lý tập trung cho hệ thống IoT.
+            \paragraph{Configuration Tools:}\par
+                Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các module được kết nối.
+            \paragraph{Luồng dữ liệu:}\par
+                \begin{itemize}
+                    \item Firmware/FOTA Flow:
+                    \item Request/Data Flow:
+                    \item Control Flow:
+                \end{itemize}
 
         \subsubsection{Thiết kế Module hóa}
         \subsubsection{Luồng Dữ liệu và Xử lý dữ liệu}
