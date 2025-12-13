@@ -75,7 +75,7 @@
                 Đối với các module có sẵn trên thị trường, các module này thông thường sẽ không theo một tiêu chuẩn cụ thể kể cả các module dạng Mini PCIe hay M.2, do đó việc thiết kế các Module Adapter đóng vai trò quan trọng trong việc chuẩn hóa kết nối giữa các module và Baseboard.
             \paragraph{Chuẩn hóa giao diện:}\par
                 Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa sơ đồ chân:
-                \begin{longtable}{|l|l|p{3cm}|l|}
+                \begin{longtable}{|l|l|p{5cm}|l|}
                     \hline
                     \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
                     \endfirsthead
@@ -258,6 +258,27 @@
                 \end{enumerate}
 
             \paragraph{Kỹ thuật layout tín hiệu tốc độ cao}
+                \begin{enumerate}
+                    \item \textbf{Định tuyến cặp vi sai:}
+                    \begin{itemize}
+                        \item Cặp tín hiệu vi sai USB yêu cầu đặt trở kháng mục tiêu là $90\Omega\pm10\%$.
+                        \item Định tuyến theo dạng Coplanar Differential-pair.
+                        \item Đảm bảo chiều dài của mỗi dây trong cặp vi sai luôn bằng nhau và phải được định tuyến song song và đối xứng trong suốt chiều dài đường truyền.
+                    \end{itemize}
+                    \item \textbf{Định tuyến song song:}
+                    \begin{itemize}
+                        \item Tất cả các đường tín hiệu trong bus SPI và SDIO phải luôn đảm bảo đặt trở kháng mục tiêu là $50\Omega\pm10\%$.
+                        \item Các đường tín hiệu được định tuyến theo dạng Coplanar Single-ended. Riêng với đường tín hiệu clock phải luôn được phủ GND suốt cả đường truyền.
+                        \item Đảm bảo chiều dài của tất cả các đường truyền là bằng nhau bằng các kỹ thuật length matching.
+                    \end{itemize}
+                    \item \textbf{Kiểm soát nhiễu:}
+                    \begin{itemize}
+                        \item Hạn chế tối đa việc chuyển lớp trên các tín hiệu tốc độ cao.
+                        \item Tránh định tuyến các tín hiệu khác song song với các đường tín hiệu tốc độ cao, nếu bắt buộc thì phải đi vuông góc và tiếp xúc ít nhất có thể.
+                        \item Lớp GND tham chiếu phải liền mạch, không để các tín hiệu tốc độ cao đi qua những phần GND bị gián đoạn.
+                        \item Tín hiệu tốc độ cao cần phải được che chắn và hạn chế định tuyến gần những vùng nhiễu mạnh như bộ dao động thạch anh, nguồn xung, cuộn cảm, \dots
+                    \end{itemize}
+                \end{enumerate}
 
         
         \subsubsection{Mô phỏng}
