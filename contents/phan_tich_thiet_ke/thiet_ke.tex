@@ -254,6 +254,8 @@
                         \item Các lớp nguồn và đất được bố trí xen kẻ nhau: Layer 1 (Power) - Layer 2 (Ground) - Layer 3 (Power) tạo ra các tụ điện phẳng ký sinh giúp lọc nhiễu và đảm bảo độ ổn định nguồn.
                         \item Các đường dẫn dòng được layout dạng mặt phẳng hoặc đường mạch rất rộng nhằm giảm điện trở thuần, hạn chế sụt áp và giảm cảm kháng ký sinh.
                         \item Tụ điện được thiết kế thành dải các tụ có giá trị từ nhỏ đến lớn, gồm các tụ rất nhỏ (18pF) đặt sát ngay chân nguồn IC để triệt tiêu nhiễu cao tần, và các tụ điện lớn cho hoạt động chuyển mạch của nguồn và ổn định điện áp.
+                        \item Dây dẫn nguồn được định tuyến thành những mảng đồng lớn tăng khả năng tải dòng lớn, giảm trở kháng trên đường nguồn gây sụt áp trên đường nguồn, tăng khả năng tản nhiệt và giảm khả năng phát sinh nhiệt do năng lượng bị tiêu hao do trở kháng cao.
+                        \item Khi đường nguồn định tuyển càng nhỏ sẽ làm tăng cảm kháng ký sinh, khi có các xung điện như gần nguồn xung, thiết bị thay đổi tải tức thời hay hoạt động với tần số cao, các đường nguồn nhỏ trở thành cuộn cảm trên suốt đường dây, điều này gây phát sinh nhiễu điện từ và hiện tượng Ringing làm cho điện áp dao động không ổn định.
                     \end{itemize}
                 \end{enumerate}
 
@@ -281,9 +283,17 @@
                 \end{enumerate}
 
         
-        \subsubsection{Mô phỏng}
+        \subsubsection{Phân tích và Mô phỏng}
             \paragraph{Impedance Control}
-            \paragraph{Power}
-        \dots
+            \paragraph{Power Distribution Network - PDN}
+                \begin{enumerate}
+                    \item \textbf{Mạng nguồn:}
+                    \item \textbf{Phân tích Sụt áp trên đường dây:}
+                    \item \textbf{Phân tích Mật độ dòng điện:}
+                    \begin{itemize}
+                        \item Mật độ dòng điện là đại lượng thể hiện mức độ tập trung dòng điện qua một đơn vị tiết diện. Khi mật độ dòng điện quá cao, các electron sẽ va chạm nhiều hơn với mạng tinh thể đồng, sinh ra nhiều nhiệt. Lượng nhiệt này, nếu đủ lớn, sẽ làm nóng chảy mạch hoặc gây sụt áp.
+                        \item Theo tiêu chuẩn IPC-2221, đường mạch phải đủ rộng để tăng nhiệt độ không quá $10\,^\circ\mathrm{C}$.
+                    \end{itemize}
+                \end{enumerate}
     \subsection{Firmware và Software}
         \dots\footnote{phần mềm}
