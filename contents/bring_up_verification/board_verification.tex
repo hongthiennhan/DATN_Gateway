@@ -97,32 +97,62 @@
 \end{longtable}
 
     \subsection{Kiểm tra Chức năng Phần cứng (Functional Verification)}
-        Từng khối chức năng ngoại vi được kiểm tra độc lập (Unit Test) thông qua các firmware driver cơ bản. Mục đích là xác nhận sự toàn vẹn của các đường dẫn tín hiệu (PCB Traces) và khả năng giao tiếp vật lý giữa MCU và các linh kiện ngoại vi trước khi bàn giao cho đội phát triển phần mềm.
+        Từng khối chức năng ngoại vi được kiểm tra độc lập thông qua các firmware driver cơ bản. Mục đích là xác nhận sự toàn vẹn của các đường dẫn tín hiệu và khả năng giao tiếp vật lý giữa MCU và các linh kiện ngoại vi.
 
-        \begin{longtable}{|c|p{4cm}|p{5cm}|p{3cm}|c|}
-            \hline
-            \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra (Method)} & \textbf{Dấu hiệu nhận biết (Criteria)} & \textbf{Kết quả} \\ \hline
-            \endfirsthead
-            \hline
-            \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra} & \textbf{Dấu hiệu nhận biết} & \textbf{Kết quả} \\ \hline
-            \endhead
-            \hline
-            \endfoot
-            \endlastfoot
+\begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+    \hline
+    \textbf{STT} & \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra} & \textbf{Dấu hiệu nhận biết} & \textbf{Kết quả} \\ \hline
+    \endfirsthead
+    \hline
+    \textbf{STT} & \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra} & \textbf{Dấu hiệu nhận biết} & \textbf{Kết quả} \\ \hline
+    \endhead
+    \hline
+    \endfoot
+    \endlastfoot
 
-            \textbf{UART Interface} \newline (Debug Port) & Gửi chuỗi "Hello World" liên tục lên máy tính. & Terminal hiển thị đúng chuỗi ký tự, không bị lỗi font/rác (Framing Error). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
-            
-            \textbf{I2C Bus} \newline (OLED, RTC, IO Expander) & Chạy lệnh I2C Scan Address. & MCU tìm thấy đủ các địa chỉ: \newline - 0x3C (OLED) \newline - 0x51 (RTC) \newline - 0x22 (IO Expander). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
-            
-            \textbf{SPI Bus} \newline (MicroSD Card) & Giao tiếp lệnh đọc ID thẻ nhớ (CID Register). & Đọc được đúng thông tin Manufacturer ID và dung lượng thẻ. & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
-            
-            \textbf{USB Data} \newline (USB-to-Serial) & Kết nối cáp USB tới PC. & Device Manager nhận diện đúng driver (COM Port/JTAG Interface). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+    % 1. INTER-MCU COMMUNICATION (QUAN TRỌNG NHẤT)
+    \multicolumn{5}{|l|}{\textbf{A. GIAO TIẾP LIÊN VI ĐIỀU KHIỂN (INTER-MCU COMMUNICATION)}} \\ \hline
 
-            \textbf{User Buttons} & Nhấn nút và đọc GPIO. & MCU phát hiện sự thay đổi trạng thái (Interrupt Trigger). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+    1 & \textbf{Giao tiếp dữ liệu tốc độ cao} \newline (U1 Master $\leftrightarrow$ U2 Slave) & \textbf{Giao thức Quad SPI (SPI2):} \newline Kiểm tra đường bus 6 dây: CS, CLK, MOSI, MISO, WP, HD (IO[9:14] kết nối tới IO[8:14]). Thực hiện gửi gói dữ liệu lớn (Ping-pong buffer). & Tốc độ truyền tải đạt mức thiết kế (> 10Mbps). Dữ liệu nhận được tại U1 khớp hoàn toàn với dữ liệu gửi từ U2 (Data Integrity Check). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            \caption{Bảng tổng hợp kết quả kiểm tra chức năng phần cứng (Hardware Functional Test)}
-            \label{tab:functional_verification}
-        \end{longtable}
+    2 & \textbf{Nạp Firmware cho Slave} \newline (U1 Programming U2) & \textbf{Giao thức UART + GPIO Control:} \newline U1 điều khiển chân \texttt{U2\_RESET} và \texttt{U2\_BOOT} để đưa U2 vào chế độ Download Mode, sau đó gửi dữ liệu qua \texttt{UART0}. & U1 báo cáo nạp thành công (Successfully Flashed). U2 tự động khởi động lại và chạy firmware mới. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    3 & \textbf{Điều khiển \& Đồng bộ} \newline (Handshake Signals) & \textbf{GPIO Interrupt:} \newline Kiểm tra tín hiệu ngắt \texttt{U2\_INT} từ Slave báo về Master và tín hiệu \texttt{Enable} từ Master xuống Slave. & Master nhận được sự kiện ngắt ngay lập tức khi Slave kích hoạt chân \texttt{IO46}. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % 2. KHỐI MASTER PERIPHERALS
+    \multicolumn{5}{|l|}{\textbf{B. NGOẠI VI CỦA MASTER (U1 PERIPHERALS)}} \\ \hline
+
+    4 & \textbf{Màn hình hiển thị} \newline (OLED Module) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ 0x3C. Gửi lệnh hiển thị Pattern bàn cờ (Checkerboard). & Màn hình sáng đều, không có điểm chết, hiển thị đúng nội dung test. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    5 & \textbf{Đồng hồ thời gian thực} \newline (RTC - PCF85263) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ 0x51. Gửi lệnh ghi thời gian hiện tại và đọc lại sau 1 phút. & Thời gian đọc về tăng đúng 60 giây so với lúc ghi. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    6 & \textbf{Mở rộng IO (Master)} \newline (IO Expander 1 - TCA6424) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ 0x22. Điều khiển bật/tắt các chân Output P0/P1/P2. & Các tín hiệu điều khiển nguồn (EN\_1V8C, EN\_3V3C) thay đổi mức logic đúng theo lệnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    7 & \textbf{USB Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Master điều khiển chân \texttt{U1\_USBSEL}. & Khi High: USB Type-C thông với U1. Khi Low: USB Type-C ngắt hoặc chuyển hướng (tuỳ thiết kế). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    8 & \textbf{Cổng kết nối WAN} \newline (Cho Module LTE/Ethernet) & \textbf{Multi-protocol Check:} \newline - Loopback trên UART1 (IO15/16). \newline - Quét thiết bị trên SPI3 (IO4-7). & - UART nhận lại đúng chuỗi đã gửi. \newline - SPI phát hiện thiết bị ngoại vi giả lập. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % 3. KHỐI SLAVE PERIPHERALS
+    \multicolumn{5}{|l|}{\textbf{C. NGOẠI VI CỦA SLAVE (U2 PERIPHERALS)}} \\ \hline
+
+    9 & \textbf{Mở rộng IO (Slave)} \newline (IO Expander 2 - TCA6424) & \textbf{Giao thức I2C0 (Slave):} \newline Quét địa chỉ 0x22 trên bus I2C của U2. Kiểm tra ngắt \texttt{IOX2\_INT}. & U2 giao tiếp thành công, đọc/ghi được trạng thái các chân mở rộng (LAN\_IO). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    10 & \textbf{Thẻ nhớ MicroSD} \newline (Storage) & \textbf{Giao thức SDIO 4-bit:} \newline U2 thực hiện Mount File System (FAT32) và ghi file log mẫu 1MB. & Tốc độ ghi đạt chuẩn Class 10. File đọc lại không bị lỗi (Check MD5). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    11 & \textbf{Cổng mở rộng LAN1} \newline (Cho Zigbee/Thread) & \textbf{Multi-protocol Check:} \newline - UART1 (IO17/18). \newline - SPI3 (CS0). & Giao tiếp ổn định với Module Test LAN1 (Loopback OK). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    12 & \textbf{Cổng mở rộng LAN2} \newline (Cho RS485/CAN) & \textbf{Multi-protocol Check:} \newline - UART2 (IO15/16). \newline - SPI3 (CS1). & Giao tiếp ổn định với Module Test LAN2 (Loopback OK). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % 4. GIAO DIỆN NGƯỜI DÙNG & HỆ THỐNG
+    \multicolumn{5}{|l|}{\textbf{D. GIAO DIỆN HỆ THỐNG (SYSTEM INTERFACE)}} \\ \hline
+
+    13 & \textbf{Master USB-C Port} \newline (Native USB) & \textbf{USB JTAG/Serial:} \newline Cắm cáp vào PC. & PC nhận diện cổng COM (USB Serial/JTAG Controller). Nạp code trực tiếp từ PC OK. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    14 & \textbf{Nút nhấn hệ thống} \newline (Reset \& Boot Buttons) & \textbf{Physical Interaction:} \newline Nhấn nút Reset và Boot trên cả 2 MCU. & Hệ thống khởi động lại (Reset) hoặc vào chế độ nạp (Boot) chính xác. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    \caption{Bảng kiểm tra chức năng chi tiết từng khối và giao tiếp liên chip (Detailed Functional Verification Matrix)}
+    \label{tab:detailed_functional_verification_final}
+\end{longtable}
 
     \subsection{Kiểm tra Firmware}
         \dots\footnote{phần mềm}
