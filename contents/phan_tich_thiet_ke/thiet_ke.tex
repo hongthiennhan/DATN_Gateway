@@ -130,25 +130,125 @@
 
     \newpage
     \subsection{Hardware}
-        \subsubsection{Sơ đồ khối Phần cứng}
-            \begin{figure}[h]
-                \centering
-                \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
-                \caption{Sơ đồ khối Phần cứng}
-            \end{figure}
-            \dots
+        \subsubsection{Thiết kế sơ đồ khối phần cứng}
+        Sơ đồ khối phần cứng của hệ thống được xây dựng nhằm mô tả tổng thể kiến trúc và mối liên hệ giữa các khối chức năng chính, bao gồm khối xử lý trung tâm, các khối ngoại vi và hệ thống cấp nguồn. Mục tiêu của thiết kế sơ đồ khối là đảm bảo tính rõ ràng, dễ hiểu và khả năng mở rộng trong tương lai. 
 
-        \newpage
-        \subsubsection{Hệ thống nguồn}
-            \begin{figure}[h]
-                \centering
-                \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
-                \caption{Sơ đồ hệ thống nguồn}
-            \end{figure}
-            \dots
+            \paragraph{Sơ đồ khối hệ thống phần cứng} 
+                Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
+
+                ESP32-S3 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA cũng như xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
+                
+                Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
+
+                \begin{itemize}
+                    \item \textbf{Mở rộng GPIO:} Sử dụng IC TCA6424ARGJR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt và GPIO của các module mở rộng.
+                    
+                    \item \textbf{Quản lý thời gian thực (RTC):} Hệ thống tích hợp IC RTC PCF85263ATL, được cấp nguồn dự phòng bằng pin CR2032 (3.0\,V), giúp duy trì thông tin về thời gian ngay cả khi hệ thống mất nguồn chính.
+                    
+                    \item \textbf{Hiển thị trạng thái:} Màn hình OLED kích thước 0.96\,inch sử dụng driver SH1107, giao tiếp qua chuẩn I\textsuperscript{2}C, dùng để hiển thị các thông tin trạng thái và tình trạng hoạt động của hệ thống.
+                    
+                    \item \textbf{Lưu trữ cục bộ:} MCU Slave được trang bị khe cắm thẻ nhớ Micro SD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log dữ liệu tại chỗ trong trường hợp mất kết nối mạng hoặc phục vụ mục đích phân tích hậu kỳ.
+                    
+                    \item \textbf{Nút nhấn nguồn:} Nút nhấn được sử dụng để gửi lệnh điều khiển bật/tắt nguồn các khối chức năng thông qua MCU Master.
+                    
+                    \item \textbf{Cổng USB:} ESP32-S3 hỗ trợ giao tiếp USB phục vụ nạp firmware hoặc hoạt động ở chế độ USB Host. Hệ thống sử dụng IC chuyển mạch USB 2.0 FSUSB42UMX để lựa chọn giữa đường USB sử dụng cho việc nạp code/cấu hình thiết bị và đường USB kết nối với module WAN.
+                \end{itemize}
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
+                    \caption{Sơ đồ khối hệ thống}
+                    \label{fig:blockdiagram_system}
+                \end{figure}
+
+            \paragraph{Sơ đồ khối nguồn} 
+                Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngay tại ngõ vào, nguồn được bảo vệ bằng eFuse nhằm hạn chế các sự cố quá dòng, ngắn mạch và đảm bảo an toàn cho toàn bộ hệ thống.
+
+                Từ nguồn DC 12\,V, các khối chuyển đổi DC/DC và LDO được sử dụng để tạo ra các rail nguồn chính, bao gồm:
+
+                \begin{itemize}
+                    \item \textbf{+5V0\_SYS:} Được chuyển đổi trực tiếp từ nguồn DC 12\,V, dùng để cấp trực tiếp cho U1 Master và nhánh nguồn qua efuse của nguồn +5V0.
+
+                    \item \textbf{+3V3M:} Là nguồn chuyển đổi từ rail +5V0\_SYS bằng LDO nội bộ của module Master, dùng để cấp nguồn cho IO Expander (Master), RTC và USB Switch.
+                    
+                    \item \textbf{+5V0:} Là rail nguồn rẽ nhánh từ +5V0\_SYS thông qua eFuse, dùng để cấp cho các khối và module sử dụng điện áp 5\,V. Việc bật/tắt rail nguồn này được điều khiển bởi MCU Master.
+                    
+                    \item \textbf{+3V3:} Được tạo trực tiếp từ nguồn DC 12\,V, cung cấp cho phần lớn các khối chức năng của hệ thống, bao gồm MCU, logic điều khiển và các ngoại vi. Rail nguồn này cũng được quản lý bởi MCU Master.
+                    
+                    \item \textbf{+1V8:} Được chuyển đổi từ rail +3V3 và quản lý bởi MCU Master, dùng để cấp nguồn cho các module mở rộng yêu cầu điện áp 1.8\,V.
+                \end{itemize}
+
+                Đối với các module gắn ngoài thông qua connector, các đường nguồn 5\,V và 3.3\,V đều được điều khiển bằng tín hiệu eenable từ MCU Master. Cách tổ chức này cho phép hệ thống:
+
+                \begin{itemize}
+                    \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
+                    \item Nhanh chóng cô lập và ngắt nguồn khi phát hiện sự cố từ các module bên ngoài.
+                    \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động không liên tục hoặc tiết kiệm năng lượng.
+                \end{itemize}
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
+                    \caption{Sơ đồ hệ thống nguồn}
+                    \label{fig:blockdiagram_power}
+                \end{figure}
 
         \subsubsection{Thiết kế Mạch nguyên lý (Schematic)}
+            Phần này trình bày các nội dung kỹ thuật của dự án thông qua thiết kế sơ đồ nguyên lý. Thiết kế sơ đồ nguyên lý mô tả chi tiết các kết nối điện giữa các thành phần, nhằm đảm bảo hệ thống hoạt động đúng chức năng, đồng thời đáp ứng các yêu cầu về hiệu năng và các ràng buộc trong thiết kế.
+
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=\textwidth]{figures/sche_iotgateway.png}
+                \caption{Sơ đồ nguyên lý hệ thống}
+                \label{fig:sche_iotgateway}
+            \end{figure}
+
             \paragraph{Thiết kế Mạch xử lý trung tâm}
+                Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
+
+                Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_esp32slave.png}
+                    \caption{Sơ đồ nguyên lý ESP32 Slave}
+                    \label{fig:sche_esp32slave}
+                \end{figure}
+                
+                Giá trị điện trở kéo lên của bus I\textsuperscript{2}C được xác định dựa trên đặc tính điện của đường truyền và các yêu cầu về thời gian đáp ứng của giao thức. Theo phương pháp tính toán được tham khảo từ tài liệu \href{https://www.ti.com/lit/an/slva689/slva689.pdf?ts=1765647134197&ref_url=https%253A%252F%252Fwww.google.com%252F}{I\textsuperscript{2}C Bus Pull-Up Resistor Calculation} của Texas Instruments, miền giá trị hợp lệ của điện trở kéo lên \(R_{PU}\) được xác định bởi hai công thức sau:
+                
+                \begin{equation}
+                R_{PU,\max} = \frac{t_r}{0.8473 \cdot C_b}
+                \end{equation}
+                
+                \begin{equation}
+                R_{PU,\min} = \frac{V_{CC} - V_{OL(\max)}}{I_{OL}}
+                \end{equation}
+                
+                Trong đó:
+                \begin{itemize}
+                    \item \(R_{PU}\): điện trở kéo lên của các đường SDA và SCL (đơn vị \(\Omega\)).
+                    \item \(C_b\): điện dung tổng của bus I\textsuperscript{2}C, bao gồm điện dung ký sinh của đường mạch và điện dung ngõ vào của các thiết bị trên bus (F).
+                    \item \(t_r\): thời gian cạnh lên của tín hiệu I\textsuperscript{2}C; đối với chế độ Fast Mode (400\,kHz), \(t_r\) thường được giới hạn ở mức 300\,ns.
+                    \item \(V_{CC}\): điện áp cấp cho bus I\textsuperscript{2}C (V).
+                    \item \(V_{OL(\max)}\): mức điện áp logic thấp tối đa cho phép khi thiết bị nhận mức 0 (V), thường lấy theo datasheet (xấp xỉ \(0.2\,V_{CC}\)).
+                    \item \(I_{OL}\): dòng kéo xuống cực đại của thiết bị khi xuất mức logic thấp (A).
+                \end{itemize}
+                
+                Từ hai ràng buộc trên, điện trở kéo lên được lựa chọn sao cho thỏa mãn điều kiện:
+                \[
+                R_{PU,\min} \leq R_{PU} \leq R_{PU,\max}
+                \]
+                
+                Cổng USB của module ESP32-S3 Master được đưa ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép chia sẻ đường truyền USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối với module WAN hỗ trợ giao thức USB 2.0. Trên các đường tín hiệu USB, hệ thống bố trí các diode TVS nhằm bảo vệ mạch khỏi các xung phóng tĩnh điện (ESD) phát sinh trong quá trình thao tác. Bên cạnh đó, các điện trở nối tiếp giá trị 22\,\(\Omega\) được sử dụng để giảm chấn, hạn chế hiện tượng phản xạ và cải thiện độ toàn vẹn tín hiệu trên đường truyền USB.
+            
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_esp32master.png}
+                    \caption{Sơ đồ nguyên lý ESP32 Master}
+                    \label{fig:sche_esp32master}
+                \end{figure}
+
             \paragraph{Thiết kế Mạch nguồn}
             \paragraph{Thiết kế Mạch USB}
             \paragraph{Thiết kế Mạch IO Expander}
@@ -156,6 +256,7 @@
             \paragraph{Thiết kế Mạch Micro SD Card}
             \paragraph{Thiết kế Mạch Module Adapter}
         
+
         \subsubsection{Thiết kế PCB}
             \paragraph{Thiết kế xếp lớp PCB (Stack-up) và Kiểm soát trở kháng (Impedance Control)}
                 \begin{enumerate}
