@@ -1,0 +1,128 @@
+\section{Quy trình Kiểm tra sản phẩm (Board Verification)}
+
+    Sau quy trình khởi động (Bring-up) thành công, toàn bộ hệ thống được đưa vào quy trình kiểm tra chi tiết. Mục tiêu của giai đoạn này là định lượng các thông số kỹ thuật, đảm bảo các mức logic điều khiển và chất lượng nguồn điện đáp ứng yêu cầu thiết kế trước khi tích hợp firmware ứng dụng.
+
+    \subsection{Kiểm tra trạng thái Logic và Điều khiển (Logic State Verification)}
+        Các tín hiệu điều khiển tới hạn (Critical Control Signals) bao gồm Reset, Boot Mode và Enable được đo đạc tại thời điểm khởi động và trạng thái ổn định. Việc này nhằm xác minh cấu hình điện trở kéo (Pull-up/Pull-down) đã được thiết kế đúng, đảm bảo MCU vào đúng chế độ hoạt động (Boot mode vs Download mode) và không xảy ra hiện tượng thả nổi tín hiệu (Floating).
+
+        \begin{longtable}{|c|p{4cm}|p{4.5cm}|p{3.5cm}|c|}
+            \hline
+            \textbf{STT} & \textbf{Tín hiệu (Signal)} & \textbf{Điều kiện kiểm tra (Test Condition)} & \textbf{Mức Logic đo được (Measured Logic)} & \textbf{Kết quả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{STT} & \textbf{Tín hiệu} & \textbf{Điều kiện kiểm tra} & \textbf{Mức Logic đo được} & \textbf{Kết quả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \endlastfoot
+
+            1 & \textbf{ESP\_EN} (Enable) \newline (U1 \& U2) & Mặc định (RC Delay khi cấp nguồn). & Logic High ($3.3V$). \newline (Stable after 10ms). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            2 & \textbf{IO0} (Boot Pin) \newline (U1 \& U2) & Trạng thái nghỉ (Idle). \newline Không nhấn nút BOOT. & Logic High ($3.3V$). \newline (Internal Pull-up OK). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            3 & \textbf{NRST} (System Reset) & Nhấn nút Reset cứng. & Logic Low ($0V$). \newline (Active Low). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            4 & \textbf{IO\_INT} \newline (IO Expander Interrupt) & Mặc định (Chưa có sự kiện). & Logic High ($3.3V$). \newline (External Pull-up $10k\Omega$). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            5 & \textbf{USB\_VBUS\_DET} \newline (Phát hiện cáp USB) & Cắm cáp USB Type-C. & Logic High ($5.0V \rightarrow 3.3V$ qua phân áp). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+
+            \caption{Kết quả kiểm tra các mức Logic điều khiển (Control Logic Verification)}
+            \label{tab:logic_verification}
+        \end{longtable}
+
+    \subsection{Kiểm tra Chất lượng Nguồn (Power Integrity Analysis)}
+        Chất lượng nguồn được đánh giá thông qua đo đạc từ máy hiện sóng (Oscilloscope) để đo độ gợn (Voltage Ripple) và độ sụt áp (Voltage Drop) dưới tải. Các phép đo được thực hiện khi hệ thống đang chạy firmware kiểm thử (Test Firmware) với tải giả định để mô phỏng điều kiện hoạt động thực tế.
+
+\begin{longtable}{|c|c|p{4cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|c|}
+    \hline
+    \multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Rail}} & \multirow{2}{4cm}{\textbf{Điểm đo tại tải}} & \multicolumn{3}{c|}{\textbf{Giá trị đo thực tế}} & \multirow{2}{*}{\textbf{Kết quả}} \\ \cline{4-6}
+     & & & \textbf{Sleep Mode} & \textbf{Normal Mode} & \textbf{Full Load} & \\ \hline
+    \endfirsthead
+    \hline
+    \multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Rail}} & \multirow{2}{4cm}{\textbf{Điểm đo tại tải}} & \multicolumn{3}{c|}{\textbf{Giá trị đo thực tế}} & \multirow{2}{*}{\textbf{Kết quả}} \\ \cline{4-6}
+     & & & \textbf{Sleep Mode} & \textbf{Normal Mode} & \textbf{Full Load} & \\ \hline
+    \endhead
+    \hline
+    \endfoot
+    \endlastfoot
+
+    % PHẦN 1: DÒNG ĐIỆN
+    \multicolumn{7}{|l|}{\textbf{A. DÒNG ĐIỆN ĐẦU VÀO (INPUT CURRENT) - Đơn vị: $mA$}} \\ \hline
+    \multicolumn{6}{|l|}{\textit{*Tiêu chí: Dòng tổng $< 2.35A$ (Công suất thiết kế)}} \\ \hline
+    1 & \textbf{+12V} & Total Input (Jack DC) & $45$ & $145$ & $380$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % PHẦN 2: RIPPLE
+    \multicolumn{7}{|l|}{\textbf{B. ĐỘ GỢN ĐIỆN ÁP (VOLTAGE RIPPLE) - Đơn vị: $\pm mV_{pp}$}} \\ \hline
+    \multicolumn{6}{|l|}{\textit{*Tiêu chí: Voltage ripple $< 5\%$}} \\ \hline
+    2 & \textbf{+5V0\_SYS} & Test-point (TP15/16) & $12$ & $28$ & $45$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+    3 & \textbf{+5V0} & Test-point (TP29/30) & $15$ & $32$ & $48$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+    4 & \textbf{+3V3} & Test-point (TP31/32) & $5$ & $12$ & $25$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+    5 & \textbf{+1V8} & Test-point (TP33/34) & $4$ & $8$ & $18$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+    6 & \textbf{+3V3\_MSYS} & Test-point (TP5/6) & $5$ & $10$ & $22$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % PHẦN 3: SỤT ÁP - CẤU TRÚC MERGE MỚI
+    \multicolumn{7}{|l|}{\textbf{C. ĐỘ SỤT ÁP TẠI TẢI (VOLTAGE DROP) - Đơn vị: $V$}} \\ \hline
+    \multicolumn{6}{|l|}{\textit{*Tiêu chí: Voltage drop = voltage at source - voltage at load $< 5\%$}} \\ \hline
+    % Rail +5V0_SYS (1 dòng)
+    7 & \textbf{+5V0\_SYS} & ESP32-S3 Master & $5.01$ & $4.98$ & $4.95$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % Rail +5V0 (4 dòng)
+    8 & \multirow{4}{*}{\textbf{+5V0}} & ESP32-S3 Slave & $5.00$ & $4.96$ & $4.93$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    9 & & WAN Adapter Module & $5.01$ & $4.92$ & $4.85$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    10 & & LAN1 Adapter Module & $5.01$ & $4.95$ & $4.88$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    11 & & LAN2 Adapter Module & $5.01$ & $4.95$ & $4.88$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % Rail +3V3 (7 dòng)
+    12 & \multirow{7}{*}{\textbf{+3V3}} & Input PWR\_1V8 (LDO) & $3.30$ & $3.29$ & $3.26$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    13 & & IO Expander 2 & $3.30$ & $3.30$ & $3.28$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    14 & & WAN Adapter Module & $3.30$ & $3.28$ & $3.24$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    15 & & LAN1 Adapter Module & $3.30$ & $3.28$ & $3.25$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    16 & & LAN2 Adapter Module & $3.30$ & $3.28$ & $3.25$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    17 & & Micro SD Card & $3.30$ & $3.28$ & $3.25$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    18 & & LCD (OLED) & $3.30$ & $3.26$ & $3.22$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % Rail +1V8 (3 dòng)
+    19 & \multirow{3}{*}{\textbf{+1V8}} & WAN Adapter Module & $1.80$ & $1.79$ & $1.77$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    20 & & LAN1 Adapter Module & $1.80$ & $1.79$ & $1.78$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    21 & & LAN2 Adapter Module & $1.80$ & $1.79$ & $1.78$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    % Rail +3V3_MSYS (4 dòng)
+    22 & \multirow{4}{*}{\shortstack{\textbf{+3V3}\\\textbf{\_MSYS}}} & RTC (PCF85263) & $3.30$ & $3.30$ & $3.29$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    23 & & IO Expander 1 & $3.30$ & $3.30$ & $3.28$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    24 & & USB Switch (FSUSB42) & $3.30$ & $3.29$ & $3.27$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
+    25 & & PWR\_BTN (Pull-up) & $3.30$ & $3.30$ & $3.30$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+    \caption{Bảng phân tích chất lượng nguồn điện chi tiết (Detailed Power Integrity Analysis)}
+    \label{tab:power_analysis_merged}
+\end{longtable}
+
+    \subsection{Kiểm tra Chức năng Phần cứng (Functional Verification)}
+        Từng khối chức năng ngoại vi được kiểm tra độc lập (Unit Test) thông qua các firmware driver cơ bản. Mục đích là xác nhận sự toàn vẹn của các đường dẫn tín hiệu (PCB Traces) và khả năng giao tiếp vật lý giữa MCU và các linh kiện ngoại vi trước khi bàn giao cho đội phát triển phần mềm.
+
+        \begin{longtable}{|c|p{4cm}|p{5cm}|p{3cm}|c|}
+            \hline
+            \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra (Method)} & \textbf{Dấu hiệu nhận biết (Criteria)} & \textbf{Kết quả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra} & \textbf{Dấu hiệu nhận biết} & \textbf{Kết quả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \endlastfoot
+
+            \textbf{UART Interface} \newline (Debug Port) & Gửi chuỗi "Hello World" liên tục lên máy tính. & Terminal hiển thị đúng chuỗi ký tự, không bị lỗi font/rác (Framing Error). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            \textbf{I2C Bus} \newline (OLED, RTC, IO Expander) & Chạy lệnh I2C Scan Address. & MCU tìm thấy đủ các địa chỉ: \newline - 0x3C (OLED) \newline - 0x51 (RTC) \newline - 0x22 (IO Expander). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            \textbf{SPI Bus} \newline (MicroSD Card) & Giao tiếp lệnh đọc ID thẻ nhớ (CID Register). & Đọc được đúng thông tin Manufacturer ID và dung lượng thẻ. & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+            
+            \textbf{USB Data} \newline (USB-to-Serial) & Kết nối cáp USB tới PC. & Device Manager nhận diện đúng driver (COM Port/JTAG Interface). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+
+            \textbf{User Buttons} & Nhấn nút và đọc GPIO. & MCU phát hiện sự thay đổi trạng thái (Interrupt Trigger). & \textcolor{modern_blue}{\textbf{PASSededED}} \\ \hline
+
+            \caption{Bảng tổng hợp kết quả kiểm tra chức năng phần cứng (Hardware Functional Test)}
+            \label{tab:functional_verification}
+        \end{longtable}
+
+    \subsection{Kiểm tra Firmware}
+        \dots\footnote{phần mềm}

@@ -1,0 +1,182 @@
+\section{Quy trình và Kết quả Khởi động Bo mạch (Board Bring-up Procedure \& Results)}
+
+    Quy trình khởi động bo mạch (Board Bring-up) được thực hiện nhằm xác minh tính toàn vẹn của phần cứng sau quá trình gia công và lắp ráp (PCBA). Mục tiêu của giai đoạn này là đảm bảo các khối nguồn hoạt động ổn định trong ngưỡng dung sai thiết kế và loại bỏ các lỗi vật lý trước khi tiến hành nạp firmware và kiểm thử chức năng. Quy trình thực nghiệm được chia thành 4 giai đoạn tuần tự.
+
+    \subsection{Kiểm tra ngoại quan (Visual Inspection)}
+        Trước khi cấp nguồn, công tác kiểm tra ngoại quan được thực hiện nhằm phát hiện các sai sót vật lý phát sinh trong quá trình gia công. Các hạng mục kiểm tra bao gồm:
+
+        \begin{itemize}
+            \item \textbf{Chất lượng mối hàn:} Rà soát các hiện tượng cầu thiếc (solder bridges), mối hàn lạnh (cold joints) hoặc thiếu thiếc, đặc biệt tại các khu vực linh kiện có mật độ chân cao.
+            \item \textbf{Định hướng linh kiện:} Đối chiếu bo mạch thực tế với bản vẽ lắp ráp (Assembly Drawing) để xác nhận tính chính xác về chiều cực tính của các linh kiện phân cực (Diode, IC, Nguồn).
+            \item \textbf{Độ sạch bề mặt:} Đảm bảo bề mặt PCB đã được vệ sinh công nghiệp, loại bỏ hoàn toàn flux thừa và các vụn kim loại có khả năng gây đoản mạch.
+        \end{itemize}
+
+        \newpage
+        \begin{longtable}{|c|p{3cm}|p{6cm}|p{4cm}|c|}
+            \hline
+            \textbf{STT} & \textbf{Nhóm kiểm tra} & \textbf{Đối tượng kiểm tra cụ thể} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{STT} & \textbf{Nhóm kiểm tra} & \textbf{Đối tượng kiểm tra cụ thể} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \endlastfoot
+
+            % PHẦN A: KIỂM TRA CHUNG
+            \multicolumn{5}{|l|}{\textbf{A. KIỂM TRA TỔNG QUÁT}} \\ \hline
+
+            \multirow{2}{*}{1} & \multirow{2}{3cm}{\textbf{Tổng quan} \newline (Physical \& Solder)} 
+                & Bo mạch PCB (Bề mặt, Flux, Vết xước) & Sạch sẽ, không lộ đồng, không cong vênh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
+                & & Mối hàn tổng thể (Solder Joints) & Bóng, đều, không tổ ong, không hàn lạnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            % PHẦN B: KIỂM TRA CHI TIẾT
+            \multicolumn{5}{|l|}{\textbf{B. KIỂM TRA CHI TIẾT LINH KIỆN}} \\ \hline
+
+            % NHÓM 1: LINH KIỆN CHUNG
+            \multirow{6}{*}{2} & \multirow{6}{3cm}{\textbf{Nhóm Linh kiện} \newline (General Components)} 
+                & \textbf{Vi xử lý (SoC):} U1, U2 \newline (ESP32-S3-WROOM-1U) & \multirow{6}{4cm}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).} & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+                
+                & & \textbf{IO Expander:} \newline (TCA6424ARGJR - QFN32) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+                
+                & & \textbf{USB Switch:} \newline (FSUSB42UMX - QFN10) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+                
+                & & \textbf{RTC:} \newline (PCF85263ATL - DFN10) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+                
+                & & \textbf{Màn hình OLED:} \newline (SH1107 Module) & & \textcolor{modern_red}{\textbf{Failed}\footnote{Không ảnh hưởng đến sản phẩm, chỉnh sửa ở giai đoạn sau}} \\ \cline{3-3} \cline{5-5}
+
+                & & \textbf{MicroSD Card:} \newline (Phần chân tín hiệu SMD) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            % NHÓM 2: LINH KIỆN PHÂN CỰC
+            \multirow{2}{*}{3} & \multirow{2}{3cm}{\textbf{Nhóm Phân cực} \newline (Polarized Components)} 
+                
+                & \textbf{Bán dẫn phân cực:} \newline (Diode TVS, Schottky) & \multirow{2}{4cm}{\textbf{Đúng Cực tính:} \newline - Cực Dương (+), Cathode (K) gia công đúng chiều.} & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+
+                & & \textbf{Nguồn:} \newline (Đế pin CR2032, DC-091) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            % NHÓM 3: CƠ KHÍ & KẾT NỐI
+            \multirow{5}{*}{4} & \multirow{5}{3cm}{\textbf{Nhóm Cơ khí} \newline (Mechanical Parts)} 
+                & \textbf{USB Type-C Connector:} \newline (Cho U1 \& U2) & \multirow{5}{4cm}{\textbf{Mức độ chống chịu cơ khí:} \newline - Chân vỏ (Shield) hàn chắc, chịu lực tốt.} & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+                
+                & & \textbf{Expansion Headers:} \newline (WAN, LAN1, LAN2) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+
+                & & \textbf{DC Power Jack:} \newline (DC12V Input) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+                
+                & & \textbf{Nút nhấn (Buttons):} \newline (Reset, Boot/User) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+
+                & & \textbf{Vỏ khe thẻ nhớ:} \newline (MicroSD Metal Shield) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            \caption{Bảng kiểm tra ngoại quan chi tiết}
+            \label{tab:visual_inspection}
+        \end{longtable}
+
+        \subsection{Kiểm tra thông số nguội (Cold Check Analysis)}
+        Phép đo kiểm tra nguội được thực hiện trong trạng thái bo mạch cách ly hoàn toàn với nguồn điện. Phương pháp này sử dụng đồng hồ vạn năng để xác định trở kháng giữa các đường nguồn (Power Rails) và đất (GND). Mục đích là phát hiện sớm các lỗi ngắn mạch (Short Circuit) nghiêm trọng.
+
+        Kết quả đo đạc thực tế đã kiểm tra:
+
+        \begin{longtable}{|c|p{3cm}|p{5cm}|p{4cm}|c|}
+            \hline
+            \textbf{STT} & \textbf{Đường nguồn (Power Rail)} & \textbf{Tiêu chí kỹ thuật} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{STT} & \textbf{Đường nguồn (Power Rail)} & \textbf{Tiêu chí kỹ thuật} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \endlastfoot
+
+            1 & \textbf{+12V} & Không ngắn mạch ($> 10\Omega$) & $1.175 M\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            2 & \textbf{+5V0\_SYS} & Không ngắn mạch ($> 10\Omega$) & $160.8 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            3 & \textbf{+5V0} & Không ngắn mạch ($> 10\Omega$) & $12.0 M\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            4 & \textbf{+3V3} & Không ngắn mạch ($> 10\Omega$) & $22.24 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            5 & \textbf{+1V8} & Không ngắn mạch ($> 10\Omega$) & $29.49 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            6 & \textbf{+3V3\_MSYS} & Không ngắn mạch ($> 10\Omega$) & $30.0 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            7 & \textbf{+3V3\_SSYS} & Không ngắn mạch ($> 10\Omega$) & $\infty$ (Open / High-Z) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            \caption{Kết quả kiểm tra trở kháng nguội các đường nguồn (Cold Impedance Check Results)}
+            \label{tab:cold_check_results}
+        \end{longtable}
+
+    \subsection{Kiểm tra cấp nguồn giới hạn (Smoke Test / Hot Check)}
+        Để giảm thiểu rủi ro hư hỏng linh kiện do các lỗi tiềm ẩn không phát hiện được trong pha kiểm tra nguội, quy trình cấp nguồn lần đầu được thực hiện thông qua bộ nguồn đa năng với chế độ bảo vệ quá dòng.
+
+        \textbf{Phương pháp thực hiện:}
+        \begin{enumerate}
+            \item Thiết lập điện áp đầu vào ở mức danh định ($V_{IN} = 12V$).
+            \item Kích hoạt chế độ Giới hạn dòng điện (Current Limiting) ở ngưỡng an toàn $I_{limit} = 20mA$.
+            \item Quan sát trạng thái chuyển đổi chế độ của bộ nguồn (CV - Constant Voltage hoặc CC - Constant Current) để đánh giá tình trạng bo mạch.
+        \end{enumerate}
+
+        \textbf{Kết quả thử nghiệm:}
+        Hệ thống hoạt động ổn định ở chế độ Điện áp không đổi (CV). Dòng tiêu thụ tĩnh (Quiescent Current) đo được ở mức thấp ($\approx 20mA$), không xuất hiện hiện tượng sụt áp đầu vào hay quá nhiệt cục bộ trên các linh kiện công suất. Điều này xác nhận bo mạch không có lỗi quá dòng nghiêm trọng.
+        \begin{longtable}{|c|p{4cm}|p{4.5cm}|p{3.5cm}|c|}
+            \hline
+            \textbf{STT} & \textbf{Thiết lập kiểm thử} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả đo thực tế} & \textbf{Kết quả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{STT} & \textbf{Thiết lập kiểm thử} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả đo thực tế} & \textbf{Kết quả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \endlastfoot
+
+            1 & \textbf{Bước 1:} Cấp nguồn, giới hạn dòng $I_{limit} = 20mA$ & Không sụt áp nguồn cấp (Giữ chế độ CV). Dòng tiêu thụ $< 20mA$. & Ổn định. \newline $I_{load} = 4mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            2 & \textbf{Bước 2:} Tăng giới hạn dòng $I_{limit} = 60mA$ & Không sụt áp nguồn cấp. & Ổn định. \newline $I_{load} = 4mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            3 & \textbf{Bước 3:} Tăng giới hạn dòng $I_{limit} = 100mA$ & Không sụt áp nguồn cấp. & Ổn định. \newline $I_{load} = 4mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            4 & \textbf{Bước 4:} Tăng giới hạn dòng $I_{limit} = 200mA$ & Không sụt áp nguồn cấp. & Ổn định. \newline $I_{load} = 4mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            5 & \textbf{Bước 5:} Cấp nguồn bình thường & Hệ thống hoạt động ổn định, không có linh kiện phát nhiệt bất thường. & Ổn định. \newline $I_{load} = 4mA$ (Idle). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            \caption{Kết quả kiểm tra nóng và dòng tiêu thụ tĩnh (Smoke Test \& Quiescent Current Results)}
+            \label{tab:smoke_test_results_final}
+        \end{longtable}
+
+    \subsection{Xác thực thông số điện áp (Voltage Validation)}
+        Sau khi xác nhận tính an toàn của hệ thống, giới hạn dòng điện được tăng đến mức vận hành tiêu chuẩn. Các mức điện áp tại các điểm kiểm tra (Test Points) được đo đạc để xác minh độ chính xác của khối nguồn Buck Converter và LDO so với tính toán thiết kế.
+
+        \begin{longtable}{|c|p{5.5cm}|p{3cm}|p{3.5cm}|c|}
+            \hline
+            \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế)} & \textbf{Kết quả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \endlastfoot
+
+            1 & \textbf{+12V\_IN} \newline \textit{Test-point TP11/13} & $12.0 V \pm 10\%$ & $12.02 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            2 & \textbf{+12V} \newline \textit{Test-point TP12/14} & $12.0 V \pm 10\%$ & $12.02 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            3 & \textbf{+5V0\_SYS} \newline \textit{Test-point TP15/16} & $5.0 V \pm 5\%$ & $5.01 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            4 & \textbf{+5V0} \newline \textit{Test-point TP29/30} & $5.0 V \pm 5\%$ & $5.01 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            5 & \textbf{+3V3} \newline \textit{Test-point TP31/32} & $3.3 V \pm 3\%$ & $3.325 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            6 & \textbf{+1V8} \newline \textit{Test-point TP33/34} & $1.8 V \pm 3\%$ & $1.796 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            7 & \textbf{+3V3\_MSYS} \newline \textit{Test-point TP5/6} & $3.3 V \pm 3\%$ & $3.310 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            8 & \textbf{+3V3\_SSYS} \newline \textit{Test-point TP7/8} & $3.3 V \pm 3\%$ & $3.295 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            9 & \textbf{+3V0\_BAT} \newline \textit{Test-point TP17/18} & $3.0 V \pm 3\%$ & $3.02 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+            10 & \textbf{+3V3\_IOX1\_VCCI} \newline \textit{Test-point TP19/20} & $3.3 V \pm 3\%$ & $3.28 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            11 & \textbf{+3V3\_IOX2\_VCCI} \newline \textit{Test-point TP25/26} & $3.3 V \pm 3\%$ & $3.28 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            \caption{Kết quả đo kiểm điện áp các điểm Test Point (Voltage Validation Results)}
+            \label{tab:voltage_validation_final}
+        \end{longtable}
