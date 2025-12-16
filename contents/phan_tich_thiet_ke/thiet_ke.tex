@@ -352,29 +352,29 @@
 
                 Để đảm bảo chất lượng tín hiệu (Signal Integrity) cho các giao tiếp USB, SPI và SDIO, quy trình layout tuân thủ các quy tắc định tuyến nghiêm ngặt nhằm kiểm soát trở kháng, đồng bộ pha và giảm thiểu xuyên nhiễu (Crosstalk):
 
-                \begin{enumerate}
-                    \item \textbf{Định tuyến Cặp Vi sai (Differential Pair Routing - USB):}
-                    \begin{itemize}
-                        [cite_start]\item \textbf{Kiểm soát Trở kháng:} Cặp tín hiệu vi sai (như USB D+/D-) được thiết kế đạt trở kháng đặc tính mục tiêu $Z_{diff} = 90\Omega \pm 10\%$[cite: 420]. Cấu trúc định tuyến sử dụng là \textit{Differential Coplanar Waveguide} (vi sai đồng phẳng có mass bao bọc) để tăng khả năng chống nhiễu ngoại vi.
-                        \item \textbf{Đồng bộ pha (Intra-pair Skew):} Đảm bảo chênh lệch chiều dài (Skew) giữa hai dây P và N trong cùng một cặp là nhỏ nhất có thể (thường $<5$ mils). Kỹ thuật \textit{Phase Matching} được thực hiện ngay tại điểm xảy ra lệch pha (ví dụ tại góc cua) để đảm bảo tín hiệu đến bộ thu đồng thời, triệt tiêu nhiễu chế độ chung (Common Mode Noise).
-                        [cite_start]\item \textbf{Tính đối xứng:} Hai đường dây được định tuyến song song và đối xứng tuyệt đối trong suốt chiều dài đường truyền[cite: 256]. [cite_start]Các góc cua sử dụng góc vát $135^{\circ}$ hoặc cung tròn, tuyệt đối không dùng góc $90^{\circ}$ để tránh thay đổi trở kháng đột ngột[cite: 350].
-                    \end{itemize}
+                % \begin{enumerate}
+                %     \item \textbf{Định tuyến Cặp Vi sai (Differential Pair Routing - USB):}
+                %     \begin{itemize}
+                %         [cite_start]\item \textbf{Kiểm soát Trở kháng:} Cặp tín hiệu vi sai (như USB D+/D-) được thiết kế đạt trở kháng đặc tính mục tiêu $Z_{diff} = 90\Omega \pm 10\%$[cite: 420]. Cấu trúc định tuyến sử dụng là \textit{Differential Coplanar Waveguide} (vi sai đồng phẳng có mass bao bọc) để tăng khả năng chống nhiễu ngoại vi.
+                %         \item \textbf{Đồng bộ pha (Intra-pair Skew):} Đảm bảo chênh lệch chiều dài (Skew) giữa hai dây P và N trong cùng một cặp là nhỏ nhất có thể (thường $<5$ mils). Kỹ thuật \textit{Phase Matching} được thực hiện ngay tại điểm xảy ra lệch pha (ví dụ tại góc cua) để đảm bảo tín hiệu đến bộ thu đồng thời, triệt tiêu nhiễu chế độ chung (Common Mode Noise).
+                %         [cite_start]\item \textbf{Tính đối xứng:} Hai đường dây được định tuyến song song và đối xứng tuyệt đối trong suốt chiều dài đường truyền[cite: 256]. [cite_start]Các góc cua sử dụng góc vát $135^{\circ}$ hoặc cung tròn, tuyệt đối không dùng góc $90^{\circ}$ để tránh thay đổi trở kháng đột ngột[cite: 350].
+                %     \end{itemize}
 
-                    \item \textbf{Định tuyến Bus Đơn cực (Single-ended Bus Routing - SPI/SDIO):}
-                    \begin{itemize}
-                        \item \textbf{Trở kháng $50\Omega$:} Tất cả các đường tín hiệu dữ liệu và điều khiển (MOSI, MISO, CMD, DAT) được thiết kế với trở kháng $Z_0 = 50\Omega \pm 10\%$ theo cấu trúc \textit{Coplanar Waveguide}.
-                        \item \textbf{Bảo vệ xung nhịp (Clock Shielding):} Tín hiệu Clock (CLK) là nguồn gây nhiễu mạnh nhất (Aggressor). Đường CLK được định tuyến biệt lập, bao bọc bởi hai đường mass bảo vệ (Guard Traces) và được khâu via xuống Ground Plane dọc theo đường đi để cô lập trường điện từ.
-                        \item \textbf{Cân bằng chiều dài (Trace Length Matching):} Áp dụng kỹ thuật \textit{Serpentine routing} (đi dây hình rắn) để cân bằng chiều dài của các đường dữ liệu với đường Clock. Điều này đảm bảo dữ liệu được lấy mẫu chính xác tại sườn xung nhịp, tránh lỗi Setup/Hold time do trễ truyền dẫn (Propagation Delay).
-                    \end{itemize}
+                %     \item \textbf{Định tuyến Bus Đơn cực (Single-ended Bus Routing - SPI/SDIO):}
+                %     \begin{itemize}
+                %         \item \textbf{Trở kháng $50\Omega$:} Tất cả các đường tín hiệu dữ liệu và điều khiển (MOSI, MISO, CMD, DAT) được thiết kế với trở kháng $Z_0 = 50\Omega \pm 10\%$ theo cấu trúc \textit{Coplanar Waveguide}.
+                %         \item \textbf{Bảo vệ xung nhịp (Clock Shielding):} Tín hiệu Clock (CLK) là nguồn gây nhiễu mạnh nhất (Aggressor). Đường CLK được định tuyến biệt lập, bao bọc bởi hai đường mass bảo vệ (Guard Traces) và được khâu via xuống Ground Plane dọc theo đường đi để cô lập trường điện từ.
+                %         \item \textbf{Cân bằng chiều dài (Trace Length Matching):} Áp dụng kỹ thuật \textit{Serpentine routing} (đi dây hình rắn) để cân bằng chiều dài của các đường dữ liệu với đường Clock. Điều này đảm bảo dữ liệu được lấy mẫu chính xác tại sườn xung nhịp, tránh lỗi Setup/Hold time do trễ truyền dẫn (Propagation Delay).
+                %     \end{itemize}
 
-                    \item \textbf{Kiểm soát Nhiễu và Toàn vẹn tín hiệu (EMI \& SI Control):}
-                    \begin{itemize}
-                        \item \textbf{Giảm thiểu Via (Via Minimization):} Hạn chế tối đa việc chuyển lớp (Layer transition) trên đường tín hiệu tốc độ cao để tránh gây gián đoạn trở kháng. [cite_start]Nếu bắt buộc phải chuyển lớp, các via nối đất (Return Vias) được đặt ngay cạnh via tín hiệu để duy trì đường hồi tiếp liền mạch[cite: 195].
-                        \item \textbf{Định tuyến trực giao (Orthogonal Routing):} Để tránh hiện tượng xuyên nhiễu (Crosstalk) giữa các lớp liền kề, các đường tín hiệu ở lớp L1 và L3 (nếu có) được đi vuông góc với nhau. [cite_start]Tuyệt đối tránh đi dây song song chồng lên nhau (Broadside coupling)[cite: 367].
-                        \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). [cite_start]Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện[cite: 152].
-                        [cite_start]\item \textbf{Quy tắc khoảng cách (Spacing Rules):} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng mạch) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau[cite: 213]. [cite_start]Đồng thời, duy trì khoảng cách ly (Keep-out) tối thiểu 50 mils đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn[cite: 216].
-                    \end{itemize}
-                \end{enumerate}
+                %     \item \textbf{Kiểm soát Nhiễu và Toàn vẹn tín hiệu (EMI \& SI Control):}
+                %     \begin{itemize}
+                %         \item \textbf{Giảm thiểu Via (Via Minimization):} Hạn chế tối đa việc chuyển lớp (Layer transition) trên đường tín hiệu tốc độ cao để tránh gây gián đoạn trở kháng. [cite_start]Nếu bắt buộc phải chuyển lớp, các via nối đất (Return Vias) được đặt ngay cạnh via tín hiệu để duy trì đường hồi tiếp liền mạch[cite: 195].
+                %         \item \textbf{Định tuyến trực giao (Orthogonal Routing):} Để tránh hiện tượng xuyên nhiễu (Crosstalk) giữa các lớp liền kề, các đường tín hiệu ở lớp L1 và L3 (nếu có) được đi vuông góc với nhau. [cite_start]Tuyệt đối tránh đi dây song song chồng lên nhau (Broadside coupling)[cite: 367].
+                %         \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). [cite_start]Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện[cite: 152].
+                %         [cite_start]\item \textbf{Quy tắc khoảng cách (Spacing Rules):} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng mạch) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau[cite: 213]. [cite_start]Đồng thời, duy trì khoảng cách ly (Keep-out) tối thiểu 50 mils đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn[cite: 216].
+                %     \end{itemize}
+                % \end{enumerate}
         
         \subsubsection{Phân tích và Mô phỏng}
             \paragraph{Impedance Control}
