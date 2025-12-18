@@ -1,52 +1,86 @@
-% ==========================
-% Trang bìa
-% ==========================
-
-\thispagestyle{empty} % Xóa số trang trên trang bìa
-
+% ==================================================================
+% TRANG BÌA ĐÃ ĐIỀU CHỈNH KHUNG VIỀN RỘNG RA
+% ==================================================================
 \begin{titlepage}
+    % 1. Thiết lập lề cho nội dung văn bản bên trong
+    % Giữ nguyên lề văn bản là 2cm để nội dung không bị sát khung quá
+    \newgeometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+
     % ==========================
-    % Thiết kế nền trang bìa
+    % VẼ KHUNG VIỀN (Đã điều chỉnh)
     % ==========================
     \begin{tikzpicture}[remember picture, overlay]
-        % Vẽ hình chữ nhật màu xanh bên trái
-        \shade[left color=black, right color=white!0, shading angle=37, opacity=0.75] 
-            (current page.north west) rectangle 
-            ([yshift=0.1\textheight]$(current page.south west) + (0.3\paperwidth,0)$);
-        \shade[left color=TLgreen, right color=white!0, shading angle=37, opacity=0.75] 
-            (current page.north west) rectangle 
-            ([yshift=0.1\textheight]$(current page.south west) + (0.3\paperwidth,0)$);
-        
-        % Vẽ logo ở góc trên bên trái
-        \node at ($(current page.north west) + (0.15\paperwidth,-0.25\paperheight)$) {
-            \includegraphics[width=0.2\paperwidth, height=0.2\paperwidth, keepaspectratio]{figures/logo/logo_white.png}
-        };
+        % --- Khung viền ngoài (nét đậm) ---
+        % Đã thay đổi từ 2.0cm xuống 1.0cm để đẩy khung ra sát mép hơn
+        \draw[line width=3pt]
+            ($(current page.north west) + (1.0cm,-1.0cm)$)
+            rectangle
+            ($(current page.south east) + (-1.0cm,1.0cm)$);
+
+        % --- Khung viền trong (nét mảnh) ---
+        % Đã thay đổi từ 2.15cm xuống 1.15cm để giữ khoảng cách với khung ngoài
+        \draw[line width=1pt]
+            ($(current page.north west) + (1.15cm,-1.15cm)$)
+            rectangle
+            ($(current page.south east) + (-1.15cm,1.15cm)$);
     \end{tikzpicture}
-    
-    % ==========================
-    % Tiêu đề và tác giả
-    % ==========================
-    % \vspace{0.05\paperheight} % Khoảng cách từ trên xuống
-    \hspace{0.2\paperwidth} % Căn lề trái cho văn bản
-    \begin{tabular}{p{0.7\textwidth}}
-        \fontsize{25pt}{25pt}\selectfont\textbf{\docsType} \\ % Loại tài liệu
-        \\ % Dòng trống
-        \fontsize{40pt}{40pt}\selectfont\textbf{\docsName} \\ % Tên tài liệu
-        \\ % Dòng trống
-        \authName
-    \end{tabular}
 
-    \vfill % Đẩy nội dung xuống cuối trang
+    % ==========================
+    % NỘI DUNG TRANG BÌA (Không đổi)
+    % ==========================
+    \begin{center}
+        \vspace*{-0.5cm}
 
-    % Thông tin thành phố và ngày tháng
-    \hspace{0.2\paperwidth}
-    \begin{tabular}{p{0.75\textwidth}}
-        \centering {\large \cityName, \today} % Thành phố và ngày tháng
-    \end{tabular}
+        \textbf{\large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}\\
+        \textbf{\large TRƯỜNG ĐẠI HỌC BÁCH KHOA}\\
+        \textbf{\large KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH} \\
+
+        \vspace{1cm}
+
+        % LOGO
+        % Đảm bảo đường dẫn ảnh đúng
+        \includegraphics[width=8cm, keepaspectratio]{figures/logo/logo_bk.png}
+
+        % \vspace{0.5cm}
+
+        \textbf{\LARGE BÁO CÁO}\\
+        \textbf{\LARGE \docsType} \\
+
+        \vspace{1.0cm}
+
+        % TÊN ĐỀ TÀI
+        \parbox{0.9\textwidth}{
+            \centering
+            \textbf{\fontsize{30pt}{30pt}\selectfont \docsName}
+        } \\
+
+        \large NGÀNH: KỸ THUẬT MÁY TÍNH
+
+        \vspace{1.5cm}
+
+        % THÔNG TIN HỘI ĐỒNG / SVTH
+        \begin{table}[h]
+            \centering
+            \begin{tabular}{r l}
+                \textbf{HỘI ĐỒNG:} & .......................................................... \\
+                \textbf{GVHD:} & .......................................................... \\
+                & \\
+                \multicolumn{2}{c}{\textbf{---o0o---}} \\
+                & \\
+                \textbf{SVTH1:} & \textbf{Hồng Thiện Nhân (2111900)} \\
+                \textbf{SVTH2:} & \textbf{Trần Hải Thảo Quảng (2212767)} \\
+            \end{tabular}
+        \end{table}
+
+        \vfill
+
+        \textbf{TP. HỒ CHÍ MINH, THÁNG 12 NĂM 2025}
+
+    \end{center}
+
+    % Trả lại thiết lập lề cho các trang sau
+    \restoregeometry
 \end{titlepage}
 
-% ==========================
-% Thiết lập số trang sau trang bìa
-% ==========================
-\newpage
-\setcounter{page}{2} % Đặt số trang bắt đầu từ 2
+% Thiết lập số trang cho trang sau
+\setcounter{page}{2}
