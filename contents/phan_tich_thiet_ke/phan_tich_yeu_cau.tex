@@ -9,46 +9,61 @@
                 \item Có cơ chế cho phép thay thế hoặc nâng cấp các module cho các mục đích sử dụng khác nhau mà không cần phải thiết kế lại board mạch.
                 \item Gateway phải hỗ trợ các giao thức truyền thông phổ thông như UART, SPI, I2C, USB, \dots
             \end{itemize}
+            
             \item Khả năng thu thập và xử lý dữ liệu
             \begin{itemize}
                 \item Gateway phải có khả năng đọc dữ liệu cảm biến hoặc các thiết bị đầu cuối thông qua các giao thức truyền thông.
-                \item \dots\footnote{phần mềm}
+                \item Gateway thu thập đồng thời dữ liệu từ nhiều nhóm thiết bị qua Zigbee, LoRa TDMA, CAN, UART/RS-485, \dots
+                \item Mỗi giao thức có module xử lý riêng (Zigbee\_Handler, LoRa\_Handler, CAN\_Handler, Data\_Communication\_Handler) chạy trên MCU LAN/MCU WAN.
+                \item Mỗi module giao tiếp chịu trách nhiệm: Đọc khung dữ liệu thô từ phần cứng; kiểm tra định dạng, checksum, loại bỏ khung lỗi; gắn nhãn nguồn dữ liệu và thời gian lấy mẫu.
+                \item Dữ liệu sau khi kiểm tra được chuẩn hóa về một định dạng khung nội bộ thống nhất.
+                \item Các MCU sử dụng hàng đợi (queue) để đệm dữ liệu, hỗ trợ trường hợp mất kết nối WAN trong một khoảng thời gian nhất định.
+                \item Kênh MCU LAN $\leftrightarrow$ MCU WAN bảo đảm truyền nội dung khung dữ liệu và thông tin trạng thái giữa hai bộ xử lý.
+                \item Internet\_Communication\_Handler trên MCU WAN chịu trách nhiệm đóng gói và đẩy dữ liệu lên server qua MQTT, HTTP, CoAP theo cấu hình.
             \end{itemize}
+            
             \item Khả năng cấu hình (Configurability)
             \begin{itemize}
-                \item Gateway phải được cấu hình thông qua máy tính cá nhân (PC, laptop).
-                \item \dots\footnote{phần mềm}
+                \item Ứng dụng cấu hình trên PC dùng để thao tác với toàn bộ thông số gateway mà không cần sửa firmware.
+                \item Có khả năng quét và nhận diện gateway đang kết nối qua USB/UART.
+                \item Cho phép đọc toàn bộ cấu hình hiện tại từ gateway (module đang gắn, mạng WAN, tham số MQTT, \dots).
+                \item Ứng dụng hiển thị cấu hình theo dạng form dễ hiểu cho kỹ thuật viên.
+                \item Cho phép chỉnh sửa các tham số cấu hình: lựa chọn các module phần cứng đang gắn trên gateway; cấu hình các cổng Zigbee/LoRa/CAN/UART (tốc độ, địa chỉ, ID mạng, \dots); thiết lập tham số kết nối Internet (Wi-Fi/LTE/PPP) và thông tin MQTT broker (host, port, user, password, topic, TLS nếu có); cấu hình chu kỳ gửi dữ liệu, chính sách đệm và retry khi mất kết nối server.
+                \item Cho phép ghi cấu hình mới xuống gateway thông qua giao thức cấu hình đã định nghĩa.
             \end{itemize}
-            \item \dots\footnote{phần mềm}
         \end{itemize}
-
+        
     \subsection{Yêu cầu phi chức năng}
         Ngoài các chức năng chính, IoT Gateway cần đáp ứng tiêu chuẩn về chất lượng hoạt động để phù hợp với ứng dụng thực tế.
         \begin{itemize}
             \item Độ tin cậy và ổn định
             \begin{itemize}
                 \item Gateway cần hoạt động ổn định liên tục trong thời gian dài.
-                \item Tích hợp cơ chế giám sát để tự động khởi động lại khi gặp lỗi treo hệ thống\dots\footnote{phần mềm}
-                \item Gateway phải có khả năng xử lý lỗi (mất kết nối, lỗi dữ liệu\dots)\footnote{phần mềm}
+                \item Hệ thống phần cứng và phần mềm phải tích hợp cơ chế watchdog để tự khởi động lại khi xảy ra treo hệ thống hoặc không phản hồi.
+                \item Các lỗi thường gặp như mất kết nối Internet, lỗi cảm biến, lỗi module giao tiếp phải được phát hiện sớm và xử lý có kiểm soát (ghi log, đưa về trạng thái an toàn, thử kết nối lại theo chính sách cấu hình).
+                \item Chuỗi xử lý dữ liệu phải bảo đảm không làm mất dữ liệu khi xảy ra lỗi mạng tạm thời bằng cách sử dụng bộ đệm nội bộ để lưu trữ và gửi bù khi kết nối được khôi phục.
                 \item Gateway có khả năng chống chịu các tác động từ môi trường (ESD, nhiễu điện từ\dots)
-                \item \dots\footnote{phần mềm}
+                \item Hỗ trợ cơ chế cập nhật firmware từ xa (FOTA) cho MCU LAN và MCU WAN. Trong toàn bộ quá trình FOTA, gateway phải bảo đảm trạng thái an toàn: không ghi chồng lên firmware đang chạy khi chưa kiểm tra xong.
             \end{itemize}
+            
             \item Nguồn điện và năng lượng
             \begin{itemize}
                 \item Nguồn điện có độ ổn định cao, bảo vệ quá áp, ngắn mạch\dots
                 \item Gateway phải tiêu thụ năng lượng thấp để phù hợp với các ứng dụng sử dụng pin.
                 \item \dots
             \end{itemize}
+            
             \item Hiệu năng
             \begin{itemize}
                 \item Hiệu năng xử lý trung tâm phải đủ đáp ứng khả năng thu thập và xử lý dữ liệu từ các module kết nối.
                 \item \dots
             \end{itemize}
+            
             \item Tính khả dụng và dễ sử dụng
             \begin{itemize}
                 \item Quy trình tháo lắp module phải đơn giản, hạn chế tối đa công cụ phức tạp.
                 \item Giao diện cấu hình phải thân thiện, dễ hiểu đối với kỹ thuật viên vận hành thông thường, giảm thiểu yêu cầu về kỹ năng lập trình chuyên sâu.
-                \item \dots\footnote{phần mềm}
+                \item Hệ thống phải cung cấp chỉ thị trạng thái rõ ràng (nguồn, kết nối LAN/WAN, kết nối server, lỗi tổng quát), duy trì log các sự kiện cơ bản (khởi động lại, cập nhật cấu hình/firmware, lỗi giao tiếp, lỗi kết nối) và đi kèm tài liệu hướng dẫn cài đặt, cấu hình, xử lý lỗi chi tiết để kỹ thuật viên dễ vận hành.
             \end{itemize}
         \end{itemize}
 
