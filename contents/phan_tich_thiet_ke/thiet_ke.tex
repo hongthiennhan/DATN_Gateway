@@ -784,7 +784,7 @@
                     
                     Với cấu trúc chằng chịt và dòng tải biến động lớn, việc tính toán lý thuyết và thực hiện Mô phỏng PDN để kiểm chứng độ sụt áp (DC IR Drop) và mật độ dòng điện (Current Density), đảm bảo không xảy ra quá nhiệt cục bộ hoặc sụt áp vượt ngưỡng an toàn tại các module mở rộng.\par
                     \newpage
-                    Dựa trên thiết kế, mô phỏng tập trung vào các ray nguồn quan trọng ở trạng thái cực đoan với tải lý thuyết cao nhất, bao gồm:
+                    Dựa trên thiết kế, mô phỏng tập trung vào các ray nguồn quan trọng ở trạng thái cực đoan với tải lý thuyết cao nhất, bao gồm các nguồn có tải cao:
                     \begin{itemize}
                         \item Nguồn +5V0\_SYS (nguồn U4)
                         \item Nguồn +5V0 (nguồn U15)
@@ -836,7 +836,7 @@
                             
                             \begin{figure}[h]
                                 \centering
-                                \includegraphics[width=0.6\textwidth]{figures/5v0_sim_voltage_drop.png}
+                                \includegraphics[width=0.55\textwidth]{figures/5v0_sim_voltage_drop.png}
                                 \caption{Biểu đồ phân bố điện áp (Voltage Drop Heatmap) trên nguồn +5V0.}
                                 \label{fig:5v0_drop}
                             \end{figure}
@@ -863,11 +863,12 @@
                             
                             \begin{figure}[h]
                                 \centering
-                                \includegraphics[width=0.6\textwidth]{figures/3v3_sim_voltage_drop.png}
+                                \includegraphics[width=0.55\textwidth]{figures/3v3_sim_voltage_drop.png}
                                 \caption{Biểu đồ phân bố điện áp (Voltage Drop Heatmap) trên nguồn +3V3.}
                                 \label{fig:3v3_drop}
                             \end{figure}
                             
+                            \newpage
                             \textbf{\textit{Kết quả mô phỏng và Tính toán:}}
                             \begin{itemize}
                                 \item Điện áp tại điểm nguồn: $V_{source} = 3.196 V$.
@@ -886,11 +887,89 @@
                     \end{enumerate}
 
 
-                    \item \textbf{Phân tích và mô phỏng Mật độ dòng điện:}
+                \item \textbf{Phân tích và Mô phỏng Mật độ dòng điện (Current Density Analysis):}
+
+                    Bên cạnh sụt áp, mật độ dòng điện là tham số quan trọng quyết định độ bền vật lý của bo mạch. Mật độ dòng quá cao sẽ gây ra hai vấn đề:
                     \begin{itemize}
-                        \item Mật độ dòng điện là đại lượng thể hiện mức độ tập trung dòng điện qua một đơn vị tiết diện. Khi mật độ dòng điện quá cao, các electron sẽ va chạm nhiều hơn với mạng tinh thể đồng, sinh ra nhiều nhiệt. Lượng nhiệt này, nếu đủ lớn, sẽ làm nóng chảy mạch hoặc gây sụt áp.
-                        \item Theo tiêu chuẩn IPC-2221, đường mạch phải đủ rộng để tăng nhiệt độ không quá $10\,^\circ\mathrm{C}$.
+                        \item \textbf{Quá nhiệt (Overheating):} Tổn hao nhiệt ($I^2R$) tập trung tại một điểm nhỏ có thể nung nóng đường mạch, làm bong tróc lớp đồng hoặc hỏng lớp cách điện PCB.
+                        \item \textbf{Giảm hiệu suất và tăng nhiễu điện từ:} Mật độ dòng cao làm tăng điện trở gây sụt áp, ngoài ra với dòng chuyển mạch nhanh, mật độ dòng quá lớn gây ra tác động EMI mạnh mẽ hơn.
                     \end{itemize}
+
+                    \textbf{Tiêu chí thiết kế:}
+                    \begin{itemize}
+                        \item Tuân thủ tiêu chuẩn IPC-2221: Mức tăng nhiệt độ tối đa $\Delta T \le 10^\circ C$.
+                        \item Ngưỡng mật độ dòng điện trung bình an toàn: $J_{avg} \le 50 A/mm^2$ (đối với lớp đồng 1oz).
+                    \end{itemize}
+
+                    \begin{enumerate}
+                        \item \textbf{Phân tích Ray nguồn +5V0\_SYS:}
+                            
+                            Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 2.92A$.
+
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/5v0_sys_sim_current_density.png}
+                                \caption{Biểu đồ phân bố mật độ dòng điện (Current Density Heatmap) trên nguồn +5V0\_SYS.}
+                                \label{fig:5v0_sys_current_density}
+                            \end{figure}
+
+                            \textbf{\textit{Kết quả tổng thể:}}
+                            Quan sát \autoref{fig:5v0_sys_current_density}, mật độ dòng điện trên phần lớn chiều dài đường mạch được duy trì ở mức thấp (màu xanh dương/xanh lá), nằm hoàn toàn trong ngưỡng an toàn ($< 30 A/mm^2$). Điều này xác nhận kích thước các đường nguồn đã được thiết kế đủ rộng.
+
+                            \textbf{\textit{Phân tích điểm có mật độ dòng điện cao đột biến:}}
+                            
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/5v0_sys_sim_current_density_high.png}
+                                \caption{Mật độ dòng điện cao đột biến tại pinout nguồn xung +5V0\_SYS.}
+                                \label{fig:5v0_sys_current_density_high}
+                            \end{figure} 
+
+                            Tại vị trí pinout của IC nguồn xung (\autoref{fig:5v0_sys_current_density_high}), ghi nhận mật độ dòng điện tăng vọt lên mức khá cao $J \approx 181.229 A/mm^2$. Mặc dù giá trị này vượt ngưỡng an toàn, nhưng thiết kế vẫn được đảm bảo:
+                            \begin{itemize}
+                                \item Mật độ cao chỉ xuất hiện tại tiết diện rất nhỏ ngay pinout linh kiện. Đây là giới hạn vật lý của linh kiện mà không thể can thiệp bằng layout. Với tiết diện đoạn mạch chịu dòng cao là cực nhỏ ($< 0.25mm \times 0.45 mm$), rủi ro về sụt áp là không đáng kể.
+                                \item Ngay sau điểm đó, đường mạch lập tức được mở rộng thành mảng đồng lớn. Nhiệt lượng sinh ra tại điểm này sẽ nhanh chóng được dẫn truyền và tản ra khu vực đồng xung quanh, ngăn chặn việc tăng nhiệt độ quá mức.
+                            \end{itemize}
+
+                        \item \textbf{Phân tích Ray nguồn +5V0:}
+                            
+                            Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 2.46A$.
+
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/5v0_sim_current_density.png}
+                                \caption{Biểu đồ phân bố mật độ dòng điện (Current Density Heatmap) trên nguồn +5V0.}
+                                \label{fig:5v0_current_density}
+                            \end{figure}
+
+                            \textbf{\textit{Kết quả tổng thể:}}
+                            Quan sát \autoref{fig:5v0_current_density}, mật độ dòng điện trên phần lớn chiều dài đường mạch được duy trì ở mức thấp (màu xanh dương/xanh lá), nằm hoàn toàn trong ngưỡng an toàn ($< 30 A/mm^2$). Điều này xác nhận kích thước các đường nguồn đã được thiết kế đủ rộng.                            
+
+                        \item \textbf{Phân tích Ray nguồn +3V3:}
+                            
+                            Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 3.3A$.
+
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/3v3_sim_current_density.png}
+                                \caption{Biểu đồ phân bố mật độ dòng điện (Current Density Heatmap) trên nguồn +3V3.}
+                                \label{fig:3v3_current_density}
+                            \end{figure}
+
+                            \textbf{\textit{Kết quả tổng thể:}}
+                            Quan sát \autoref{fig:3v3_current_density}, mật độ dòng điện trên phần lớn chiều dài đường mạch được duy trì ở mức thấp (màu xanh dương/xanh lá), nằm hoàn toàn trong ngưỡng an toàn ($< 30 A/mm^2$). Điều này xác nhận kích thước các đường nguồn đã được thiết kế đủ rộng.
+
+                            \textbf{\textit{Phân tích điểm có mật độ dòng điện cao đột biến:}}
+                            
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/3v3_sim_current_density_high.png}
+                                \caption{Mật độ dòng điện cao đột biến tại pinout nguồn xung +3V3.}
+                                \label{fig:3v3_current_density_high}
+                            \end{figure} 
+
+                            Tương tự với nguồn +5V0\_SYS, tại vị trí pinout của IC nguồn xung (\autoref{fig:3v3_current_density_high}), ghi nhận mật độ dòng điện tăng vọt lên mức khá cao $J \approx 209.674 A/mm^2$. Mặc dù giá trị này vượt ngưỡng an toàn, nhưng thiết kế vẫn được đảm bảo.
+                    \end{enumerate}
                 \end{enumerate}
 
 
