@@ -131,67 +131,67 @@
     \newpage
     \subsection{Hardware}
         \subsubsection{Thiết kế sơ đồ khối phần cứng}
-        Sơ đồ khối phần cứng của hệ thống được xây dựng nhằm mô tả tổng thể kiến trúc và mối liên hệ giữa các khối chức năng chính, bao gồm khối xử lý trung tâm, các khối ngoại vi và hệ thống cấp nguồn. Mục tiêu của thiết kế sơ đồ khối là đảm bảo tính rõ ràng, dễ hiểu và khả năng mở rộng trong tương lai. 
+            Sơ đồ khối phần cứng của hệ thống được xây dựng nhằm mô tả tổng thể kiến trúc và mối liên hệ giữa các khối chức năng chính, bao gồm khối xử lý trung tâm, các khối ngoại vi và hệ thống cấp nguồn. Mục tiêu của thiết kế sơ đồ khối là đảm bảo tính rõ ràng, dễ hiểu và khả năng mở rộng trong tương lai. 
 
-            \paragraph{Sơ đồ khối hệ thống phần cứng} 
-                Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
+                \paragraph{Sơ đồ khối hệ thống phần cứng} 
+                    Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
 
-                ESP32-S3 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA cũng như xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
-                
-                Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
-
-                \begin{itemize}
-                    \item \textbf{Mở rộng GPIO:} Sử dụng IC TCA6424ARGJR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt và GPIO của các module mở rộng.
+                    ESP32-S3 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA cũng như xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
                     
-                    \item \textbf{Quản lý thời gian thực (RTC):} Hệ thống tích hợp IC RTC PCF85263ATL, được cấp nguồn dự phòng bằng pin CR2032 (3.0\,V), giúp duy trì thông tin về thời gian ngay cả khi hệ thống mất nguồn chính.
-                    
-                    \item \textbf{Hiển thị trạng thái:} Màn hình OLED kích thước 0.96\,inch sử dụng driver SH1107, giao tiếp qua chuẩn I\textsuperscript{2}C, dùng để hiển thị các thông tin trạng thái và tình trạng hoạt động của hệ thống.
-                    
-                    \item \textbf{Lưu trữ cục bộ:} MCU Slave được trang bị khe cắm thẻ nhớ Micro SD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log dữ liệu tại chỗ trong trường hợp mất kết nối mạng hoặc phục vụ mục đích phân tích hậu kỳ.
-                    
-                    \item \textbf{Nút nhấn nguồn:} Nút nhấn được sử dụng để gửi lệnh điều khiển bật/tắt nguồn các khối chức năng thông qua MCU Master.
-                    
-                    \item \textbf{Cổng USB:} ESP32-S3 hỗ trợ giao tiếp USB phục vụ nạp firmware hoặc hoạt động ở chế độ USB Host. Hệ thống sử dụng IC chuyển mạch USB 2.0 FSUSB42UMX để lựa chọn giữa đường USB sử dụng cho việc nạp code/cấu hình thiết bị và đường USB kết nối với module WAN.
-                \end{itemize}
+                    Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
 
-                \begin{figure}[h]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
-                    \caption{Sơ đồ khối hệ thống}
-                    \label{fig:blockdiagram_system}
-                \end{figure}
+                    \begin{itemize}
+                        \item \textbf{Mở rộng GPIO:} Sử dụng IC TCA6424ARGJR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt và GPIO của các module mở rộng.
+                        
+                        \item \textbf{Quản lý thời gian thực (RTC):} Hệ thống tích hợp IC RTC PCF85263ATL, được cấp nguồn dự phòng bằng pin CR2032 (3.0\,V), giúp duy trì thông tin về thời gian ngay cả khi hệ thống mất nguồn chính.
+                        
+                        \item \textbf{Hiển thị trạng thái:} Màn hình OLED kích thước 0.96\,inch sử dụng driver SH1107, giao tiếp qua chuẩn I\textsuperscript{2}C, dùng để hiển thị các thông tin trạng thái và tình trạng hoạt động của hệ thống.
+                        
+                        \item \textbf{Lưu trữ cục bộ:} MCU Slave được trang bị khe cắm thẻ nhớ Micro SD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log dữ liệu tại chỗ trong trường hợp mất kết nối mạng hoặc phục vụ mục đích phân tích hậu kỳ.
+                        
+                        \item \textbf{Nút nhấn nguồn:} Nút nhấn được sử dụng để gửi lệnh điều khiển bật/tắt nguồn các khối chức năng thông qua MCU Master.
+                        
+                        \item \textbf{Cổng USB:} ESP32-S3 hỗ trợ giao tiếp USB phục vụ nạp firmware hoặc hoạt động ở chế độ USB Host. Hệ thống sử dụng IC chuyển mạch USB 2.0 FSUSB42UMX để lựa chọn giữa đường USB sử dụng cho việc nạp code/cấu hình thiết bị và đường USB kết nối với module WAN.
+                    \end{itemize}
 
-            \paragraph{Sơ đồ khối nguồn} 
-                Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngay tại ngõ vào, nguồn được bảo vệ bằng eFuse nhằm hạn chế các sự cố quá dòng, ngắn mạch và đảm bảo an toàn cho toàn bộ hệ thống.
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
+                        \caption{Sơ đồ khối hệ thống}
+                        \label{fig:blockdiagram_system}
+                    \end{figure}
 
-                Từ nguồn DC 12\,V, các khối chuyển đổi DC/DC và LDO được sử dụng để tạo ra các rail nguồn chính, bao gồm:
+                \paragraph{Sơ đồ khối nguồn} 
+                    Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngay tại ngõ vào, nguồn được bảo vệ bằng eFuse nhằm hạn chế các sự cố quá dòng, ngắn mạch và đảm bảo an toàn cho toàn bộ hệ thống.
 
-                \begin{itemize}
-                    \item \textbf{+5V0\_SYS:} Được chuyển đổi trực tiếp từ nguồn DC 12\,V, dùng để cấp trực tiếp cho U1 Master và nhánh nguồn qua efuse của nguồn +5V0.
+                    Từ nguồn DC 12\,V, các khối chuyển đổi DC/DC và LDO được sử dụng để tạo ra các rail nguồn chính, bao gồm:
 
-                    \item \textbf{+3V3M:} Là nguồn chuyển đổi từ rail +5V0\_SYS bằng LDO nội bộ của module Master, dùng để cấp nguồn cho IO Expander (Master), RTC và USB Switch.
-                    
-                    \item \textbf{+5V0:} Là rail nguồn rẽ nhánh từ +5V0\_SYS thông qua eFuse, dùng để cấp cho các khối và module sử dụng điện áp 5\,V. Việc bật/tắt rail nguồn này được điều khiển bởi MCU Master.
-                    
-                    \item \textbf{+3V3:} Được tạo trực tiếp từ nguồn DC 12\,V, cung cấp cho phần lớn các khối chức năng của hệ thống, bao gồm MCU, logic điều khiển và các ngoại vi. Rail nguồn này cũng được quản lý bởi MCU Master.
-                    
-                    \item \textbf{+1V8:} Được chuyển đổi từ rail +3V3 và quản lý bởi MCU Master, dùng để cấp nguồn cho các module mở rộng yêu cầu điện áp 1.8\,V.
-                \end{itemize}
+                    \begin{itemize}
+                        \item \textbf{+5V0\_SYS:} Được chuyển đổi trực tiếp từ nguồn DC 12\,V, dùng để cấp trực tiếp cho U1 Master và nhánh nguồn qua efuse của nguồn +5V0.
 
-                Đối với các module gắn ngoài thông qua connector, các đường nguồn 5\,V và 3.3\,V đều được điều khiển bằng tín hiệu eenable từ MCU Master. Cách tổ chức này cho phép hệ thống:
+                        \item \textbf{+3V3M:} Là nguồn chuyển đổi từ rail +5V0\_SYS bằng LDO nội bộ của module Master, dùng để cấp nguồn cho IO Expander (Master), RTC và USB Switch.
+                        
+                        \item \textbf{+5V0:} Là rail nguồn rẽ nhánh từ +5V0\_SYS thông qua eFuse, dùng để cấp cho các khối và module sử dụng điện áp 5\,V. Việc bật/tắt rail nguồn này được điều khiển bởi MCU Master.
+                        
+                        \item \textbf{+3V3:} Được tạo trực tiếp từ nguồn DC 12\,V, cung cấp cho phần lớn các khối chức năng của hệ thống, bao gồm MCU, logic điều khiển và các ngoại vi. Rail nguồn này cũng được quản lý bởi MCU Master.
+                        
+                        \item \textbf{+1V8:} Được chuyển đổi từ rail +3V3 và quản lý bởi MCU Master, dùng để cấp nguồn cho các module mở rộng yêu cầu điện áp 1.8\,V.
+                    \end{itemize}
 
-                \begin{itemize}
-                    \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
-                    \item Nhanh chóng cô lập và ngắt nguồn khi phát hiện sự cố từ các module bên ngoài.
-                    \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động không liên tục hoặc tiết kiệm năng lượng.
-                \end{itemize}
+                    Đối với các module gắn ngoài thông qua connector, các đường nguồn 5\,V và 3.3\,V đều được điều khiển bằng tín hiệu eenable từ MCU Master. Cách tổ chức này cho phép hệ thống:
 
-                \begin{figure}[h]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
-                    \caption{Sơ đồ hệ thống nguồn}
-                    \label{fig:blockdiagram_power}
-                \end{figure}
+                    \begin{itemize}
+                        \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
+                        \item Nhanh chóng cô lập và ngắt nguồn khi phát hiện sự cố từ các module bên ngoài.
+                        \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động không liên tục hoặc tiết kiệm năng lượng.
+                    \end{itemize}
+
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
+                        \caption{Sơ đồ hệ thống nguồn}
+                        \label{fig:blockdiagram_power}
+                    \end{figure}
 
         \subsubsection{Thiết kế Mạch nguyên lý (Schematic)}
             Phần này trình bày các nội dung kỹ thuật của dự án thông qua thiết kế sơ đồ nguyên lý. Thiết kế sơ đồ nguyên lý mô tả chi tiết các kết nối điện giữa các thành phần, nhằm đảm bảo hệ thống hoạt động đúng chức năng, đồng thời đáp ứng các yêu cầu về hiệu năng và các ràng buộc trong thiết kế.
@@ -240,7 +240,22 @@
                 R_{PU,\min} \leq R_{PU} \leq R_{PU,\max}
                 \]
                 
-                Cổng USB của module ESP32-S3 Master được đưa ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép chia sẻ đường truyền USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối với module WAN hỗ trợ giao thức USB 2.0. Trên các đường tín hiệu USB, hệ thống bố trí các diode TVS nhằm bảo vệ mạch khỏi các xung phóng tĩnh điện (ESD) phát sinh trong quá trình thao tác. Bên cạnh đó, các điện trở nối tiếp giá trị 22\,\(\Omega\) được sử dụng để giảm chấn, hạn chế hiện tượng phản xạ và cải thiện độ toàn vẹn tín hiệu trên đường truyền USB.
+                Cổng USB của module ESP32-S3 Master được đưa ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép chia sẻ đường truyền USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối với module WAN hỗ trợ giao thức USB 2.0. 
+                
+                Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD mà không làm ảnh hưởng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
+                \begin{itemize}
+                    \item Peak Reverse Working Voltage (VRWM): 5\,V
+                    \item Junction Capacitance (CJ): khoảng 0.3\,pF tại 1\,MHz
+                \end{itemize}
+
+                Giá trị điện dung ký sinh rất nhỏ (0.3\,pF) giúp đảm bảo tín hiệu dữ liệu USB duy trì tốc độ truyền chuẩn Full-Speed 12\,Mbit/s, không bị suy hao biên độ hay méo dạng sóng.
+
+                Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22\,$\Omega$. Các điện trở này giúp:
+                \begin{itemize}
+                    \item Giảm hiện tượng overshooting và ringing trên cạnh xung
+                    \item Cải thiện Signal Integrity
+                    \item Giảm phát xạ EMI (Electromagnetic Interference)
+                \end{itemize}
             
                 \begin{figure}[H]
                     \centering
@@ -250,12 +265,168 @@
                 \end{figure}
 
             \paragraph{Thiết kế Mạch nguồn}
+                Tại connector nguồn đầu vào DC 12\,V, mạch được trang bị một TVS Diode SMAJ12A. Linh kiện này có nhiệm vụ hấp thu và triệt tiêu năng lượng xung điện trong trường hợp xuất hiện các xung ESD ngắn hạn, giúp bảo vệ mạch nguồn và các linh kiện phía sau khỏi hư hỏng do phóng tĩnh điện hoặc nhiễu xung cao áp từ môi trường.
+
+                Lớp bảo vệ kế tiếp là electronic Fuse TPS259261DRCR, giúp bảo vệ nguồn đầu vào khỏi các vấn đề quá áp và quá dòng. Theo như tính toán tiêu thụ tải dòng của hệ thống, eFuse tại nguồn đầu vào được giới hạn dòng tối đa ở giá trị 3.05\,A. Các giá trị linh kiện khác được thiết kế dựa trên khuyến nghị trong datasheet của linh kiện.
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_power1.png}
+                    \caption{Sơ đồ nguyên lý mạch nguồn 1}
+                    \label{fig:sche_power1}
+                \end{figure}
+
+                Các mạch nguồn PWR\_5V0\_SYS và PWR\_3V3 là các nguồn switching được thiết kế và mô phỏng dựa trên nền tảng mô phỏng WEBENCH của TI. Nền tảng này hỗ trợ người thiết kế lựa chọn và tính toán các linh kiện cần thiết để xây dựng nguồn theo đúng đặc tả mong muốn. Các tụ điện đầu vào được lựa chọn theo khuyến nghị, với mức điện áp chịu đựng được chọn lớn hơn gấp đôi mức điện áp đặt trên tụ. Dòng DC của cuộn cảm cũng được lựa chọn lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm đảm bảo nguồn hoạt động ổn định trong điều kiện tải thay đổi.
+
+                Các đường dẫn thiết kế cho mạch nguồn trên nền tảng WEBENCH TI:
+                \begin{itemize}
+                    \item \textbf{PWR\_5V0\_SYS:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=F0EE2F095BFA81BB}{TPS564242DRLR 12V--12V to 5.00V @ 4A}
+                    \item \textbf{PWR\_3V3:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=582BA6097E8C1A92}{TPS566231RQFR 12V--12V to 3.30V @ 5A}
+                \end{itemize}
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_power2.png}
+                    \caption{Sơ đồ nguyên lý mạch nguồn 2}
+                    \label{fig:sche_power2}
+                \end{figure}
+                Nguồn PWR\_5V0\_SYS sẽ mặc định được cấp cho MCU master để điều khiển toàn bộ hệ thống ở giai đoạn khởi động ban đầu. Đồng thời, các khối IO Expanders của Master, RTC và USB switch cũng sẽ được mặc định cấp nguồn ngay từ đầu.
+
+                Các khối nguồn PWR\_5V0 (rẽ nhánh từ PWR\_5V0\_SYS và có thể điều khiển thông qua eFuse), PWR\_3V3 và PWR\_1V8 được thiết kế mặc định ở trạng thái power off bằng điện trở pull-down tại các chân Enable. Sau khi hoàn tất cấu hình hệ thống, Master MCU sẽ thực hiện bật nguồn cho các khối tương ứng theo nhu cầu vận hành; các khối không sử dụng sẽ được giữ nguyên trạng thái power off nhằm tối ưu năng lượng.
+
             \paragraph{Thiết kế Mạch USB}
+                Master MCU ESP32-S3 hỗ trợ một đường giao tiếp vật lý USB, cho phép thực hiện chức năng nạp firmware và debug thông qua khối phần cứng JTAG, đồng thời cũng có khả năng hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu sử dụng linh hoạt hai chức năng này trên cùng một cổng vật lý, thiết kế sử dụng USB Switch FSUSB42UMX-TP.
+
+                IC USB Switch cho phép chuyển mạch đường tín hiệu USB giữa hai khối chức năng khác nhau. Trong thiết kế này, IC được cấu hình mặc định nối đường USB ra cổng nạp firmware/debug bằng cách sử dụng điện trở pull-up tại chân SEL của IC. Cấu hình này đảm bảo quá trình nạp firmware và debug có thể được thực hiện ngay khi hệ thống khởi động, đồng thời vẫn giữ khả năng mở rộng để sử dụng chức năng USB Host khi cần thiết thông qua điều khiển từ MCU.
+
+                Cổng USB nạp firmware/debug cũng được trang bị thêm các TVS diode nhằm bảo vệ đường tín hiệu khỏi các xung phóng tĩnh điện (ESD) từ môi trường bên ngoài, giúp nâng cao độ tin cậy và độ bền của hệ thống. Ngoài ra, thiết kế còn dự phòng một cặp điện trở nối tiếp trên các đường dữ liệu USB để sử dụng trong trường hợp cần bổ sung điện trở giảm chấn (damping resistor) trong tương lai, nhằm tối ưu tính toàn vẹn tín hiệu khi có yêu cầu thay đổi về bố trí mạch hoặc điều kiện vận hành.
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_usb.png}
+                    \caption{Sơ đồ nguyên lý mạch USB}
+                    \label{fig:sche_usb}
+                \end{figure}
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_usbswitch.png}
+                    \caption{Sơ đồ nguyên lý mạch USB Switch}
+                    \label{fig:sche_usbswitch}
+                \end{figure}
             \paragraph{Thiết kế Mạch IO Expander}
+                Mạch IO Expander sử dụng IC TCA6424ARGJR để mở rộng số lượng chân GPIO cho Master và Slave MCU. Do số lượng chân GPIO tích hợp sẵn trên MCU không đáp ứng đủ nhu cầu kết nối, IC này được sử dụng như một giải pháp thay thế hiệu quả thông qua giao thức I\textsuperscript{2}C. IC TCA6424ARGJR cung cấp tổng cộng 24 chân GPIO, được chia thành ba cổng (Port 0, Port 1, Port 2), mỗi cổng gồm 8 chân. Các chân này có thể được cấu hình linh hoạt làm ngõ vào hoặc ngõ ra tùy theo yêu cầu ứng dụng.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_ioexpanders.png}
+                    \caption{Sơ đồ nguyên lý mạch IO Expanders (Master)} 
+                    \label{fig:sche_ioexpanders}
+                \end{figure}
+                
+                Theo khuyến nghị trong datasheet của IC IO Expander, trình tự cấp nguồn cần đảm bảo điện áp VCCP được tăng trước khi tăng điện áp VCCI, với thời gian ramp-up nằm trong khoảng 0.01--100\,ms. Mục tiêu của yêu cầu này là đảm bảo nguồn VCCP được cấp trước, sau đó tối thiểu 0.01\,ms mới cấp nguồn cho VCCI nhằm tránh hiện tượng đường dữ liệu SDA bị kẹt ở mức logic thấp trong quá trình khởi động. Mạch delay khởi động nguồn được thiết kế tại chân VCCI của IO Expander, bao gồm ba thành phần chính:
+                \begin{itemize}
+                    \item \textbf{MOSFET kênh P}: dùng để đóng/ngắt nguồn cấp cho VCCI.
+                    \item \textbf{Bộ so sánh OpAmp}: dùng để so sánh điện áp tham chiếu và điện áp tăng dần từ mạch RC.
+                    \item \textbf{Mạch RC delay}: tạo độ trễ thời gian cho điện áp tại đầu vào bộ so sánh.
+                \end{itemize}
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/datasheet_ioxpowerrecomendation.png}
+                    \caption{Khuyến nghị cấp nguồn cho IC TCA6424ARGJR từ datasheet} 
+                    \label{fig:sche_ioxpowerrecomendation}
+                \end{figure}
+
+                Tại đầu vào dương của bộ so sánh là một cầu chia áp nhằm tạo điện áp tham chiếu. Điện áp tham chiếu này có giá trị xấp xỉ 2.2\,V. Tại đầu vào âm của bộ so sánh là mạch RC delay, trong đó điện áp trên tụ tăng dần theo thời gian khi mạch được cấp nguồn. Khi điện áp trên tụ vượt qua mức tham chiếu 2.2\,V, đầu ra của bộ so sánh sẽ chuyển từ mức thấp sang mức cao, kích hoạt MOSFET kênh P đóng và cấp nguồn cho chân VCCI của IO Expander.
+
+                Thời gian để điện áp trên tụ đạt đến mức điện áp tham chiếu được xác định theo công thức:
+                \[
+                t = -\tau \ln \left(1 - \frac{V_C}{V_S}\right)
+                \]
+                Trong đó:
+                \begin{itemize}
+                    \item $t$: thời gian trễ (s),
+                    \item $\tau = RC$: hằng số thời gian của mạch RC (s),
+                    \item $V_C$: điện áp trên tụ điện tại thời điểm $t$ (V),
+                    \item $V_S$: điện áp nguồn cấp cho mạch RC (V).
+                \end{itemize}
+
+                Với các giá trị được lựa chọn trong thiết kế, trong đó $\tau = RC = 0.0001\,\text{s}$, điện áp nguồn $V_S = 3.3\,\text{V}$ và điện áp trên tụ tại thời điểm so sánh $V_C = 2.2\,\text{V}$, thời gian trễ tính toán được là $t \approx \textbf{0.11\,ms}$. Giá trị này đáp ứng dải thời gian ramp-up từ 0.01 đến 100\,ms theo khuyến nghị trong datasheet của nhà sản xuất.
+
+                Cơ chế hoạt động của mạch được mô tả theo trình tự thời gian như sau:
+                \begin{itemize}
+                    \item \textbf{Tại thời điểm $t = 0$}: mạch IO Expander vừa được cấp nguồn. Điện áp tại đầu vào âm của bộ so sánh bắt đầu tăng dần từ 0\,V lên mức 3.3\,V, trong khi điện áp tại đầu vào dương được giữ cố định ở mức 2.2\,V. Op-amp cho mức điện áp đầu ra cao (xấp xỉ 3.3\,V), khiến MOSFET kênh P ở trạng thái đóng, nguồn VCCI chưa được cấp.
+                    \item \textbf{Tại thời điểm $t \approx 0.11\,ms$}: điện áp tại đầu vào âm vượt qua mức 2.2\,V, làm đầu ra op-amp bị kéo xuống mức thấp (xấp xỉ 0\,V). MOSFET kênh P chuyển sang trạng thái dẫn, cho phép nguồn VCCI được cấp cho IO Expander.
+                \end{itemize}
+
+                Mạch được mô phỏng trên phần mềm LTspice, kết quả mô phỏng được trình bày trong Hình~\ref{fig:sim_ioxdelayvcci}.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sim_ioxdelayvcci.png}
+                    \caption{Kết quả mô phỏng mạch delay khởi động nguồn VCCI cho IO Expander} 
+                    \label{fig:sim_ioxdelayvcci}    
+                \end{figure}
+
             \paragraph{Thiết kế Mạch RTC}
+                Khối RTC của hệ thống sử dụng IC PCF85263ATL/AX, giao tiếp với MCU thông qua chuẩn I\textsuperscript{2}C. Nguồn VDD của RTC được cấp từ rail +3V3\_MSYS, trong khi nguồn VBAT được cấp từ pin RTC backup 3\,V. Đường VBAT được trang bị một TVS diode nhằm bảo vệ mạch khỏi các xung ESD gây ra trong quá trình tháo lắp pin RTC.
+
+                IC RTC sử dụng thạch anh ngoài tần số 32.768\,kHz được kết nối trực tiếp vào hai chân OSCI và OSCO. Theo khuyến nghị của nhà sản xuất, IC PCF85263ATL/AX đã tích hợp khả năng hiệu chỉnh dao động (tuning facility), do đó không cần sử dụng thêm tụ tải ngoài cho thạch anh. Thạch anh được lựa chọn có điện dung tải danh định khoảng 7\,pF và giá trị ESR nhỏ hơn 60\,k$\Omega$, nhằm đảm bảo mức tiêu thụ năng lượng thấp và độ ổn định dao động cao cho RTC.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_rtc.png}
+                    \caption{Sơ đồ nguyên lý mạch RTC} 
+                    \label{fig:sche_rtc}
+                \end{figure}
+
             \paragraph{Thiết kế Mạch Micro SD Card}
+                Thẻ Micro SD được kết nối với Slave MCU thông qua giao thức SDIO 4-bit. Cấu hình giao tiếp này cho phép đạt được tốc độ truyền dữ liệu cao, phù hợp với yêu cầu lưu trữ và truy xuất dữ liệu của hệ thống.
+
+                Theo khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}, trên các đường tín hiệu SDIO bao gồm data, clock và cmd cần được bố trí các điện trở pull-up, đồng thời nên bổ sung các điện trở giảm chấn mắc nối tiếp nhằm cải thiện chất lượng tín hiệu. Việc bổ sung các linh kiện này giúp hạn chế hiện tượng ringing, overshoot trên các cạnh xung và nâng cao tính toàn vẹn tín hiệu khi thẻ Micro SD hoạt động ở tần số cao.
+
+                Trong thiết kế, mạch sử dụng IC EMIF06-MSD02N16 được đặt ngay tại đầu vào của cổng kết nối thẻ Micro SD. IC này tích hợp sẵn các diode TVS để bảo vệ chống phóng tĩnh điện, các điện trở kéo lên với giá trị xấp xỉ 80--100\,k$\Omega$, cùng các điện trở giảm chấn mắc nối tiếp có giá trị khoảng 36--54\,$\Omega$ trên toàn bộ các đường tín hiệu SDIO của thẻ Micro SD. Việc sử dụng IC tích hợp giúp đơn giản hóa sơ đồ mạch, giảm số lượng linh kiện rời, đồng thời đảm bảo tuân thủ đầy đủ các khuyến nghị về bảo vệ và chất lượng tín hiệu trong quá trình thiết kế phần cứng.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_microsd.png}
+                    \caption{Sơ đồ nguyên lý mạch Micro SD Card} 
+                    \label{fig:sche_microsd}
+                \end{figure}
             \paragraph{Thiết kế Mạch Module Adapter}
-        
+                Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter này được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard. Trên module adapter WAN được trang bị thêm một cổng USB và kết nối về baseboard thông qua cáp USB, cho phép thực hiện giao tiếp trực tiếp giữa Master MCU và module WAN thông qua giao thức USB 2.0.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_wan.png}
+                    \caption{Sơ đồ nguyên lý mạch WAN} 
+                    \label{fig:sche_wan}
+                \end{figure}
+
+                Ở phiên bản Prototype, nhóm thiết kế triển khai mạch adapter WAN dành cho module SIM7600G-H chuẩn mPCIe. Mạch adapter này được thiết kế các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm cấp nguồn, giao tiếp dữ liệu và các tín hiệu điều khiển, với các tham khảo trực tiếp từ tài liệu thiết kế phần cứng của module SIM7600G-H. Việc sử dụng adapter trung gian cho phép tách biệt phần thiết kế baseboard và phần đặc thù của module WAN.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_wanadapter.png}
+                    \caption{Sơ đồ nguyên lý mạch WAN Adapter} 
+                    \label{fig:sche_wanadapter}
+                \end{figure}
+
+                Bên cạnh đó, mạch adapter LAN được thiết kế nhằm hỗ trợ linh hoạt nhiều module truyền thông có sẵn trên thị trường. Các module được xem xét và hỗ trợ trong thiết kế prototype bao gồm:
+                \begin{itemize}
+                    \item Module CAN Bus TJA1050, sử dụng nguồn cấp 5\,V và giao tiếp UART.
+                    \item Module chuyển đổi MAX485 TTL to RS485, sử dụng nguồn cấp 5\,V và giao tiếp UART.
+                    \item Module Zigbee UART RF Transmitter and Receiver CC2530+PA V2, sử dụng nguồn cấp 3.3\,V và giao tiếp UART.
+                    \item Module RF LoRa SX1278 E32-433T20D, hoạt động ở băng tần 433\,MHz, sử dụng nguồn cấp 3.3\,V và giao tiếp UART.
+                    \item USB Dongle STM32WB55, hỗ trợ các giao thức không dây Bluetooth 5.4, Thread 1.3 và Zigbee 3.0, sử dụng nguồn cấp 3.3\,V. Đây là module do nhóm tự nghiên cứu và phát triển, hỗ trợ giao tiếp UART và SPI.
+                \end{itemize}
+
+                Mạch adapter LAN được thiết kế để có thể hỗ trợ đồng thời tối đa năm module khác nhau. Việc lựa chọn module hoạt động được thực hiện thông qua các jumper nối tắt, cho phép định tuyến đường UART từ baseboard tới module tương ứng. Cách thiết kế này giúp tăng tính linh hoạt trong quá trình thử nghiệm, đồng thời giảm chi phí và thời gian phát triển khi xây dựng phiên bản prototype cho mạch LAN Adapter.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/sche_lanadapter.png}
+                    \caption{Sơ đồ nguyên lý mạch LAN Adapter} 
+                    \label{fig:sche_lanadapter} 
+                \end{figure}
 
         \subsubsection{Thiết kế PCB}
             \paragraph{Thiết kế xếp lớp PCB (Stack-up) và Kiểm soát trở kháng (Impedance Control)}
