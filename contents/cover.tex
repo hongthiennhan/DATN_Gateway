@@ -11,15 +11,13 @@
     % ==========================
     \begin{tikzpicture}[remember picture, overlay]
         % --- Khung viền ngoài (nét đậm) ---
-        % Đã thay đổi từ 2.0cm xuống 1.0cm để đẩy khung ra sát mép hơn
-        \draw[line width=3pt]
+        \draw[line width=3pt, color=BKblue]
             ($(current page.north west) + (1.0cm,-1.0cm)$)
             rectangle
             ($(current page.south east) + (-1.0cm,1.0cm)$);
 
         % --- Khung viền trong (nét mảnh) ---
-        % Đã thay đổi từ 2.15cm xuống 1.15cm để giữ khoảng cách với khung ngoài
-        \draw[line width=1pt]
+        \draw[line width=1pt, color=BKblue]
             ($(current page.north west) + (1.15cm,-1.15cm)$)
             rectangle
             ($(current page.south east) + (-1.15cm,1.15cm)$);

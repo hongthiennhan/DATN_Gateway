@@ -257,7 +257,7 @@
             \paragraph{Thiết kế Mạch Module Adapter}
         
 
-        \subsubsection{Thiết kế PCB}
+\subsubsection{Thiết kế PCB}
             \paragraph{Thiết kế xếp lớp PCB (Stack-up) và Kiểm soát trở kháng (Impedance Control)}
                 \begin{enumerate}
                     \item \textbf{Thiết kế Stack-up:}
@@ -289,6 +289,12 @@
                             \item \textbf{Toàn vẹn nguồn (PI):} Việc bố trí mặt phẳng đất (L2) và mặt phẳng nguồn (L3) liền kề nhau với khoảng cách điện môi mỏng tạo ra một tụ điện phẳng ký sinh (Inter-plane capacitance). Tụ điện này đóng vai trò quan trọng trong việc lọc nhiễu tần số cao và giảm trở kháng của mạng phân phối nguồn (PDN) một cách tự nhiên.
                             \item \textbf{Chống nhiễu xuyên âm (Crosstalk):} Các lớp tín hiệu tốc độ cao (L1 và L6) đều có mặt phẳng tham chiếu đất liền kề (L2 và L5). Cấu trúc đường truyền Microstrip này giúp khép kín trường điện từ, hạn chế bức xạ nhiễu và giảm thiểu xuyên nhiễu (Crosstalk) giữa các đường tín hiệu và đường nguồn switching có tần số đóng cắt lớn.
                         \end{itemize}
+                        
+                        \begin{figure}[h]
+                            \centering
+                            \includegraphics[width=0.8\textwidth]{figures/PCB_design_stackup.png}
+                            \caption{Layer Stack-up Management}
+                        \end{figure}
 
                         \item \textbf{So sánh với định tuyến Stripline lớp trong (Inner Layer Routing):} 
                         Một số thiết kế tham khảo ưu tiên định tuyến tín hiệu tốc độ cao ở các lớp trong (ví dụ Layer 4) để tận dụng cấu trúc Stripline (được bao bọc bởi hai mặt phẳng tham chiếu), giúp tín hiệu lan truyền trong môi trường điện môi đồng nhất và chống nhiễu EMI tốt hơn so với Microstrip (tiếp xúc với không khí). 
@@ -328,6 +334,14 @@
                 \end{enumerate}
             \paragraph{Quy hoạch và Bố trí linh kiện (Component Placement \& Floor-planning):}
                 Việc bố trí linh kiện (Floor-planning) là bước quyết định đến hiệu năng chống nhiễu (EMC) và tính ổn định của hệ thống. Dựa trên sơ đồ nguyên lý và các ràng buộc cơ khí, chiến lược quy hoạch mặt bằng bo mạch được thực hiện theo các nguyên tắc sau:
+                
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=0.45\textwidth]{figures/floor_planing.png} 
+                    \includegraphics[width=0.45\textwidth]{figures/floor_planing_3d.png} 
+                    \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
+                    \label{fig:pcb_floorplan}
+                \end{figure}
 
                 \begin{enumerate}
                     \item \textbf{Phân vùng chức năng (Functional Partitioning):}
@@ -343,7 +357,7 @@
 
                     \item \textbf{Tối ưu hóa Luồng tín hiệu (Signal Flow Optimization):}
                     \begin{itemize}
-                        \item \textbf{Vị trí vi xử lý:} Khối xử lý trung tâm (Dual-MCU) được đặt ở vị trí trung tâm của bo mạch (Centralized Placement). Điều này giúp cân bằng và giảm thiểu chiều dài đường mạch đến các cổng kết nối xung quanh, đặc biệt quan trọng với các bus giao tiếp tốc độ cao như Quad-SPI và các đường điều khiển tới Module Adapter.
+                        \item \textbf{Vị trí vi xử lý:} Hai MCU được đặt sát nhau và đặt ở vị trí phù hợp so với các Module Adapter xung quanh. Điều này giúp cân bằng và giảm thiểu chiều dài đường mạch đến các cổng kết nối xung quanh, đặc biệt quan trọng với các bus giao tiếp tốc độ cao như Quad-SPI và các đường điều khiển tới Module Adapter.
                         \item \textbf{Tín hiệu tốc độ cao:} Các linh kiện liên quan đến giao tiếp tốc độ cao (như USB Switch, ESD protection) được đặt thẳng hàng và sát nhất có thể với cổng kết nối vật lý. Mục tiêu là giảm thiểu chiều dài đường dây (Trace length), từ đó giảm cảm kháng ký sinh và suy hao tín hiệu.
                     \end{itemize}
 
@@ -358,15 +372,6 @@
                         \item \textbf{Giao diện kết nối:} Các thành phần tương tác với người dùng (Cổng USB, Khe thẻ nhớ, Nút nhấn, Đèn LED) được bố trí tại các mép bo mạch (Edge Placement), tuân thủ các ràng buộc về vị trí của vỏ hộp thiết bị (Enclosure).
                         \item \textbf{Vùng cấm (Keep-out Zone):} Thiết lập các vùng cấm đi dây và đặt linh kiện xung quanh các lỗ bắt vít (Mounting holes) và khu vực anten PCB để tránh chập mạch hoặc ảnh hưởng đến bức xạ sóng.
                     \end{itemize}
-                    
-                    \item \textbf{Hình ảnh minh họa bố trí:}
-                    \begin{figure}[h]
-                        \centering
-                        % Thay thế tên file ảnh thực tế của bạn vào đây
-                        % \includegraphics[width=0.8\textwidth]{figures/pcb_floorplan_2d.png} 
-                        \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
-                        \label{fig:pcb_floorplan}
-                    \end{figure}
                 \end{enumerate}
 
             \paragraph{Kỹ thuật Chống nhiễu và Giảm thiểu EMI (EMI Suppression Techniques):}
@@ -381,19 +386,13 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \begin{minipage}{0.48\textwidth}
-                            \centering
-                            \includegraphics[width=\linewidth]{figures/crysal_shielding_2D.png}
-                        \end{minipage}
-                        \hfill
-                        \begin{minipage}{0.48\textwidth}
-                            \centering
-                            \includegraphics[width=\linewidth]{figures/crysal_shielding_3D.png}
-                        \end{minipage}
+                        \includegraphics[width=0.4\textwidth]{figures/crysal_shielding_2D.png}
+                        \includegraphics[width=0.4\textwidth]{figures/crysal_shielding_3D.png}
                         \caption{Kỹ thuật tạo vòng bảo vệ (Guard Ring) và via stitching xung quanh khối thạch anh để cô lập nhiễu.}
                         \label{fig:crystal_shielding}
                     \end{figure}
 
+                    \newpage
                     \begin{figure}[h]
                         \centering
                         \includegraphics[width=0.8\textwidth]{figures/USB_shielding_2D.png}
@@ -406,6 +405,14 @@
                         \item \textbf{Nguyên lý đường dẫn cảm kháng thấp nhất (Path of Least Inductance):} Ở tần số cao, dòng điện hồi tiếp luôn có xu hướng chạy ngay bên dưới đường dây tín hiệu trên mặt phẳng tham chiếu (Reference Plane) để tối thiểu hóa cảm kháng vòng lặp.
                         \item \textbf{Tránh cắt xẻ mặt phẳng đất:} Thiết kế đảm bảo các mặt phẳng đất (L2, L5) là liên tục và liền mạch. Tuyệt đối tránh đi dây tín hiệu tốc độ cao cắt ngang qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất. Việc tín hiệu băng qua khe hở sẽ buộc dòng hồi tiếp phải đi vòng xa hơn, tạo thành một vòng lặp diện tích lớn (Large Loop Area). Vòng lặp này hoạt động như một anten khung (Loop Antenna), vừa phát xạ nhiễu ra ngoài vừa thu nhiễu từ môi trường vào, gây suy giảm chất lượng tín hiệu.
                     \end{itemize}
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.7\textwidth]{figures/incorrect_plane_void_routing.png}
+                        \includegraphics[width=0.7\textwidth]{figures/slave_i2c0.png}
+                        \caption{Minh họa tín hiệu Slave\_I2C0 được định tuyến liên tục trên mặt phẳng GND đồng nhất, tránh các vị trí lớp phủ đã bị cắt.}
+                    \end{figure}
+
                 \end{enumerate}
 
             \paragraph{Kỹ thuật Layout Hệ thống Nguồn và PDN (Power Supply \& PDN Design):}
@@ -415,80 +422,307 @@
                 \begin{enumerate}
                     \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop Minimization):}
                     \begin{itemize}
-                        \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn.
+                        \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn hoặc cuộn cảm cho nguồn xung.
                         \item Mục tiêu là giảm thiểu diện tích vật lý của "vòng lặp xung" (Hot Loop Area) - nơi có dòng điện biến thiên $di/dt$ lớn nhất. Việc này giúp giảm cảm kháng ký sinh đường dây, hạn chế các xung gai điện áp (Voltage Spikes) và giảm thiểu bức xạ nhiễu EMI ra môi trường.
                     \end{itemize}
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.8\textwidth]{figures/hot_loop_minimization.png}
+                        \caption{Vị trí các tụ điện trong nguồn xung +5V0\_SYS.}
+                    \end{figure}
 
                     \item \textbf{Xử lý Điểm chuyển mạch (Switching Node Optimization):}
                     \begin{itemize}
                         \item Chân SW (Switching) là nơi dao động điện áp tần số cao với biên độ lớn ($dv/dt$ cao). Đường mạch tại đây được thiết kế dạng khối đồng (Polygon) ngắn và rộng để giảm điện trở và cảm kháng, nhưng diện tích không được quá lớn để hạn chế điện dung ký sinh gây tổn hao.
-                        \item Tuyệt đối không định tuyến bất kỳ đường tín hiệu nhạy cảm nào đi ngang qua hoặc đi ở lớp ngay bên dưới (Layer 2) của cuộn cảm và điểm SW để tránh nhiễu.
+                        \item Thiết kế đảm bảo tuyệt đối không định tuyến bất kỳ đường tín hiệu nhạy cảm nào đi ngang qua hoặc đi ở lớp ngay bên dưới (Layer 2) của cuộn cảm và điểm SW để tránh nhiễu.
                     \end{itemize}
+                    
+                    \newpage
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/switching_node.png}
+                        \caption{Điểm chuyển mạch trong nguồn xung +5V0\_SYS.}
+                    \end{figure}        
 
                     \item \textbf{Kỹ thuật Hồi tiếp và Mass (Feedback \& Grounding):}
                     \begin{itemize}
-                        \item \textbf{Kết nối Kelvin (Kelvin Connection):} Đường tín hiệu hồi tiếp (Feedback trace) được lấy mẫu (sense) trực tiếp tại điểm sau tụ đầu ra $C_{OUT}$ để đảm bảo điện áp đo được là chính xác nhất.
+                        \item \textbf{Kết nối Kelvin:} Đường tín hiệu hồi tiếp (Feedback trace) được lấy mẫu (sense) trực tiếp tại điểm sau tụ đầu ra $C_{OUT}$ để đảm bảo điện áp đo được là chính xác nhất.
                         \item \textbf{Cách ly nhiễu:} Đường Feedback được đi tránh xa khỏi cuộn cảm và điểm SW. Mass của đường hồi tiếp và các linh kiện tín hiệu nhỏ (như tụ Soft-start, trở định thời) được nối vào Analog Ground (AGND) hoặc chân GND tín hiệu của IC, tách biệt với Power Ground (PGND) đang chịu dòng xung lớn, nhằm tránh nhiễu mặt đất (Ground Bounce).
                     \end{itemize}
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/feedback.png}
+                        \caption{Định tuyến hồi tiếp trong nguồn xung +5V0\_SYS.}
+                    \end{figure}   
 
                     \item \textbf{Quản lý Nhiệt (Thermal Management):}
                     \begin{itemize}
-                        \item Tận dụng Pad tản nhiệt (Thermal Pad) dưới bụng IC, thiết kế sử dụng mảng via tản nhiệt (Thermal Via Matrix) dày đặc để dẫn nhiệt trực tiếp xuống các lớp đồng Ground Plane rộng lớn ở bên dưới (L2, L5). Điều này biến toàn bộ bo mạch thành một lá tản nhiệt tự nhiên, đảm bảo IC hoạt động mát mẻ dưới tải dòng lớn.
+                        \item Tận dụng Pad tản nhiệt dưới bụng IC, thiết kế sử dụng mảng via tản nhiệt dày đặc để dẫn nhiệt trực tiếp xuống các lớp đồng Ground Plane rộng lớn ở bên dưới (L2, L5). Điều này biến toàn bộ bo mạch thành một lá tản nhiệt tự nhiên, đảm bảo IC hoạt động mát mẻ dưới tải dòng lớn.
                     \end{itemize}
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/thermal.png}
+                        \includegraphics[width=0.6\textwidth]{figures/thermal_gnd.png}
+                        \caption{Tản nhiệt trong nguồn xung +5V0\_SYS.}
+                    \end{figure}  
 
                     \item \textbf{Thiết kế Mạng phân phối nguồn (Power Distribution Network - PDN):}
                     Mục tiêu cốt lõi là duy trì trở kháng nguồn ($Z_{PDN}$) thấp hơn trở kháng mục tiêu trên toàn dải tần số hoạt động. Chiến lược thực hiện bao gồm:
                     \begin{itemize}
-                        \item \textbf{Tụ điện phẳng (Inter-plane Capacitance):} Trong cấu trúc Stack-up 6 lớp, việc bố trí Lớp 2 (Ground) và Lớp 3 (Power) liền kề nhau với lớp cách điện mỏng tạo ra một tụ điện ký sinh lớn, giúp lọc các nhiễu tần số cực cao mà tụ điện rời không đáp ứng kịp.
-                        \item \textbf{Chiến lược tụ Decoupling đa tầng:} Sử dụng tổ hợp nhiều giá trị tụ điện song song. Các tụ giá trị nhỏ (10pF - 100nF) đặt sát chân cấp nguồn của IC để triệt tiêu nhiễu cao tần/xung nhịp MCU. Các tụ giá trị lớn (10$\mu$F - 100$\mu$F) đặt gần đó để đáp ứng nhu cầu năng lượng cho các biến động tải lớn (Transient Load).
-                        \item \textbf{Hình học đường dây (Trace Geometry):} 
+                        \item \textbf{Tụ điện phẳng:} Trong cấu trúc Stack-up 6 lớp, việc bố trí Lớp 2 (Ground) và Lớp 3 (Power) liền kề nhau với lớp cách điện mỏng tạo ra một tụ điện ký sinh lớn, giúp lọc các nhiễu tần số cực cao mà tụ điện rời không đáp ứng kịp.
+                        \item \textbf{Tụ điện Decoupling đa tầng:} Sử dụng tổ hợp nhiều giá trị tụ điện song song. Các tụ giá trị nhỏ (10pF - 100nF) đặt sát chân cấp nguồn của IC để triệt tiêu nhiễu cao tần/xung nhịp MCU. Các tụ giá trị lớn (10$\mu$F - 100$\mu$F) đặt gần đó để đáp ứng nhu cầu năng lượng cho các biến động tải lớn.
+                        \item \textbf{Hình dạng đường dây:} 
                         \begin{itemize}
                             \item Các đường dẫn nguồn chính được thiết kế dạng mặt phẳng (Plane) hoặc đường mạch rất rộng. Theo công thức $L \propto \ln(1/W)$, đường mạch càng rộng thì cảm kháng ký sinh ($L$) càng nhỏ.
-                            \item Việc giảm cảm kháng $L$ giúp hạn chế hiện tượng sụt áp quá độ ($V_{droop} = L \cdot di/dt$) khi tải thay đổi đột ngột và giảm thiểu hiện tượng đổ chuông (Ringing) gây mất ổn định điện áp. Đồng thời, tiết diện dây lớn giúp giảm mật độ dòng điện, giảm tỏa nhiệt trên đường dây (IR Loss).
+                            \item Việc giảm cảm kháng $L$ giúp hạn chế hiện tượng sụt áp quá độ ($V_{drop} = L \cdot di/dt$) khi tải thay đổi đột ngột và giảm thiểu hiện tượng đổ chuông (Ringing) gây mất ổn định điện áp. Đồng thời, tiết diện dây lớn giúp giảm mật độ dòng điện, giảm tỏa nhiệt trên đường dây (IR Loss).
                         \end{itemize}
                     \end{itemize}
+
+                    \newpage
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/3v3_pdn.png}
+                        \caption{Mạng phân phối nguồn +3V3.}
+                    \end{figure}                     
                 \end{enumerate}
 
             \paragraph{Kỹ thuật Định tuyến Tín hiệu Tốc độ cao (High-Speed Signal Routing)}
 
                 Để đảm bảo chất lượng tín hiệu (Signal Integrity) cho các giao tiếp USB, SPI và SDIO, quy trình layout tuân thủ các quy tắc định tuyến nghiêm ngặt nhằm kiểm soát trở kháng, đồng bộ pha và giảm thiểu xuyên nhiễu (Crosstalk):
 
-                % \begin{enumerate}
-                %     \item \textbf{Định tuyến Cặp Vi sai (Differential Pair Routing - USB):}
-                %     \begin{itemize}
-                %         [cite_start]\item \textbf{Kiểm soát Trở kháng:} Cặp tín hiệu vi sai (như USB D+/D-) được thiết kế đạt trở kháng đặc tính mục tiêu $Z_{diff} = 90\Omega \pm 10\%$[cite: 420]. Cấu trúc định tuyến sử dụng là \textit{Differential Coplanar Waveguide} (vi sai đồng phẳng có mass bao bọc) để tăng khả năng chống nhiễu ngoại vi.
-                %         \item \textbf{Đồng bộ pha (Intra-pair Skew):} Đảm bảo chênh lệch chiều dài (Skew) giữa hai dây P và N trong cùng một cặp là nhỏ nhất có thể (thường $<5$ mils). Kỹ thuật \textit{Phase Matching} được thực hiện ngay tại điểm xảy ra lệch pha (ví dụ tại góc cua) để đảm bảo tín hiệu đến bộ thu đồng thời, triệt tiêu nhiễu chế độ chung (Common Mode Noise).
-                %         [cite_start]\item \textbf{Tính đối xứng:} Hai đường dây được định tuyến song song và đối xứng tuyệt đối trong suốt chiều dài đường truyền[cite: 256]. [cite_start]Các góc cua sử dụng góc vát $135^{\circ}$ hoặc cung tròn, tuyệt đối không dùng góc $90^{\circ}$ để tránh thay đổi trở kháng đột ngột[cite: 350].
-                %     \end{itemize}
-
-                %     \item \textbf{Định tuyến Bus Đơn cực (Single-ended Bus Routing - SPI/SDIO):}
-                %     \begin{itemize}
-                %         \item \textbf{Trở kháng $50\Omega$:} Tất cả các đường tín hiệu dữ liệu và điều khiển (MOSI, MISO, CMD, DAT) được thiết kế với trở kháng $Z_0 = 50\Omega \pm 10\%$ theo cấu trúc \textit{Coplanar Waveguide}.
-                %         \item \textbf{Bảo vệ xung nhịp (Clock Shielding):} Tín hiệu Clock (CLK) là nguồn gây nhiễu mạnh nhất (Aggressor). Đường CLK được định tuyến biệt lập, bao bọc bởi hai đường mass bảo vệ (Guard Traces) và được khâu via xuống Ground Plane dọc theo đường đi để cô lập trường điện từ.
-                %         \item \textbf{Cân bằng chiều dài (Trace Length Matching):} Áp dụng kỹ thuật \textit{Serpentine routing} (đi dây hình rắn) để cân bằng chiều dài của các đường dữ liệu với đường Clock. Điều này đảm bảo dữ liệu được lấy mẫu chính xác tại sườn xung nhịp, tránh lỗi Setup/Hold time do trễ truyền dẫn (Propagation Delay).
-                %     \end{itemize}
-
-                %     \item \textbf{Kiểm soát Nhiễu và Toàn vẹn tín hiệu (EMI \& SI Control):}
-                %     \begin{itemize}
-                %         \item \textbf{Giảm thiểu Via (Via Minimization):} Hạn chế tối đa việc chuyển lớp (Layer transition) trên đường tín hiệu tốc độ cao để tránh gây gián đoạn trở kháng. [cite_start]Nếu bắt buộc phải chuyển lớp, các via nối đất (Return Vias) được đặt ngay cạnh via tín hiệu để duy trì đường hồi tiếp liền mạch[cite: 195].
-                %         \item \textbf{Định tuyến trực giao (Orthogonal Routing):} Để tránh hiện tượng xuyên nhiễu (Crosstalk) giữa các lớp liền kề, các đường tín hiệu ở lớp L1 và L3 (nếu có) được đi vuông góc với nhau. [cite_start]Tuyệt đối tránh đi dây song song chồng lên nhau (Broadside coupling)[cite: 367].
-                %         \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). [cite_start]Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện[cite: 152].
-                %         [cite_start]\item \textbf{Quy tắc khoảng cách (Spacing Rules):} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng mạch) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau[cite: 213]. [cite_start]Đồng thời, duy trì khoảng cách ly (Keep-out) tối thiểu 50 mils đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn[cite: 216].
-                %     \end{itemize}
-                % \end{enumerate}
-        
-        \subsubsection{Phân tích và Mô phỏng}
-            \paragraph{Impedance Control}
-            \paragraph{Power Distribution Network - PDN}
                 \begin{enumerate}
-                    \item \textbf{Mạng nguồn:}
-                    \item \textbf{Phân tích Sụt áp trên đường dây:}
-                    \item \textbf{Phân tích Mật độ dòng điện:}
+                    \item \textbf{Định tuyến Cặp Vi sai (Differential Pair Routing - USB):}
+                    \begin{itemize}
+                        \item \textbf{Kiểm soát Trở kháng:} Cặp tín hiệu vi sai USB D+/D- được thiết kế đạt trở kháng đặc tính mục tiêu $Z_{diff} = 90\Omega \pm 10\%$. Cấu trúc định tuyến sử dụng là \textit{Differential Coplanar Waveguide} (vi sai đồng phẳng có mass bao bọc) để tăng khả năng chống nhiễu ngoại vi.
+                        \item \textbf{Đồng bộ pha (Intra-pair Skew):} Đảm bảo chênh lệch chiều dài giữa hai dây P và N trong cùng một cặp là nhỏ nhất có thể tùy theo tốc độ truyền dữ liệu. Kỹ thuật \textit{Phase Matching} được thực hiện ngay tại điểm xảy ra lệch pha để đảm bảo tín hiệu đến bộ thu đồng thời, triệt tiêu nhiễu chế độ chung (Common Mode Noise).
+                        \item \textbf{Tính đối xứng:} Hai đường dây được định tuyến song song và đối xứng tuyệt đối trong suốt chiều dài đường truyền. Các góc cua sử dụng góc vát $135^{\circ}$ hoặc cung tròn, tuyệt đối không dùng góc $90^{\circ}$ để tránh thay đổi trở kháng đột ngột.
+                    \end{itemize}
+
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/usb.png}
+                        \caption{Định tuyến USB.}
+                    \end{figure} 
+
+                    \newpage
+                    \item \textbf{Định tuyến Bus Đơn cực (Single-ended Bus Routing - SPI/SDIO):}
+                    \begin{itemize}
+                        \item \textbf{Trở kháng $50\Omega$:} Tất cả các đường tín hiệu dữ liệu và điều khiển được thiết kế với trở kháng $Z_0 = 50\Omega \pm 10\%$ theo cấu trúc \textit{Coplanar Waveguide}.
+                        \item \textbf{Bảo vệ xung nhịp (Clock Shielding):} Tín hiệu Clock (CLK) là nguồn gây nhiễu mạnh nhất. Đường CLK được định tuyến biệt lập, bao bọc bởi hai đường mass bảo vệ và được khâu via xuống Ground Plane dọc theo đường đi để cô lập trường điện từ.
+                        \item \textbf{Cân bằng chiều dài (Trace Length Matching):} Áp dụng các kỹ thuật \textit{Accordion} và \textit{Trombone} để cân bằng chiều dài của các đường dữ liệu với đường Clock. Điều này đảm bảo dữ liệu được lấy mẫu chính xác tại sườn xung nhịp, tránh lỗi Setup/Hold time do độ trễ lan truyền (Propagation Delay).
+                    \end{itemize}
+
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/sdio.png}
+                        \caption{Định tuyến SDIO giữa ESP32-S3 Slave với Micro SD Card.}
+                    \end{figure} 
+
+                    \item \textbf{Kiểm soát Nhiễu và Toàn vẹn tín hiệu (EMI \& SI Control):}
+                    \begin{itemize}
+                        \item \textbf{Giảm thiểu Via:} Hạn chế tối đa việc chuyển lớp trên đường tín hiệu tốc độ cao để tránh gây gián đoạn trở kháng. Nếu bắt buộc phải chuyển lớp, các stitching via được đặt ngay cạnh via tín hiệu để duy trì đường hồi tiếp liền mạch.
+                        \item \textbf{Định tuyến trực giao:} Để tránh hiện tượng xuyên nhiễu (Crosstalk) giữa các lớp liền kề được đi vuông góc với nhau. Tuyệt đối tránh đi dây song song chồng lên nhau.
+                        \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện.
+                        \item \textbf{Quy tắc khoảng cách:} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng mạch) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau. Đồng thời, duy trì khoảng cách ly đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn.
+                    \end{itemize}
+                \end{enumerate}
+        
+        \subsubsection{Phân tích và Mô phỏng Tín hiệu (Signal Integrity Simulation)}
+            \paragraph{Kiểm soát Trở kháng và độ trễ lan truyền (Impedance \& Delay Control)}
+                Việc mô phỏng được thực hiện trên các đường tín hiệu quan trọng để xác minh tính toán lý thuyết so với thiết kế layout thực tế.
+                
+                \begin{enumerate}
+                    \item \textbf{Mô phỏng đường tín hiệu đơn cực (Single-ended Bus):}
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{figures/sdio_sim_impedance.jpg}
+                        \caption{Biểu đồ phân bố trở kháng (Impedance Heatmap) đường tín hiệu đơn cực.}
+                        \label{fig:sdio_impedance}
+                    \end{figure} 
+                    Kết quả mô phỏng cho thấy trở kháng đặc tính ($Z_0$) dao động trong khoảng từ $51.5\Omega$ đến $55\Omega$. Mức biến thiên này hoàn toàn nằm trong phạm vi dung sai thiết kế cho phép ($\pm 10\%$ so với mục tiêu $50\Omega$), đảm bảo phối hợp trở kháng tốt với các linh kiện chuẩn. Tuy có sự mismatch tại các pinout nhưng độ dài mismatch là đủ nhỏ để không ảnh hưởng quá lớn đến trở kháng chung.
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{figures/sdio_sim_delay.jpg}
+                        \caption{Biểu đồ phân bố độ trễ lan truyền (Propagation Delay) đường tín hiệu đơn cực.}
+                        \label{fig:sdio_delay}
+                    \end{figure} 
+                    Độ trễ lan truyền của toàn bộ các đường tín hiệu được kiểm soát dưới ngưỡng $200ps$. Sự đồng nhất của dải màu trên biểu đồ heatmap dọc theo chiều dài đường mạch cho thấy độ lệch pha giữa các tín hiệu là nhỏ, đảm bảo các bit dữ liệu đến đích đồng bộ với xung nhịp.
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/sdio_sim_report.jpg}
+                        \caption{Bảng tổng hợp thông số mô phỏng đường tín hiệu đơn cực.}
+                        \label{fig:sdio_report}
+                    \end{figure} 
+                    Số liệu chi tiết từ báo cáo xác nhận:
+                    \begin{itemize}
+                        \item Trở kháng trung bình đạt $54\Omega$.
+                        \item Độ trễ dao động trong biên độ hẹp ($175ps$ - $178ps$), cho thấy việc cân bằng chiều dài (Length matching) đã được thực hiện tốt.
+                        \item Tổn hao chèn (Insertion Loss) gần như bằng $0dB$ và Tổn hao phản xạ (Return Loss) đạt $-42dB$ (rất thấp), chứng tỏ năng lượng tín hiệu được truyền đi hiệu quả và phản xạ tại tải là không đáng kể.
+                    \end{itemize}
+
+
+                    \item \textbf{Mô phỏng cặp tín hiệu vi sai (Differential-pair):}
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{figures/usb_sim_impedance.png}
+                        \caption{Biểu đồ phân bố trở kháng (Impedance Heatmap) đường vi sai.}
+                        \label{fig:usb_impedance}
+                    \end{figure} 
+                    Trở kháng vi sai ($Z_{diff}$) mô phỏng đạt giá trị ổn định quanh mức $90\Omega$. Kết quả này tuân thủ chặt chẽ tiêu chuẩn yêu cầu $90\Omega \pm 10\%$.  Tuy có sự mismatch tại các pinout nhưng độ dài mismatch là đủ nhỏ để không ảnh hưởng quá lớn đến trở kháng chung.
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{figures/usb_sim_delay.png}
+                        \caption{Biểu đồ phân bố độ trễ lan truyền (Propagation Delay) đường vi sai.}
+                        \label{fig:usb_delay}
+                    \end{figure} 
+                    Thời gian độ trễ lan truyền được duy trì dưới $200ps$. Sự tương đồng về màu sắc trên hai nhánh D+ và D- khẳng định độ lệch pha là nhỏ, giúp triệt tiêu hiệu quả nhiễu chế độ chung (Common Mode Noise).
+                    
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/usb_sim_report.png}
+                        \caption{Bảng tổng hợp thông số mô phỏng đường vi sai.}
+                        \label{fig:usb_report}
+                    \end{figure} 
+                    Kết quả tổng hợp cho thấy:
+                    \begin{itemize}
+                        \item Trở kháng vi sai đạt chuẩn $90\Omega$.
+                        \item Độ trễ đường truyền là $187ps$.
+                        \item Các thông số S-parameter rất tích cực: Insertion Loss xấp xỉ $0dB$ và Return Loss đạt $-22dB$, đảm bảo tính toàn vẹn tín hiệu cho giao tiếp dữ liệu tốc độ cao.
+                    \end{itemize}      
+                \end{enumerate}
+
+            \paragraph{Phân tích và Mô phỏng Mạng phân phối nguồn (Power Distribution Network - PDN)}
+                \begin{enumerate}
+                    \item \textbf{Sơ đồ Cây phân phối nguồn (Power Tree):}
+                    Hệ thống được thiết kế thành cấu trúc nguồn phân tầng đa nhánh phức tạp, được thể hiện trong \autoref{fig:power_tree}. Mạng lưới này không chỉ đơn thuần là cấp điện, mà là một hệ thống quản lý năng lượng phân tán với nhiều đặc điểm kỹ thuật cần phải đảm bảo trong thiết kế Mạng phân phối nguồn (Power Distribution Network - PDN).
+
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=0.6\textwidth]{figures/power_tree.png}
+                        \caption{Cấu trúc mạng phân phối nguồn.}
+                        \label{fig:power_tree}
+                    \end{figure}
+                    
+                    Với cấu trúc chằng chịt và dòng tải biến động lớn, việc tính toán lý thuyết và thực hiện Mô phỏng PDN để kiểm chứng độ sụt áp (DC IR Drop) và mật độ dòng điện (Current Density), đảm bảo không xảy ra quá nhiệt cục bộ hoặc sụt áp vượt ngưỡng an toàn tại các module mở rộng.\par
+                    \newpage
+                    Dựa trên thiết kế, mô phỏng tập trung vào các ray nguồn quan trọng ở trạng thái cực đoan với tải lý thuyết cao nhất, bao gồm:
+                    \begin{itemize}
+                        \item Nguồn +5V0\_SYS (nguồn U4)
+                        \item Nguồn +5V0 (nguồn U15)
+                        \item Nguồn +3V3 (nguồn U16)
+                    \end{itemize}
+
+                \item \textbf{Phân tích và Mô phỏng Sụt áp DC (DC IR Drop Analysis):}
+                    
+                    Mục tiêu của quá trình mô phỏng là xác minh tính toàn vẹn của mạng phân phối nguồn (PDN) dưới điều kiện tải nặng nhất (Worst-case scenario). Việc sụt áp xảy ra do nội trở của nguồn và điện trở ký sinh trên đường mạch.
+                    
+                    \textbf{Tiêu chí chấp nhận:}
+                    \begin{itemize}
+                        \item Tổng độ sụt áp từ nguồn (Source) đến tải (Load) không vượt quá \textbf{5\%} giá trị điện áp danh định.
+                        \item Điện trở đường dẫn phải được tối thiểu hóa (cỡ $m\Omega$) để giảm tổn hao nhiệt.
+                        \item Công thức tính trở kháng đường dẫn: $R_{path} = \dfrac{\Delta V_{drop}}{I_{load}}$.
+                    \end{itemize}
+
+                    \begin{enumerate}
+                        \item \textbf{Phân tích Ray nguồn +5V0\_SYS:}
+                            
+                            Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 2.92A$.
+                            
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/5v0_sys_sim_voltage_drop.png}
+                                \caption{Biểu đồ phân bố điện áp (Voltage Drop Heatmap) trên nguồn +5V0\_SYS.}
+                                \label{fig:5v0_sys_drop}
+                            \end{figure}
+                            
+                            \textbf{\textit{Kết quả mô phỏng và Tính toán:}}
+                            \begin{itemize}
+                                \item Điện áp tại điểm nguồn: $V_{source} = 4.958 V$.
+                                \item Điện áp tại điểm tải xa nhất: $V_{load} = 4.930 V$.
+                                \item Chênh lệch điện áp: $\Delta V = 4.958V - 4.930V = 28mV$.
+                            \end{itemize}
+
+                            \textbf{\textit{Đánh giá:}}
+                            \begin{itemize}
+                                \item Phần trăm sụt áp so với mức danh định (5V): $\%Drop = \dfrac{5V - 4.93V}{5V} = \mathbf{1.4\%}$\par
+                                $\Rightarrow$ Kết quả nhỏ hơn giới hạn 5\%.
+                                
+                                \item Điện trở đường dẫn: $R_{path} = \dfrac{V_{source} - V_{load}}{I_{load}} = \dfrac{28mV}{2.92A} \approx \mathbf{9.59 m\Omega}$\par
+                                $\Rightarrow$ Trở kháng đường dây rất thấp, cho thấy thiết kế layout nguồn tốt.
+                            \end{itemize}
+
+                        \item \textbf{Phân tích Ray nguồn +5V0:}
+                            
+                            Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 2.46A$.
+                            
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/5v0_sim_voltage_drop.png}
+                                \caption{Biểu đồ phân bố điện áp (Voltage Drop Heatmap) trên nguồn +5V0.}
+                                \label{fig:5v0_drop}
+                            \end{figure}
+                            
+                            \textbf{\textit{Kết quả mô phỏng và Tính toán:}}
+                            \begin{itemize}
+                                \item Điện áp tại điểm nguồn: $V_{source} = 4.926 V$.
+                                \item Điện áp tại điểm tải xa nhất: $V_{load} = 3.163 V$.
+                                \item Chênh lệch điện áp: $\Delta V = 4.926V - 3.163V = 71mV$.
+                            \end{itemize}
+
+                            \textbf{\textit{Đánh giá:}}
+                            \begin{itemize}
+                                \item Phần trăm sụt áp so với mức danh định (5V): $\%Drop = \dfrac{5V - 3.163V}{5V} = \mathbf{2.9\%}$\par
+                                $\Rightarrow$ Kết quả nhỏ hơn giới hạn 5\%.
+                                
+                                \item Điện trở đường dẫn: $R_{path} = \dfrac{V_{source} - V_{load}}{I_{load}} = \dfrac{71mV}{2.46A} \approx \mathbf{2.89 m\Omega}$\par
+                                $\Rightarrow$ Trở kháng đường dây rất thấp, cho thấy thiết kế layout nguồn tốt.
+                            \end{itemize}
+
+                        \item \textbf{Phân tích Ray nguồn +3V3:}
+                            
+                            Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 3.3A$.
+                            
+                            \begin{figure}[h]
+                                \centering
+                                \includegraphics[width=0.6\textwidth]{figures/3v3_sim_voltage_drop.png}
+                                \caption{Biểu đồ phân bố điện áp (Voltage Drop Heatmap) trên nguồn +3V3.}
+                                \label{fig:3v3_drop}
+                            \end{figure}
+                            
+                            \textbf{\textit{Kết quả mô phỏng và Tính toán:}}
+                            \begin{itemize}
+                                \item Điện áp tại điểm nguồn: $V_{source} = 3.196 V$.
+                                \item Điện áp tại điểm tải xa nhất: $V_{load} = 3.163 V$.
+                                \item Chênh lệch điện áp: $\Delta V = 3.196V - 3.163V = 33mV$.
+                            \end{itemize}
+
+                            \textbf{\textit{Đánh giá:}}
+                            \begin{itemize}
+                                \item Phần trăm sụt áp so với mức danh định (3.3V): $\%Drop = \dfrac{3.3V - 3.163V}{3.3V} = \mathbf{4.15\%}$\par
+                                $\Rightarrow$ Kết quả tuy nhỏ hơn nhưng khá gần giới hạn 5\%.
+                                
+                                \item Điện trở đường dẫn: $R_{path} = \dfrac{V_{source} - V_{load}}{I_{load}} = \dfrac{33mV}{3.3A} \approx \mathbf{10 m\Omega}$\par
+                                $\Rightarrow$ Trở kháng đường dây rất thấp, cho thấy thiết kế layout nguồn tốt. Song mức sụt áp khá gần giới hạn, cho thấy sụt áp xảy ra tại nguồn là khá cao.
+                            \end{itemize}
+                    \end{enumerate}
+
+
+                    \item \textbf{Phân tích và mô phỏng Mật độ dòng điện:}
                     \begin{itemize}
                         \item Mật độ dòng điện là đại lượng thể hiện mức độ tập trung dòng điện qua một đơn vị tiết diện. Khi mật độ dòng điện quá cao, các electron sẽ va chạm nhiều hơn với mạng tinh thể đồng, sinh ra nhiều nhiệt. Lượng nhiệt này, nếu đủ lớn, sẽ làm nóng chảy mạch hoặc gây sụt áp.
                         \item Theo tiêu chuẩn IPC-2221, đường mạch phải đủ rộng để tăng nhiệt độ không quá $10\,^\circ\mathrm{C}$.
                     \end{itemize}
                 \end{enumerate}
+
+
     \subsection{Firmware và Software}
         \dots\footnote{phần mềm}
         temp
