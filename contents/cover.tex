@@ -11,13 +11,13 @@
     % ==========================
     \begin{tikzpicture}[remember picture, overlay]
         % --- Khung viền ngoài (nét đậm) ---
-        \draw[line width=3pt, color=BKblue]
+        \draw[line width=3pt]
             ($(current page.north west) + (1.0cm,-1.0cm)$)
             rectangle
             ($(current page.south east) + (-1.0cm,1.0cm)$);
 
         % --- Khung viền trong (nét mảnh) ---
-        \draw[line width=1pt, color=BKblue]
+        \draw[line width=1pt]
             ($(current page.north west) + (1.15cm,-1.15cm)$)
             rectangle
             ($(current page.south east) + (-1.15cm,1.15cm)$);
@@ -59,14 +59,14 @@
         % THÔNG TIN HỘI ĐỒNG / SVTH
         \begin{table}[h]
             \centering
-            \begin{tabular}{r l}
-                \textbf{HỘI ĐỒNG:} & .......................................................... \\
-                \textbf{GVHD:} & .......................................................... \\
-                & \\
-                \multicolumn{2}{c}{\textbf{---o0o---}} \\
-                & \\
-                \textbf{SVTH 1:} & \textbf{Hồng Thiện Nhân (2111900)} \\
-                \textbf{SVTH 2:} & \textbf{Trần Hải Thảo Quảng (2212767)} \\
+            \begin{tabular}{p{4cm} r l}
+                & \textbf{HỘI ĐỒNG:} & .......................................................... \\
+                & \textbf{GVHD:} & .......................................................... \\
+                & & \\
+                & \multicolumn{2}{c}{\textbf{---o0o---}} \\
+                & & \\
+                & \textbf{SVTH 1:} & \textbf{Hồng Thiện Nhân (2111900)} \\
+                & \textbf{SVTH 2:} & \textbf{Trần Hải Thảo Quảng (2212767)} \\
             \end{tabular}
         \end{table}
 
@@ -81,4 +81,4 @@
 \end{titlepage}
 
 % Thiết lập số trang cho trang sau
-\setcounter{page}{2}
+\setcounter{page}{1}

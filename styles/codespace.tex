@@ -6,6 +6,7 @@
 \definecolor{BKblue}{HTML}{030391}
 \definecolor{modern_blue}{HTML}{007BFF}
 \definecolor{modern_red}{HTML}{DC3545}
+\usepackage{lastpage}
 \usepackage[table,xcdraw]{xcolor}
 % ==========================
 % Gói hỗ trợ toán học và định dạng
@@ -92,38 +93,49 @@
     \renewcommand{\headrulewidth}{0pt}
     \setlength{\headsep}{10pt}
 
-    \fancyfoot[C]{
-        \\[-20pt]
-        {\color{BKblue}\rule{\textwidth}{1pt}} % Đường kẻ màu xanh
-        \thepage
+    \fancyfoot[R]{
+        \\[-10pt]
+        {\rule{\textwidth}{1pt}}\\
+        {\fontsize{10pt}{15pt}\textbf{Trang \thepage/\pageref{LastPage}}}
     }
-    \setlength{\footskip}{35pt}
+    \fancyfoot[L]{
+        \\[-10pt]
+        {\rule{\textwidth}{1pt}}\\
+        {\fontsize{10pt}{15pt}\textbf{Báo cáo Đồ án Chuyên ngành (CO4041) - HK251 2025 - 2026}}
+    }
+    \setlength{\footskip}{30pt}
 }
 
 % Thiết lập header
 \renewcommand{\headrulewidth}{0pt}
 
 \fancyhead[L]{
-    {\hspace*{0.4cm}}{\color{BKblue}\fontsize{12pt}{30pt}\textbf{\leftmark}}\\[-20pt]
+    \\[-30pt]
+    {\hspace*{1.5cm}}{\fontsize{10pt}{15pt}\textbf{\orgName}}\\[-20pt]
     {\hspace*{-0.5cm}}\includegraphics[height=1.5cm]{figures/logo/logo_bk.png}\\[-25pt]
-    {\hspace*{0.5cm}}\rightmark\\[-5pt]
-    {\color{BKblue}\rule{\textwidth}{5pt}}\\[-12pt]
-    {\color{BKblue}\rule{\textwidth}{1pt}}
+    {\hspace*{1.5cm}}{\fontsize{10pt}{15pt}\textbf{Khoa Khoa học \& Kỹ thuật Máy tính}}\\[-7pt]
+    {\rule{\textwidth}{1pt}}\\[-12pt]
+    % {\color{BKblue}\rule{\textwidth}{1pt}}
 }
 
 % \fancyhead[R]{
 %     \includegraphics[height=1cm]{figures/logo/bk_name_vi.png}
 %     \\[10pt]
 % }
-\setlength{\headsep}{40pt}
+\setlength{\headsep}{10pt}
 
 % Thiết lập footer
-\fancyfoot[C]{
-    \\[-20pt]
-    {\color{BKblue}\rule{\textwidth}{1pt}}
-    \thepage
+\fancyfoot[R]{
+    \\[-10pt]
+    {\rule{\textwidth}{1pt}}\\
+    {\fontsize{10pt}{15pt}\textbf{Trang \thepage/\pageref{LastPage}}}
 }
-\setlength{\footskip}{20pt}
+\fancyfoot[L]{
+    \\[-10pt]
+    {\rule{\textwidth}{1pt}}\\
+    {\fontsize{10pt}{15pt}\textbf{Báo cáo Đồ án Chuyên ngành (CO4041) - HK251 2025 - 2026}}
+}
+\setlength{\footskip}{30pt}
 
 % Đường kẻ header/footer
 % \renewcommand{\headrulewidth}{0.4pt} % Độ dày đường kẻ header
@@ -136,7 +148,7 @@
 \usepackage{background}
 \backgroundsetup{
     scale=1,
-    color=BKblue,
+    color=white,
     opacity=1,
     position={8cm,2.1cm},
     angle=0,
