@@ -19,7 +19,7 @@
             Theo tiêu chuẩn công nghiệp, một gateway IoT được định nghĩa là một thiết bị phần cứng hoặc ứng dụng phần mềm đóng vai trò là điểm kết nối giữa máy chủ ứng dụng IoT và các thiết bị đầu cuối. Tiêu chuẩn ITU-T Y.4418 định nghĩa gateway là "một đơn vị trong Internet vạn vật có chức năng kết nối các thiết bị với mạng truyền thông, thực hiện việc chuyển đổi cần thiết giữa các giao thức được sử dụng trong mạng truyền thông và các giao thức mà thiết bị sử dụng."
 
             IoT gateway hoạt động như những trung tâm thông minh, liên kết các thiết bị IoT và đám mây với nhau, đảm nhiệm việc chuyển đổi giao tiếp giữa các thiết bị IoT cũng như lọc và xử lý dữ liệu thành thông tin hữu ích. Chúng tạo ra cầu nối giữa các cảm biến và cơ cấu chấp hành (actuators) ở một phía, và các nền tảng hậu kỳ (quản lý dữ liệu, thiết bị và người dùng) ở phía còn lại.
-    \section{Cơ sở lý thuyết}
+    \section{Cơ sở lý thuyết về IoT Gateway}
         \subsection{Khái niệm IoT gateway}
             IoT gateway trong lĩnh vực Internet of Things đóng vai trò là nút trung gian giữa các mạng cảm biến và nền tảng đám mây hoặc trung tâm dữ liệu được kết nối thông qua Internet. Mục tiêu chính của gateway là xử lý tính không đồng nhất do các thiết bị và giao thức khác nhau tạo ra, thu thập lượng lớn dữ liệu ở nhiều định dạng khác nhau và chuyển tiếp dữ liệu đã xử lý lên các hệ thống mức cao hơn.
 
@@ -131,7 +131,7 @@
                     \textbf{Lớp ứng dụng tuỳ biến (Custom Application)}\\
                         Trên cùng là lớp ứng dụng tuỳ biến, nơi hiện thực logic nghiệp vụ cụ thể của hệ thống: các kịch bản tự động hoá, xử lý cảnh báo và sự kiện, dashboard cục bộ cho cấu hình/giám sát, cũng như các dịch vụ tích hợp với hệ SCADA/MES/ERP hoặc nền tảng quản lý vận hành khác. Các ứng dụng này tận dụng toàn bộ dịch vụ do các lớp phía dưới cung cấp để xây dựng giải pháp IoT hoàn chỉnh.
 
-        \subsection{Nguyên lý họat động cơ bản}
+        \subsection{Nguyên lý họat động cơ bản của IoT Gateway}
             Quá trình hoạt động của gateway là một vòng lặp liên tục: thu thập dữ liệu từ thiết bị đầu cuối, xử lý và lọc tại chỗ, truyền gói tin lên cloud, nhận lệnh điều khiển từ cloud, và gửi lệnh xuống thiết bị. Trong suốt quá trình này, gateway phải đảm bảo tính nhất quán dữ liệu, bảo mật thông tin, phát hiện và xử lý lỗi, cũng như duy trì kết nối liên tục ngay cả trong điều kiện mạng không ổn định. Những yêu cầu này làm cho độ tin cậy, hiệu suất, và bảo mật trở thành những tiêu chí bắt buộc chứ không phải tuỳ chọn trong bất kỳ triển khai thực tế nào.
                 \subsubsection*{Thu thập dữ liệu (Data Ingestion)}
                     Gateway tiếp nhận dữ liệu thô từ các cảm biến và thiết bị có cơ cấu chấp hành thông qua các giao thức kết nối được hỗ trợ (như ZigBee, LoRa, BLE, Modbus...). Đây là bước đầu tiên, giúp gateway đóng vai trò là điểm thu gom dữ liệu từ lớp thiết bị (perception layer). Dữ liệu thô này có thể ở các định dạng khác nhau tùy thuộc vào loại cảm biến và giao thức sử dụng.
@@ -282,7 +282,134 @@
                 \item \textbf{Interoperability}: Cải thiện khả năng tích hợp giữa các nền tảng và tiêu chuẩn khác nhau.
                 \item \textbf{Security}: Tăng cường các tính năng bảo mật, đặc biệt là trong các ứng dụng công nghiệp và quan trọng.
             \end{itemize}
+        \section{Cơ sở lý thuyết về Thiết kế phần cứng}
+            \subsection{Thiết kế High-Speed PCB}
+            \subsubsection{Khái niệm High-Speed PCB Design}
+                High-Speed PCB Design là quá trình thiết kế mạch in trong đó tín hiệu số có tốc độ chuyển mức rất nhanh (thời gian cạnh lên/xuống nhỏ), khiến các đường mạch phải được xem như một đường truyền thay vì dây nối lý tưởng. Khi độ trễ lan truyền trên đường mạch xấp xỉ hoặc lớn hơn khoảng 20\% thời gian cạnh lên/xuống của tín hiệu, các hiệu ứng truyền sóng như phản xạ, nhiễu xuyên kênh và bức xạ điện từ trở nên đáng kể, nên mạch phải tuân theo các nguyên tắc thiết kế high-speed.
+                
+                Ranh giới giữa mạch low-speed và high-speed không được xác định bằng một tần số cố định mà chủ yếu dựa trên edge rate của tín hiệu. Các hệ thống dùng giao thức tốc độ cao như USB, Ethernet, HDMI, PCIe, v.v. hầu hết đều nằm trong phạm vi thiết kế high-speed.
+                
+            \subsubsection{Tính toàn vẹn tín hiệu (Signal Integrity) và đường hồi dòng (Return Path)}
+                \paragraph{Signal Integrity (SI)}
+                    Signal Integrity là mức độ mà tín hiệu đến đầu nhận vẫn giữ được biên độ, dạng xung và thời điểm chuyển mức như dự kiến. Mất toàn vẹn tín hiệu thể hiện qua méo dạng dạng sóng, overshoot/undershoot, rung (ringing), jitter và thậm chí lỗi dữ liệu.
+                    
+                    Các nguyên nhân chính gây suy giảm SI gồm:
+                    \begin{itemize}
+                        \item Không khớp trở kháng trên đường truyền.
+                        \item Nhiễu xuyên kênh (crosstalk) giữa các đường mạch gần nhau.
+                        \item Bố trí return path không liên tục, tạo vòng dòng lớn và tăng cảm kháng.
+                        \item Đặc tính vật liệu (tổn hao điện môi, hiệu ứng da, tán sắc) trên đường dài.
+                    \end{itemize}
+                    
+                    \begin{figure}[H]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{figures/lythuyet_ringing.png}
+                        \caption{Minh hoạ hiện tượng ringing do không khớp trở kháng}
+                        \label{fig:lythuyet_ringing}  
+                    \end{figure}
+                
+                \paragraph{Return path và vai trò của mặt phẳng tham chiếu}
+                    Mọi dòng tín hiệu high-speed đều đi kèm một dòng hồi tương ứng, thường chạy trên mặt phẳng tham chiếu (ground hoặc power plane) ngay sát lớp tín hiệu. Trong miền tần số cao, dòng hồi có xu hướng đi theo đường ngắn nhất và song song ngay dưới trace để giảm cảm kháng vòng lặp; nếu mặt phẳng bị xẻ rãnh hay có khe hở, return path bị cưỡng bức vòng xa, làm tăng cảm kháng, crosstalk và EMI.
+                    
+                    \begin{itemize}
+                        \item Luôn định tuyến tín hiệu tốc độ cao trên lớp kề sát một mặt phẳng tham chiếu liên tục.
+                        \item Tránh chạy trace băng qua khe hở trên plane; nếu buộc phải đổi lớp, cần cung cấp via mass (stitching/return via) để dòng hồi chuyển lớp liên tục.
+                    \end{itemize}
+                    
+                    \begin{figure}[H]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{figures/lythuyet_highspeedlayout.png}
+                        \caption{Minh hoạ return path liên tục dưới trace trên mặt phẳng tham chiếu}
+                        \label{fig:sim_highspeedlayout}  
+                    \end{figure}
+                    
+                    \paragraph{Hiện tượng phản xạ tín hiệu.}
+                    
+                    Khi tín hiệu lan truyền trên đường truyền có trở kháng đặc trưng \(Z_0\) và gặp một điểm có trở kháng tải \(Z_L\) khác, một phần năng lượng bị phản xạ ngược về nguồn, gây méo dạng sóng và có thể tạo rung. Hệ số phản xạ được cho bởi:
+                    \[
+                    \Gamma = \frac{Z_L - Z_0}{Z_L + Z_0}
+                    \]
+                    
+                    Giá trị \(\Gamma\) càng xa 0, biên độ sóng phản xạ càng lớn. Điều này là lý do cốt lõi phải kiểm soát và khớp trở kháng trong thiết kế high-speed.
+                    
+                    Trong các hệ thống số tốc độ cao hiện nay, hầu hết các linh kiện giao tiếp (PHY Ethernet, USB transceiver, HDMI/DisplayPort, DDR PHY, transceiver MIPI, ADC/DAC tốc độ cao, v.v.) đều được thiết kế với trở kháng vào/ra danh định phù hợp với các giá trị trở kháng chuẩn trên PCB và cáp truyền dẫn. Các chuẩn phổ biến gồm 50~\(\Omega\) single-ended cho nhiều đường RF và high-speed nói chung, 90~\(\Omega\) vi sai cho các giao thức như USB, HDMI, MIPI, và 100~\(\Omega\) vi sai cho Ethernet hoặc nhiều giao thức differential khác.
 
+                    Khi đường mạch trên PCB không được thiết kế để có trở kháng đặc trưng khớp với giá trị mà linh kiện và chuẩn giao thức yêu cầu, sẽ xuất hiện không khớp trở kháng tại điểm nối giữa chip--PCB--cáp. Điều này làm hệ số phản xạ \(\Gamma\) tăng lên, gây overshoot, ringing, méo dạng biên và có thể làm giảm biên độ hoặc sai lệch timing tại đầu nhận. Vì lý do đó, các đường truyền high-speed luôn được thiết kế \textit{controlled impedance} bám theo các giá trị chuẩn (50~\(\Omega\), 90~\(\Omega\), 100~\(\Omega\), \ldots) để tận dụng tối đa đặc tính trở kháng chuẩn hóa mà các nhà sản xuất linh kiện đã định nghĩa sẵn.
+                
+            \subsubsection{Kiểm soát trở kháng}
             
+                \paragraph{Trở kháng đặc trưng và các chuẩn thông dụng.}
+                
+                    Trở kháng đặc trưng của đường truyền trên PCB phụ thuộc vào hình học trace và hằng số điện môi của lớp cách điện. Một số giá trị điển hình:
+                    \begin{itemize}
+                        \item Single-ended: 50~\(\Omega\) trong phần lớn ứng dụng high-speed và RF.
+                        \item Differential pairs: khoảng 90~\(\Omega\) cho USB, HDMI; khoảng 100~\(\Omega\) cho Ethernet; khoảng 120~\(\Omega\) cho CAN bus, \ldots
+                    \end{itemize}
+                    
+                    Như vậy, mỗi chuẩn giao thức thường có dải trở kháng đặc trưng riêng, nhằm đảm bảo tương thích và toàn vẹn tín hiệu.
+                    
+                    % Hình gợi ý 5: bảng nhỏ hoặc sơ đồ minh hoạ đường single-ended 50~Ω và cặp vi phân 100~Ω với kích thước W, S, H.
+                    
+                \paragraph{Các yếu tố quyết định trở kháng của trace.}
+                
+                    Trở kháng \(Z_0\) của một microstrip/stripline trên PCB chịu ảnh hưởng bởi:
+                    \begin{itemize}
+                        \item Hằng số điện môi \(\varepsilon_r\) và loss tangent của vật liệu nền.
+                        \item Độ dày lớp điện môi giữa trace và mặt phẳng tham chiếu.
+                        \item Chiều rộng trace và độ dày đồng.
+                        \item Độ nhám bề mặt đồng, đặc biệt ở tần số cao.
+                        \item Với cặp vi sai: khoảng cách giữa hai trace (spacing) quyết định trở kháng vi sai \(Z_{\mathrm{diff}}\).
+                    \end{itemize}
+                    
+                    Trong thực tế, các thông số này được tính bằng công cụ field solver hoặc calculator và được chốt trong PCB stackup cho từng lớp tín hiệu.
+                    
+                    % Hình gợi ý 6: cắt lớp (cross-section) microstrip/stripline thể hiện W, H, T, Er; thêm version cặp vi phân.
+                    
+                \paragraph{Lý do phải kiểm soát và khớp trở kháng.}
+                
+                    Kiểm soát trở kháng nghĩa là đảm bảo đường mạch có \(Z_0\) gần với giá trị mục tiêu (ví dụ 50~\(\Omega\), 90~\(\Omega\), 100~\(\Omega\)) trong toàn bộ chiều dài, nhằm:
+                    \begin{itemize}
+                        \item Giảm phản xạ, tránh overshoot, ringing, méo dạng biên.
+                        \item Tối ưu truyền năng lượng từ nguồn đến tải.
+                        \item Đáp ứng yêu cầu của chuẩn giao thức để đảm bảo tương thích.
+                    \end{itemize}
+                    
+                    Trong sản xuất, nhà chế tạo PCB có thể điều chỉnh chiều rộng trace, stackup và vật liệu để đạt dải sai số trở kháng cho phép.
+                    
+            \subsubsection{Quy tắc bố trí để giảm nhiễu, crosstalk và cải thiện EMI}
             
-        
+                \paragraph{Giảm nhiễu xuyên kênh (crosstalk).}
+                
+                    Crosstalk là nhiễu do ghép điện dung và cảm ứng giữa các đường tín hiệu gần nhau, gây méo dạng hoặc lỗi trên đường nạn nhân. Các biện pháp điển hình:
+                    \begin{itemize}
+                        \item Tăng khoảng cách giữa các trace, đặc biệt giữa các tín hiệu tốc độ cao khác nhau; một quy tắc kinh nghiệm là khoảng cách \(\ge 3\) lần chiều cao tới plane.
+                        \item Giữ cặp vi phân chạy sát nhau, song song, với khoảng cách không đổi, để tăng ghép vi sai và giảm nhiễu đồng mode.
+                        \item Tránh chạy song song dài giữa tín hiệu nhạy cảm và tín hiệu nhiễu cao; nếu cần băng qua thì ưu tiên vuông góc giữa các lớp.
+                        \item Sử dụng mặt phẳng tham chiếu liên tục và return path ngắn để giảm ghép cảm ứng.
+                    \end{itemize}
+                    
+                    % Hình gợi ý 7: minh hoạ hai trace song song quá gần gây crosstalk so với trường hợp tách xa hơn; thêm hình cặp vi phân chạy sát nhau.
+                    
+                \paragraph{Cải thiện EMI/EMC.}
+                    
+                    EMI là bức xạ hoặc dẫn nhiễu điện từ ra/vào hệ thống, thường tăng mạnh khi layout không tốt. Một số quy tắc high-speed:
+                    \begin{itemize}
+                        \item Giữ diện tích vòng dòng (loop area) nhỏ bằng cách đặt trace ngay trên plane liên tục, dùng via mass khi đổi lớp.
+                        \item Tránh chạy trace high-speed dọc theo biên PCB dài không che chắn; khi cần giảm bức xạ, ưu tiên route trong lớp trong (stripline).
+                        \item Hạn chế via không cần thiết trên đường high-speed; với PCB dày có thể dùng backdrill để giảm stub.
+                        \item Phân vùng rõ miền digital, analog, RF; bố trí decoupling và lọc gần chân IC nhạy cảm.
+                    \end{itemize}
+                    
+                    % Hình gợi ý 8: hình vòng dòng lớn vs vòng dòng nhỏ (trace xa plane vs gần plane), minh hoạ trường bức xạ.
+                    
+                \paragraph{Một số nguyên tắc layout \& routing high-speed tiêu biểu.}
+                
+                    \begin{itemize}
+                        \item Thiết kế stackup ngay từ đầu, với lớp tín hiệu xen kẽ lớp plane và xác định trước các lớp dùng cho tín hiệu high-speed.
+                        \item Áp dụng quy tắc độ dài (length matching) cho cặp vi phân và các bus song song để giảm lệch thời gian (skew).
+                        \item Tuân thủ chặt chẽ chiều rộng, khoảng cách, lớp và via theo constraint của từng giao thức.
+                        \item Tránh góc gãy 90 độ trên đường high-speed; ưu tiên hai góc 45 độ hoặc bo cong để giảm gián đoạn trở kháng.
+                    \end{itemize}
+                    
+                    % Hình gợi ý 9: ví dụ layout sai (trace đi vòng, băng qua khe plane, nhiều góc 90 độ) và layout đúng (đường ngắn, trên plane liên tục, góc 45 độ).
+                    
