@@ -154,5 +154,89 @@
     \label{tab:detailed_functional_verification_final}
 \end{longtable}
 
-    \subsection{Kiểm tra Firmware}
-        \dots\footnote{phần mềm}
+    \subsection{Kiểm tra Firmware và Software}
+        Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào giai đoạn Firmware \& Software Verification nhằm xác nhận bo mạch có thể vận hành ổn định với firmware thực tế, đồng thời kiểm chứng các luồng chức năng cốt lõi của kiến trúc Dual MCU Master–Slave (LAN MCU Master, WAN MCU Slave trên kênh SPI).
+        \subsubsection{Mục tiêu}
+            \begin{itemize}
+                \item Xác nhận khả năng nạp và khởi chạy firmware cho cả hai MCU, đảm bảo vào đúng boot mode và ổn định dưới FreeRTOS.
+                \item Kiểm chứng các giao tiếp bắt buộc: SPI, UART nạp firmware cho MCU còn lại, và các tín hiệu điều khiển/handshake GPIO.
+                \item Kiểm chứng các chức năng mức hệ thống: kết nối Internet (Wi Fi/LTE/PPP), MQTT uplink/downlink, cấu hình tại chỗ (USB/UART) và FOTA.
+                \item Định lượng nhanh các tiêu chí “đủ dùng” cho prototype: chạy lâu không treo, truyền dữ liệu đúng/đủ, phục hồi khi mất mạng.
+            \end{itemize}
+            
+        \subsubsection{Quy trình nạp và khởi động firmware}
+            \begin{enumerate}
+                \item Nạp WAN MCU qua cổng USB C (USB Serial/JTAG) bằng công cụ nạp chuẩn (ESP IDF/esptool). Sau khi nạp, kiểm tra log UART/USB và trạng thái task khởi tạo.
+                \item Nạp LAN MCU gián tiếp từ WAN MCU qua kênh UART + GPIO control (Reset/Boot) để đưa LAN MCU vào Download Mode và flash. LAN MCU tự reboot sau khi nạp thành công.
+                \item Khởi động đồng thời hệ thống và kiểm tra:
+                \begin{itemize}
+                    \item FreeRTOS scheduler chạy ổn định (không reset bất thường),
+                    \item watchdog (nếu bật) không kích hoạt sai,
+                    \item các task chính lên đủ và không bị deadlock.
+                \end{itemize}
+            \end{enumerate}
+
+        \subsubsection{Nội dung kiểm thử firmware (theo nhóm chức năng)}
+            \paragraph{A. Kiểm thử nền tảng (Boot/RTOS/Log)}
+            \begin{itemize}
+                \item Kiểm tra boot ổn định, log xuất đều, không reset ngẫu nhiên.
+                \item Kiểm tra hoạt động song song của các task chính (LAN thu thập/chuẩn hoá; WAN Internet/MQTT; liên MCU).
+            \end{itemize}
+
+            \paragraph{B. Kiểm thử giao tiếp liên MCU (Dual MCU Integration)}
+            \begin{itemize}
+                \item SPI data path: truyền gói dữ liệu uplink từ LAN$\to$WAN, WAN phản hồi ACK/NACK theo kiểm tra CRC/sequence.
+                \item GPIO handshake (downlink push): khi WAN có lệnh/command cần chuyển xuống LAN, WAN toggle GPIO handshake để LAN thực hiện phiên SPI nhận dữ liệu.
+                \item Tiêu chí: dữ liệu không sai lệch (integrity), retry hoạt động khi lỗi CRC, không nghẽn SPI khi mạng dao động.
+            \end{itemize}
+
+            \paragraph{C. Kiểm thử Internet Communication (WAN MCU)}
+            \begin{itemize}
+                \item \textbf{Wi-Fi:} hỗ trợ Wi-Fi Personal và Wi-Fi Enterprise; sau khi vào mạng thực hiện SNTP để đồng bộ thời gian và cập nhật RTC.
+                \item \textbf{LTE:} kết nối modem LTE qua USB, theo dõi link và tự reconnect.
+                \item \textbf{PPP Server:} bật PPP Server qua UART để tạo IP link hỗ trợ LAN MCU thực hiện OTA.
+            \end{itemize}
+
+            \paragraph{D. Kiểm thử Cloud/MQTT (WAN MCU)}
+            \begin{itemize}
+                \item Duy trì kết nối MQTT; kiểm tra cơ chế tự reconnect.
+                \item Uplink telemetry: nhận dữ liệu từ LAN (SPI) $\to$ đưa vào publish queue $\to$ đóng gói payload $\to$ publish lên broker.
+                \item Downlink command: subscribe topic downlink $\to$ decode payload $\to$ phân loại đích (handler\_type) $\to$ push xuống LAN bằng GPIO handshake + SPI.
+            \end{itemize}
+
+            \paragraph{E. Kiểm thử cấu hình tại chỗ (USB/UART)}
+            \begin{itemize}
+                \item \textbf{Scan/Read config:} PC yêu cầu đọc cấu hình $\to$ WAN trả về key–value (mask thông tin nhạy cảm).
+                \item \textbf{Config write:} PC gửi lệnh cấu hình (prefix CF…) $\to$ WAN enqueue $\to$ validate $\to$ lưu NVS + apply runtime; nếu cấu hình thuộc LAN thì forward xuống LAN và trả kết quả OK/FAIL về PC.
+                \item Tiêu chí: cấu hình tồn tại sau reboot, và không làm gián đoạn các luồng SPI/MQTT.
+            \end{itemize}
+
+            \paragraph{F. Kiểm thử FOTA toàn gateway.}
+            \begin{itemize}
+                \item Server gửi lệnh CFML:CFFW $\to$ WAN parse và xác định OTA mode.
+                \item WAN trigger LAN OTA + start PPP để LAN có IP link tải firmware và cập nhật.
+                \item Sau khi LAN cập nhật xong, LAN gửi handshake; WAN chuyển sang tự cập nhật firmware của chính nó (WAN không phản hồi handshake theo kiểu đối thoại mà bước vào OTA).
+                \item Tiêu chí: hoàn tất cập nhật cả hai MCU và hệ thống boot lại bình thường. (Lưu ý: cơ chế rollback/fallback nếu cần được coi là hướng mở rộng, tuỳ cấu hình bootloader/confirm app.)
+            \end{itemize}
+
+            \paragraph{G. Kiểm tra cấu hình (Configuration Tools $\to$ Gateway)}
+            Kiểm thử cấu hình nhằm xác nhận công cụ PC có thể đọc/ghi tham số qua USB/UART, firmware validate – lưu NVS – áp dụng runtime, đồng thời nếu tham số thuộc LAN thì WAN sẽ forward xuống LAN qua SPI.
+
+            \begin{longtable}{|c|l|l|l|c|c|}
+                \caption{Kiểm thử Scan/Read cấu hình} \\
+                \hline
+                \textbf{STT} & \textbf{Nhóm} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Nhóm} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Scan device & Cắm USB/UART, gateway ở NORMAL & PC thực hiện quét thiết bị & PC nhận diện đúng cổng/thiết bị & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Read config & Có cấu hình mặc định & PC gửi lệnh đọc cấu hình & WAN trả key–value đầy đủ (mask secret) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & Read after write & Đã ghi cấu hình mới & PC đọc lại cấu hình & Giá trị phản ánh đúng cấu hình mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                4 & Read after reboot & Reset gateway & PC đọc cấu hình & Cấu hình giữ nguyên sau reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \end{longtable}
+
+
