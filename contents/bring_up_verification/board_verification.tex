@@ -222,8 +222,7 @@
             \paragraph{G. Kiểm tra cấu hình (Configuration Tools $\to$ Gateway)}
             Kiểm thử cấu hình nhằm xác nhận công cụ PC có thể đọc/ghi tham số qua USB/UART, firmware validate – lưu NVS – áp dụng runtime, đồng thời nếu tham số thuộc LAN thì WAN sẽ forward xuống LAN qua SPI.
 
-            \begin{longtable}{|c|l|l|l|c|c|}
-                \caption{Kiểm thử Scan/Read cấu hình} \\
+            \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3cm}|p{4cm}|c|}
                 \hline
                 \textbf{STT} & \textbf{Nhóm} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
                 \endfirsthead
@@ -237,6 +236,154 @@
                 2 & Read config & Có cấu hình mặc định & PC gửi lệnh đọc cấu hình & WAN trả key–value đầy đủ (mask secret) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
                 3 & Read after write & Đã ghi cấu hình mới & PC đọc lại cấu hình & Giá trị phản ánh đúng cấu hình mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
                 4 & Read after reboot & Reset gateway & PC đọc cấu hình & Cấu hình giữ nguyên sau reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử Scan/Read cấu hình} 
+                \label{tab:config_read_verification}
             \end{longtable}
 
+            \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3cm}|p{4cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Nhóm tham số} & \textbf{Ví dụ tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Nhóm tham số} & \textbf{Ví dụ tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Chọn loại Internet & Wi-Fi / LTE / PPP & Ghi internet\_type & Chuyển đúng chế độ, log trạng thái đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Chu kỳ gửi & period\_ms & Ghi period\_ms & Áp dụng runtime, không nghẽn SPI/MQTT & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & Chính sách retry & backoff/retry & Ghi retry policy & Mất mạng $\to$ reconnect theo chính sách & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                4 & Giá trị ngoài dải & period\_ms quá lớn/0 & Ghi tham số lỗi & Trả FAIL, không áp dụng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử ghi cấu hình Internet (internet\_type) và tham số chung}
+                \label{tab:config_write_verification}
+            \end{longtable}
 
+            \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3cm}|p{4cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Chế độ} & \textbf{Tham số chính} & \textbf{Điều kiện} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Chế độ} & \textbf{Tham số chính} & \textbf{Điều kiện} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Personal & SSID + PSK & AP hoạt động & Kết nối thành công, có IP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Personal & Sai mật khẩu & AP hoạt động & Không vào mạng, tự retry, không treo & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & Enterprise & SSID + user/pass (EAP) & AP Enterprise & Auth OK, có IP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                4 & Enterprise & Sai credential & AP Enterprise & Auth FAIL, retry có kiểm soát & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                5 & Đồng bộ thời gian & SNTP + RTC & Internet OK & RTC được cập nhật sau khi vào mạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử Wi-Fi (Personal/Enterprise)} 
+                \label{tab:wifi_verification}
+            \end{longtable}
+            
+            \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3cm}|p{4cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & LTE connect & Có modem + SIM & Chọn LTE, cấu hình APN (nếu có) & Có IP, online ổn định & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & LTE reconnect & Ngắt/khôi phục sóng & Quan sát tự reconnect & Online trở lại, không cần reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & PPP Server & Có UART link LAN & Bật PPP Server & LAN nhận IP link qua PPP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                4 & PPP stability & Update FOTA & Truyền dữ liệu qua PPP & Link không drop bất thường & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử LTE và PPP} 
+                \label{tab:lte_ppp_verification}
+            \end{longtable}
+            
+            \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Hạng mục} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Hạng mục} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Broker config & Ghi host/port/user/pass & MQTT connect OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Topic config & Ghi topic telemetry/downlink & Publish/subscribe đúng topic & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử MQTT (broker/topic/telemetry/downlink)} 
+                \label{tab:mqtt_verification}
+            \end{longtable}
+
+            Kiểm tra cấu hình ở LAN:
+            \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Slot/num\_slots & Thay đổi Slot/num\_slots trên App & Node gửi đúng slot, không đụng nhau & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & ID gateway/node & Thay đổi ID gateway/node trên App & Phân biệt đúng nguồn dữ liệu & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & Tần số/SF/BW & Thay đổi tần số/SF/BW trên App & Link ổn định theo cấu hình & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                4 & Tham số sai & Nhập tham số ngoài dải trên App & Trả FAIL, giữ cấu hình cũ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử cấu hình LoRa TDMA} 
+                \label{tab:lora_tdma_config_verification}
+            \end{longtable}
+            
+            \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Bitrate & Thay đổi bitrate trên App & Receive/Transmit frame OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Filter/ID & Thay đổi filter/ID trên App & Chỉ nhận ID hợp lệ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & Bus-off & Tạo lỗi bus-off (thao tác theo chức năng test trên App) & Tự phục hồi theo policy & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử cấu hình CAN} 
+                \label{tab:can_config_verification}
+            \end{longtable}
+
+            \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Tham số} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Baud/parity & Thay đổi baud/parity trên App & Loopback/thiết bị phản hồi đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Timeout & Thay đổi timeout trên App & Timeout đúng, không treo task & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & Frame lỗi & Gửi frame sai CRC (thực hiện theo chức năng test trên App) & Loại bỏ frame lỗi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử RS 485/Modbus (raw frame)} 
+                \label{tab:rs485_modbus_config_verification}
+            \end{longtable}
+
+            \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                \hline
+                \textbf{STT} & \textbf{Hạng mục} & \textbf{Phương pháp} & \textbf{Tiêu chí} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Hạng mục} & \textbf{Phương pháp} & \textbf{Tiêu chí} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                1 & Boot/FreeRTOS & Khởi động lặp, chạy lâu & Không reset/treo bất thường & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                2 & Nạp LAN từ WAN & UART + GPIO boot/reset & Flash OK, LAN reboot chạy image mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                3 & SPI uplink & DT + CRC/seq & ACK/NACK đúng, retry hoạt động & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                4 & GPIO handshake downlink & WAN push command & LAN nhận đúng, phản hồi OK/FAIL & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                5 & Internet (Wi-Fi/LTE/PPP) & Connect + reconnect & Online ổn định, phục hồi sau mất mạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                6 & MQTT uplink/downlink & publish/subscribe & Telemetry OK; downlink route đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                7 & USB/UART config & scan + write + reboot & Lưu NVS, áp dụng runtime & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                8 & FOTA toàn gateway & CFML:CFFW + PPP & LAN update trước; WAN update sau; boot OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                \caption{Kiểm thử firmware (tổng hợp)} 
+                \label{tab:firmware_software_verification_summary}
+            \end{longtable}
+
+            Giai đoạn kiểm thử xác nhận firmware vận hành ổn định trên phần cứng đã bring up, đồng thời kiểm chứng các luồng quan trọng của hệ Dual MCU (SPI + handshake), Internet/Cloud (Wi Fi/LTE/MQTT), cấu hình tại chỗ và quy trình FOTA toàn gateway.
