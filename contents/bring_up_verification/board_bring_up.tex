@@ -66,7 +66,7 @@
 
                 & & \textbf{Vỏ khe thẻ nhớ:} \newline (MicroSD Metal Shield) & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            \caption{Bảng kiểm tra ngoại quan chi tiết}
+            \caption{Kết quả kiểm tra ngoại quan.}
             \label{tab:visual_inspection}
         \end{longtable}
 
@@ -100,7 +100,7 @@
             
             7 & \textbf{+3V3\_SSYS} & Không ngắn mạch ($> 10\Omega$) & $\infty$ (Open / High-Z) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            \caption{Kết quả kiểm tra trở kháng nguội các đường nguồn (Cold Impedance Check Results)}
+            \caption{Kết quả kiểm tra trở kháng nguội các đường nguồn.}
             \label{tab:cold_check_results}
         \end{longtable}
 
@@ -114,7 +114,7 @@
             \item Quan sát trạng thái chuyển đổi chế độ của bộ nguồn (CV - Constant Voltage hoặc CC - Constant Current) để đánh giá tình trạng bo mạch.
         \end{enumerate}
 
-        \textbf{Kết quả thử nghiệm:}
+        \textbf{Kết quả kiểm thử:}
         Hệ thống hoạt động ổn định ở chế độ Điện áp không đổi (CV). Dòng tiêu thụ tĩnh (Quiescent Current) đo được ở mức thấp ($\approx 20mA$), không xuất hiện hiện tượng sụt áp đầu vào hay quá nhiệt cục bộ trên các linh kiện công suất. Điều này xác nhận bo mạch không có lỗi quá dòng nghiêm trọng.
         \begin{longtable}{|c|p{4cm}|p{4.5cm}|p{3.5cm}|c|}
             \hline
@@ -137,11 +137,11 @@
             
             5 & \textbf{Bước 5:} Cấp nguồn bình thường & Hệ thống hoạt động ổn định, không có linh kiện phát nhiệt bất thường. & Ổn định. \newline $I_{load} = 4mA$ (Idle). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            \caption{Kết quả kiểm tra nóng và dòng tiêu thụ tĩnh (Smoke Test \& Quiescent Current Results)}
+            \caption{Kết quả kiểm tra nóng và dòng tiêu thụ tĩnh.}
             \label{tab:smoke_test_results_final}
         \end{longtable}
 
-    \subsection{Xác thực thông số điện áp (Voltage Validation)}
+    \subsection{Xác thực thông số điện áp}
         Sau khi xác nhận tính an toàn của hệ thống, giới hạn dòng điện được tăng đến mức vận hành tiêu chuẩn. Các mức điện áp tại các điểm kiểm tra (Test Points) được đo đạc để xác minh độ chính xác của khối nguồn Buck Converter và LDO so với tính toán thiết kế.
 
         \begin{longtable}{|c|p{5.5cm}|p{3cm}|p{3.5cm}|c|}
@@ -177,6 +177,6 @@
 
             11 & \textbf{+3V3\_IOX2\_VCCI} \newline \textit{Test-point TP25/26} & $3.3 V \pm 3\%$ & $3.28 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            \caption{Kết quả đo kiểm điện áp các điểm Test Point (Voltage Validation Results)}
+            \caption{Kết quả đo kiểm điện áp.}
             \label{tab:voltage_validation_final}
         \end{longtable}
