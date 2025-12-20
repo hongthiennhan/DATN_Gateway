@@ -1,5 +1,5 @@
 \section{Thiết kế}
-    \subsection{Kiến trúc Hệ thống}
+    \subsection{Thiết kế Kiến trúc Hệ thống (System Architecture Design)}
         \subsubsection{Sơ đồ khối Hệ thống}
             \begin{figure}[H]
                 \centering
@@ -64,7 +64,7 @@
             \paragraph{Luồng dữ liệu:}\par
                 \begin{itemize}
                     \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua MASTER WAN-MCU, sau đó được chuyển tiếp đến SLAVE LAN-MCU qua kênh UART chuyên biệt.
-                    \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua MASTER WAN-MCU đến SLAVE LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại SLAVE LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua MASTER WAN-MCU lên Cloud Service. Các request và dự liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
+                    \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua MASTER WAN-MCU đến SLAVE LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại SLAVE LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua MASTER WAN-MCU lên Cloud Service. Các request và dữ liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
                     \item \textbf{Control Flow:} Luồng tín điều khiển từ MASTER WAN-MCU để điều khiển trạng thái hoạt động của SLAVE LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
                 \end{itemize}
 
@@ -201,11 +201,18 @@
                 \end{figure}
 
     \newpage
-    \subsection{Hardware}
+    \subsection{Thiết kế phần cứng PCB (PCB Hardware Design)}
         \subsubsection{Thiết kế sơ đồ khối phần cứng}
             Sơ đồ khối phần cứng của hệ thống được xây dựng nhằm mô tả tổng thể kiến trúc và mối liên hệ giữa các khối chức năng chính, bao gồm khối xử lý trung tâm, các khối ngoại vi và hệ thống cấp nguồn. Mục tiêu của thiết kế sơ đồ khối là đảm bảo tính rõ ràng, dễ hiểu và khả năng mở rộng trong tương lai. 
 
-                \paragraph{Sơ đồ khối hệ thống phần cứng} 
+                \paragraph{Sơ đồ khối hệ thống phần cứng:} 
+
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
+                        \caption{Sơ đồ khối hệ thống}
+                        \label{fig:blockdiagram_system}
+                    \end{figure}
                     Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
 
                     ESP32-S3 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA cũng như xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
@@ -226,14 +233,14 @@
                         \item \textbf{Cổng USB:} ESP32-S3 hỗ trợ giao tiếp USB phục vụ nạp firmware hoặc hoạt động ở chế độ USB Host. Hệ thống sử dụng IC chuyển mạch USB 2.0 FSUSB42UMX để lựa chọn giữa đường USB sử dụng cho việc nạp code/cấu hình thiết bị và đường USB kết nối với module WAN.
                     \end{itemize}
 
+                \paragraph{Sơ đồ khối nguồn:} \par
+
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
-                        \caption{Sơ đồ khối hệ thống}
-                        \label{fig:blockdiagram_system}
+                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
+                        \caption{Sơ đồ hệ thống nguồn}
+                        \label{fig:blockdiagram_power}
                     \end{figure}
-
-                \paragraph{Sơ đồ khối nguồn} 
                     Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngay tại ngõ vào, nguồn được bảo vệ bằng eFuse nhằm hạn chế các sự cố quá dòng, ngắn mạch và đảm bảo an toàn cho toàn bộ hệ thống.
 
                     Từ nguồn DC 12\,V, các khối chuyển đổi DC/DC và LDO được sử dụng để tạo ra các rail nguồn chính, bao gồm:
@@ -258,14 +265,7 @@
                         \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động không liên tục hoặc tiết kiệm năng lượng.
                     \end{itemize}
 
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
-                        \caption{Sơ đồ hệ thống nguồn}
-                        \label{fig:blockdiagram_power}
-                    \end{figure}
-
-        \subsubsection{Thiết kế Mạch nguyên lý (Schematic)}
+        \subsubsection{Thiết kế Mạch nguyên lý (Schematic Design)}
             Phần này trình bày các nội dung kỹ thuật của dự án thông qua thiết kế sơ đồ nguyên lý. Thiết kế sơ đồ nguyên lý mô tả chi tiết các kết nối điện giữa các thành phần, nhằm đảm bảo hệ thống hoạt động đúng chức năng, đồng thời đáp ứng các yêu cầu về hiệu năng và các ràng buộc trong thiết kế.
 
             \begin{figure}[h]
@@ -500,8 +500,8 @@
                     \label{fig:sche_lanadapter} 
                 \end{figure}
 
-\subsubsection{Thiết kế PCB}
-            \paragraph{Thiết kế xếp lớp PCB (Stack-up) và Kiểm soát trở kháng (Impedance Control)}
+        \subsubsection{Thiết kế Layout (Layout Design)}
+            \paragraph{Thiết kế PCB Stack-up và Kiểm soát trở kháng (Impedance Control)}
                 \begin{enumerate}
                     \item \textbf{Thiết kế Stack-up:}
                     \begin{itemize}
@@ -576,15 +576,7 @@
                     \end{itemize}
                 \end{enumerate}
             \paragraph{Quy hoạch và Bố trí linh kiện (Component Placement \& Floor-planning):}
-                Việc bố trí linh kiện (Floor-planning) là bước quyết định đến hiệu năng chống nhiễu (EMC) và tính ổn định của hệ thống. Dựa trên sơ đồ nguyên lý và các ràng buộc cơ khí, chiến lược quy hoạch mặt bằng bo mạch được thực hiện theo các nguyên tắc sau:
-                
-                \begin{figure}[h]
-                    \centering
-                    \includegraphics[width=0.45\textwidth]{figures/floor_planing.png} 
-                    \includegraphics[width=0.45\textwidth]{figures/floor_planing_3d.png} 
-                    \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
-                    \label{fig:pcb_floorplan}
-                \end{figure}
+                Việc bố trí linh kiện (Floor-planning) là bước quyết định đến hiệu năng chống nhiễu (EMC) và tính ổn định của hệ thống. Dựa trên sơ đồ nguyên lý và các ràng buộc cơ khí, chiến lược quy hoạch được thực hiện theo các nguyên tắc sau:
 
                 \begin{enumerate}
                     \item \textbf{Phân vùng chức năng (Functional Partitioning):}
@@ -597,6 +589,13 @@
                             \item \textbf{Vùng RF (RF Zone):} Dành riêng cho các module không dây và anten.
                         \end{itemize}
                     \end{itemize}
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=0.45\textwidth]{figures/floor_planing.png} 
+                    \includegraphics[width=0.45\textwidth]{figures/floor_planing_3d.png} 
+                    \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
+                    \label{fig:pcb_floorplan}
+                \end{figure}
 
                     \item \textbf{Tối ưu hóa Luồng tín hiệu (Signal Flow Optimization):}
                     \begin{itemize}
@@ -612,19 +611,19 @@
 
                     \item \textbf{Tương thích Cơ khí và Sản xuất (DFM/DFA):}
                     \begin{itemize}
-                        \item \textbf{Giao diện kết nối:} Các thành phần tương tác với người dùng (Cổng USB, Khe thẻ nhớ, Nút nhấn, Đèn LED) được bố trí tại các mép bo mạch (Edge Placement), tuân thủ các ràng buộc về vị trí của vỏ hộp thiết bị (Enclosure).
+                        \item \textbf{Giao diện kết nối:} Các thành phần tương tác với người dùng (Cổng USB, Khe thẻ nhớ, Nút nhấn, Đèn LED) được bố trí tại các mép bo mạch (Edge Placement), tuân thủ các ràng buộc về vị trí đảm bảo khả năng thao tác kết nối.
                         \item \textbf{Vùng cấm (Keep-out Zone):} Thiết lập các vùng cấm đi dây và đặt linh kiện xung quanh các lỗ bắt vít (Mounting holes) và khu vực anten PCB để tránh chập mạch hoặc ảnh hưởng đến bức xạ sóng.
                     \end{itemize}
                 \end{enumerate}
 
-            \paragraph{Kỹ thuật Chống nhiễu và Giảm thiểu EMI (EMI Suppression Techniques):}
+            \paragraph{Kỹ thuật Chống nhiễu và Giảm thiểu EMI:}
             Để đảm bảo thiết bị hoạt động ổn định trong môi trường công nghiệp và tuân thủ các tiêu chuẩn về tương thích điện từ (EMC), thiết kế PCB áp dụng các kỹ thuật layout sau:
 
                 \begin{enumerate}
-                    \item \textbf{Kỹ thuật Che chắn và Lồng Faraday (Shielding \& Faraday Cage):}
+                    \item \textbf{Kỹ thuật Che chắn và Lồng Faraday:}
                     \begin{itemize}
-                        \item \textbf{Phủ mass toàn mạch (Ground Pouring):} Các diện tích trống trên tất cả các lớp PCB đều được phủ đồng nối đất (GND). Việc này tạo ra một lồng chắn tĩnh điện tự nhiên, giúp hấp thụ các nhiễu bức xạ từ môi trường và giảm thiểu phát xạ từ các đường mạch nội bộ.
-                        \item \textbf{Vòng bảo vệ (Guard Ring) và Via Stitching:} Đối với các khu vực nhạy cảm hoặc nguồn gây nhiễu mạnh như mạch dao động thạch anh (Crystal Oscillator) và cặp dây vi sai USB tốc độ cao, kỹ thuật "khâu via" (Via Stitching) được áp dụng. Các lỗ via nối đất được đặt bao quanh linh kiện/đường mạch với mật độ cao (khoảng cách $<\lambda/20$ tần số hoạt động). Cấu trúc này hoạt động như một bức tường chắn sóng (Shielding Wall), cô lập nhiễu điện từ lan truyền ngang qua lớp điện môi.
+                        \item \textbf{Phủ mass toàn mạch:} Các diện tích trống trên tất cả các lớp PCB đều được phủ đồng nối đất (GND). Việc này tạo ra một lồng chắn tĩnh điện tự nhiên, giúp hấp thụ các nhiễu bức xạ từ môi trường và giảm thiểu phát xạ từ các đường mạch nội bộ.
+                        \item \textbf{Vòng bảo vệ và Via Stitching:} Đối với các khu vực nhạy cảm hoặc nguồn gây nhiễu mạnh như mạch dao động thạch anh (Crystal Oscillator) và cặp dây vi sai USB tốc độ cao, kỹ thuật "khâu via" (Via Stitching) được áp dụng. Các lỗ via nối đất được đặt bao quanh linh kiện/đường mạch với mật độ cao (khoảng cách $<\lambda/20$ tần số hoạt động). Cấu trúc này hoạt động như một bức tường chắn sóng (Shielding Wall), cô lập nhiễu điện từ lan truyền ngang qua lớp điện môi.
                     \end{itemize}
                     
                     \begin{figure}[h]
@@ -643,9 +642,9 @@
                         \label{fig:usb_shielding}
                     \end{figure}
 
-                    \item \textbf{Quản lý Đường hồi tiếp tín hiệu (Signal Return Path Management):}
+                    \item \textbf{Quản lý Đường hồi tiếp tín hiệu:}
                     \begin{itemize}
-                        \item \textbf{Nguyên lý đường dẫn cảm kháng thấp nhất (Path of Least Inductance):} Ở tần số cao, dòng điện hồi tiếp luôn có xu hướng chạy ngay bên dưới đường dây tín hiệu trên mặt phẳng tham chiếu (Reference Plane) để tối thiểu hóa cảm kháng vòng lặp.
+                        \item \textbf{Nguyên lý đường dẫn cảm kháng thấp nhất:} Ở tần số cao, dòng điện hồi tiếp luôn có xu hướng chạy ngay bên dưới đường dây tín hiệu trên mặt phẳng tham chiếu (Reference Plane) để tối thiểu hóa cảm kháng vòng lặp.
                         \item \textbf{Tránh cắt xẻ mặt phẳng đất:} Thiết kế đảm bảo các mặt phẳng đất (L2, L5) là liên tục và liền mạch. Tuyệt đối tránh đi dây tín hiệu tốc độ cao cắt ngang qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất. Việc tín hiệu băng qua khe hở sẽ buộc dòng hồi tiếp phải đi vòng xa hơn, tạo thành một vòng lặp diện tích lớn (Large Loop Area). Vòng lặp này hoạt động như một anten khung (Loop Antenna), vừa phát xạ nhiễu ra ngoài vừa thu nhiễu từ môi trường vào, gây suy giảm chất lượng tín hiệu.
                     \end{itemize}
                     
@@ -658,12 +657,12 @@
 
                 \end{enumerate}
 
-            \paragraph{Kỹ thuật Layout Hệ thống Nguồn và PDN (Power Supply \& PDN Design):}
+            \paragraph{Kỹ thuật Layout Hệ thống Nguồn và PDN:}
 
                 Hệ thống nguồn đóng vai trò then chốt trong việc đảm bảo độ ổn định cho toàn bộ thiết bị. Dựa trên các hướng dẫn thiết kế (Design Guidelines) từ nhà sản xuất IC và nguyên lý điện từ trường, quy trình layout tuân thủ các nguyên tắc nghiêm ngặt sau:
 
                 \begin{enumerate}
-                    \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop Minimization):}
+                    \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop):}
                     \begin{itemize}
                         \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn hoặc cuộn cảm cho nguồn xung.
                         \item Mục tiêu là giảm thiểu diện tích vật lý của "vòng lặp xung" (Hot Loop Area) - nơi có dòng điện biến thiên $di/dt$ lớn nhất. Việc này giúp giảm cảm kháng ký sinh đường dây, hạn chế các xung gai điện áp (Voltage Spikes) và giảm thiểu bức xạ nhiễu EMI ra môi trường.
@@ -675,7 +674,7 @@
                         \caption{Vị trí các tụ điện trong nguồn xung +5V0\_SYS.}
                     \end{figure}
 
-                    \item \textbf{Xử lý Điểm chuyển mạch (Switching Node Optimization):}
+                    \item \textbf{Xử lý Điểm chuyển mạch (Switching Node):}
                     \begin{itemize}
                         \item Chân SW (Switching) là nơi dao động điện áp tần số cao với biên độ lớn ($dv/dt$ cao). Đường mạch tại đây được thiết kế dạng khối đồng (Polygon) ngắn và rộng để giảm điện trở và cảm kháng, nhưng diện tích không được quá lớn để hạn chế điện dung ký sinh gây tổn hao.
                         \item Thiết kế đảm bảo tuyệt đối không định tuyến bất kỳ đường tín hiệu nhạy cảm nào đi ngang qua hoặc đi ở lớp ngay bên dưới (Layer 2) của cuộn cảm và điểm SW để tránh nhiễu.
@@ -688,10 +687,10 @@
                         \caption{Điểm chuyển mạch trong nguồn xung +5V0\_SYS.}
                     \end{figure}        
 
-                    \item \textbf{Kỹ thuật Hồi tiếp và Mass (Feedback \& Grounding):}
+                    \item \textbf{Kỹ thuật Hồi tiếp (Feedback) và Ground:}
                     \begin{itemize}
-                        \item \textbf{Kết nối Kelvin:} Đường tín hiệu hồi tiếp (Feedback trace) được lấy mẫu (sense) trực tiếp tại điểm sau tụ đầu ra $C_{OUT}$ để đảm bảo điện áp đo được là chính xác nhất.
-                        \item \textbf{Cách ly nhiễu:} Đường Feedback được đi tránh xa khỏi cuộn cảm và điểm SW. Mass của đường hồi tiếp và các linh kiện tín hiệu nhỏ (như tụ Soft-start, trở định thời) được nối vào Analog Ground (AGND) hoặc chân GND tín hiệu của IC, tách biệt với Power Ground (PGND) đang chịu dòng xung lớn, nhằm tránh nhiễu mặt đất (Ground Bounce).
+                        \item \textbf{Kết nối Kelvin:} Đường tín hiệu hồi tiếp (Feedback) được lấy mẫu trực tiếp tại điểm sau tụ đầu ra $C_{OUT}$ để đảm bảo điện áp đo được là chính xác nhất.
+                        \item \textbf{Cách ly nhiễu:} Đường Feedback được đi tránh xa khỏi cuộn cảm và điểm SW. Ground của đường hồi tiếp và các linh kiện tín hiệu nhỏ (như tụ Soft-start, trở định thời) được nối vào Analog Ground (AGND) hoặc chân GND tín hiệu của IC, tách biệt với Power Ground (PGND) đang chịu dòng xung lớn, nhằm tránh nhiễu mặt đất (Ground Bounce).
                     \end{itemize}
                     
                     \begin{figure}[h]
@@ -700,7 +699,7 @@
                         \caption{Định tuyến hồi tiếp trong nguồn xung +5V0\_SYS.}
                     \end{figure}   
 
-                    \item \textbf{Quản lý Nhiệt (Thermal Management):}
+                    \item \textbf{Quản lý Nhiệt (Thermal):}
                     \begin{itemize}
                         \item Tận dụng Pad tản nhiệt dưới bụng IC, thiết kế sử dụng mảng via tản nhiệt dày đặc để dẫn nhiệt trực tiếp xuống các lớp đồng Ground Plane rộng lớn ở bên dưới (L2, L5). Điều này biến toàn bộ bo mạch thành một lá tản nhiệt tự nhiên, đảm bảo IC hoạt động mát mẻ dưới tải dòng lớn.
                     \end{itemize}
@@ -740,7 +739,7 @@
                     \item \textbf{Định tuyến Cặp Vi sai (Differential Pair Routing - USB):}
                     \begin{itemize}
                         \item \textbf{Kiểm soát Trở kháng:} Cặp tín hiệu vi sai USB D+/D- được thiết kế đạt trở kháng đặc tính mục tiêu $Z_{diff} = 90\Omega \pm 10\%$. Cấu trúc định tuyến sử dụng là \textit{Differential Coplanar Waveguide} (vi sai đồng phẳng có mass bao bọc) để tăng khả năng chống nhiễu ngoại vi.
-                        \item \textbf{Đồng bộ pha (Intra-pair Skew):} Đảm bảo chênh lệch chiều dài giữa hai dây P và N trong cùng một cặp là nhỏ nhất có thể tùy theo tốc độ truyền dữ liệu. Kỹ thuật \textit{Phase Matching} được thực hiện ngay tại điểm xảy ra lệch pha để đảm bảo tín hiệu đến bộ thu đồng thời, triệt tiêu nhiễu chế độ chung (Common Mode Noise).
+                        \item \textbf{Đồng bộ pha:} Đảm bảo chênh lệch chiều dài giữa hai dây P và N trong cùng một cặp là nhỏ nhất có thể tùy theo tốc độ truyền dữ liệu. Kỹ thuật \textit{Phase Matching} được thực hiện ngay tại điểm xảy ra lệch pha để đảm bảo tín hiệu đến bộ thu đồng thời, triệt tiêu nhiễu chế độ chung (Common Mode Noise).
                         \item \textbf{Tính đối xứng:} Hai đường dây được định tuyến song song và đối xứng tuyệt đối trong suốt chiều dài đường truyền. Các góc cua sử dụng góc vát $135^{\circ}$ hoặc cung tròn, tuyệt đối không dùng góc $90^{\circ}$ để tránh thay đổi trở kháng đột ngột.
                     \end{itemize}
 

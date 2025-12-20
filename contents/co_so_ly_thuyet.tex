@@ -131,7 +131,7 @@
                     \textbf{Lớp ứng dụng tuỳ biến (Custom Application)}\\
                         Trên cùng là lớp ứng dụng tuỳ biến, nơi hiện thực logic nghiệp vụ cụ thể của hệ thống: các kịch bản tự động hoá, xử lý cảnh báo và sự kiện, dashboard cục bộ cho cấu hình/giám sát, cũng như các dịch vụ tích hợp với hệ SCADA/MES/ERP hoặc nền tảng quản lý vận hành khác. Các ứng dụng này tận dụng toàn bộ dịch vụ do các lớp phía dưới cung cấp để xây dựng giải pháp IoT hoàn chỉnh.
 
-        \subsection{Nguyên lý họat động cơ bản của IoT Gateway}
+        \subsection{Nguyên lý hoạt động cơ bản của IoT Gateway}
             Quá trình hoạt động của gateway là một vòng lặp liên tục: thu thập dữ liệu từ thiết bị đầu cuối, xử lý và lọc tại chỗ, truyền gói tin lên cloud, nhận lệnh điều khiển từ cloud, và gửi lệnh xuống thiết bị. Trong suốt quá trình này, gateway phải đảm bảo tính nhất quán dữ liệu, bảo mật thông tin, phát hiện và xử lý lỗi, cũng như duy trì kết nối liên tục ngay cả trong điều kiện mạng không ổn định. Những yêu cầu này làm cho độ tin cậy, hiệu suất, và bảo mật trở thành những tiêu chí bắt buộc chứ không phải tuỳ chọn trong bất kỳ triển khai thực tế nào.
                 \subsubsection*{Thu thập dữ liệu (Data Ingestion)}
                     Gateway tiếp nhận dữ liệu thô từ các cảm biến và thiết bị có cơ cấu chấp hành thông qua các giao thức kết nối được hỗ trợ (như ZigBee, LoRa, BLE, Modbus...). Đây là bước đầu tiên, giúp gateway đóng vai trò là điểm thu gom dữ liệu từ lớp thiết bị (perception layer). Dữ liệu thô này có thể ở các định dạng khác nhau tùy thuộc vào loại cảm biến và giao thức sử dụng.
