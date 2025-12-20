@@ -1,5 +1,44 @@
 \chapter{Tổng quan Đồ án}
     \section{Lý do chọn đề tài}
+        Trong các hệ thống Internet of Things (IoT) hiện nay, IoT gateway giữ vai trò trung tâm trong việc kết nối các thiết bị đầu cuối với hạ tầng mạng và nền tảng đám mây. Gateway không chỉ thực hiện chức năng chuyển tiếp dữ liệu mà còn đảm nhiệm các tác vụ quan trọng như chuyển đổi giao thức, xử lý dữ liệu tại biên, quản lý thiết bị và thực thi các cơ chế bảo mật.
+
+        Tuy nhiên, thực tế triển khai cho thấy mỗi hệ thống IoT lại có yêu cầu khác nhau về loại thiết bị, chuẩn giao tiếp và giao thức truyền thông. Việc thiết kế hoặc lựa chọn một gateway cố định, tích hợp sẵn nhiều giao thức không cần thiết dẫn đến lãng phí tài nguyên, tăng chi phí phần cứng và giảm tính linh hoạt khi mở rộng hoặc thay đổi hệ thống.
+
+        Mặt khác, các gateway thương mại hiện nay thường đi theo hai xu hướng: hoặc tích hợp quá nhiều chức năng dẫn đến giá thành cao và phức tạp trong vận hành, hoặc quá đơn giản, khó mở rộng và không đáp ứng được các bài toán IoT đa dạng trong thực tế. Ngoài ra, việc cấu hình gateway trong nhiều trường hợp vẫn phụ thuộc nhiều vào việc chỉnh sửa firmware, gây khó khăn cho quá trình triển khai và bảo trì tại hiện trường.
+
+        Xuất phát từ những vấn đề trên, nhóm chúng em lựa chọn đề tài “Thiết kế và hiện thực một gateway IoT dạng mô-đun có khả năng cấu hình” với định hướng xây dựng một giải pháp kỹ thuật linh hoạt, có thể tùy biến theo nhu cầu sử dụng, tối ưu chi phí và phù hợp với các kịch bản triển khai IoT thực tế.
     \section{Mục tiêu Đồ án}
+        Mục tiêu tổng quát của đồ án là thiết kế và hiện thực một mô hình IoT gateway, đáp ứng yêu cầu linh hoạt, khả cấu hình và dễ triển khai trong thực tế.
+
+        Cụ thể, đồ án hướng tới các mục tiêu sau:
+        \begin{itemize}
+            \item Thiết kế một kiến trúc IoT gateway dạng mô-đun, cho phép lắp ghép và thay thế các module phần cứng theo từng kịch bản sử dụng cụ thể.
+            \item Xây dựng giải pháp phần cứng và phần mềm phù hợp để hỗ trợ nhiều chuẩn giao tiếp và giao thức phổ biến trong hệ thống IoT.
+            \item Hiện thực nguyên mẫu (prototype) gateway nhằm kiểm chứng tính khả thi của kiến trúc đề xuất.
+            \item Xây dựng cơ chế cấu hình linh hoạt, cho phép thay đổi tham số hệ thống và lựa chọn module mà không cần chỉnh sửa hoặc biên dịch lại firmware.
+            \item Đảm bảo hệ thống hoạt động ổn định, dễ mở rộng và phù hợp cho các bài toán triển khai IoT ở quy mô nhỏ đến trung bình.
+            \item 
+        \end{itemize}
+
+        Thông qua đồ án, nhóm chúng em hướng tới việc áp dụng kiến thức đã học vào bài toán thiết kế – hiện thực một hệ thống kỹ thuật hoàn chỉnh, có tính ứng dụng cao.
     \section{Phạm vi Đồ án}
+        Trong khuôn khổ đồ án, nhóm chúng em tập trung vào các nội dung sau:
+        \begin{itemize}
+            \item Phân tích vai trò và yêu cầu kỹ thuật của IoT gateway trong hạ tầng IoT.
+            \item Thiết kế kiến trúc tổng thể của gateway theo hướng mô-đun, bao gồm cả phần cứng và phần mềm.
+            \item Lựa chọn và tích hợp các chuẩn giao tiếp, giao thức truyền thông tiêu biểu phục vụ cho mục tiêu kiểm chứng kiến trúc.
+            \item Hiện thực nguyên mẫu gateway với các chức năng cơ bản: thu thập dữ liệu từ thiết bị đầu cuối, xử lý cục bộ, truyền dữ liệu lên nền tảng phía trên và nhận lệnh điều khiển ngược lại.
+            \item Xây dựng công cụ và quy trình cấu hình hệ thống ở mức cơ bản.
+        \end{itemize}
+    
+        Đồ án không tập trung vào việc phát triển một sản phẩm thương mại hoàn chỉnh, cũng không đi sâu vào các thuật toán xử lý dữ liệu nâng cao hay tối ưu hóa hiệu năng ở quy mô lớn. Các nội dung nâng cao như triển khai trên diện rộng hoặc tích hợp sâu với nền tảng cloud thương mại sẽ được xem là hướng phát triển trong các giai đoạn tiếp theo.
     \section{Phương pháp thực hiện}
+        Đồ án được triển khai theo hướng tiếp cận của một dự án kỹ thuật, kết hợp giữa phân tích yêu cầu, thiết kế hệ thống và hiện thực nguyên mẫu. Các phương pháp chính được sử dụng bao gồm:
+        \begin{itemize}
+            \item Khảo sát và phân tích: tìm hiểu các mô hình IoT gateway phổ biến, các giải pháp thương mại hiện có, từ đó xác định ưu – nhược điểm và rút ra yêu cầu kỹ thuật phù hợp cho hệ thống đề xuất.
+            \item Thiết kế hệ thống: xây dựng kiến trúc tổng thể của gateway, bao gồm phân tách chức năng phần cứng và phần mềm, xác định vai trò của từng khối chức năng và luồng dữ liệu trong hệ thống.
+            \item Lựa chọn giải pháp kỹ thuật: chọn nền tảng phần cứng, giao thức và công nghệ phù hợp với mục tiêu tối ưu chi phí, tính linh hoạt và khả năng mở rộng.
+            \item Hiện thực và tích hợp: triển khai nguyên mẫu gateway, tích hợp các module phần cứng và phần mềm theo thiết kế đã đề ra.
+            \item Kiểm thử và đánh giá: kiểm tra hoạt động của hệ thống trong các kịch bản cơ bản, đánh giá mức độ đáp ứng mục tiêu đề ra và rút ra nhận xét cho hướng hoàn thiện tiếp theo.
+        \end{itemize}
+        Hướng triển khai này giúp đồ án tập trung vào bài toán kỹ thuật, đảm bảo các giải pháp được thiết kế và hiện thực có tính khả thi cao trong thực tế.
