@@ -1,7 +1,7 @@
 \section{Thiết kế}
     \subsection{Kiến trúc Hệ thống}
         \subsubsection{Sơ đồ khối Hệ thống}
-            \begin{figure}[h]
+            \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.8\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
                 \caption{Sơ đồ khối Hệ thống}
@@ -119,14 +119,86 @@
                                                             & GPIO11    & 21                                                                    & General Purpose I/O 11    \\\hline
                     \caption{Pinout Module Adapter}
                 \end{longtable}
-                \begin{figure}[h]
+                \begin{figure}[H]
                     \centering
                     \includegraphics[width=0.8\textwidth]{figures/Adapter_Board_Definition.drawio.png}
                     \caption{Sơ đồ chân Module Adapter}
                 \end{figure}
 
         \subsubsection{Xử lý dữ liệu}
-            \dots\footnote{phần mềm}
+            Phần xử lý dữ liệu của gateway được thiết kế theo kiến trúc \textbf{Dual-MCU Master–Slave}, trong đó LAN-MCU chịu trách nhiệm tương tác trực tiếp với thiết bị đầu cuối (thu thập/đẩy lệnh xuống), còn WAN-MCU đảm nhiệm kết nối Internet và giao tiếp Cloud. Toàn bộ luồng dữ liệu được tổ chức theo hai hướng chính: Uplink (Sensor $\to$ Cloud) và Downlink (Cloud $\to$ Sensor), đồng thời bảo đảm độ tin cậy bằng cơ chế CRC/sequence + ACK/NACK + retry trên kênh SPI và cơ chế retry/backoff khi publish lên Cloud.
+
+            \paragraph{Luồng Uplink: Sensor $\to$ LAN-MCU $\to$ WAN-MCU $\to$ Cloud}
+            
+                Ở chiều uplink, dữ liệu từ cảm biến/thiết bị đầu cuối được LAN-MCU tiếp nhận, sau đó thực hiện các bước xử lý cơ bản như kiểm tra tính hợp lệ, phân tích (parse) và chuẩn hóa (normalize) về định dạng dữ liệu nội bộ trước khi chuyển sang WAN-MCU qua SPI.
+                
+                Trên kênh SPI, gói dữ liệu luôn đi kèm các trường kiểm tra như CRC và sequence. WAN-MCU xác thực gói nhận được:
+                \begin{itemize}
+                    \item Nếu gói lỗi (CRC sai hoặc sai thứ tự), WAN-MCU trả NACK, LAN-MCU thực hiện gửi lại (retry).
+                    \item Nếu gói hợp lệ, WAN-MCU trả ACK để LAN-MCU xác nhận hoàn tất giao dịch.
+                \end{itemize}
+                
+                Sau khi nhận ACK, WAN-MCU thực hiện gửi dữ liệu lên Cloud theo cơ chế publish. Trong trường hợp publish thất bại, WAN-MCU áp dụng retry (có thể kèm backoff) để tránh gửi dồn liên tục gây nghẽn mạng hoặc quá tải broker.
+                
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.65\textwidth]{figures/sequence_diagram_end-to-end_uplink.png}
+                    \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end uplink}
+                \end{figure}
+            
+            \paragraph{Luồng Downlink: Cloud $\to$ WAN-MCU $\to$ LAN-MCU $\to$ Sensor}
+            
+                Ở chiều downlink, Cloud gửi lệnh/ yêu cầu xuống gateway thông qua WAN-MCU. WAN-MCU chuyển lệnh xuống LAN-MCU bằng SPI (theo cơ chế gói có CRC/sequence tương tự uplink). LAN-MCU nhận lệnh và:
+                \begin{itemize}
+                    \item Nếu gói lỗi $\to$ trả NACK để WAN-MCU gửi lại.
+                    \item Nếu gói đúng $\to$ trả ACK, sau đó forward lệnh tới thiết bị đầu cuối theo giao thức tương ứng.
+                \end{itemize}
+                
+                Sau khi gửi lệnh xuống sensor, LAN-MCU đợi phản hồi:
+                \begin{itemize}
+                    \item Nếu thiết bị không phản hồi (timeout) $\to$ LAN-MCU báo FAIL lên WAN-MCU, WAN-MCU phản hồi FAIL về Cloud.
+                    \item Nếu thiết bị phản hồi $\to$ LAN-MCU báo OK lên WAN-MCU và WAN-MCU phản hồi OK về Cloud.
+                \end{itemize}
+                
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.65\textwidth]{figures/sequence_diagram_end-to-end_downlink.png}
+                    \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end downlink}
+                \end{figure}
+            
+            \paragraph{Cơ chế giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI (đảm bảo tin cậy)}
+            
+                Kênh SPI giữa hai MCU đóng vai trò xương sống cho luồng dữ liệu. Thiết kế giao tiếp sử dụng các nguyên tắc:
+                \begin{itemize}
+                    \item \textbf{Kiểm tra toàn vẹn:} mỗi gói có CRC, phát hiện lỗi đường truyền.
+                    \item \textbf{Chống mất/trùng gói:} sequence giúp nhận biết gói lặp hoặc sai thứ tự.
+                    \item \textbf{Bắt tay xác nhận:} ACK/NACK cho từng gói, kết hợp retry khi thất bại.
+                    \item \textbf{Downlink theo cơ chế polling/pull:} LAN-MCU (master) thực hiện REQ\_DOWNLINK theo chu kỳ; WAN-MCU trả về CMD khi có dữ liệu hoặc NO\_DATA khi trống.
+                \end{itemize}
+                
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.5\textwidth]{figures/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
+                    \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
+                \end{figure}
+            
+            \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
+            
+                Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
+                \begin{itemize}
+                    \item Chu kỳ gửi dữ liệu, chính sách retry/backoff
+                    \item Thông số MQTT (host/port/topic/QoS nếu có), lựa chọn kênh Internet
+                    \item Bật/tắt luồng downlink hoặc định tuyến lệnh
+                    \item Các tham số giao tiếp thuộc LAN (phải chuyển tiếp sang LAN-MCU)
+                \end{itemize}
+                
+                Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\to$ WAN-MCU $\to$ (tùy trường hợp) LAN-MCU. WAN-MCU đóng vai trò “router cấu hình”: nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.65\textwidth]{figures/sequence_diagram_App-PC_update.png}
+                    \caption{Sequence diagram: cập nhật cấu hình từ App PC}
+                \end{figure}
 
     \newpage
     \subsection{Hardware}

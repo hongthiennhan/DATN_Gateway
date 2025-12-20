@@ -15,4 +15,143 @@
             \item Do tài nguyên phần cứng của MCU không quá nhiều, lại vừa còn phải chứa đủ chương trình cho nhiều loại chuẩn giao tiếp khác nhau của nhiều loại module trên thị trường, nhóm đồ án đưa ra kiến trúc sử dụng 2 MCU cho 2 nhiệm vụ riêng biệt: một MCU xử lý các tác vụ và giao tiếp với WAN (gọi tắt là WAN-MCU), một MCU xử lý các tác vụ và giao tiếp với LAN (gọi tắt là LAN-MCU), trong đó WAN-MCU đóng vai trò là MCU chính quản lý điều phối toàn bộ hệ thống. Hai MCU này được giao tiếp với nhau qua giao thức tốc độ cao và các tín hiệu điều khiển để điều phối hoạt động giữa hai MCU.
         \end{itemize}
     \subsection{Giải pháp phần mềm}
-    \dots\footnote{phần mềm}
+        Giải pháp phần mềm được xây dựng nhằm đáp ứng các yêu cầu cốt lõi của hệ thống IoT Gateway bao gồm: tính module hóa (Modularity), khả năng cấu hình linh hoạt (Configurability), độ ổn định – tin cậy cao, khả năng mở rộng và dễ bảo trì. 
+
+        Phần mềm phải tận dụng hiệu quả kiến trúc \textbf{Dual-MCU Master--Slave}, phân tách rõ ràng trách nhiệm giữa hai vi điều khiển để tối ưu tài nguyên phần cứng, đồng thời bảo đảm luồng dữ liệu thông suốt từ thiết bị cảm biến tới nền tảng đám mây.
+
+        \subsubsection{Kiến trúc phần mềm tổng thể}
+            Phần mềm hệ thống được thiết kế theo kiến trúc phân lớp (Layered Architecture) và module hóa, áp dụng nhất quán cho cả hai MCU LAN và MCU WAN. Mỗi firmware được chia thành 4 lớp chính:
+            \begin{itemize}
+                \item Driver Layer
+                \item Board Support Package (BSP)
+                \item Middleware Layer
+                \item Application Layer
+            \end{itemize}
+
+            Việc phân lớp rõ ràng giúp:
+            \begin{itemize}
+                \item Tách biệt logic ứng dụng và phụ thuộc phần cứng
+                \item Dễ dàng mở rộng, thay thế module
+                \item Giảm rủi ro ảnh hưởng dây chuyền khi thay đổi một thành phần
+            \end{itemize}
+
+        \subsubsection{Giải pháp phần mềm cho MCU LAN (SLAVE LAN-MCU)}
+            MCU LAN chịu trách nhiệm chính cho Sensing Domain và LAN Network Domain, tập trung vào thu thập, tiền xử lý và lưu trữ dữ liệu.
+
+            \paragraph{a) Application Layer – MCU LAN}
+                Tầng Application của MCU LAN bao gồm các khối chính:
+                \begin{itemize}
+                    \item Main Control: điều phối hoạt động tổng thể của MCU LAN theo lệnh từ MCU WAN.
+                    \item LAN Network Handler: quản lý các mạng cảm biến nội bộ.
+                    \item Các Handler Task theo giao thức:
+                    \begin{itemize}
+                        \item LoRa Handler Task
+                        \item Zigbee Handler Task
+                        \item Bluetooth Handler Task
+                        \item Z-Wave Handler Task
+                        \item Thread Handler Task
+                        \item CAN Handler Task
+                        \item Modbus / RS-485 Handler Task (nếu được cấu hình)
+                    \end{itemize}
+                \end{itemize}
+
+                Mỗi Handler Task hoạt động như một FreeRTOS task độc lập, đảm bảo:
+                \begin{itemize}
+                    \item Thu thập dữ liệu song song từ nhiều mạng khác nhau
+                    \item Tránh blocking giữa các giao thức
+                    \item Dễ dàng bật/tắt theo cấu hình mà không cần sửa firmware
+                \end{itemize}
+
+                Chức năng chung của mỗi Handler Task:
+                \begin{itemize}
+                    \item Đọc dữ liệu thô từ phần cứng
+                    \item Kiểm tra định dạng, checksum, loại bỏ khung lỗi
+                    \item Gắn nhãn nguồn dữ liệu và timestamp
+                    \item Chuẩn hóa dữ liệu về định dạng khung nội bộ
+                    \item Đưa dữ liệu vào hàng đợi (queue) để gửi sang MCU WAN
+                \end{itemize}
+
+            \paragraph{b) Middleware Layer – MCU LAN}
+                Middleware đóng vai trò trừu tượng hóa giao thức và thư viện nền:
+                \begin{itemize}
+                    \item Zigbee / LoRa / Thread / Z-Wave / Bluetooth Handler
+                    \item Data Storage Handler (lưu dữ liệu tạm thời vào SD Card)
+                    \item ESP OTA Handler (hỗ trợ cập nhật firmware)
+                    \item FreeRTOS Kernel
+                \end{itemize}
+
+            Lớp này giúp Application không phụ thuộc trực tiếp vào BSP hoặc Driver.
+
+            \paragraph{c) BSP \& Driver – MCU LAN}
+                \begin{itemize}
+                    \item BSP quản lý giao tiếp với các module vật lý: Zigbee, LoRa, Thread, RS-485, CAN, SD Card, IO Expander.
+                    \item Driver Layer cung cấp driver chuẩn: UART, SPI, I2C, SDIO, GPIO, ADC, USB.
+                \end{itemize}
+
+        \subsubsection{Giải pháp phần mềm cho MCU WAN (MASTER WAN-MCU)}
+
+            MCU WAN giữ vai trò Application Master, quản lý WAN, Cloud và điều phối toàn hệ thống.
+
+            \paragraph{a) Application Layer – MCU WAN}
+                Các thành phần chính:
+                \begin{itemize}
+                    \item Main Control: điều phối hệ thống, quản lý trạng thái gateway.
+                    \item Internet Communication Handler:
+                    \begin{itemize}
+                        \item Ethernet Handler Task
+                        \item Wi-Fi Handler Task
+                        \item LTE / NB-IoT Handler Task
+                    \end{itemize}
+                    \item Server Communication Handler:
+                    \begin{itemize}
+                        \item MQTT Handler Task
+                        \item HTTP Handler Task (mở rộng)
+                        \item CoAP Handler Task (mở rộng)
+                    \end{itemize}
+                    \item MCU LAN Communication Handler: quản lý kênh Quad SPI, UART và GPIO với MCU LAN.
+                    \item FOTA \& Bridge Bootloader: cập nhật firmware cho cả hai MCU.
+                \end{itemize}
+
+                Dữ liệu từ MCU LAN được MCU WAN đóng gói và gửi lên Cloud theo cấu hình (MQTT/HTTP/CoAP).
+
+            \paragraph{b) Middleware Layer – MCU WAN}
+                \begin{itemize}
+                    \item ESP IDF MQTT
+                    \item Ethernet / Wi-Fi / LTE / NB-IoT Handler
+                    \item ESP OTA Handler
+                    \item FreeRTOS
+                \end{itemize}
+
+                \paragraph{c) BSP \& Driver – MCU WAN}
+                \begin{itemize}
+                    \item BSP: SIM7600, Ethernet Module, MCU LAN Communication, RTC, IO Expander.
+                    \item Driver: UART, SPI, USB, I2C, MAC, GPIO, Wi-Fi Driver.
+                \end{itemize}
+
+        \subsubsection{Cơ chế cấu hình và cập nhật}
+            \begin{itemize}
+                \item Toàn bộ tham số gateway được lưu trong non-volatile memory.
+                \item Configuration Tools trên PC giao tiếp với gateway qua USB/UART.
+                \item Cho phép:
+                \begin{itemize}
+                    \item Đọc cấu hình hiện tại
+                    \item Chỉnh sửa module, giao thức, WAN, MQTT
+                    \item Ghi cấu hình mà không cần build lại firmware
+                \end{itemize}
+                \item Hỗ trợ FOTA an toàn:
+                \begin{itemize}
+                    \item Kiểm tra checksum
+                    \item Cập nhật từng MCU
+                    \item Không ghi đè firmware đang chạy
+                \end{itemize}
+            \end{itemize}
+
+        \subsubsection{Đánh giá giải pháp phần mềm}
+            Giải pháp phần mềm đáp ứng:
+            \begin{itemize}
+                \item Modularity: bật/tắt module qua cấu hình
+                \item Configurability: cấu hình không cần sửa firmware
+                \item Reliability: watchdog, queue, retry, buffer
+                \item Interoperability: hỗ trợ đa giao thức LAN/WAN
+                \item Scalability: dễ mở rộng thêm protocol hoặc cloud service
+            \end{itemize}
