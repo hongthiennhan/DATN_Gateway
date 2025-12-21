@@ -222,11 +222,11 @@
                     \begin{itemize}
                         \item \textbf{Mở rộng GPIO:} Sử dụng IC TCA6424ARGJR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt và GPIO của các module mở rộng.
                         
-                        \item \textbf{Quản lý thời gian thực (RTC):} Hệ thống tích hợp IC RTC PCF85263ATL, được cấp nguồn dự phòng bằng pin CR2032 (3.0\,V), giúp duy trì thông tin về thời gian ngay cả khi hệ thống mất nguồn chính.
+                        \item \textbf{Quản lý thời gian thực (RTC):} Hệ thống tích hợp IC RTC PCF85263ATL, được cấp nguồn dự phòng bằng pin CR2032 (3.0\,V), cho phép duy trì thông tin thời gian ngay khi nguồn cấp chính của hệ thống bị mất.
                         
                         \item \textbf{Hiển thị trạng thái:} Màn hình OLED kích thước 0.96\,inch sử dụng driver SH1107, giao tiếp qua chuẩn I\textsuperscript{2}C, dùng để hiển thị các thông tin trạng thái và tình trạng hoạt động của hệ thống.
                         
-                        \item \textbf{Lưu trữ cục bộ:} MCU Slave được trang bị khe cắm thẻ nhớ Micro SD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log dữ liệu tại chỗ trong trường hợp mất kết nối mạng hoặc phục vụ mục đích phân tích hậu kỳ.
+                        \item \textbf{Lưu trữ cục bộ:} MCU Slave được trang bị khe cắm thẻ nhớ microSD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log và lưu trữ dữ liệu cục bộ trong quá trình vận hành. Trong trường hợp kết nối mạng bị gián đoạn, thẻ nhớ microSD đồng thời đóng vai trò bộ đệm dữ liệu, hỗ trợ cơ chế lưu trữ tạm thời và gửi lại khi kết nối được khôi phục.
                         
                         \item \textbf{Nút nhấn nguồn:} Nút nhấn được sử dụng để gửi lệnh điều khiển bật/tắt nguồn các khối chức năng thông qua MCU Master.
                         
@@ -246,18 +246,18 @@
                     Từ nguồn DC 12\,V, các khối chuyển đổi DC/DC và LDO được sử dụng để tạo ra các rail nguồn chính, bao gồm:
 
                     \begin{itemize}
-                        \item \textbf{+5V0\_SYS:} Được chuyển đổi trực tiếp từ nguồn DC 12\,V, dùng để cấp trực tiếp cho U1 Master và nhánh nguồn qua efuse của nguồn +5V0.
+                        \item \textbf{+5V0\_SYS:} Được chuyển đổi trực tiếp từ nguồn DC 12\,V, dùng để cấp trực tiếp cho U1 Master và nhánh nguồn qua eFuse của nguồn +5V0.
 
                         \item \textbf{+3V3M:} Là nguồn chuyển đổi từ rail +5V0\_SYS bằng LDO nội bộ của module Master, dùng để cấp nguồn cho IO Expander (Master), RTC và USB Switch.
                         
-                        \item \textbf{+5V0:} Là rail nguồn rẽ nhánh từ +5V0\_SYS thông qua eFuse, dùng để cấp cho các khối và module sử dụng điện áp 5\,V. Việc bật/tắt rail nguồn này được điều khiển bởi MCU Master.
+                        \item \textbf{+5V0:} Là rail nguồn rẽ nhánh từ +5V0\_SYS thông qua eFuse, dùng để cấp cho các khối chức năng và module sử dụng điện áp 5\,V. Việc bật/tắt rail nguồn này được điều khiển bởi MCU Master.
                         
-                        \item \textbf{+3V3:} Được tạo trực tiếp từ nguồn DC 12\,V, cung cấp cho phần lớn các khối chức năng của hệ thống, bao gồm MCU, logic điều khiển và các ngoại vi. Rail nguồn này cũng được quản lý bởi MCU Master.
+                        \item \textbf{+3V3:} Được tạo trực tiếp từ nguồn DC 12\,V, cung cấp cho phần lớn các khối chức năng của hệ thống, bao gồm module LAN/WAN, mạch logic điều khiển và các ngoại vi. Rail nguồn này cũng được quản lý bởi MCU Master.
                         
                         \item \textbf{+1V8:} Được chuyển đổi từ rail +3V3 và quản lý bởi MCU Master, dùng để cấp nguồn cho các module mở rộng yêu cầu điện áp 1.8\,V.
                     \end{itemize}
 
-                    Đối với các module gắn ngoài thông qua connector, các đường nguồn 5\,V và 3.3\,V đều được điều khiển bằng tín hiệu eenable từ MCU Master. Cách tổ chức này cho phép hệ thống:
+                    Đối với các module gắn ngoài thông qua Adapter module, các đường nguồn 5\,V, 3.3\,V và 1.8\,V đều được điều khiển bằng tín hiệu enable từ MCU Master. Cách tổ chức này cho phép hệ thống:
 
                     \begin{itemize}
                         \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
@@ -312,17 +312,17 @@
                 R_{PU,\min} \leq R_{PU} \leq R_{PU,\max}
                 \]
                 
-                Cổng USB của module ESP32-S3 Master được đưa ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép chia sẻ đường truyền USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối với module WAN hỗ trợ giao thức USB 2.0. 
+                Cổng USB của module ESP32-S3 Master được kết nối ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép sử dụng linh hoạt đường tín hiệu USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối và giao tiếp với module WAN hỗ trợ giao thức USB 2.0. 
                 
-                Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD mà không làm ảnh hưởng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
+                Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD, có các tham số đặc tính phù hợp để không làm ảnh hưởng nghiêm trọng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
                 \begin{itemize}
                     \item Peak Reverse Working Voltage (VRWM): 5\,V
-                    \item Junction Capacitance (CJ): khoảng 0.3\,pF tại 1\,MHz
+                    \item Junction Capacitance (CJ): rất thấp, khoảng 0.3\,pF tại 1\,MHz
                 \end{itemize}
 
-                Giá trị điện dung ký sinh rất nhỏ (0.3\,pF) giúp đảm bảo tín hiệu dữ liệu USB duy trì tốc độ truyền chuẩn Full-Speed 12\,Mbit/s, không bị suy hao biên độ hay méo dạng sóng.
+                Giá trị điện dung ký sinh rất thấp (0.3\,pF) giúp đảm bảo tín hiệu dữ liệu USB duy trì tốc độ truyền chuẩn Full-Speed 12\,Mbit/s, giảm thiểu suy hao biên độ hay méo dạng sóng.
 
-                Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22\,$\Omega$. Các điện trở này giúp:
+                Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22\,$\Omega$. Các điện trở này luôn được khuyến nghị trong các tài liệu thiết kế USB 2.0, với tác dụng:
                 \begin{itemize}
                     \item Giảm hiện tượng overshooting và ringing trên cạnh xung
                     \item Cải thiện Signal Integrity
@@ -368,7 +368,7 @@
             \paragraph{Thiết kế Mạch USB}
                 Master MCU ESP32-S3 hỗ trợ một đường giao tiếp vật lý USB, cho phép thực hiện chức năng nạp firmware và debug thông qua khối phần cứng JTAG, đồng thời cũng có khả năng hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu sử dụng linh hoạt hai chức năng này trên cùng một cổng vật lý, thiết kế sử dụng USB Switch FSUSB42UMX-TP.
 
-                IC USB Switch cho phép chuyển mạch đường tín hiệu USB giữa hai khối chức năng khác nhau. Trong thiết kế này, IC được cấu hình mặc định nối đường USB ra cổng nạp firmware/debug bằng cách sử dụng điện trở pull-up tại chân SEL của IC. Cấu hình này đảm bảo quá trình nạp firmware và debug có thể được thực hiện ngay khi hệ thống khởi động, đồng thời vẫn giữ khả năng mở rộng để sử dụng chức năng USB Host khi cần thiết thông qua điều khiển từ MCU.
+                IC USB Switch cho phép chuyển mạch đường tín hiệu USB giữa hai khối chức năng khác nhau. Trong thiết kế này, IC được cấu hình mặc định nối đường USB ra cổng nạp firmware/debug bằng cách sử dụng điện trở pull-up tại chân SEL của IC. Cấu hình này đảm bảo quá trình nạp firmware và debug có thể được thực hiện ngay khi hệ thống chưa có sẵn chương trình lúc ban đầu, đồng thời vẫn giữ khả năng mở rộng để sử dụng chức năng USB Host khi cần thiết thông qua điều khiển từ MCU.
 
                 Cổng USB nạp firmware/debug cũng được trang bị thêm các TVS diode nhằm bảo vệ đường tín hiệu khỏi các xung phóng tĩnh điện (ESD) từ môi trường bên ngoài, giúp nâng cao độ tin cậy và độ bền của hệ thống. Ngoài ra, thiết kế còn dự phòng một cặp điện trở nối tiếp trên các đường dữ liệu USB để sử dụng trong trường hợp cần bổ sung điện trở giảm chấn (damping resistor) trong tương lai, nhằm tối ưu tính toàn vẹn tín hiệu khi có yêu cầu thay đổi về bố trí mạch hoặc điều kiện vận hành.
                 \begin{figure}[H]
@@ -768,7 +768,7 @@
                         \item \textbf{Giảm thiểu Via:} Hạn chế tối đa việc chuyển lớp trên đường tín hiệu tốc độ cao để tránh gây gián đoạn trở kháng. Nếu bắt buộc phải chuyển lớp, các stitching via được đặt ngay cạnh via tín hiệu để duy trì đường hồi tiếp liền mạch.
                         \item \textbf{Định tuyến trực giao:} Để tránh hiện tượng xuyên nhiễu (Crosstalk) giữa các lớp liền kề được đi vuông góc với nhau. Tuyệt đối tránh đi dây song song chồng lên nhau.
                         \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện.
-                        \item \textbf{Quy tắc khoảng cách:} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng mạch) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau. Đồng thời, duy trì khoảng cách ly đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn.
+                        \item \textbf{Quy tắc khoảng cách:} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng đường dây) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau. Đồng thời, duy trì khoảng cách ly đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn.
                     \end{itemize}
                 \end{enumerate}
         

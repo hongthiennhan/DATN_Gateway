@@ -90,7 +90,7 @@
                         \end{itemize}
 
                     \textbf{Nguồn điện và quản lý năng lượng} \\
-                        Khối nguồn DC/DC converter cung cấp nguồn ổn định cho toàn bộ hệ thống, thường hỗ trợ nguồn đầu vào rộng và tích hợp các mạch bảo vệ chống quá áp, quá dòng, chống đảo cực để đảm bảo gateway hoạt động tin cậy trong môi trường công nghiệp. Một số gateway còn hỗ trợ Power over Ethernet (PoE) để giảm thiểu cáp nguồn riêng biệt.
+                        Khối nguồn DC/DC hoặc AC/DC converter cung cấp nguồn ổn định cho toàn bộ hệ thống, thường hỗ trợ nguồn đầu vào rộng và tích hợp các mạch bảo vệ chống quá áp, quá dòng, chống đảo cực để đảm bảo gateway hoạt động tin cậy trong môi trường công nghiệp. Một số gateway còn hỗ trợ Power over Ethernet (PoE) để giảm thiểu cáp nguồn riêng biệt.
 
                     \textbf{Khối bảo mật phần cứng}\\
                         Nhiều gateway hiện đại tích hợp thêm các chip bảo mật chuyên dụng như Trusted Platform Module (TPM) hoặc Secure Element. Các phần tử này được dùng để lưu trữ khóa mã hóa, chứng chỉ số và hỗ trợ các cơ chế như Secure Boot, mã hóa bộ nhớ, xác thực thiết bị bằng chứng chỉ X.509, qua đó nâng cao mức độ an toàn bảo mật ngay từ tầng phần cứng.
@@ -216,7 +216,7 @@
                         \item MCU \textbf{ESP32-S3}, lõi kép Xtensa LX7 240\,MHz, hỗ trợ \textbf{WiFi 2.4\,GHz} và \textbf{Bluetooth Low Energy (BLE)}.
                         \item Bộ nhớ \textbf{Flash 16\,MB}, \textbf{PSRAM 8\,MB}, đủ cho ứng dụng có giao diện đồ hoạ, kết nối mạng và xử lý dữ liệu cảm biến.
                         \item Màn hình \textbf{IPS 2.0''} cảm ứng điện dung, độ phân giải 320$\times$240, phù hợp làm giao diện HMI mini (nút bấm, slider, biểu đồ,\dots).
-                        \item Tích hợp \textbf{camera 0.3\,MP}, cảm biến ánh sáng/gần \textbf{LTR-553}, \textbf{IMU 6 trục} và \textbf{từ kế 3 trục}, cho phép xây dựng các ứng dụng nhận diện cơ bản, phát hiện chuyển động, tương tác theo hướng nhìn,\dots
+                        \item Tích hợp \textbf{camera 0.3\,MP}, cảm biến ánh sáng/tiệm cận \textbf{LTR-553}, \textbf{IMU 6 trục} và \textbf{từ kế 3 trục}, cho phép xây dựng các ứng dụng nhận diện cơ bản, phát hiện chuyển động, tương tác theo hướng nhìn,\dots
                         \item Khối âm thanh gồm \textbf{codec ES7210}, \textbf{ampli I2S} và \textbf{loa 1\,W} cùng \textbf{micro kép}, hỗ trợ các ứng dụng trợ lý giọng nói, phát cảnh báo âm thanh,\dots
                         \item \textbf{Hỗ trợ GPIO/I\textsuperscript{2}C/UART} thông qua:
                         \begin{itemize}
@@ -291,13 +291,13 @@
                     
                 \subsubsection{Tính toàn vẹn tín hiệu (Signal Integrity) và đường hồi dòng (Return Path)}
                     \paragraph{Signal Integrity (SI)}
-                        Signal Integrity là mức độ mà tín hiệu đến đầu nhận vẫn giữ được biên độ, dạng xung và thời điểm chuyển mức như dự kiến. Mất toàn vẹn tín hiệu thể hiện qua méo dạng dạng sóng, overshoot/undershoot, rung (ringing), jitter và gây ra vấn đề lỗi dữ liệu.
+                        Signal Integrity là mức độ mà tín hiệu đến đầu nhận vẫn giữ được biên độ, dạng xung và thời điểm chuyển mức như dự kiến. Mất toàn vẹn tín hiệu thể hiện qua hiện tượng méo dạng sóng, overshoot/undershoot, rung (ringing), jitter và gây ra vấn đề lỗi dữ liệu.
                         
                         Các nguyên nhân chính gây suy giảm SI gồm:
                         \begin{itemize}
                             \item Không khớp trở kháng trên đường truyền. 
                             \item Nhiễu xuyên kênh (crosstalk) giữa các đường mạch gần nhau. 
-                            \item Bố trí return path không liên tục, tạo vòng dòng lớn và tăng cảm kháng.
+                            \item Bố trí return path không liên tục, tạo hồi tiếp dòng lớn và tăng cảm kháng.
                             \item Ảnh hưởng của đặc tính vật liệu PCB như tổn hao điện môi, hiệu ứng bề mặt của dòng điện và hiện tượng tán sắc, gây suy hao biên độ và biến dạng dạng sóng trên các đường truyền dài.
                         \end{itemize}
                         
@@ -309,7 +309,9 @@
                         \end{figure}
                     
                     \paragraph{Return path và vai trò của mặt phẳng tham chiếu}
-                        Mỗi tín hiệu tốc độ cao luôn gắn liền với một dòng trở về tương ứng, thường phân bố trên mặt phẳng tham chiếu như ground plane hoặc power plane nằm kề sát lớp tín hiệu. Ở miền tần số cao, dòng trở về có xu hướng tập trung và di chuyển theo đường có tổng trở nhỏ nhất, thông thường là chạy song song và ngay phía dưới đường mạch tín hiệu nhằm giảm diện tích vòng dòng và cảm kháng. Khi mặt phẳng tham chiếu bị chia cắt, phân mảnh hoặc tồn tại khe hở, đường trở về của dòng tín hiệu sẽ bị gián đoạn và buộc phải đi vòng xa hơn, dẫn đến gia tăng cảm kháng, tăng nhiễu xuyên kênh và phát xạ nhiễu điện từ.
+                        Mỗi tín hiệu tốc độ cao luôn gắn liền với một dòng trở về tương ứng, thường phân bố trên mặt phẳng tham chiếu như ground plane hoặc power plane nằm kề sát lớp tín hiệu. Ở miền tần số cao, dòng trở về có xu hướng tập trung và di chuyển theo đường có tổng trở nhỏ nhất, thông thường là chạy song song và ngay phía dưới đường mạch tín hiệu nhằm giảm diện tích hồi tiếp dòng và cảm kháng. Khi mặt phẳng tham chiếu bị chia cắt, phân mảnh hoặc tồn tại khe hở, đường trở về của dòng tín hiệu sẽ bị gián đoạn và buộc phải đi vòng xa hơn, dẫn đến gia tăng cảm kháng, tăng nhiễu xuyên kênh và phát xạ nhiễu điện từ.
+
+                        Do đó, trong thiết kế high-speed PCB, việc duy trì một return path liên tục và gần kề với đường tín hiệu là rất quan trọng để đảm bảo tính toàn vẹn tín hiệu. Một số nguyên tắc cơ bản bao gồm:
 
                         \begin{itemize}
                             \item Định tuyến các tín hiệu tốc độ cao trên những lớp liền kề với một mặt phẳng tham chiếu liên tục để đảm bảo đường trở về ngắn và ổn định.
@@ -325,16 +327,16 @@
                         
                         \paragraph{Hiện tượng phản xạ tín hiệu}
                         
-                        Khi tín hiệu lan truyền trên đường truyền có trở kháng đặc trưng \(Z_0\) và gặp một điểm có trở kháng tải \(Z_L\) khác, một phần năng lượng bị phản xạ ngược về nguồn, gây méo dạng sóng và có thể tạo rung. Hệ số phản xạ được cho bởi:
+                        Khi tín hiệu lan truyền trên đường truyền có trở kháng đặc trưng \(Z_0\) và gặp một điểm có trở kháng tải \(Z_L\), một phần năng lượng bị phản xạ ngược về nguồn, gây méo dạng sóng và có thể tạo rung. Hệ số phản xạ được cho bởi:
                         \[
                         \Gamma = \frac{Z_L - Z_0}{Z_L + Z_0}
                         \]
                         
-                        Giá trị \(\Gamma\) càng xa 0, biên độ sóng phản xạ càng lớn. Điều này là lý do cốt lõi phải kiểm soát và khớp trở kháng trong thiết kế high-speed.
+                        Giá trị \(\Gamma\) càng xa 0, biên độ sóng phản xạ càng lớn. Điều này là lý do cốt lõi phải kiểm soát và thực hiện phối hợp trở kháng trong thiết kế high-speed.
                         
                         Trong các hệ thống số tốc độ cao hiện đại, phần lớn các linh kiện giao tiếp như PHY Ethernet, bộ thu phát USB, HDMI/DisplayPort, DDR PHY, các transceiver MIPI hay các bộ chuyển đổi ADC/DAC tốc độ cao đều được thiết kế với trở kháng vào và ra danh định, tương thích với các giá trị trở kháng chuẩn của đường truyền trên PCB và cáp kết nối. Các mức trở kháng này đã được tiêu chuẩn hóa nhằm đảm bảo khả năng truyền dẫn ổn định và tính tương thích giữa các thiết bị. Những giá trị thường gặp bao gồm 50~\(\Omega\) cho các đường tín hiệu single-ended trong nhiều ứng dụng RF và high-speed, 90~\(\Omega\) vi sai cho các giao thức như USB, HDMI, MIPI, và 100~\(\Omega\) vi sai cho Ethernet cũng như nhiều giao thức truyền vi sai khác.
 
-                        Khi các đường mạch trên PCB không được thiết kế để có trở kháng đặc trưng phù hợp với giá trị mà linh kiện và chuẩn giao thức yêu cầu, sự không khớp trở kháng sẽ xuất hiện tại các điểm chuyển tiếp giữa chip, đường truyền và tải. Hiện tượng này làm tăng hệ số phản xạ \(\Gamma\), dẫn đến các vấn đề như overshoot, ringing, méo dạng sườn tín hiệu, suy giảm biên độ và sai lệch thời điểm lấy mẫu tại phía thu. Do đó, trong thiết kế PCB tốc độ cao, các đường truyền tín hiệu luôn được thiết kế theo nguyên tắc kiểm soát trở kháng (controlled impedance) với các giá trị chuẩn như 50~\(\Omega\), 90~\(\Omega\), 100~\(\Omega\), \ldots nhằm khai thác tối đa đặc tính trở kháng đã được chuẩn hóa và tối ưu hóa bởi các nhà sản xuất linh kiện và các chuẩn giao tiếp.                        
+                        Khi các đường mạch trên PCB không được thiết kế để có trở kháng đặc trưng phù hợp với giá trị mà linh kiện và chuẩn giao thức yêu cầu, sự không khớp trở kháng sẽ xuất hiện tại các điểm chuyển tiếp giữa chip, đường truyền và tải. Hiện tượng này làm tăng hệ số phản xạ \(\Gamma\), dẫn đến các vấn đề như overshoot, ringing, méo dạng sườn tín hiệu, suy giảm biên độ và sai lệch thời điểm lấy mẫu tại phía thu. Do đó, trong thiết kế PCB tốc độ cao, các đường truyền tín hiệu luôn được thiết kế theo nguyên tắc kiểm soát trở kháng (controlled impedance) với các giá trị chuẩn như 50~\(\Omega\), 90~\(\Omega\), 100~\(\Omega\), \ldots nhằm khai thác tối đa đặc tính trở kháng đã được chuẩn hóa.                     
                     
                 \subsubsection{Kiểm soát trở kháng}
                     \paragraph{Trở kháng đặc trưng và các chuẩn thông dụng}
@@ -395,12 +397,12 @@
                             \label{fig:microstriplines-side-views}  
                         \end{figure}
                         
-                    \paragraph{Lý do phải kiểm soát và khớp trở kháng}
+                    \paragraph{Lý do phải kiểm soát và phối hợp trở kháng}
                         Kiểm soát trở kháng là quá trình thiết kế và chế tạo PCB nhằm đảm bảo trở kháng đặc trưng \(Z_0\) của đường truyền thực tế nằm trong một dải dung sai xác định quanh giá trị mục tiêu, thường ở mức \(\pm 10\%\) hoặc chặt chẽ hơn là \(\pm 5\%\), và được duy trì tương đối đồng đều trên toàn bộ chiều dài đường mạch. Đối với các tín hiệu tốc độ cao, việc kiểm soát này là điều kiện cần để các giả định thiết kế ở mức hệ thống và chuẩn giao tiếp được thỏa mãn trong quá trình vận hành thực tế.
                         
-                        Các mục tiêu chính của việc kiểm soát và khớp trở kháng bao gồm:
+                        Các mục tiêu chính của việc kiểm soát và phối hợp trở kháng bao gồm:
                         \begin{itemize}
-                            \item Giảm thiểu phản xạ tín hiệu: Khi \(Z_0\) của đường truyền được duy trì ổn định và phù hợp với trở kháng của nguồn phát và tải, hệ số phản xạ \(\Gamma\) tiệm cận về không. Nhờ đó, các hiện tượng như overshoot, ringing và méo dạng tín hiệu được hạn chế, giúp cải thiện biên độ tín hiệu hiệu dụng và chất lượng eye diagram.
+                            \item Giảm thiểu phản xạ tín hiệu: Khi \(Z_0\) của đường truyền được duy trì ổn định và phù hợp với trở kháng của nguồn phát và tải, hệ số phản xạ \(\Gamma\) tiệm cận về 0. Nhờ đó, các hiện tượng như overshoot, ringing và méo dạng tín hiệu được hạn chế, giúp cải thiện biên độ tín hiệu hiệu dụng và chất lượng eye diagram.
                             \item Tối ưu hóa quá trình truyền năng lượng tín hiệu: Trong điều kiện trở kháng nguồn, đường truyền và tải được khớp với nhau, năng lượng của xung tín hiệu được truyền đến tải một cách hiệu quả hơn, giảm suy hao do phản xạ và cải thiện độ ổn định của mức logic tại đầu thu.
                             \item Đảm bảo tương thích với các chuẩn giao thức tốc độ cao: Nhiều chuẩn truyền thông như USB, Ethernet hay PCIe được xây dựng dựa trên các giả định trở kháng chuẩn hóa. Việc kiểm soát trở kháng đúng giúp duy trì bit error rate thấp, eye diagram mở và đảm bảo các yêu cầu về timing margin theo đặc tả của từng giao thức.
                         \end{itemize}
@@ -427,7 +429,7 @@
                     \paragraph{Cải thiện khả năng EMI/EMC}
                         Nhiễu điện từ và khả năng tương thích điện từ là các vấn đề thường gặp trong thiết kế PCB tốc độ cao, do các cạnh tín hiệu nhanh tạo ra phổ tần rộng và dễ phát xạ năng lượng điện từ ra môi trường xung quanh. Layout và routing không hợp lý có thể làm tăng đáng kể mức EMI và ảnh hưởng đến hoạt động của các khối mạch khác trong hệ thống. Để cải thiện đặc tính EMI/EMC, một số nguyên tắc thiết kế high-speed thường được áp dụng như sau:
                         \begin{itemize}
-                            \item Giảm diện tích vòng dòng bằng cách định tuyến tín hiệu ngay trên hoặc sát mặt phẳng tham chiếu liên tục, đồng thời bổ sung via mass khi tín hiệu phải chuyển lớp để duy trì đường trở về liên tục.
+                            \item Giảm diện tích hồi tiếp dòng bằng cách định tuyến tín hiệu ngay trên hoặc sát mặt phẳng tham chiếu liên tục, đồng thời bổ sung via mass khi tín hiệu phải chuyển lớp để duy trì đường trở về liên tục.
                             \item Tránh định tuyến các đường tín hiệu tốc độ cao chạy dọc theo mép PCB trong khoảng dài và không được che chắn; khi cần giảm phát xạ, ưu tiên sử dụng các lớp trong với cấu trúc stripline.
                             \item Hạn chế số lượng via không cần thiết trên các đường high-speed, do via có thể tạo ra gián đoạn trở kháng; đối với PCB dày hoặc tín hiệu tốc độ rất cao, kỹ thuật backdrill có thể được áp dụng để giảm stub của via.
                             \item Phân vùng rõ ràng giữa các miền digital, analog và RF; bố trí các tụ decoupling, tụ bypass và mạch lọc gần chân cấp nguồn của các IC nhạy cảm để giảm nhiễu dẫn.
