@@ -65,8 +65,8 @@
 
         Đối chiếu với 2 sơ đồ firmware đã xây dựng:
         \begin{itemize}
-            \item Trên MCU LAN, tầng Application tổ chức thành các Handler Task (Zigbee/LoRa/BLE/Thread/Z-Wave/CAN/RS-485…) chạy dưới FreeRTOS; tầng Middleware cung cấp các handler tương ứng và khối lưu trữ (Data Storage) + OTA.
-            \item Trên MCU WAN, tầng Application tách rõ Internet Communication Handler (Ethernet/Wi-Fi/LTE/NB-IoT), Server Communication Handler (MQTT/HTTP/CoAP) và MCU LAN Comm Handler để nhận dữ liệu từ MCU LAN và đẩy lên server.
+            \item Trên MCU LAN, tầng Application tổ chức thành các Handler Task (Zigbee, LoRa, BLE, Thread, Z-Wave, CAN, RS-485…) chạy dưới FreeRTOS; tầng Middleware cung cấp các handler tương ứng và khối lưu trữ (Data Storage) + OTA.
+            \item Trên MCU WAN, tầng Application tách rõ Internet Communication Handler (Ethernet, Wi-Fi, LTE, NB-IoT), Server Communication Handler (MQTT, HTTP, CoAP) và MCU LAN Comm Handler để nhận dữ liệu từ MCU LAN và đẩy lên server.
         \end{itemize}
 
         Qua khảo sát, kiến trúc phân lớp + handler theo giao thức là phù hợp để đảm bảo:
