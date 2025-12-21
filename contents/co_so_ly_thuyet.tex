@@ -5,13 +5,13 @@
 
             Trong bối cảnh phát triển công nghệ hiện nay, hệ thống IoT đóng vai trò ngày càng quan trọng trong các lĩnh vực khác nhau, từ nhà thông minh, thành phố thông minh, công nghiệp 4.0, cho đến nông nghiệp dữ liệu. Sự đa dạng của các thiết bị và giao thức truyền thông tạo ra nhu cầu cấp thiết cho các giải pháp trung gian có khả năng tích hợp và quản lý hiệu quả.
 
-            \begin{figure}[H]
-                \centering
-                \includegraphics[width=0.7\textwidth]{figures/iot_network.png}
-                \vspace{1em}
-                \caption{Hạ tầng Internet vạn vật (IoT)}
-                \label{fig:iot_overview}
-            \end{figure}
+            % \begin{figure}[H]
+            %     \centering
+            %     \includegraphics[width=0.7\textwidth]{figures/iot_network.png}
+            %     \vspace{1em}
+            %     \caption{Hạ tầng Internet vạn vật (IoT)}
+            %     \label{fig:iot_overview}
+            % \end{figure}
 
         \subsection{Vị trí và vai trò của IoT gateway}
             IoT gateway đóng vai trò như một cầu nối quan trọng giữa các thiết bị IoT và các nền tảng đám mây, hoạt động như một trung tâm điều phối chính, cho phép truyền thông và luồng dữ liệu trong hạ tầng Internet vạn vật. Gateway là thành phần then chốt giữa lớp cảm nhận (perception layer), gồm các cảm biến và thiết bị và lớp mạng (network layer) kết nối đến các dịch vụ đám mây.
@@ -40,9 +40,9 @@
             Các IoT gateway đóng vai trò là liên kết trung gian, cho phép thông tin thu thập từ các cảm biến IoT được chuyển đổi và đóng gói thành các gói dữ liệu mạng để truyền đến các máy chủ backend hoặc nền tảng đám mây. Nhờ đó, IoT gateway trở thành điểm then chốt trong việc đảm bảo luồng dữ liệu ổn định và tin cậy trong toàn bộ hạ tầng IoT.
 
             Trong bối cảnh phân cấp mạng IoT, các IoT gateway hoạt động như các điểm hội tụ dữ liệu (aggregation points), nơi nhiều thiết bị IoT hợp nhất luồng dữ liệu của chúng trước khi truyền lên các hệ thống cấp cao hơn. Vị trí chiến lược này cho phép IoT gateway quản lý và tối ưu hóa luồng dữ liệu từ nhiều thiết bị đầu cuối, đảm bảo sử dụng băng thông hiệu quả và giảm tải xử lý cho hạ tầng đám mây.
-            \begin{figure}[H]
+            \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.7\textwidth]{figures/iot_architecture.png}
+                \includegraphics[width=0.85\textwidth]{figures/Gateway_in_IoT_architecture.jpg}
                 \vspace{1em}
                 \caption{Vị trí của IoT gateway trong kiến trúc IoT}
                 \label{fig:iot_gateway_position}
@@ -68,7 +68,7 @@
                     Nhiều IoT gateway cung cấp khả năng lưu trữ tạm thời, cho phép lưu đệm dữ liệu trong trường hợp mất kết nối và đồng bộ lại khi kết nối được khôi phục. Tính năng này giúp đảm bảo tính liên tục và toàn vẹn của dữ liệu trong các môi trường có kết nối mạng không ổn định. Bộ nhớ đệm cho phép gateway tiếp tục hoạt động độc lập trong một khoảng thời gian nhất định ngay cả khi kết nối với cloud bị ngắt.
         \subsection{Cấu trúc của IoT gateway}
             Một IoT Gateway hiện đại được thiết kế theo kiến trúc nhiều lớp (layered architecture), trong đó mỗi lớp đảm nhận một nhóm chức năng cụ thể và phối hợp chặt chẽ với các lớp khác. Cấu trúc này không chỉ tạo ra sự tách biệt rõ ràng giữa phần cứng và phần mềm, mà còn cho phép gateway hoạt động như một nền tảng tính toán linh hoạt, có thể mở rộng và dễ bảo trì. Về tổng thể, kiến trúc của gateway có thể chia thành hai khối chính: khối phần cứng (hardware layer) đảm nhiệm việc thu nhận và truyền dẫn tín hiệu vật lý, và khối phần mềm nhiều lớp (multi-layer software stack) thực hiện các chức năng xử lý, quản lý và giao tiếp cấp cao.
-            \begin{figure}[H]
+            \begin{figure}[h]
                 \centering
                 \includegraphics[width=0.7\textwidth]{figures/iot_gateway_architecture.png}
                 \vspace{1em}
@@ -346,6 +346,7 @@
                         
                         \begin{table}[H]
                             \centering
+                            \caption{Các giá trị trở kháng đặc trưng theo các chuẩn giao thức truyền thông phổ biến.}
                             \begin{tabular}{|l|c|c|}
                                 \hline
                                 Giao thức/Chuẩn & Loại đường truyền & Trở kháng mục tiêu \\
@@ -359,7 +360,6 @@
                                 SATA & Differential & 100~\(\Omega\) \\
                                 \hline
                             \end{tabular}
-                            \caption{Các giá trị trở kháng đặc trưng theo các chuẩn giao thức truyền thông phổ biến.}
                             \label{tab:impedance_standards}
                         \end{table}
                         
