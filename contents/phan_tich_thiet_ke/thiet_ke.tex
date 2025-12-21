@@ -314,15 +314,15 @@
                 
                 Cổng USB của module ESP32-S3 Master được kết nối ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép sử dụng linh hoạt đường tín hiệu USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối và giao tiếp với module WAN hỗ trợ giao thức USB 2.0. 
                 
-                Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD mà không làm ảnh hưởng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
+                Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD, có các tham số đặc tính phù hợp để không làm ảnh hưởng nghiêm trọng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
                 \begin{itemize}
                     \item Peak Reverse Working Voltage (VRWM): 5\,V
-                    \item Junction Capacitance (CJ): khoảng 0.3\,pF tại 1\,MHz
+                    \item Junction Capacitance (CJ): rất thấp, khoảng 0.3\,pF tại 1\,MHz
                 \end{itemize}
 
-                Giá trị điện dung ký sinh rất nhỏ (0.3\,pF) giúp đảm bảo tín hiệu dữ liệu USB duy trì tốc độ truyền chuẩn Full-Speed 12\,Mbit/s, giảm thiểu suy hao biên độ hay méo dạng sóng.
+                Giá trị điện dung ký sinh rất thấp (0.3\,pF) giúp đảm bảo tín hiệu dữ liệu USB duy trì tốc độ truyền chuẩn Full-Speed 12\,Mbit/s, giảm thiểu suy hao biên độ hay méo dạng sóng.
 
-                Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22\,$\Omega$. Các điện trở này giúp:
+                Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22\,$\Omega$. Các điện trở này luôn được khuyến nghị trong các tài liệu thiết kế USB 2.0, với tác dụng:
                 \begin{itemize}
                     \item Giảm hiện tượng overshooting và ringing trên cạnh xung
                     \item Cải thiện Signal Integrity
@@ -368,7 +368,7 @@
             \paragraph{Thiết kế Mạch USB}
                 Master MCU ESP32-S3 hỗ trợ một đường giao tiếp vật lý USB, cho phép thực hiện chức năng nạp firmware và debug thông qua khối phần cứng JTAG, đồng thời cũng có khả năng hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu sử dụng linh hoạt hai chức năng này trên cùng một cổng vật lý, thiết kế sử dụng USB Switch FSUSB42UMX-TP.
 
-                IC USB Switch cho phép chuyển mạch đường tín hiệu USB giữa hai khối chức năng khác nhau. Trong thiết kế này, IC được cấu hình mặc định nối đường USB ra cổng nạp firmware/debug bằng cách sử dụng điện trở pull-up tại chân SEL của IC. Cấu hình này đảm bảo quá trình nạp firmware và debug có thể được thực hiện ngay khi hệ thống khởi động, đồng thời vẫn giữ khả năng mở rộng để sử dụng chức năng USB Host khi cần thiết thông qua điều khiển từ MCU.
+                IC USB Switch cho phép chuyển mạch đường tín hiệu USB giữa hai khối chức năng khác nhau. Trong thiết kế này, IC được cấu hình mặc định nối đường USB ra cổng nạp firmware/debug bằng cách sử dụng điện trở pull-up tại chân SEL của IC. Cấu hình này đảm bảo quá trình nạp firmware và debug có thể được thực hiện ngay khi hệ thống chưa có sẵn chương trình lúc ban đầu, đồng thời vẫn giữ khả năng mở rộng để sử dụng chức năng USB Host khi cần thiết thông qua điều khiển từ MCU.
 
                 Cổng USB nạp firmware/debug cũng được trang bị thêm các TVS diode nhằm bảo vệ đường tín hiệu khỏi các xung phóng tĩnh điện (ESD) từ môi trường bên ngoài, giúp nâng cao độ tin cậy và độ bền của hệ thống. Ngoài ra, thiết kế còn dự phòng một cặp điện trở nối tiếp trên các đường dữ liệu USB để sử dụng trong trường hợp cần bổ sung điện trở giảm chấn (damping resistor) trong tương lai, nhằm tối ưu tính toàn vẹn tín hiệu khi có yêu cầu thay đổi về bố trí mạch hoặc điều kiện vận hành.
                 \begin{figure}[H]
