@@ -209,68 +209,133 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-System Diagram.drawio.png}
+                        \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
                         \caption{Sơ đồ khối hệ thống}
                         \label{fig:blockdiagram_system}
                     \end{figure}
                     Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
 
-                    ESP32-S3 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA cũng như xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
+                    ESP32-S3-WROOM-1U-N16R8 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA, xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
                     
                     Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
 
                     \begin{itemize}
-                        \item \textbf{Mở rộng GPIO:} Sử dụng IC TCA6424ARGJR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt và GPIO của các module mở rộng.
+
+                        \item \textbf{Hệ thống nguồn:} 
+                        Hệ thống nguồn được thiết kế với ba nguồn cấp đầu vào, bao gồm: nguồn 5V từ cổng USB, nguồn 12V từ adapter AC-DC và nguồn dự phòng từ pin LiPo. Việc điều phối các nguồn này được thực hiện bởi IC sạc BQ25892RTWR, trong đó nguồn đầu vào (USB hoặc adapter) được lựa chọn thông qua IC Power MUX TPS2121RUXR trước khi đưa vào chân VBUS của IC sạc. Pin LiPo được kết nối tại chân VBAT và được quản lý thông qua BATFET tích hợp bên trong IC, cho phép thực hiện cơ chế power-path. Nhờ đó, hệ thống có thể được cấp nguồn trực tiếp từ VBUS hoặc từ pin, trong đó đường VBAT được đóng/cắt bởi BATFET nhằm ưu tiên sử dụng nguồn từ VBUS, đồng thời cách ly pin khỏi tải khi không cần thiết. Năng lượng từ VBUS đồng thời được sử dụng để sạc pin LiPo. Khi nguồn đầu vào bị mất, pin sẽ tự động đảm nhận vai trò nguồn cấp cho hệ thống.
                         
-                        \item \textbf{Quản lý thời gian thực (RTC):} Hệ thống tích hợp IC RTC PCF85263ATL, được cấp nguồn dự phòng bằng pin CR2032 (3.0\,V), cho phép duy trì thông tin thời gian ngay khi nguồn cấp chính của hệ thống bị mất.
+                        Cách thiết kế này giúp hạn chế việc pin tham gia cấp điện trong điều kiện bình thường, qua đó cải thiện hiệu suất năng lượng, đồng thời nâng cao độ an toàn và kéo dài tuổi thọ pin. Điện áp tại chân VSYS của IC BQ25892RTWR sau đó được đưa tới các bộ chuyển đổi DC-DC nhằm tạo ra các mức điện áp phù hợp để cấp nguồn cho toàn bộ hệ thống.
+                    
+                        \item \textbf{Quản lý tiêu thụ điện năng:} 
+                        Hệ thống tích hợp IC giám sát công suất INA230AIRGTR nhằm theo dõi và đánh giá mức tiêu thụ điện năng trong quá trình vận hành. IC được cấu hình và thu thập dữ liệu thông qua giao tiếp I2C. Hệ thống có thể giám sát hiệu suất sử dụng năng lượng, phát hiện các trạng thái bất thường như quá dòng hoặc tiêu thụ vượt ngưỡng, đồng thời tối ưu hóa hoạt động của các khối chức năng nhằm nâng cao hiệu quả năng lượng và độ tin cậy của toàn hệ thống.
+
+                        \item \textbf{Quản lý pin LiPo:} 
+                        Pin LiPo trong hệ thống được giám sát bởi IC Battery Fuel Gauge BQ27441DRZR-G1B. IC này sử dụng thuật toán Impedance Track\texttrademark\ của Texas Instruments để đo lường và dự đoán chính xác dung lượng còn lại của pin. IC cung cấp các chức năng quản lý pin toàn diện, bao gồm tự động bù trừ sai số do ảnh hưởng của lão hóa và nhiệt độ, ước tính trạng thái sức khỏe pin, phát tín hiệu ngắt khi mức pin thấp, quản lý nhiệt độ và giám sát chi tiết các thông số khác của pin thông qua giao tiếp I2C.
+
+                        \item \textbf{Cổng USB và USB-to-UART Bridge:} 
+                        Hệ thống được tích hợp cổng USB, cho phép cấp nguồn, nạp firmware và cấu hình thiết bị. Giao tiếp USB được chuyển đổi sang UART thông qua IC USB-to-UART Bridge (CP2102-GMR), tạo cổng COM ảo để truyền nhận dữ liệu giữa MCU và máy tính. Giao diện này hỗ trợ gỡ lỗi chương trình, giám sát hoạt động thông qua log dữ liệu trong quá trình phát triển và vận hành.
                         
-                        \item \textbf{Hiển thị trạng thái:} Màn hình OLED kích thước 0.96\,inch sử dụng driver SH1107, giao tiếp qua chuẩn I\textsuperscript{2}C, dùng để hiển thị các thông tin trạng thái và tình trạng hoạt động của hệ thống.
+                        \item \textbf{Quản lý thời gian thực (RTC):} 
+                        Hệ thống được trang bị IC RTC PCF8563T/5,518, sử dụng nguồn dự phòng từ pin CR2032 (3.0\,V) nhằm duy trì liên tục thông tin thời gian khi nguồn cấp chính bị gián đoạn. Việc tích hợp RTC giúp hệ thống có khả năng thực hiện các tác vụ theo lịch trình và đồng bộ thời gian với các thiết bị khác trong mạng IoT.
                         
-                        \item \textbf{Lưu trữ cục bộ:} MCU Slave được trang bị khe cắm thẻ nhớ microSD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log và lưu trữ dữ liệu cục bộ trong quá trình vận hành. Trong trường hợp kết nối mạng bị gián đoạn, thẻ nhớ microSD đồng thời đóng vai trò bộ đệm dữ liệu, hỗ trợ cơ chế lưu trữ tạm thời và gửi lại khi kết nối được khôi phục.
+                        \item \textbf{Mở rộng GPIO:} 
+                        Hệ thống sử dụng IC TCA6416ARTWR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
+
+                        \item \textbf{Cổng PCIe mở rộng WAN/LAN:} 
+                        Hệ thống được thiết kế với 3 khe cắm PCIe, 1 khe dành cho module WAN và 2 khe dành cho module LAN. Các khe cắm này hỗ trợ kết nối linh hoạt với các module giao tiếp không dây (LoRa, Zigbee, BLE, Thread, NB-IoT,...) hoặc có dây (RS-485, CAN,...), giúp mở rộng khả năng kết nối của gateway.
                         
-                        \item \textbf{Nút nhấn nguồn:} Nút nhấn được sử dụng để gửi lệnh điều khiển bật/tắt nguồn các khối chức năng thông qua MCU Master.
+                        \item \textbf{Mở rộng I2C:} 
+                        Hệ thống tích hợp IC đệm I2C TCA9803DGKR và đưa tín hiệu ra ngoài thông qua connector. IC này có nhiệm vụ giảm ảnh hưởng của điện dung tải phát sinh khi kết nối với các thiết bị ngoại vi qua dây dẫn dài, từ đó cải thiện tính toàn vẹn tín hiệu. Nhờ vậy, giao tiếp I2C của hệ thống vẫn đảm bảo hoạt động ổn định và tuân thủ đúng đặc tính truyền thông theo thiết kế.
                         
-                        \item \textbf{Cổng USB:} ESP32-S3 hỗ trợ giao tiếp USB phục vụ nạp firmware hoặc hoạt động ở chế độ USB Host. Hệ thống sử dụng IC chuyển mạch USB 2.0 FSUSB42UMX để lựa chọn giữa đường USB sử dụng cho việc nạp code/cấu hình thiết bị và đường USB kết nối với module WAN.
+                        \item \textbf{Hiển thị trạng thái:}  
+                        Hệ thống sử dụng màn hình LCD TFT kích thước 3.5 inch (độ phân giải 480x320), tích hợp cảm ứng điện trở và giao tiếp thông qua chuẩn UART. Màn hình có chức năng hiển thị các thông tin trạng thái hoạt động của hệ thống, đồng thời cho phép người dùng tương tác trực tiếp tại vị trí lắp đặt gateway, bao gồm cấu hình tham số và điều khiển thiết bị thông qua giao diện cảm ứng.
+                        
+                        \item \textbf{Nút nhấn:} 
+                        Hệ thống được tích hợp 3 nút nhấn phục vụ cho việc tương tác của người dùng, bao gồm: nút nhấn bật/tắt nguồn hệ thống, nút nhấn reset và nút nhấn boot. Trong đó, nút nhấn bật/tắt nguồn được sử dụng để gửi lệnh điều khiển đóng/ngắt nguồn cho các khối chức năng thông qua MCU Master. Nút nhấn reset và nút nhấn boot được sử dụng chủ yếu trong quá trình debug thiết bị, đồng thời có thể được cấu hình để đảm nhiệm các chức năng khác trong các phiên bản phát triển sau.
+                        
+                        \item \textbf{Lưu trữ cục bộ:} 
+                        MCU Slave được trang bị khe cắm thẻ nhớ microSD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log và lưu trữ dữ liệu cục bộ trong quá trình vận hành. Trong trường hợp kết nối mạng bị gián đoạn, thẻ nhớ microSD đồng thời đóng vai trò bộ đệm dữ liệu, hỗ trợ cơ chế lưu trữ tạm thời và gửi lại khi kết nối được khôi phục.
+                        
+                        \item \textbf{Các chức năng khác:}
+                        Ngoài các khối chức năng chính, hệ thống còn được trang bị đèn LED RGB nhằm hiển thị trạng thái hoạt động của hệ thống một cách trực quan. Bên cạnh đó, mạch được tích hợp các chân cấp nguồn điều khiển, cho phép kết nối quạt DC không chổi than cho mục đích tản nhiệt cho toàn hệ thống.
                     \end{itemize}
 
                 \paragraph{Sơ đồ khối nguồn:} \par
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=\textwidth]{figures/BlockDiagram_Prototype_ModularIoTGateway-Power Diagram.drawio.png}
+                        \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
                         \caption{Sơ đồ hệ thống nguồn}
                         \label{fig:blockdiagram_power}
                     \end{figure}
-                    Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngay tại ngõ vào, nguồn được bảo vệ bằng eFuse nhằm hạn chế các sự cố quá dòng, ngắn mạch và đảm bảo an toàn cho toàn bộ hệ thống.
-
-                    Từ nguồn DC 12\,V, các khối chuyển đổi DC/DC và LDO được sử dụng để tạo ra các rail nguồn chính, bao gồm:
+                    Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngoài ra, hệ thống hỗ trợ nguồn 5V từ cổng USB Type-C. Hai nguồn này được lựa chọn thông qua IC Power MUX TPS2121RUXR, tích hợp các cơ chế bảo vệ toàn diện như sau:
 
                     \begin{itemize}
-                        \item \textbf{+5V0\_SYS:} Được chuyển đổi trực tiếp từ nguồn DC 12\,V, dùng để cấp trực tiếp cho U1 Master và nhánh nguồn qua eFuse của nguồn +5V0.
-
-                        \item \textbf{+3V3M:} Là nguồn chuyển đổi từ rail +5V0\_SYS bằng LDO nội bộ của module Master, dùng để cấp nguồn cho IO Expander (Master), RTC và USB Switch.
-                        
-                        \item \textbf{+5V0:} Là rail nguồn rẽ nhánh từ +5V0\_SYS thông qua eFuse, dùng để cấp cho các khối chức năng và module sử dụng điện áp 5\,V. Việc bật/tắt rail nguồn này được điều khiển bởi MCU Master.
-                        
-                        \item \textbf{+3V3:} Được tạo trực tiếp từ nguồn DC 12\,V, cung cấp cho phần lớn các khối chức năng của hệ thống, bao gồm module LAN/WAN, mạch logic điều khiển và các ngoại vi. Rail nguồn này cũng được quản lý bởi MCU Master.
-                        
-                        \item \textbf{+1V8:} Được chuyển đổi từ rail +3V3 và quản lý bởi MCU Master, dùng để cấp nguồn cho các module mở rộng yêu cầu điện áp 1.8\,V.
+                        \item \textbf{Giới hạn dòng (ILM):} Chủ động kiểm soát dòng tải không vượt quá ngưỡng cài đặt (điều chỉnh thông qua điện trở ngoài);
+                        \item \textbf{Bảo vệ ngắn mạch:} Ngắt tải trong thời gian rất ngắn (khoảng 1\,$\mu$s) khi phát hiện dòng tăng đột biến vượt 2.4 lần giới hạn;
+                        \item \textbf{Bảo vệ quá nhiệt (TSD):} Tự động ngắt khi nhiệt độ vượt 160$^\circ$C hoặc tăng nhanh bất thường, và khôi phục khi điều kiện nhiệt ổn định;
+                        \item \textbf{Bảo vệ quá áp (OVx):} Ngắt kênh đầu vào khi điện áp vượt ngưỡng an toàn do người dùng thiết lập;
+                        \item \textbf{Khóa điện áp thấp (UVLO):} Ngăn cấp nguồn khi điện áp giảm xuống dưới mức tối thiểu (khoảng 2.55V);
+                        \item \textbf{Chặn dòng ngược (RCB):} Ngăn dòng điện hồi ngược từ đầu ra về đầu vào với thời gian đáp ứng khoảng 10\,$\mu$s.
                     \end{itemize}
+                    
+                    Nguồn sau IC Power MUX (+12V\_5V\_VBUS) được đưa đồng thời với pin LiPo (+3V7\_VBAT) vào IC sạc BQ25892RTWR. IC này tự động điều phối hai nguồn, trong đó ưu tiên nguồn ngoài (+12V\_5V\_VBUS), để tạo ra điện áp hệ thống (+4V2\_VSYS).
 
-                    Đối với các module gắn ngoài thông qua Adapter module, các đường nguồn 5\,V, 3.3\,V và 1.8\,V đều được điều khiển bằng tín hiệu enable từ MCU Master. Cách tổ chức này cho phép hệ thống:
+                    IC BQ25892RTWR đảm nhiệm chức năng quản lý quá trình sạc và xả, đồng thời cấp nguồn cho hệ thống hoạt động. Các tham số như điện áp và dòng sạc có thể được cấu hình linh hoạt thông qua giao tiếp I2C, đảm bảo đáp ứng các yêu cầu vận hành an toàn. Ngoài ra, IC còn tích hợp cơ chế bảo vệ, tự động ngắt kết nối pin trong các trường hợp quá tải hoặc xả sâu nhằm tránh hư hỏng.
 
+                    Các tính năng bảo vệ và điều khiển bổ sung bao gồm:
                     \begin{itemize}
-                        \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
-                        \item Nhanh chóng cô lập và ngắt nguồn khi phát hiện sự cố từ các module bên ngoài.
-                        \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động không liên tục hoặc tiết kiệm năng lượng.
+                        \item Giám sát nhiệt độ và tự động ngắt khi xảy ra quá nhiệt (Thermal shutdown);
+                        \item Tự động giảm dòng sạc (Thermal regulation) khi nhiệt độ hệ thống vượt ngưỡng;
+                        \item Theo dõi nhiệt độ pin thông qua điện trở nhiệt (NTC) trong cả chế độ sạc và chế độ Boost, tuân thủ tiêu chuẩn JEITA;
+                        \item Tích hợp bộ đếm thời gian an toàn trong quá trình sạc (Charging safety timer) nhằm ngăn chặn tình trạng sạc kéo dài bất thường;
+                        \item Điều khiển BATFET hỗ trợ chế độ lưu kho (Ship Mode), đánh thức thiết bị và thiết lập lại toàn hệ thống (Full system reset);
+                        \item Bảo vệ quá áp và quá dòng;
+                        \item Hỗ trợ chế độ sạc tự động, có hoặc không có sự điều khiển từ bộ xử lý trung tâm (SoC);
+                        \item Bảo vệ quá áp tại đầu vào và trên toàn hệ thống.
                     \end{itemize}
+                    
+                    Điện áp tại VSYS có thể được cấu hình thông qua giao tiếp I2C, phụ thuộc vào đặc tính của pin LiPo sử dụng. Trong quá trình vận hành, mức điện áp này được duy trì trong khoảng 3.5V đến 4.2V (tùy theo trạng thái sạc/xả pin). Nguồn VSYS sau đó được phân phối đến các bộ chuyển đổi DC-DC để tạo ra các rail điện áp phục vụ hệ thống:
+                    
+                    \begin{itemize}
+                        \item \textbf{+3V3:} Được chuyển đổi trực tiếp từ rail +4V2\_VSYS. Đây là nguồn mặc định luôn được duy trì khi có nguồn đầu vào, cấp cho các khối quan trọng như MCU master, IO expander, RTC, power monitor và các ngoại vi cần thiết trong chế độ ngủ sâu (deep sleep);
+                        
+                        \item \textbf{+3V3\_CTRL:} Là nhánh nguồn từ +3V3 thông qua IC power switch TPS22965DSGR, cho phép điều khiển đóng/ngắt bởi IO expander của MCU master. Rail này cấp cho các khối không cần hoạt động trong chế độ tiết kiệm năng lượng;
+                        
+                        \item \textbf{+5V\_CTRL:} Được tạo từ +4V2\_VSYS thông qua bộ chuyển đổi DC-DC và có khả năng điều khiển thông qua IO expander, phục vụ các ngoại vi yêu cầu mức điện áp 5V.
+                    \end{itemize}
+                    
+                    Đối với các module mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng module, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết.
+                    
+                    Cách thiết kế này mang lại các ưu điểm sau:
+                    \begin{itemize}
+                        \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng;
+                        \item Hỗ trợ cô lập nhanh và ngắt nguồn khi phát hiện sự cố từ các thiết bị ngoại vi;
+                        \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động tiết kiệm năng lượng.
+                        \item Đơn giản hóa thiết kế phần cứng của baseboard bằng cách chuyển các thành phần đặc thù lên adapter, qua đó tối ưu chi phí.
+                    \end{itemize}
+
+                \paragraph{Sơ đồ khối mạch adapter:} \par
+
+                    Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các module mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn PCIe 36 chân, trong đó các đường tín hiệu và nguồn được quy hoạch theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
+
+                    Trên mỗi adapter tích hợp một IC IO Expander, được điều khiển bởi MCU master hoặc slave trên baseboard (trong đó master quản lý các module WAN, slave quản lý các module LAN). IC này đảm nhiệm chức năng đóng/ngắt nguồn cấp cho module mạng, đồng thời đọc mã nhận dạng thiết bị (device ID) được mã hóa dưới dạng 4 bit thông qua 4 chân GPIO.
+                    
+                    Dựa trên mã nhận dạng này, MCU trên baseboard có thể tự động xác định loại module được kết nối trong quá trình cấu hình gateway. Từ đó, hệ thống máy tính cấu hình sẽ truyền các tập lệnh giao tiếp phù hợp với từng loại module đến MCU quản lý, giúp đơn giản hóa quá trình tích hợp và tăng tính linh hoạt của hệ thống.
+
+                    \begin{figure}[h]
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
+                        \caption{Sơ đồ khối mạch adapter}
+                        \label{fig:blockdiagram_adapter}
+                    \end{figure}
 
         \subsubsection{Thiết kế Mạch nguyên lý (Schematic Design)}
             Phần này trình bày các nội dung kỹ thuật của dự án thông qua thiết kế sơ đồ nguyên lý. Thiết kế sơ đồ nguyên lý mô tả chi tiết các kết nối điện giữa các thành phần, nhằm đảm bảo hệ thống hoạt động đúng chức năng, đồng thời đáp ứng các yêu cầu về hiệu năng và các ràng buộc trong thiết kế.
 
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=\textwidth]{figures/sche_iotgateway.png}
+                \includegraphics[width=\textwidth]{figures/DATN/sche_iotgateway.png}
                 \caption{Sơ đồ nguyên lý hệ thống}
                 \label{fig:sche_iotgateway}
             \end{figure}
@@ -280,13 +345,51 @@
 
                 Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
 
-                \begin{figure}[H]
+                \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_esp32slave.png}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
+                    \caption{Sơ đồ nguyên lý ESP32 Master}
+                    \label{fig:sche_esp32master}
+                \end{figure}
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
                     \caption{Sơ đồ nguyên lý ESP32 Slave}
                     \label{fig:sche_esp32slave}
                 \end{figure}
-                
+
+                Trong hệ thống, hai SoC ESP32-S3-WROOM-1U-N16R8 đóng vai trò là trung tâm điều khiển, được phân tách chức năng rõ ràng theo mô hình master--slave. Để đảm bảo quá trình trao đổi và đồng bộ dữ liệu diễn ra ổn định và toàn vẹn, hai SoC được kết nối thông qua giao diện Quad SPI tốc độ cao, với tần số xung clock lên tới 80\,MHz ở phía master và 60\,MHz ở phía slave.
+
+                Bên cạnh đó, SoC master còn quản lý các tín hiệu điều khiển quan trọng của slave như reset, boot và UART0, phục vụ cho quá trình nạp firmware và cập nhật từ xa (FOTA). Trong cấu trúc này, master đóng vai trò điều phối và quản lý tập trung firmware của slave, đồng thời thực hiện cơ chế nạp gián tiếp thông qua các giao diện điều khiển đã được tích hợp. Ngoài kênh truyền dữ liệu chính, một đường tín hiệu ngắt từ slave tới master được sử dụng nhằm thông báo các sự kiện hoặc cờ ngắt phát sinh trong quá trình vận hành, giúp nâng cao khả năng phản hồi và phối hợp giữa hai SoC.
+
+                Tại chân reset của hai SoC ESP32-S3, một mạch RC delay được sử dụng nhằm đáp ứng yêu cầu về timing nguồn theo khuyến nghị trong datasheet. Cụ thể, nguồn 3.3V cần được ổn định tối thiểu 50\,$\mu$s trước khi tín hiệu tại chân reset (CHIP\_PU) đạt mức logic cao để kích hoạt SoC.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/datasheet_esp32timmingreq.png}
+                    \caption{Yêu cầu timing nguồn và reset của ESP32-S3}
+                    \label{fig:datasheet_esp32timmingreq}
+                \end{figure}
+
+                Dựa trên yêu cầu này, mạch RC được thiết kế với $R = 10\,k\Omega$ và $C = 1\,\mu F$. Thời gian để điện áp trên tụ đạt đến ngưỡng kích hoạt (xấp xỉ $0.75V_{CC} \approx 2.5V$) được xác định theo biểu thức:
+
+                \[
+                t = -\tau \ln \left(1 - \frac{V_C}{V_S}\right)
+                \]
+
+                Trong đó:
+                \begin{itemize}
+                    \item $t$: thời gian trễ (s),
+                    \item $\tau = RC$: hằng số thời gian của mạch RC (s),
+                    \item $V_C$: điện áp trên tụ tại thời điểm $t$ (V),
+                    \item $V_S$: điện áp nguồn cấp (V).
+                \end{itemize}
+
+                Thay các giá trị tương ứng vào công thức, thời gian trễ thu được là $t \approx 13.86\,ms$, lớn hơn đáng kể so với yêu cầu tối thiểu 50\,$\mu$s, do đó đảm bảo điều kiện khởi động theo datasheet.
+
+                Tương tự, trong quá trình đưa tín hiệu reset về mức thấp, điện áp tại chân reset (CHIP\_PU) cần một khoảng thời gian xấp xỉ 13.86\,ms để giảm từ 3.3V xuống mức logic thấp (khoảng $0.25V_{CC} \approx 0.8V$). Điều này giúp đảm bảo tín hiệu reset có đủ thời gian chuyển trạng thái một cách ổn định và đáng tin cậy.
+
                 Giá trị điện trở kéo lên của bus I\textsuperscript{2}C được xác định dựa trên đặc tính điện của đường truyền và các yêu cầu về thời gian đáp ứng của giao thức. Theo phương pháp tính toán được tham khảo từ tài liệu \href{https://www.ti.com/lit/an/slva689/slva689.pdf?ts=1765647134197&ref_url=https%253A%252F%252Fwww.google.com%252F}{I\textsuperscript{2}C Bus Pull-Up Resistor Calculation} của Texas Instruments, miền giá trị hợp lệ của điện trở kéo lên \(R_{PU}\) được xác định bởi hai công thức sau:
                 
                 \begin{equation}
@@ -311,14 +414,138 @@
                 \[
                 R_{PU,\min} \leq R_{PU} \leq R_{PU,\max}
                 \]
-                
-                Cổng USB của module ESP32-S3 Master được kết nối ra ngoài thông qua cáp kết nối tới một IC USB Switch. Giải pháp này cho phép sử dụng linh hoạt đường tín hiệu USB giữa hai chức năng: nạp firmware, debug và cấu hình thiết bị; đồng thời kết nối và giao tiếp với module WAN hỗ trợ giao thức USB 2.0. 
-                
-                Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD, có các tham số đặc tính phù hợp để không làm ảnh hưởng nghiêm trọng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
+
+                Với các tham số thiết kế: $V_{CC} = 3.3V$, $V_{OL(max)} = 0.2V_{CC}$, $I_{OL} = 3\,mA$, thời gian cạnh lên $t_r$ (Fast-mode) = 300\,ns, cùng điện dung ký sinh ước lượng $C_{b\_master} \approx 75\,pF$ và $C_{b\_slave} \approx 30\,pF$, có thể xác định được khoảng giá trị điện trở kéo lên phù hợp cho bus I\textsuperscript{2}C.
+
+                Kết quả tính toán:
+                \[
+                880\,\Omega \leq R_{PU\_master} \leq 4720.88\,\Omega
+                \]
+                \[
+                880\,\Omega \leq R_{PU\_slave} \leq 11802.2\,\Omega
+                \]
+
+                Dựa trên các khoảng giá trị này, điện trở kéo lên được lựa chọn là $3.3\,k\Omega$ cho bus phía master và $10\,k\Omega$ cho phía slave.
+
+            \paragraph{Thiết kế Mạch nguồn}
+
+                IC Power MUX TPS2121RUXR tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Tại mỗi đầu vào, hệ thống tích hợp một diode TVS với điện áp Reverse Standoff tương ứng với mức điện áp danh định của từng nguồn. Linh kiện này có chức năng hấp thụ và triệt tiêu năng lượng của các xung điện áp ngắn hạn (ESD), qua đó bảo vệ khối nguồn và các thành phần phía sau khỏi ảnh hưởng của hiện tượng phóng tĩnh điện hoặc nhiễu xung điện áp cao từ môi trường.
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_powermux.png}
+                    \caption{Sơ đồ nguyên lý mạch Power MUX}
+                    \label{fig:sche_powermux}
+                \end{figure}
+
+                Để tối ưu hóa thiết kế, Texas Instruments cung cấp công cụ tính toán và hướng dẫn cấu hình cho IC TPS2121RUXR (\href{https://www.ti.com/tool/download/PMUX-SWITCHOVER-CALC}{PMUX Switch-over Calculator}). Dựa trên công cụ này, các thông số được lựa chọn trong hệ thống như sau:
+
+                \begin{itemize}
+                    \item Điện áp bảo vệ quá áp (overvoltage) đối với nguồn +5V (USB): 5.6V;
+                    \item Điện áp bảo vệ quá áp đối với nguồn +12V (adapter): 13.93V;
+                    \item Giới hạn dòng điện đầu vào tối đa: 3.49A;
+                    \item Thời gian khởi động mềm (soft-start) khi kết nối nguồn +5V: 6.41ms;
+                    \item Thời gian khởi động mềm khi kết nối nguồn +12V: 15ms.
+                \end{itemize}
+
+                Các tham số trên được lựa chọn nhằm đảm bảo quá trình chuyển mạch nguồn diễn ra ổn định, hạn chế dòng xung khởi động, đồng thời tăng cường khả năng bảo vệ và độ tin cậy cho toàn bộ hệ thống.
+
+                Nguồn sau Power MUX cùng với nguồn dự phòng từ pin LiPo được đưa vào và quản lý bởi IC sạc BQ25892RTWR. Dòng đầu vào của IC được giới hạn ở mức 2.96A thông qua điện trở cấu hình tại chân ILIM. Các giá trị tụ điện ở đầu vào và đầu ra được lựa chọn theo khuyến nghị trong \href{https://www.ti.com/lit/ds/symlink/bq25892.pdf}{BQ25892RTWR Datasheet} nhằm đảm bảo ổn định điện áp và giảm nhiễu trong quá trình vận hành.
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_batterycharger.png}
+                    \caption{Sơ đồ nguyên lý mạch sạc, quản lý pin LiPo và giám sát công suất}
+                    \label{fig:sche_batterycharger}
+                \end{figure}
+
+                Dòng sạc tối đa của hệ thống được thiết kế với $I_{CHG} = 5A$. Theo hướng dẫn từ datasheet, dòng bão hòa của cuộn cảm phải thỏa mãn điều kiện:
+
+                \[
+                I_{SAT} \geq I_{CHG} + \frac{1}{2} I_{RIPPLE}
+                \]
+
+                Trong đó, dòng ripple của cuộn cảm được xác định bởi:
+
+                \[
+                I_{RIPPLE} = \frac{V_{BUS} \times D \times (1 - D)}{f_s \times L}
+                \]
+
+                Với các tham số thiết kế: $V_{BUS} = 12V$, $D = 0.5$ (trường hợp xấu nhất), $f_s = 1.5\,MHz$ và $L = 1\,\mu H$, suy ra:
+
+                \[
+                I_{RIPPLE} \approx 2A
+                \]
+
+                Từ đó, yêu cầu dòng bão hòa tối thiểu của cuộn cảm là:
+
+                \[
+                I_{SAT\_req} \geq 5A + \frac{1}{2} \times 2A = 6A
+                \]
+
+                Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, nhằm đảm bảo biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng $I_{SAT\_req}/0.7$, qua đó bù trừ sai số linh kiện và các điều kiện vận hành thực tế. Cách lựa chọn này góp phần đảm bảo khối nguồn của IC sạc hoạt động ổn định và an toàn.
+
+                Pin LiPo sử dụng trong hệ thống đã được tích hợp sẵn mạch bảo vệ và điện trở nhiệt NTC 10k (tiếp xúc trực tiếp trên cell pin), góp phần nâng cao độ an toàn và độ tin cậy trong quá trình vận hành.
+
+                Trong quá trình vận hành, điện áp đầu ra VSYS của IC sạc có thể thay đổi tùy theo trạng thái cấp nguồn của hệ thống, cụ thể như sau:
+                \begin{itemize}
+                    \item \textbf{Chỉ có nguồn VBUS (5V từ USB hoặc 12V từ adapter):} 
+                    Với kiến trúc Narrow VDC (NVDC), trong trường hợp không có pin, IC sẽ điều chỉnh để duy trì điện áp hệ thống ở mức tối thiểu cộng thêm một biên độ bù. Với giá trị $SYS\_MIN$ mặc định là 3.5\,V, điện áp VSYS điển hình được duy trì ở khoảng 3.65\,V.
+
+                    \item \textbf{Chỉ cấp nguồn từ VBAT (mất hoặc không kết nối VBUS):} 
+                    Khi đó, điện áp VSYS xấp xỉ bằng điện áp pin. Với pin LiPo sử dụng trong thiết kế, điện áp thay đổi từ 3.0\,V (hết pin) đến 4.2\,V (đầy pin). Tuy nhiên, để đảm bảo đủ mức điện áp tối thiểu cho các khối nguồn phía sau và tránh hiện tượng xả sâu, ngưỡng điện áp tối thiểu được thiết lập ở mức 3.5\,V. Do đó, VSYS dao động trong khoảng từ 3.5\,V đến 4.2\,V.
+
+                    \item \textbf{Cấp nguồn đồng thời từ VBUS và VBAT (trạng thái sạc):}
+                    Trong trường hợp này, điện áp VSYS phụ thuộc vào mức điện áp pin:
+                    \begin{itemize}
+                        \item Khi điện áp pin thấp (từ 3.0\,V đến dưới 3.5\,V): 
+                        BATFET hoạt động ở chế độ tuyến tính (LDO mode) để duy trì điện áp hệ thống lớn hơn điện áp pin. VSYS được giữ ổn định tại mức $VSYS(MIN) + 150\,mV$, tương đương khoảng 3.65\,V.
+
+                        \item Khi điện áp pin lớn hơn 3.5\,V: 
+                        BATFET được bật hoàn toàn, điện áp VSYS sẽ bám theo điện áp pin với độ lệch khoảng 50\,mV, tức là $VSYS \approx VBAT + 50\,mV$. Do đó, VSYS tăng dần trong khoảng từ 3.55\,V đến 4.25\,V.
+
+                        \item Trường hợp quá tải (chế độ Supplement): 
+                        Khi dòng tải vượt khả năng cung cấp của VBUS, điện áp VSYS có xu hướng giảm. Khi VSYS thấp hơn điện áp pin, IC sẽ chuyển sang sử dụng năng lượng từ pin để bổ sung cho hệ thống. Khi đó, VSYS xấp xỉ bằng điện áp pin, nằm trong khoảng từ 3.5\,V đến 4.2\,V.
+                    \end{itemize}
+                \end{itemize}
+
+                Hệ thống còn tích hợp IC giám sát công suất INA230AIRGTR nhằm theo dõi mức tiêu thụ năng lượng. IC này có dòng tiêu thụ thấp (tối đa 420\,$\mu$A ở chế độ hoạt động và khoảng 2\,$\mu$A ở chế độ tiết kiệm), đồng thời đạt độ chính xác cao với sai số khuếch đại tối đa 0.3\% và độ lệch offset tối đa 25\,$\mu$V. Thiết bị được kết nối tại đầu ra VSYS của IC sạc, cho phép đo lường và giám sát công suất tiêu thụ của toàn hệ thống theo thời gian thực. Bên cạnh đó, IC battery fuel gauge BQ27441DRZR-G1B được sử dụng để theo dõi trạng thái của pin LiPo.
+
+                Các khối nguồn PWR\_3V3 và PWR\_5V\_CTRL được thiết kế theo kiến trúc nguồn chuyển mạch (switching), sử dụng công cụ mô phỏng WEBENCH của Texas Instruments. Nền tảng này hỗ trợ quá trình lựa chọn linh kiện và tối ưu tham số thiết kế nhằm đáp ứng các yêu cầu kỹ thuật đặt ra.
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_powerdcdc.png}
+                    \caption{Sơ đồ nguyên lý mạch nguồn DC-DC}
+                    \label{fig:sche_powerdcdc}
+                \end{figure}
+
+                Các tụ điện đầu vào được lựa chọn theo khuyến nghị của nhà sản xuất, với điện áp định mức tối thiểu lớn hơn hai lần điện áp làm việc nhằm đảm bảo độ tin cậy. Cuộn cảm được chọn với khả năng chịu dòng DC cao hơn khoảng 30--50\% so với giá trị tính toán, giúp duy trì hoạt động ổn định trong điều kiện tải biến thiên.
+
+                Các cấu hình thiết kế chi tiết trên nền tảng WEBENCH TI như sau:
+                \begin{itemize}
+                    \item \textbf{PWR\_3V3:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=A65948A5E7EE6E50}{TPS566231RQFR -- 3.5V--4.2V to 3.30V @ 5A};
+                    \item \textbf{PWR\_5V\_CTRL:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=07E521FCC698EE21}{TPS613222ADBVR -- 3.5V--4.2V to 5.00V @ 0.5A}.
+                \end{itemize}
+
+                Các khối nguồn điều khiển PWR\_3V3\_CTRL và PWR\_5V\_CTRL được thiết kế với đầu vào đi qua IC power switch TPS22965DSGR. Mặc định, các kênh nguồn này ở trạng thái bật (ON) và có thể được điều khiển đóng/ngắt thông qua IO Expander do MCU master quản lý.
+
+                Các rail nguồn cấp cho các thành phần trong hệ thống được cấu hình với thời gian khởi động mềm (soft-start) tối thiểu lớn hơn 1\,ms, nhằm hạn chế dòng khởi động đột ngột (inrush current) và đảm bảo tính ổn định trong quá trình cấp nguồn.  
+
+            \paragraph{Thiết kế Mạch USB và USB to UART Bridge}
+
+                Cổng USB có thể sử dụng để cung cấp nguồn cho hệ thống, đồng thời hỗ trợ cấu hình thiết bị và nạp firmware trong quá trình phát triển và vận hành. Hai đường dữ liệu USB Data (D$^+$ và D$^-$) được trang bị TVS diode bidirectional để chống lại các xung ESD, có các tham số đặc tính phù hợp để không làm ảnh hưởng nghiêm trọng đến tính toàn vẹn của tín hiệu tốc độ cao. TVS diode H5VUD5BB có các thông số đặc trưng:
                 \begin{itemize}
                     \item Peak Reverse Working Voltage (VRWM): 5\,V
                     \item Junction Capacitance (CJ): rất thấp, khoảng 0.3\,pF tại 1\,MHz
                 \end{itemize}
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_usbconn.png}
+                    \caption{Sơ đồ nguyên lý mạch USB}
+                    \label{fig:sche_usbconn}
+                \end{figure}
 
                 Giá trị điện dung ký sinh rất thấp (0.3\,pF) giúp đảm bảo tín hiệu dữ liệu USB duy trì tốc độ truyền chuẩn Full-Speed 12\,Mbit/s, giảm thiểu suy hao biên độ hay méo dạng sóng.
 
@@ -328,72 +555,55 @@
                     \item Cải thiện Signal Integrity
                     \item Giảm phát xạ EMI (Electromagnetic Interference)
                 \end{itemize}
-            
+                
+                Thiết bị sử dụng IC USB-to-UART Bridge CP2102-GMR để thực hiện chuyển đổi giao tiếp từ USB sang UART, kết nối trực tiếp với UART0 của ESP32-S3 Master. Khối này phục vụ cho việc nạp firmware, cấu hình thiết bị trong quá trình phát triển và vận hành.
+
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_esp32master.png}
-                    \caption{Sơ đồ nguyên lý ESP32 Master}
-                    \label{fig:sche_esp32master}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_usb2uartbridge.png}
+                    \caption{Sơ đồ nguyên lý mạch USB to UART Bridge}
+                    \label{fig:sche_usb2uartbridge}
                 \end{figure}
 
-            \paragraph{Thiết kế Mạch nguồn}
-                Tại connector nguồn đầu vào DC 12\,V, mạch được trang bị một TVS Diode SMAJ12A. Linh kiện này có nhiệm vụ hấp thu và triệt tiêu năng lượng xung điện trong trường hợp xuất hiện các xung ESD ngắn hạn, giúp bảo vệ mạch nguồn và các linh kiện phía sau khỏi hư hỏng do phóng tĩnh điện hoặc nhiễu xung cao áp từ môi trường.
+                Các tín hiệu điều khiển DTR và RTS từ IC được khai thác và tích hợp vào mạch auto-programming thông qua hai transistor BJT NPN. Mạch này cho phép tự động điều khiển các tín hiệu Reset và Boot của ESP32-S3 Master, hỗ trợ quá trình nạp firmware mà không cần thao tác thủ công thông qua các nút nhấn Reset và Boot.
 
-                Lớp bảo vệ kế tiếp là electronic Fuse TPS259261DRCR, giúp bảo vệ nguồn đầu vào khỏi các vấn đề quá áp và quá dòng. Theo như tính toán tiêu thụ tải dòng của hệ thống, eFuse tại nguồn đầu vào được giới hạn dòng tối đa ở giá trị 3.05\,A. Các giá trị linh kiện khác được thiết kế dựa trên khuyến nghị trong datasheet của linh kiện.
-                \begin{figure}[H]
+                Bảng chân trị của mạch điều khiển như sau:
+                \begin{longtable}{|c|c|c|c|}
+                    \caption{Bảng chân trị điều khiển tín hiệu Reset/Boot thông qua DTR/RTS} \\
+                    \hline
+                    DTR & RTS & RESET & BOOT \\
+                    \hline
+                    \endfirsthead
+                    
+                    \hline
+                    DTR & RTS & RESET & BOOT \\
+                    \hline
+                    \endhead
+                    
+                    \hline
+                    \endfoot
+                    
+                    \hline
+                    \endlastfoot
+                    
+                    1 & 1 & 1 & 1 \\
+                    0 & 0 & 1 & 1 \\
+                    1 & 0 & 0 & 1 \\
+                    0 & 1 & 1 & 0 \\
+                    \hline
+                \end{longtable}
+
+            \paragraph{Thiết kế Mạch IO Expanders}
+               Mạch IO Expander sử dụng IC TCA6416ARTWR nhằm mở rộng số lượng chân GPIO cho MCU master. Do số lượng GPIO tích hợp trên MCU không đáp ứng đủ nhu cầu kết nối, IC này được lựa chọn như một giải pháp mở rộng, giao tiếp thông qua chuẩn I\textsuperscript{2}C. IC TCA6416ARTWR cung cấp tổng cộng 16 chân GPIO, được chia thành hai cổng (Port 0 và Port 1), mỗi cổng gồm 8 chân. Các chân này có thể được cấu hình linh hoạt làm ngõ vào hoặc ngõ ra tùy theo yêu cầu của hệ thống.
+
+                \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_power1.png}
-                    \caption{Sơ đồ nguyên lý mạch nguồn 1}
-                    \label{fig:sche_power1}
-                \end{figure}
-
-                Các mạch nguồn PWR\_5V0\_SYS và PWR\_3V3 là các nguồn switching được thiết kế và mô phỏng dựa trên nền tảng mô phỏng WEBENCH của TI. Nền tảng này hỗ trợ người thiết kế lựa chọn và tính toán các linh kiện cần thiết để xây dựng nguồn theo đúng đặc tả mong muốn. Các tụ điện đầu vào được lựa chọn theo khuyến nghị, với mức điện áp chịu đựng được chọn lớn hơn gấp đôi mức điện áp đặt trên tụ. Dòng DC của cuộn cảm cũng được lựa chọn lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm đảm bảo nguồn hoạt động ổn định trong điều kiện tải thay đổi.
-
-                Các đường dẫn thiết kế cho mạch nguồn trên nền tảng WEBENCH TI:
-                \begin{itemize}
-                    \item \textbf{PWR\_5V0\_SYS:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=F0EE2F095BFA81BB}{TPS564242DRLR 12V--12V to 5.00V @ 4A}
-                    \item \textbf{PWR\_3V3:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=582BA6097E8C1A92}{TPS566231RQFR 12V--12V to 3.30V @ 5A}
-                \end{itemize}
-
-                \begin{figure}[H]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/sche_power2.png}
-                    \caption{Sơ đồ nguyên lý mạch nguồn 2}
-                    \label{fig:sche_power2}
-                \end{figure}
-                Nguồn PWR\_5V0\_SYS sẽ mặc định được cấp cho MCU master để điều khiển toàn bộ hệ thống ở giai đoạn khởi động ban đầu. Đồng thời, các khối IO Expanders của Master, RTC và USB switch cũng sẽ được mặc định cấp nguồn ngay từ đầu.
-
-                Các khối nguồn PWR\_5V0 (rẽ nhánh từ PWR\_5V0\_SYS và có thể điều khiển thông qua eFuse), PWR\_3V3 và PWR\_1V8 được thiết kế mặc định ở trạng thái power off bằng điện trở pull-down tại các chân Enable. Sau khi hoàn tất cấu hình hệ thống, Master MCU sẽ thực hiện bật nguồn cho các khối tương ứng theo nhu cầu vận hành; các khối không sử dụng sẽ được giữ nguyên trạng thái power off nhằm tối ưu năng lượng.
-
-            \paragraph{Thiết kế Mạch USB}
-                Master MCU ESP32-S3 hỗ trợ một đường giao tiếp vật lý USB, cho phép thực hiện chức năng nạp firmware và debug thông qua khối phần cứng JTAG, đồng thời cũng có khả năng hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu sử dụng linh hoạt hai chức năng này trên cùng một cổng vật lý, thiết kế sử dụng USB Switch FSUSB42UMX-TP.
-
-                IC USB Switch cho phép chuyển mạch đường tín hiệu USB giữa hai khối chức năng khác nhau. Trong thiết kế này, IC được cấu hình mặc định nối đường USB ra cổng nạp firmware/debug bằng cách sử dụng điện trở pull-up tại chân SEL của IC. Cấu hình này đảm bảo quá trình nạp firmware và debug có thể được thực hiện ngay khi hệ thống chưa có sẵn chương trình lúc ban đầu, đồng thời vẫn giữ khả năng mở rộng để sử dụng chức năng USB Host khi cần thiết thông qua điều khiển từ MCU.
-
-                Cổng USB nạp firmware/debug cũng được trang bị thêm các TVS diode nhằm bảo vệ đường tín hiệu khỏi các xung phóng tĩnh điện (ESD) từ môi trường bên ngoài, giúp nâng cao độ tin cậy và độ bền của hệ thống. Ngoài ra, thiết kế còn dự phòng một cặp điện trở nối tiếp trên các đường dữ liệu USB để sử dụng trong trường hợp cần bổ sung điện trở giảm chấn (damping resistor) trong tương lai, nhằm tối ưu tính toàn vẹn tín hiệu khi có yêu cầu thay đổi về bố trí mạch hoặc điều kiện vận hành.
-                \begin{figure}[H]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/sche_usb.png}
-                    \caption{Sơ đồ nguyên lý mạch USB}
-                    \label{fig:sche_usb}
-                \end{figure}
-                \begin{figure}[H]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/sche_usbswitch.png}
-                    \caption{Sơ đồ nguyên lý mạch USB Switch}
-                    \label{fig:sche_usbswitch}
-                \end{figure}
-            \paragraph{Thiết kế Mạch IO Expander}
-                Mạch IO Expander sử dụng IC TCA6424ARGJR để mở rộng số lượng chân GPIO cho Master và Slave MCU. Do số lượng chân GPIO tích hợp sẵn trên MCU không đáp ứng đủ nhu cầu kết nối, IC này được sử dụng như một giải pháp thay thế hiệu quả thông qua giao thức I\textsuperscript{2}C. IC TCA6424ARGJR cung cấp tổng cộng 24 chân GPIO, được chia thành ba cổng (Port 0, Port 1, Port 2), mỗi cổng gồm 8 chân. Các chân này có thể được cấu hình linh hoạt làm ngõ vào hoặc ngõ ra tùy theo yêu cầu ứng dụng.
-
-                \begin{figure}[H]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/sche_ioexpanders.png}
-                    \caption{Sơ đồ nguyên lý mạch IO Expanders (Master)} 
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_ioexpanders.png}
+                    \caption{Sơ đồ nguyên lý mạch IO Expanders} 
                     \label{fig:sche_ioexpanders}
                 \end{figure}
                 
-                Theo khuyến nghị trong datasheet của IC IO Expander, trình tự cấp nguồn cần đảm bảo điện áp VCCP được tăng trước khi tăng điện áp VCCI, với thời gian ramp-up nằm trong khoảng 0.01--100\,ms. Mục tiêu của yêu cầu này là đảm bảo nguồn VCCP được cấp trước, sau đó tối thiểu 0.01\,ms mới cấp nguồn cho VCCI nhằm tránh hiện tượng đường dữ liệu SDA bị kẹt ở mức logic thấp trong quá trình khởi động. Mạch delay khởi động nguồn được thiết kế tại chân VCCI của IO Expander, bao gồm ba thành phần chính:
+                Theo khuyến nghị trong datasheet của IC IO Expander, trình tự cấp nguồn cần đảm bảo điện áp VCCP được tăng trước khi tăng điện áp VCCI, với thời gian ramp-up nằm trong khoảng 0.1--2000\,ms. Mục tiêu của yêu cầu này là đảm bảo nguồn VCCP được cấp trước, sau đó tối thiểu 0.1\,ms mới cấp nguồn cho VCCI nhằm tránh hiện tượng đường dữ liệu SDA bị kẹt ở mức logic thấp trong quá trình khởi động. Mạch delay khởi động nguồn được thiết kế tại chân VCCI của IO Expander, bao gồm ba thành phần chính:
                 \begin{itemize}
                     \item \textbf{MOSFET kênh P}: dùng để đóng/ngắt nguồn cấp cho VCCI.
                     \item \textbf{Bộ so sánh OpAmp}: dùng để so sánh điện áp tham chiếu và điện áp tăng dần từ mạch RC.
@@ -402,26 +612,14 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/datasheet_ioxpowerrecomendation.png}
-                    \caption{Khuyến nghị cấp nguồn cho IC TCA6424ARGJR từ datasheet} 
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/datasheet_ioxpowerrecomendation.png}
+                    \caption{Khuyến nghị cấp nguồn cho IC TCA6416ARTWR từ datasheet} 
                     \label{fig:sche_ioxpowerrecomendation}
                 \end{figure}
 
                 Tại đầu vào dương của bộ so sánh là một cầu chia áp nhằm tạo điện áp tham chiếu. Điện áp tham chiếu này có giá trị xấp xỉ 2.2\,V. Tại đầu vào âm của bộ so sánh là mạch RC delay, trong đó điện áp trên tụ tăng dần theo thời gian khi mạch được cấp nguồn. Khi điện áp trên tụ vượt qua mức tham chiếu 2.2\,V, đầu ra của bộ so sánh sẽ chuyển từ mức thấp sang mức cao, kích hoạt MOSFET kênh P đóng và cấp nguồn cho chân VCCI của IO Expander.
 
-                Thời gian để điện áp trên tụ đạt đến mức điện áp tham chiếu được xác định theo công thức:
-                \[
-                t = -\tau \ln \left(1 - \frac{V_C}{V_S}\right)
-                \]
-                Trong đó:
-                \begin{itemize}
-                    \item $t$: thời gian trễ (s),
-                    \item $\tau = RC$: hằng số thời gian của mạch RC (s),
-                    \item $V_C$: điện áp trên tụ điện tại thời điểm $t$ (V),
-                    \item $V_S$: điện áp nguồn cấp cho mạch RC (V).
-                \end{itemize}
-
-                Với các giá trị được lựa chọn trong thiết kế, trong đó $\tau = RC = 0.0001\,\text{s}$, điện áp nguồn $V_S = 3.3\,\text{V}$ và điện áp trên tụ tại thời điểm so sánh $V_C = 2.2\,\text{V}$, thời gian trễ tính toán được là $t \approx \textbf{0.11\,ms}$. Giá trị này đáp ứng dải thời gian ramp-up từ 0.01 đến 100\,ms theo khuyến nghị trong datasheet của nhà sản xuất.
+                Với các giá trị được lựa chọn trong thiết kế, trong đó $\tau = RC = 0.0001\,\text{s}$, điện áp nguồn $V_S = 3.3\,\text{V}$ và điện áp trên tụ tại thời điểm so sánh $V_C = 2.2\,\text{V}$, thời gian trễ tính toán được là $t \approx \textbf{0.11\,ms}$. Giá trị này đáp ứng dải thời gian ramp-up từ 0.1 đến 2000\,ms theo khuyến nghị trong datasheet của nhà sản xuất.
 
                 Cơ chế hoạt động của mạch được mô tả theo trình tự thời gian như sau:
                 \begin{itemize}
@@ -439,66 +637,167 @@
                 \end{figure}
 
             \paragraph{Thiết kế Mạch RTC}
-                Khối RTC của hệ thống sử dụng IC PCF85263ATL/AX, giao tiếp với MCU thông qua chuẩn I\textsuperscript{2}C. Nguồn VDD của RTC được cấp từ rail +3V3\_MSYS, trong khi nguồn VBAT được cấp từ pin RTC backup 3\,V. Đường VBAT được trang bị một TVS diode nhằm bảo vệ mạch khỏi các xung ESD gây ra trong quá trình tháo lắp pin RTC.
+                Khối RTC của hệ thống sử dụng IC PCF8563T/5,518, giao tiếp với MCU thông qua chuẩn I\textsuperscript{2}C. Nguồn cấp cho RTC được lựa chọn từ +3V0\_BAT hoặc +3V3 thông qua mạch Power OR-ing sử dụng hai diode Schottky, đảm bảo duy trì hoạt động liên tục khi chuyển đổi giữa nguồn chính và nguồn pin dự phòng. Đường VBAT được tích hợp diode TVS nhằm bảo vệ mạch khỏi các xung ESD phát sinh trong quá trình tháo lắp pin RTC.
 
-                IC RTC sử dụng thạch anh ngoài tần số 32.768\,kHz được kết nối trực tiếp vào hai chân OSCI và OSCO. Theo khuyến nghị của nhà sản xuất, IC PCF85263ATL/AX đã tích hợp khả năng hiệu chỉnh dao động (tuning facility), do đó không cần sử dụng thêm tụ tải ngoài cho thạch anh. Thạch anh được lựa chọn có điện dung tải danh định khoảng 7\,pF và giá trị ESR nhỏ hơn 60\,k$\Omega$, nhằm đảm bảo mức tiêu thụ năng lượng thấp và độ ổn định dao động cao cho RTC.
+                IC sử dụng thạch anh ngoài với tần số 32.768\,kHz, được kết nối trực tiếp tới hai chân OSCI và OSCO. Thạch anh được lựa chọn với điện dung tải danh định khoảng 12.5\,pF và điện trở ESR nhỏ hơn 100\,k$\Omega$, đáp ứng các yêu cầu theo khuyến nghị của datasheet. Việc lựa chọn này giúp đảm bảo độ chính xác thời gian cao, tối ưu mức tiêu thụ năng lượng, đồng thời rút ngắn thời gian khởi động và nâng cao độ ổn định của hệ thống.
 
-                \begin{figure}[H]
+                \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_rtc.png}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_rtc.png}
                     \caption{Sơ đồ nguyên lý mạch RTC} 
                     \label{fig:sche_rtc}
                 \end{figure}
 
             \paragraph{Thiết kế Mạch Micro SD Card}
-                Thẻ Micro SD được kết nối với Slave MCU thông qua giao thức SDIO 4-bit. Cấu hình giao tiếp này cho phép đạt được tốc độ truyền dữ liệu cao, phù hợp với yêu cầu lưu trữ và truy xuất dữ liệu của hệ thống.
+                Thẻ MicroSD được kết nối với MCU slave thông qua giao thức SDIO 4-bit, với tần số xung clock tối đa lên tới 80\,MHz. Cấu hình giao tiếp này cho phép đạt tốc độ truyền dữ liệu cao, đáp ứng yêu cầu lưu trữ và truy xuất dữ liệu của hệ thống.
 
                 Theo khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}, trên các đường tín hiệu SDIO bao gồm data, clock và cmd cần được bố trí các điện trở pull-up, đồng thời nên bổ sung các điện trở giảm chấn mắc nối tiếp nhằm cải thiện chất lượng tín hiệu. Việc bổ sung các linh kiện này giúp hạn chế hiện tượng ringing, overshoot trên các cạnh xung và nâng cao tính toàn vẹn tín hiệu khi thẻ Micro SD hoạt động ở tần số cao.
 
                 Trong thiết kế, mạch sử dụng IC EMIF06-MSD02N16 được đặt ngay tại đầu vào của cổng kết nối thẻ Micro SD. IC này tích hợp sẵn các diode TVS để bảo vệ chống phóng tĩnh điện, các điện trở kéo lên với giá trị xấp xỉ 80--100\,k$\Omega$, cùng các điện trở giảm chấn mắc nối tiếp có giá trị khoảng 36--54\,$\Omega$ trên toàn bộ các đường tín hiệu SDIO của thẻ Micro SD. Việc sử dụng IC tích hợp giúp đơn giản hóa sơ đồ mạch, giảm số lượng linh kiện rời, đồng thời đảm bảo tuân thủ đầy đủ các khuyến nghị về bảo vệ và chất lượng tín hiệu trong quá trình thiết kế phần cứng.
 
-                \begin{figure}[H]
+                \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_microsd.png}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_microsd.png}
                     \caption{Sơ đồ nguyên lý mạch Micro SD Card} 
                     \label{fig:sche_microsd}
                 \end{figure}
+
+            \paragraph{Thiết kế Mạch USB/UART Switch}
+                Vi điều khiển ESP32-S3 hỗ trợ một giao diện USB vật lý, cho phép hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu linh hoạt khi hệ thống chỉ có một cổng USB phần cứng nhưng cần phục vụ hai đầu nối LAN sử dụng giao tiếp USB, thiết kế sử dụng IC analog switch FSUSB42UMX-TP.
+
+                IC analog switch cho phép chuyển mạch tín hiệu USB giữa hai khối chức năng khác nhau. Trong cấu hình mặc định, đường USB từ SoC ESP32-S3 (slave) được kết nối tới đầu nối LAN1 thông qua PCIe connector. Ngoài ra, IC này có thể được sử dụng để chuyển mạch cho giao tiếp UART khi cần thiết.
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_usb-uart_switch.png}
+                    \caption{Sơ đồ nguyên lý mạch USB/UART Switch} 
+                    \label{fig:sche_usb-uart_switch}
+                \end{figure}
+
+                Đối với giao tiếp UART, phần cứng UART2 của MCU master được sử dụng mặc định để nạp firmware cho MCU slave. Sau khi hoàn tất quá trình nạp, đường UART2 này được chuyển hướng ra một đầu nối để giao tiếp với màn hình cảm ứng, phục vụ cho việc hiển thị và điều khiển hệ thống. 
+                
+                Màn hình LCD sử dụng nguồn cấp 5V, trong khi hệ thống MCU hoạt động ở mức logic 3.3V. Để đảm bảo tương thích điện áp giữa hai khối, thiết kế tích hợp IC chuyển mức logic TXS0102DQER. IC này thực hiện chuyển đổi tín hiệu hai chiều giữa các mức logic 3.3V và 5V, cho phép giao tiếp ổn định và an toàn giữa MCU và màn hình. Các tín hiệu điều khiển và dữ liệu được truyền nhận chính xác, đồng thời hạn chế nguy cơ hư hỏng do sai lệch mức điện áp.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_lcd.png}
+                    \caption{Sơ đồ nguyên lý mạch LCD} 
+                    \label{fig:sche_lcd}
+                \end{figure}
+            
+            \paragraph{Thiết kế Mạch I\textsuperscript{2}C Buffer}   
+                Hệ thống tích hợp nhiều thiết bị ngoại vi sử dụng giao thức I\textsuperscript{2}C, do đó việc bổ sung IC đệm I\textsuperscript{2}C TCA9803DGKR giúp nâng cao chất lượng truyền tín hiệu và độ tin cậy của bus. IC này cho phép phân tách các đoạn bus, giảm ảnh hưởng của nhiễu và đảm bảo tính toàn vẹn dữ liệu trong quá trình giao tiếp.
+
+                Hệ thống vận hành ở chế độ Fast-mode với tần số $f_{SCL} = 400\,kHz$, trong đó điện dung ký sinh tối đa cho phép trên mỗi đoạn bus là 400\,pF. Phía đầu vào của IC được kết nối với bus I\textsuperscript{2}C master và làm tăng thêm khoảng 10\,pF, tương đương với một thiết bị tiêu chuẩn. Phía đầu ra được đưa ra đầu nối connector để kết nối với các thiết bị ngoại vi thông qua dây dẫn dài, với điện dung ký sinh có thể đạt tới 400\,pF.
+                
+                % Trong cấu hình này, IC đệm đóng vai trò như một bộ tái tạo bus (bus buffer), cho phép mở rộng số lượng thiết bị kết nối mà không làm suy giảm chất lượng tín hiệu, đồng thời duy trì sự ổn định của hệ thống.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_i2cbuffer.png}
+                    \caption{Sơ đồ nguyên lý mạch I\textsuperscript{2}C Buffer} 
+                    \label{fig:sche_i2cbuffer}
+                \end{figure}
+            \paragraph{Thiết kế Mạch nút nhấn}
+                Đầu ra của nút nhấn được tích hợp một diode TVS với điện áp Reverse Standoff tối đa $V_{RWM(max)} = 3.3V$, phù hợp với mức điện áp làm việc của đường tín hiệu. Linh kiện này có chức năng bảo vệ mạch khỏi các xung ESD phát sinh trong quá trình tương tác cơ khí bên trong nút nhấn.
+
+                Bên cạnh đó, một tụ điện 100\,nF mắc song song và một điện trở 100\,$\Omega$ mắc nối tiếp được bổ sung trên đường tín hiệu nhằm cải thiện đặc tính tín hiệu. Cụ thể, tụ điện giúp giảm nhiễu cao tần và hạn chế hiện tượng dội tiếp điểm (debounce), trong khi điện trở nối tiếp đóng vai trò như một phần tử suy hao (damping/termination), giúp giảm hiện tượng ringing và làm mềm các cạnh xung. Thiết kế này đảm bảo rằng tín hiệu từ nút nhấn được truyền đến MCU một cách ổn định và đáng tin cậy, đồng thời nâng cao độ bền của hệ thống trước các tác động cơ học và điện từ trong quá trình sử dụng.
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_button.png}
+                    \caption{Sơ đồ nguyên lý mạch nút nhấn} 
+                    \label{fig:sche_button}
+                \end{figure}
+            \paragraph{Thiết kế Mạch điều khiển quạt DC}
+                Quạt DC được tích hợp trong hệ thống nhằm phục vụ chức năng tản nhiệt trong quá trình vận hành. Nguồn cấp cho quạt được điều khiển thông qua một MOSFET kênh P, trong đó MCU master thực hiện điều khiển gián tiếp thông qua một transistor NPN tại cực G của MOSFET.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_dcfan.png}
+                    \caption{Sơ đồ nguyên lý mạch điều khiển quạt DC} 
+                    \label{fig:sche_dcfan}
+                \end{figure}
+
+                Ở trạng thái mặc định (không điều khiển), điện trở R88 kéo mức điện áp tại cực base của transistor NPN xuống thấp, khiến transistor không dẫn. Khi đó, điện trở R85 kéo cực G của MOSFET lên mức 3.3V, dẫn đến $V_{GS} = 0$, MOSFET tắt và quạt không hoạt động. Khi MCU đưa tín hiệu mức logic cao vào cực base của transistor NPN, transistor dẫn, kéo cực G của MOSFET xuống GND. Khi đó, $V_{GS} = -3.3V$, MOSFET được kích hoạt và cấp nguồn cho quạt, khiến quạt hoạt động.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/simu_fandc.png}
+                    \caption{Thực hiện mô phỏng mạch điều khiển quạt DC trên LTspice} 
+                    \label{fig:simu_fandc}
+                \end{figure}
+                
+                Tại đầu vào nguồn của quạt DC, một diode được mắc song song nhằm bảo vệ mạch cấp nguồn. Khi nguồn bị ngắt hoặc xuất hiện các xung điện áp trên đường cấp, diode tạo đường dẫn cho dòng điện quá độ lưu thông, giúp hạn chế điện áp đột biến và giảm ảnh hưởng đến các linh kiện điều khiển.
+                
             \paragraph{Thiết kế Mạch Module Adapter}
-                Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter này được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard. Trên module adapter WAN được trang bị thêm một cổng USB và kết nối về baseboard thông qua cáp USB, cho phép thực hiện giao tiếp trực tiếp giữa Master MCU và module WAN thông qua giao thức USB 2.0.
+                Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard.
 
-                \begin{figure}[H]
+                \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_wan.png}
-                    \caption{Sơ đồ nguyên lý mạch WAN} 
-                    \label{fig:sche_wan}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_wan-lan_conn.png}
+                    \caption{Sơ đồ nguyên lý mạch WAN/LAN Connector} 
+                    \label{fig:sche_wan-lan_conn}
                 \end{figure}
 
-                Ở phiên bản Prototype, nhóm thiết kế triển khai mạch adapter WAN dành cho module SIM7600G-H chuẩn mPCIe. Mạch adapter này được thiết kế các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm cấp nguồn, giao tiếp dữ liệu và các tín hiệu điều khiển, với các tham khảo trực tiếp từ tài liệu thiết kế phần cứng của module SIM7600G-H. Việc sử dụng adapter trung gian cho phép tách biệt phần thiết kế baseboard và phần đặc thù của module WAN.
+                Trong thiết kế hiện tại, mạch adapter WAN được triển khai cho module LTE SIM7600G-H-PCIE. Mạch adapter tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm cấp và điều khiển nguồn, IO expander, khe SIM và các bus giao tiếp phần cứng. Các thành phần và cấu hình được xây dựng dựa trên \href{https://files.waveshare.com/upload/6/69/SIM7600_Series_PCIE_Hardware_Design_V1.03.pdf}{Tài liệu thiết kế phần cứng của module SIM7600G-H-PCIE}. 
 
-                \begin{figure}[H]
+                Adapter WAN LTE được thiết kế với một khe cắm SIM tiêu chuẩn, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe cắm được trang bị diode TVS để bảo vệ ESD, kết hợp với các điện trở giảm chấn nối tiếp 22\,$\Omega$ và các tụ điện lọc nhiễu 18\,pF.
+
+                Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
+
+                \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_wanadapter.png}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_wanlte.png}
                     \caption{Sơ đồ nguyên lý mạch WAN Adapter} 
-                    \label{fig:sche_wanadapter}
+                    \label{fig:sche_wanlte}
                 \end{figure}
 
-                Bên cạnh đó, mạch adapter LAN được thiết kế nhằm hỗ trợ linh hoạt nhiều module truyền thông có sẵn trên thị trường. Các module được xem xét và hỗ trợ trong thiết kế prototype bao gồm:
+                Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại module mạng khác nhau, bao gồm:
+
                 \begin{itemize}
-                    \item Module CAN Bus TJA1050, sử dụng nguồn cấp 5\,V và giao tiếp UART.
-                    \item Module chuyển đổi MAX485 TTL to RS485, sử dụng nguồn cấp 5\,V và giao tiếp UART.
-                    \item Module Zigbee UART RF Transmitter and Receiver CC2530+PA V2, sử dụng nguồn cấp 3.3\,V và giao tiếp UART.
-                    \item Module RF LoRa SX1278 E32-433T20D, hoạt động ở băng tần 433\,MHz, sử dụng nguồn cấp 3.3\,V và giao tiếp UART.
-                    \item USB Dongle STM32WB55, hỗ trợ các giao thức không dây Bluetooth 5.4, Thread 1.3 và Zigbee 3.0, sử dụng nguồn cấp 3.3\,V. Đây là module do nhóm tự nghiên cứu và phát triển, hỗ trợ giao tiếp UART và SPI.
+                    \item Module Zigbee E180-ZG120B (dựa trên SoC Silicon Labs EFR32MG1B) của EBYTE, sử dụng nguồn cấp 3.3V và giao tiếp UART;
+                    \item Module LoRaWAN Wio-E5-LE mini (mã 113991156, dựa trên SoC STM32WLE5JC, hỗ trợ băng tần 868\,MHz và 915\,MHz) của Seeed Studio, sử dụng nguồn cấp 3.3V và giao tiếp UART;
+                    \item Mạch chuyển đổi RS485 sang TTL, hoạt động với nguồn 3.3V và giao tiếp UART.
                 \end{itemize}
 
-                Mạch adapter LAN được thiết kế để có thể hỗ trợ đồng thời tối đa năm module khác nhau. Việc lựa chọn module hoạt động được thực hiện thông qua các jumper nối tắt, cho phép định tuyến đường UART từ baseboard tới module tương ứng. Cách thiết kế này giúp tăng tính linh hoạt trong quá trình thử nghiệm, đồng thời giảm chi phí và thời gian phát triển khi xây dựng phiên bản prototype cho mạch LAN Adapter.
-
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/sche_lanadapter.png}
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_lan.png}
                     \caption{Sơ đồ nguyên lý mạch LAN Adapter} 
-                    \label{fig:sche_lanadapter} 
+                    \label{fig:sche_lan} 
                 \end{figure}
+
+                Trên mỗi adapter tích hợp một IC IO Expander, được sử dụng để điều khiển các tín hiệu IO của module, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (device ID) trên adapter. Mỗi module được thiết kế với một adapter riêng biệt và được gán một mã thiết bị tương ứng nhằm phục vụ quá trình nhận diện tự động bởi MCU.
+
+                Bảng mã nhận dạng thiết bị được quy định như sau:
+                
+                \begin{longtable}{|c|c|c|}
+                    \caption{Device ID của các module WAN/LAN} \\
+                    \hline
+                    \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
+                    \hline
+                    \endfirsthead
+                    
+                    \hline
+                    \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
+                    \hline
+                    \endhead
+                    
+                    \hline
+                    \endfoot
+                    
+                    \hline
+                    \endlastfoot
+                    
+                    WAN & LTE SIM7600G-H-PCIE & 0000 \\
+                    \hline
+                    LAN & Zigbee E180-ZG120B & 0000 \\
+                    \hline
+                    LAN & LoRaWAN 113991156 & 1111 \\
+                    \hline
+                    LAN & RS485 to TTL & 1001 \\
+                    \hline
+                \end{longtable}
 
         \subsubsection{Thiết kế Layout (Layout Design)}
             \paragraph{Thiết kế PCB Stack-up và Kiểm soát trở kháng (Impedance Control)}
@@ -1085,7 +1384,7 @@
         
         Khối Internet Communication Handler chịu trách nhiệm thiết lập và duy trì đường truyền Internet theo cấu hình người dùng. Trong prototype, các chế độ kết nối chính bao gồm:
         \begin{itemize}
-            \item \textbf{Wi-Fi:} hỗ trợ hai chế độ Wi-Fi Personal và Wi-Fi Enterprise. Sau khi kết nối thành công và nhận cấu hình mạng, hệ thống thực hiện đồng bộ thời gian (SNTP) và cập nhật RTC nhằm đảm bảo timestamp thống nhất cho toàn gateway. Khối này cũng theo dõi trạng thái liên kết và tự reconnect khi mất mạng.
+            \item \textbf{Wi-Fi:} hỗ trợ hai chế độ Wi-Fi Personal và Wi-Fi Enterprise. Sau khi kết nối thành công và nhận cấu hình mạng, hệ thống thực hiện đồng bộ thời gian (SNTP) và cập nhật RTC nhằm đảm bảo timestamp thống nhất cho toàn gateway. Khối này theo dõi trạng thái liên kết và tự reconnect khi mất mạng.
             \item \textbf{LTE:} quản lý kết nối modem LTE qua USB, bao gồm thiết lập đường truyền và giám sát chất lượng kết nối. Khi xảy ra mất kết nối, WAN-MCU thực hiện cơ chế tự khôi phục (reconnect) theo chính sách cấu hình.
         \end{itemize}
         
