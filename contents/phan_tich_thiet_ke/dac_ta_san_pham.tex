@@ -2,7 +2,7 @@
 
 Sản phẩm IoT Gateway dạng mô-đun được thiết kế nhằm tối ưu hóa tính linh hoạt và khả năng cấu hình cho các kịch bản ứng dụng IoT đa dạng:
 
-\subsection{Thông số phần cứng và Hiệu năng xử lý}
+\subsection{Thông số nhân xử lý}
 Hệ thống áp dụng kiến trúc Dual-MCU Master-Slave để phân tách nhiệm vụ giữa miền mạng diện rộng (WAN) và miền thu thập dữ liệu nội bộ (LAN).
 \begin{itemize}
     \item \textbf{Vi điều khiển chính (Master WAN-MCU):} ESP32-S3-WROOM-1U-N16R8.
@@ -40,7 +40,7 @@ Hệ thống áp dụng kiến trúc Dual-MCU Master-Slave để phân tách nhi
 Mạng phân phối nguồn (PDN) được thiết kế phân tầng để đảm bảo tính toàn vẹn năng lượng cho toàn hệ thống.
 \begin{itemize}
     \item \textbf{Nguồn đầu vào:} DC 12V, phù hợp với hạ tầng công nghiệp.
-    \item \textbf{Các mức điện áp hệ thống:} Cung cấp đồng thời các ray nguồn +5V0\_SYS, +5V0, +3V3, và +1V8 phục vụ các khối chức năng và mô-đun cắm thêm.
+    \item \textcolor{red}{\textbf{Các mức điện áp hệ thống:} Cung cấp đồng thời các ray nguồn +5V0\_SYS, +5V0, +3V3, và +1V8 phục vụ các khối chức năng và mô-đun cắm thêm.}
     \item \textbf{Cơ chế Bảo vệ phần cứng:}
     \begin{itemize}
         \item Electronic Fuse (eFuse): Sử dụng eFuse để bảo vệ quá dòng và quá áp, giới hạn dòng đỉnh tại có điều khiển.
@@ -51,10 +51,10 @@ Mạng phân phối nguồn (PDN) được thiết kế phân tầng để đả
 
 \subsection{Giao diện người dùng và Đặc điểm cơ khí}
 \begin{itemize}
-    \item \textbf{Hiển thị:} Màn hình OLED 0.96 inch (Driver SH1107), giao tiếp I2C để thông báo trạng thái.
+    \item \textcolor{red}{\textbf{Hiển thị:} Màn hình OLED 0.96 inch (Driver SH1107), giao tiếp I2C để thông báo trạng thái.}
     \item \textbf{Chỉ thị trạng thái:} Hệ thống đèn LED báo hiệu trạng thái nguồn, kết nối LAN/WAN và trạng thái máy chủ.
     \item \textbf{Quản lý thời gian:} IC RTC kèm pin dự phòng CR2032 giúp duy trì thời gian thực khi mất điện.
-    \item \textbf{Tương tác vật lý:} Nút nhấn Reset và nút nhấn điều khiển nguồn tích hợp.
+    \item \textbf{Tương tác vật lý:} Nút nhấn Reset, Boot và nút nhấn điều khiển nguồn tích hợp.
 \end{itemize}
 
 \subsection{Đặc tả Phần mềm}

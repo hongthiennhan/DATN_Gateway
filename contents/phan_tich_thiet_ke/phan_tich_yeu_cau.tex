@@ -12,26 +12,27 @@
                 \item Hỗ trợ các chuẩn giao tiếp ngoại vi phổ thông: UART, SPI, I2C, USB, \dots
             \end{itemize}
             
-            \item \textbf{Khả năng thu thập và xử lý dữ liệu:}
+            \item \textcolor{red}{\textbf{Khả năng thu thập và xử lý dữ liệu:}
             \begin{itemize}
                 \item Tiếp nhận dữ liệu từ cảm biến hoặc thiết bị đầu cuối thông qua các giao thức truyền thông tiêu chuẩn.
-                \item Hỗ trợ thu thập đồng thời từ nhiều nhóm thiết bị hoạt động trên các nền tảng khác nhau: Zigbee, LoRa TDMA, CAN, UART/RS-485, \dots
-                \item Triển khai các tiến trình xử lý riêng biệt cho từng giao thức (\textit{Zigbee\_Handler, LoRa\_Handler, CAN\_Handler, Data\_Communication\_Handler}) trên nhân xử lý.
+                \item Hỗ trợ thu thập đồng thời từ nhiều nhóm thiết bị hoạt động trên các nền tảng khác nhau: Zigbee, LoRa TDMA, CAN, MODBUS, \dots
+                % \item Triển khai các tiến trình xử lý riêng biệt cho từng giao thức (\textit{Zigbee\_Handler, LoRa\_Handler, CAN\_Handler, Data\_Communication\_Handler}) trên nhân xử lý.
+                \item Triển khai các tiến trình xử lý riêng biệt cho từng giao thức trên nhân xử lý.
                 \item Quy trình xử lý dữ liệu tại mỗi mô-đun bao gồm: Trích xuất dữ liệu thô; kiểm chứng định dạng và Checksum; loại bỏ khung tin lỗi; gắn nhãn nguồn dữ liệu và đóng dấu thời gian (Time-stamping).
                 \item Chuẩn hóa dữ liệu sau kiểm tra về một định dạng khung nội bộ thống nhất.
                 \item Sử dụng hàng đợi (Queue) để đệm dữ liệu, đảm bảo duy trì dữ liệu khi mất kết nối WAN trong một khoảng thời gian xác định.
                 \item Thiết lập kênh truyền thông nội bộ nhằm đồng bộ hóa nội dung khung dữ liệu và thông tin trạng thái.
                 \item Tiến trình \textit{Internet\_Communication\_Handler} trên MCU WAN chịu trách nhiệm đóng gói và chuyển giao dữ liệu lên máy chủ thông qua MQTT, HTTP, hoặc CoAP theo cấu hình tùy chọn.
-            \end{itemize}
+            \end{itemize}}
             
-            \item \textbf{Khả năng khả cấu hình:}
+            \item \textcolor{red}{\textbf{Tính khả cấu hình:}}
             \begin{itemize}
                 \item Cung cấp ứng dụng cấu hình trên PC để tinh chỉnh toàn bộ thông số vận hành mà không cần can thiệp vào mã nguồn (Firmware).
-                \item Tích hợp tính năng tự động quét và nhận diện Gateway đang kết nối qua giao tiếp USB/UART.
+                \item Tích hợp tính năng tự động quét và nhận diện Gateway đang kết nối qua cáp USB.
                 \item Cho phép truy xuất toàn bộ trạng thái cấu hình hiện tại (danh sách mô-đun hiện hữu, thông số mạng WAN, tham số MQTT, \dots).
-                \item Giao diện cấu hình trực quan dưới dạng biểu mẫu (Form), tối ưu hóa cho kỹ thuật viên vận hành.
-                \item Hỗ trợ hiệu chỉnh chi tiết: Lựa chọn danh mục mô-đun thực tế; thiết lập tham số lớp vật lý (Baudrate, địa chỉ, ID mạng) cho Zigbee/LoRa/CAN/UART; cấu hình hạ tầng mạng (Wi-Fi/LTE/PPP) và thông số máy chủ MQTT (Host, Port, Credentials, Topics, cấu hình bảo mật TLS); điều chỉnh chu kỳ lấy mẫu, chính sách lưu đệm và cơ chế thử lại (Retry) khi mất kết nối.
-                \item Thực thi lệnh ghi cấu hình xuống Gateway thông qua giao thức truyền tin nội bộ đã định nghĩa.
+                % \item Giao diện cấu hình trực quan dưới dạng biểu mẫu (Form), tối ưu hóa cho kỹ thuật viên vận hành.
+                % \item Hỗ trợ hiệu chỉnh chi tiết: Lựa chọn danh mục mô-đun thực tế; thiết lập tham số lớp vật lý (Baudrate, địa chỉ, ID mạng) cho Zigbee/LoRa/CAN/UART; cấu hình hạ tầng mạng (Wi-Fi/LTE/PPP) và thông số máy chủ MQTT (Host, Port, Credentials, Topics, cấu hình bảo mật TLS); điều chỉnh chu kỳ lấy mẫu, chính sách lưu đệm và cơ chế thử lại (Retry) khi mất kết nối.
+                % \item Thực thi lệnh ghi cấu hình xuống Gateway thông qua giao thức truyền tin nội bộ đã định nghĩa.
             \end{itemize}
         \end{itemize}
 
@@ -44,9 +45,9 @@
                 \item Đảm bảo khả năng vận hành liên tục 24/7 trong thời gian dài.
                 \item Tích hợp cơ chế giám sát phần cứng và phần mềm (Watchdog Timer) để tự động phục hồi khi xảy ra hiện tượng treo hệ thống hoặc xung đột tiến trình.
                 \item Chủ động phát hiện và xử lý có kiểm soát các lỗi ngoại vi (mất Internet, lỗi cảm biến, lỗi mô-đun giao tiếp) thông qua hệ thống bản ghi (Log) và chuyển đổi về trạng thái an toàn.
-                \item Duy trì tính toàn vẹn của dữ liệu bằng bộ đệm nội bộ, hỗ trợ lưu trữ và gửi bù dữ liệu ngay khi kết nối mạng được khôi phục.
-                \item Thiết kế phần cứng có khả năng chống chịu tác động môi trường: bảo vệ chống tĩnh điện (ESD), lọc nhiễu điện từ (EMI).
+                \item Duy trì tính toàn vẹn của dữ liệu bằng bộ đệm nội bộ, hỗ trợ lưu trữ và gửi bù dữ liệu ngay khi kết nối mạng được khôi phục. \textcolor{red}{(cụ thể là bao lâu?)}
                 \item Hỗ trợ cập nhật phần mềm từ xa (FOTA) an toàn cho nhân xử lý với cơ chế kiểm tra tính toàn vẹn, đảm bảo không ghi đè lên Firmware hiện tại khi chưa xác thực thành công bản cập nhật.
+                \item Thiết kế phần cứng có khả năng chống chịu tác động môi trường: bảo vệ chống tĩnh điện (ESD), lọc nhiễu điện từ (EMI).
             \end{itemize}
             
             \item \textbf{Nguồn điện và năng lượng:}
@@ -57,8 +58,9 @@
             
             \item \textbf{Hiệu năng:}
             \begin{itemize}
-                \item Năng lực xử lý trung tâm đảm bảo độ trễ thấp trong việc thu thập và chuyển giao dữ liệu từ tất cả các mô-đun kết nối đồng thời.
-                \item Tốc độ phản hồi giao diện cấu hình và thời gian khởi động hệ thống tối ưu, đảm bảo không gây tắc nghẽn hàng đợi dữ liệu khi mật độ thiết bị đầu cuối tăng cao.
+                \item Năng lực xử lý trung tâm đảm bảo độ trễ thấp \textcolor{red}{(cụ thể là bao nhiêu?)} trong việc thu thập và chuyển giao dữ liệu từ tất cả các mô-đun kết nối đồng thời.
+                \item Tốc độ phản hồi giao diện cấu hình và thời gian khởi động hệ thống tối ưu\textcolor{red}{(cụ thể là bao lâu?)}, đảm bảo không gây tắc nghẽn hàng đợi dữ liệu khi mật độ thiết bị đầu cuối tăng cao.\textcolor{red}{(cụ thể là bao nhiêu thiết bị?)}
+                \item \textcolor{red}{(thiết kế cụ thể xử lý được bao nhiêu thiết bị trên lý thuyết?)}
             \end{itemize}
             
             \item \textbf{Tính khả dụng và dễ sử dụng:}
@@ -71,7 +73,7 @@
 
     \subsection{Các ràng buộc thiết kế}
         \begin{itemize}
-            \item \textbf{Ràng buộc về chi phí:} Cần đảm bảo chi phí sản xuất và triển khai gateway trên thị trường không quá cao, tối ưu hóa lựa chọn phần cứng và phần mềm sao cho tiết kiệm mà vẫn đáp ứng được yêu cầu hệ thống.
+            \item \textbf{Ràng buộc về chi phí:} Cần đảm bảo chi phí sản xuất và triển khai gateway trên thị trường có khả năng cạnh tranh, tối ưu hóa lựa chọn phần cứng và phần mềm sao cho tiết kiệm mà vẫn đáp ứng được yêu cầu hệ thống.
             \item \textbf{Ràng buộc về công nghệ:} Cần phải sử dụng các công nghệ phổ biến và đáng tin cậy, đảm bảo khả năng tương thích với các thiết bị hiện có, cũng như dễ dàng tích hợp vào các nền tảng cloud hoặc hệ thống IoT.
             \item \textbf{Ràng buộc về hiệu suất:} Gateway phải đảm bảo tốc độ truyền dữ liệu, khả năng xử lý song song và đáp ứng các yêu cầu về độ trễ thấp trong quá trình thu thập và truyền tải dữ liệu.
             \item \textbf{Ràng buộc về khả năng mở rộng:} Hệ thống phải được thiết kế sao cho dễ dàng mở rộng hoặc thay thế các module mà không làm gián đoạn hoạt động của hệ thống, hỗ trợ thêm giao thức hoặc phần cứng khi cần thiết.
