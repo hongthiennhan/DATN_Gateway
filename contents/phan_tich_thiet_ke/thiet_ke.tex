@@ -729,7 +729,7 @@
                 
                 Tại đầu vào nguồn của quạt DC, một diode được mắc song song nhằm bảo vệ mạch cấp nguồn. Khi nguồn bị ngắt hoặc xuất hiện các xung điện áp trên đường cấp, diode tạo đường dẫn cho dòng điện quá độ lưu thông, giúp hạn chế điện áp đột biến và giảm ảnh hưởng đến các linh kiện điều khiển.
                 
-            \paragraph{Thiết kế Mạch Module Adapter}
+                \paragraph{Thiết kế Mạch Module Adapter}
                 Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard.
 
                 \begin{figure}[h]
@@ -739,18 +739,27 @@
                     \label{fig:sche_wan-lan_conn}
                 \end{figure}
 
-                Trong thiết kế hiện tại, mạch adapter WAN được triển khai cho module LTE SIM7600G-H-PCIE. Mạch adapter tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm cấp và điều khiển nguồn, IO expander, khe SIM và các bus giao tiếp phần cứng. Các thành phần và cấu hình được xây dựng dựa trên \href{https://files.waveshare.com/upload/6/69/SIM7600_Series_PCIE_Hardware_Design_V1.03.pdf}{Tài liệu thiết kế phần cứng của module SIM7600G-H-PCIE}. 
+                Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet được phát triển dựa trên IC Ethernet PHY W5500. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
+                
+                Việc lựa chọn thành phần và cấu hình phần cứng của adapter LTE được thực hiện dựa trên \href{https://files.waveshare.com/upload/6/69/SIM7600_Series_PCIE_Hardware_Design_V1.03.pdf}{tài liệu thiết kế phần cứng của module SIM7600G-H-PCIE}. Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.
 
-                Adapter WAN LTE được thiết kế với một khe cắm SIM tiêu chuẩn, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe cắm được trang bị diode TVS để bảo vệ ESD, kết hợp với các điện trở giảm chấn nối tiếp 22\,$\Omega$ và các tụ điện lọc nhiễu 18\,pF.
+                Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu \href{https://docs.wiznet.io/pdf-viewer?file=%2Fassets%2Ffiles%2Fw5500_sch_v110_use_mag_-dfff8bbb103d13be4f25cd2b2f8b950d.pdf}{W5500 Reference Schematic (RJ45)} của Wiznet.
 
-                Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
-
-                \begin{figure}[h]
+                \begin{figure}[H]
                     \centering
                     \includegraphics[width=\textwidth]{figures/DATN/sche_wanlte.png}
-                    \caption{Sơ đồ nguyên lý mạch WAN Adapter} 
+                    \caption{Sơ đồ nguyên lý mạch WAN Adapter LTE} 
                     \label{fig:sche_wanlte}
                 \end{figure}
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sche_wanephy.png}
+                    \caption{Sơ đồ nguyên lý mạch WAN Adapter Ethernet} 
+                    \label{fig:sche_wanlte}
+                \end{figure}
+
+                Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
 
                 Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại module mạng khác nhau, bao gồm:
 
@@ -790,6 +799,8 @@
                     \endlastfoot
                     
                     WAN & LTE SIM7600G-H-PCIE & 0000 \\
+                    \hline                    
+                    WAN & Ethernet W5500 & 1111 \\
                     \hline
                     LAN & Zigbee E180-ZG120B & 0000 \\
                     \hline
