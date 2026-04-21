@@ -331,14 +331,14 @@
 
                     Các tính năng bảo vệ và điều khiển bổ sung bao gồm:
                     \begin{itemize}
-                        \item Giám sát nhiệt độ và tự động ngắt khi xảy ra quá nhiệt (Thermal shutdown);
-                        \item Tự động giảm dòng sạc (Thermal regulation) khi nhiệt độ hệ thống vượt ngưỡng;
-                        \item Theo dõi nhiệt độ pin thông qua điện trở nhiệt (NTC) trong cả chế độ sạc và chế độ Boost, tuân thủ tiêu chuẩn JEITA;
-                        \item Tích hợp bộ đếm thời gian an toàn trong quá trình sạc (Charging safety timer) nhằm ngăn chặn tình trạng sạc kéo dài bất thường;
-                        \item Điều khiển BATFET hỗ trợ chế độ lưu kho (Ship Mode), đánh thức thiết bị và thiết lập lại toàn hệ thống (Full system reset);
-                        \item Bảo vệ quá áp và quá dòng;
-                        \item Hỗ trợ chế độ sạc tự động, có hoặc không có sự điều khiển từ bộ xử lý trung tâm (SoC);
-                        \item Bảo vệ quá áp tại đầu vào và trên toàn hệ thống.
+                        \item Giám sát nhiệt độ và tự động ngắt khi xảy ra quá nhiệt (Thermal shutdown)
+                        \item Tự động giảm dòng sạc (Thermal regulation) khi nhiệt độ hệ thống vượt ngưỡng
+                        \item Theo dõi nhiệt độ pin thông qua điện trở nhiệt (NTC) trong cả chế độ sạc và chế độ Boost, tuân thủ tiêu chuẩn JEITA
+                        \item Tích hợp bộ đếm thời gian an toàn trong quá trình sạc (Charging safety timer) nhằm ngăn chặn tình trạng sạc kéo dài bất thường
+                        \item Điều khiển BATFET, hỗ trợ chế độ lưu kho (Ship Mode), đánh thức thiết bị và thiết lập lại toàn hệ thống (Full system reset)
+                        \item Bảo vệ quá áp và quá dòng
+                        \item Hỗ trợ chế độ sạc tự động, có hoặc không có sự điều khiển từ bộ xử lý trung tâm (SoC)
+                        \item Bảo vệ quá áp tại đầu vào và trên toàn hệ thống
                     \end{itemize}
                     
                     Điện áp tại VSYS có thể được cấu hình thông qua giao tiếp I2C, phụ thuộc vào đặc tính của pin LiPo sử dụng. Trong quá trình vận hành, mức điện áp này được duy trì trong khoảng 3.5V đến 4.2V (tùy theo trạng thái sạc/xả pin). Nguồn VSYS sau đó được phân phối đến các bộ chuyển đổi DC-DC để tạo ra các rail điện áp phục vụ hệ thống:
@@ -363,7 +363,7 @@
 
                 \paragraph{Sơ đồ khối mạch adapter:} \par
 
-                    Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các module mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn PCIe 36 chân, trong đó các đường tín hiệu và nguồn được quy hoạch theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
+                    Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các module mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn vật lý PCI Express x1, trong đó các đường tín hiệu và nguồn được định nghĩa lại theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
 
                     Trên mỗi adapter tích hợp một IC IO Expander, được điều khiển bởi MCU master hoặc slave trên baseboard (trong đó master quản lý các module WAN, slave quản lý các module LAN). IC này đảm nhiệm chức năng đóng/ngắt nguồn cấp cho module mạng, đồng thời đọc mã nhận dạng thiết bị (device ID) được mã hóa dưới dạng 4 bit thông qua 4 chân GPIO.
                     
@@ -484,7 +484,7 @@
                     \label{fig:sche_powermux}
                 \end{figure}
 
-                Để tối ưu hóa thiết kế, Texas Instruments cung cấp công cụ tính toán và hướng dẫn cấu hình cho IC TPS2121RUXR (\href{https://www.ti.com/tool/download/PMUX-SWITCHOVER-CALC}{PMUX Switch-over Calculator}). Dựa trên công cụ này, các thông số được lựa chọn trong hệ thống như sau:
+                Các thông số thiết kế cho IC Power MUX TPS2121RUXR được lựa chọn như sau:
 
                 \begin{itemize}
                     \item Điện áp bảo vệ quá áp (overvoltage) đối với nguồn +5V (USB): 5.6V;
