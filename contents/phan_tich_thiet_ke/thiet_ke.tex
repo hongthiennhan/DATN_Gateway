@@ -3,7 +3,7 @@
         \subsubsection{Sơ đồ khối Hệ thống}
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.8\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
+                \includegraphics[width=0.9\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
                 \caption{Sơ đồ khối Hệ thống}
             \end{figure}
             
@@ -46,7 +46,7 @@
                     \item \textbf{LAN1 Module Adapter}
                     \begin{itemize}
                         \item Kết nối với SLAVE LAN-MCU.
-                        \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, NB-IoT, \dots
+                        \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
                     \end{itemize}
                     \item \textbf{LAN2 Module Adapter}
                     \begin{itemize}
@@ -72,56 +72,102 @@
             \paragraph{Nguyên lý:}\par
                 Thiết kế module hóa cho phép người dùng dễ dàng thay thế, nâng cấp hoặc mở rộng các chức năng của gateway mà không cần thay đổi toàn bộ hệ thống. Mỗi module được thiết kế theo chuẩn kết nối chung, giúp đảm bảo tính tương thích và linh hoạt trong việc lựa chọn các module phù hợp với nhu cầu sử dụng cụ thể.
             \paragraph{Thiết kế:}\par
-                Đối với các module có sẵn trên thị trường, các module này thông thường sẽ không theo một tiêu chuẩn cụ thể kể cả các module dạng Mini PCIe hay M.2, do đó việc thiết kế các Module Adapter đóng vai trò quan trọng trong việc chuẩn hóa kết nối giữa các module và Baseboard.
+                Đối với các module sẵn có trên thị trường, giao diện kết nối thường không tuân theo một tiêu chuẩn thống nhất, kể cả với các module sử dụng chuẩn cơ khí như Mini PCIe hay M.2. Vì vậy, việc thiết kế các module adapter là cần thiết để chuẩn hóa kết nối giữa module và baseboard. Trong thiết kế này, cổng chuẩn vật lý PCI Express x1 (36-pin Card Edge Connector) được lựa chọn làm giao diện kết nối giữa module adapter và baseboard. Tuy nhiên, sơ đồ chân trên cổng được định nghĩa lại để phù hợp với kiến trúc phần cứng của hệ thống.
             \paragraph{Chuẩn hóa giao diện:}\par
                 Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa sơ đồ chân:
-                \begin{longtable}{|l|l|p{5cm}|l|}
-                    \caption{\textcolor{red}{Pinout Module Adapter}} \\
+                % \begin{longtable}{|l|l|p{5cm}|l|}
+                %     \caption{\textcolor{red}{Pinout Module Adapter}} \\
+                %     \hline
+                %     \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
+                %     \endfirsthead
+                %     \hline
+                %     \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
+                %     \endhead
+                %     \hline
+                %     \endfoot
+                %     % \hline
+                %     \endlastfoot
+                %     \multirow{4}{*}{\textbf{Power}}         & +1V8      & 9, 11, 13, 15                                                         & Power Supply +1.8V        \\\cline{2-4}
+                %                                             & +3V3      & 1, 3, 5, 32, 34, 36                                                   & Power Supply +3.3V        \\\cline{2-4}
+                %                                             & +5V0      & 40, 42, 44, 46, 48                                                    & Power Supply +5.0V        \\\cline{2-4}
+                %                                             & GND       & 2, 7, 8, 17, 18, 23, 24, 25, 27, 29, 30, 31, 38, 47, 50, 53, 59, 60   & Ground                    \\\hline
+                %     \multirow{2}{*}{\textbf{USB}}           & D+        & 26                                                                    & USB Data Positive         \\\cline{2-3}
+                %                                             & D-        & 28                                                                    & USB Data Negative         \\\hline
+                %     \multirow{2}{*}{\textbf{I2C}}           & SDA       & 6                                                                     & I2C Serial Data           \\\cline{2-4}
+                %                                             & SCL       & 4                                                                     & I2C Serial Clock          \\\hline
+                %     \multirow{4}{*}{\textbf{UART}}          & TXD       & 49                                                                    & UART0 Transmit Data       \\\cline{2-4}
+                %                                             & RXD       & 51                                                                    & UART0 Receive Data        \\\cline{2-4}
+                %                                             & RTS       & 57                                                                    & UART0 Request to Send     \\\cline{2-4}
+                %                                             & CTS       & 55                                                                    & UART0 Clear to Send       \\\hline
+                %     \multirow{2}{*}{\textbf{COEX\_UART}}    & COEX\_TXD & 20                                                                    & Coexistence UART TXD      \\\cline{2-4}
+                %                                             & COEX\_RXD & 22                                                                    & Coexistence UART RXD      \\\hline
+                %     \multirow{4}{*}{\textbf{SPI}}           & MOSI      & 12                                                                    & SPI Master Out Slave In   \\\cline{2-4}
+                %                                             & MISO      & 16                                                                    & SPI Master In Slave Out   \\\cline{2-4}
+                %                                             & CLK       & 14                                                                    & SPI Serial Clock          \\\cline{2-4}
+                %                                             & CSN       & 10                                                                    & SPI Chip Select           \\\hline
+                %     \multirow{13}{*}{\textbf{GPIO}}         & WAKE\#    & 33                                                                    & Wake Signal               \\\cline{2-4}
+                %                                             & PERST\#   & 35                                                                    & Reset Signal              \\\cline{2-4}
+                %                                             & GPIO1     & 37                                                                    & General Purpose I/O 1     \\\cline{2-4}
+                %                                             & GPIO2     & 39                                                                    & General Purpose I/O 2     \\\cline{2-4}
+                %                                             & GPIO3     & 41                                                                    & General Purpose I/O 3     \\\cline{2-4}
+                %                                             & GPIO4     & 43                                                                    & General Purpose I/O 4     \\\cline{2-4}
+                %                                             & GPIO5     & 45                                                                    & General Purpose I/O 5     \\\cline{2-4}
+                %                                             & GPIO6     & 58                                                                    & General Purpose I/O 6     \\\cline{2-4}
+                %                                             & GPIO7     & 56                                                                    & General Purpose I/O 7     \\\cline{2-4}
+                %                                             & GPIO8     & 54                                                                    & General Purpose I/O 8     \\\cline{2-4}
+                %                                             & GPIO9     & 52                                                                    & General Purpose I/O 9     \\\cline{2-4}
+                %                                             & GPIO10    & 19                                                                    & General Purpose I/O 10    \\\cline{2-4}
+                %                                             & GPIO11    & 21                                                                    & General Purpose I/O 11    \\\hline
+                % \end{longtable}
+                \begin{longtable}{|l|l|p{6.5cm}|p{4.5cm}|}
+                    \caption{Pinout Module Adapter}
+                    \label{tab:new_module_adapter_pinout} \\
                     \hline
-                    \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
+                    \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\ \hline
                     \endfirsthead
+                
                     \hline
-                    \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
+                    \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\ \hline
                     \endhead
+                
                     \hline
                     \endfoot
-                    % \hline
+                
+                    \hline
                     \endlastfoot
-                    \multirow{4}{*}{\textbf{Power}}         & +1V8      & 9, 11, 13, 15                                                         & Power Supply +1.8V        \\\cline{2-4}
-                                                            & +3V3      & 1, 3, 5, 32, 34, 36                                                   & Power Supply +3.3V        \\\cline{2-4}
-                                                            & +5V0      & 40, 42, 44, 46, 48                                                    & Power Supply +5.0V        \\\cline{2-4}
-                                                            & GND       & 2, 7, 8, 17, 18, 23, 24, 25, 27, 29, 30, 31, 38, 47, 50, 53, 59, 60   & Ground                    \\\hline
-                    \multirow{2}{*}{\textbf{USB}}           & D+        & 26                                                                    & USB Data Positive         \\\cline{2-3}
-                                                            & D-        & 28                                                                    & USB Data Negative         \\\hline
-                    \multirow{2}{*}{\textbf{I2C}}           & SDA       & 6                                                                     & I2C Serial Data           \\\cline{2-4}
-                                                            & SCL       & 4                                                                     & I2C Serial Clock          \\\hline
-                    \multirow{4}{*}{\textbf{UART}}          & TXD       & 49                                                                    & UART0 Transmit Data       \\\cline{2-4}
-                                                            & RXD       & 51                                                                    & UART0 Receive Data        \\\cline{2-4}
-                                                            & RTS       & 57                                                                    & UART0 Request to Send     \\\cline{2-4}
-                                                            & CTS       & 55                                                                    & UART0 Clear to Send       \\\hline
-                    \multirow{2}{*}{\textbf{COEX\_UART}}    & COEX\_TXD & 20                                                                    & Coexistence UART TXD      \\\cline{2-4}
-                                                            & COEX\_RXD & 22                                                                    & Coexistence UART RXD      \\\hline
-                    \multirow{4}{*}{\textbf{SPI}}           & MOSI      & 12                                                                    & SPI Master Out Slave In   \\\cline{2-4}
-                                                            & MISO      & 16                                                                    & SPI Master In Slave Out   \\\cline{2-4}
-                                                            & CLK       & 14                                                                    & SPI Serial Clock          \\\cline{2-4}
-                                                            & CSN       & 10                                                                    & SPI Chip Select           \\\hline
-                    \multirow{13}{*}{\textbf{GPIO}}         & WAKE\#    & 33                                                                    & Wake Signal               \\\cline{2-4}
-                                                            & PERST\#   & 35                                                                    & Reset Signal              \\\cline{2-4}
-                                                            & GPIO1     & 37                                                                    & General Purpose I/O 1     \\\cline{2-4}
-                                                            & GPIO2     & 39                                                                    & General Purpose I/O 2     \\\cline{2-4}
-                                                            & GPIO3     & 41                                                                    & General Purpose I/O 3     \\\cline{2-4}
-                                                            & GPIO4     & 43                                                                    & General Purpose I/O 4     \\\cline{2-4}
-                                                            & GPIO5     & 45                                                                    & General Purpose I/O 5     \\\cline{2-4}
-                                                            & GPIO6     & 58                                                                    & General Purpose I/O 6     \\\cline{2-4}
-                                                            & GPIO7     & 56                                                                    & General Purpose I/O 7     \\\cline{2-4}
-                                                            & GPIO8     & 54                                                                    & General Purpose I/O 8     \\\cline{2-4}
-                                                            & GPIO9     & 52                                                                    & General Purpose I/O 9     \\\cline{2-4}
-                                                            & GPIO10    & 19                                                                    & General Purpose I/O 10    \\\cline{2-4}
-                                                            & GPIO11    & 21                                                                    & General Purpose I/O 11    \\\hline
+                
+                    \multirow{3}{*}{\textbf{Power}}
+                        & +3V3 & A12, A13, A14, A15, A16, A17, A18 & Power supply +3.3V \\ \cline{2-4}
+                        & GND  & A1, A6, A11, B1, B4, B8, B11, B12, B13, B14, B15, B16, B17, B18 & Ground \\ \hline
+                
+                    \multirow{2}{*}{\textbf{USB}}
+                        & D+   & B2 & USB Data Positive \\ \cline{2-4}
+                        & D-   & B3 & USB Data Negative \\ \hline
+                
+                    \multirow{4}{*}{\textbf{UART}}
+                        & TXD  & A2 & UART Transmit Data \\ \cline{2-4}
+                        & RXD  & A3 & UART Receive Data \\ \cline{2-4}
+                        & RTS  & A4 & UART Request to Send \\ \cline{2-4}
+                        & CTS  & A5 & UART Clear to Send \\ \hline
+                
+                    \multirow{4}{*}{\textbf{SPI}}
+                        & CSN  & A7  & SPI Chip Select \\ \cline{2-4}
+                        & MOSI & A8  & SPI Master Out Slave In \\ \cline{2-4}
+                        & CLK  & A9  & SPI Serial Clock \\ \cline{2-4}
+                        & MISO & A10 & SPI Master In Slave Out \\ \hline
+                
+                    \multirow{2}{*}{\textbf{I2C}}
+                        & SCL  & B9  & I2C Serial Clock \\ \cline{2-4}
+                        & SDA  & B10 & I2C Serial Data \\ \hline
+                
+                    \multirow{3}{*}{\textbf{GPIO}}
+                        & SLOTDET & B5 & Slot Detection Signal \\ \cline{2-4}
+                        & GPIO0   & B6 & General Purpose I/O 0 \\ \cline{2-4}
+                        & GPIO1   & B7 & General Purpose I/O 1 \\ \hline
                 \end{longtable}
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.8\textwidth]{figures/Adapter_Board_Definition.drawio.png}
+                    \includegraphics[width=0.9\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
                     \caption{Sơ đồ chân Module Adapter}
                 \end{figure}
 
