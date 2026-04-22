@@ -6,13 +6,13 @@
         \begin{enumerate}
             \item \textbf{Gateway Linux/SoC (CPU hiệu năng cao)}
             \begin{itemize}
-                \item Loại này dùng SoC/CPU (ARM Cortex-A…) chạy Linux, ưu điểm là tài nguyên lớn, dễ tích hợp nhiều giao thức, hỗ trợ tốt các framework cloud/edge (MQTT broker cục bộ, container, phân tích dữ liệu…).
+                \item Loại này dùng SoC/CPU (ARM Cortex-A\ldots) chạy Linux, ưu điểm là tài nguyên lớn, dễ tích hợp nhiều giao thức, hỗ trợ tốt các framework cloud/edge (MQTT broker cục bộ, container, phân tích dữ liệu\ldots).
                 \item Tuy nhiên, nhược điểm là chi phí BOM và PCB cao, tiêu thụ năng lượng lớn, thời gian khởi động dài và độ phức tạp phần mềm cao. Với các bài toán chỉ cần thu thập – tiền xử lý – đẩy dữ liệu lên server, nền tảng Linux thường dư thừa tài nguyên, khó đạt mục tiêu tối ưu chi phí và thời gian triển khai.
             \end{itemize}
             
             \item \textbf{Gateway một MCU (Single-MCU Gateway)}
             \begin{itemize}
-                \item Ưu điểm nổi bật là rẻ, gọn, tiết kiệm điện. Tuy vậy, khi cần hỗ trợ đồng thời nhiều giao thức LAN (Zigbee/LoRa/CAN/RS-485…) và WAN (Wi-Fi/LTE/Ethernet) cộng thêm giao thức ứng dụng (MQTT/HTTP/CoAP), một MCU đơn dễ gặp giới hạn tài nguyên: CPU/RAM/Flash, đồng thời dễ xảy ra blocking giữa các tác vụ I/O và tác vụ mạng. Điều này làm giảm tính ổn định và làm hệ thống khó mở rộng.
+                \item Ưu điểm nổi bật là rẻ, gọn, tiết kiệm điện. Tuy vậy, khi cần hỗ trợ đồng thời nhiều giao thức LAN (Zigbee/LoRa/CAN/RS-485\ldots) và WAN (Wi-Fi/LTE/Ethernet\ldots) cộng thêm giao thức ứng dụng (MQTT/HTTP/CoAP), một MCU đơn dễ gặp giới hạn tài nguyên: CPU/RAM/Flash, đồng thời dễ xảy ra blocking giữa các tác vụ I/O và tác vụ mạng. Điều này làm giảm tính ổn định và làm hệ thống khó mở rộng.
             \end{itemize}
             
             \item \textbf{Gateway đa MCU nhưng thiếu chuẩn hóa phân vai}
@@ -28,20 +28,20 @@
         \end{itemize}
 
     \subsection{Khảo sát mức độ module hóa phần cứng và khả năng mở rộng giao thức}
-        Về phần cứng, nhiều gateway hiện nay tích hợp cố định các module (Zigbee/LoRa/LTE/ETH) lên board chính. Cách này tiện cho sản xuất nhưng hạn chế lớn ở chỗ:
+        Về phần cứng, nhiều gateway hiện nay tích hợp cố định các module (Zigbee/LoRa/LTE/\ldots) lên board chính. Cách thiết kế này thuận tiện cho sản xuất nhưng có nhiều hạn chế lớn:
         \begin{itemize}
-            \item Không linh hoạt theo từng bài toán triển khai (dùng ít vẫn phải mua đủ).
+            \item Không linh hoạt theo từng bài toán triển khai.
             \item Khó thay thế/nâng cấp theo nhu cầu thực tế.
             \item Khi thay đổi yêu cầu ứng dụng thường phải thay cả thiết bị.
         \end{itemize}
 
-        Một số gateway sử dụng các chuẩn module như Mini-PCIe/M.2 để thay LTE/5G… giúp nâng cao tính thay thế. Tuy nhiên, chi phí module cao và thiết kế phần cứng phức tạp; đồng thời các module cảm biến/fieldbus phổ biến (RS-485, CAN, LoRa, Zigbee dạng rời) vẫn không đồng nhất chuẩn cơ khí – chân – giao thức.
+        Một số gateway sử dụng các chuẩn kết nối như Mini-PCIe hoặc M.2, cho phép thay thế các module LTE, 5G, \ldots từ đó tăng tính linh hoạt trong quá trình nâng cấp và mở rộng hệ thống. Tuy nhiên, chi phí module cao và thiết kế phần cứng phức tạp; đồng thời các module cảm biến/fieldbus phổ biến (RS-485, CAN, LoRa, Zigbee dạng rời) vẫn không đồng nhất chuẩn cơ khí – chân – giao thức.
 
         Từ thực tế đó, hướng tiếp cận phù hợp là chuẩn hóa giao diện (UART/SPI/I2C/USB/GPIO) thay vì phụ thuộc vào chuẩn module vật lý. Vì vậy, giải pháp Module Adapter trong đồ án giúp:
         \begin{itemize}
-            \item Dùng được module thị trường đa dạng (không theo chuẩn thống nhất).
+            \item Dùng được module thị trường đa dạng.
             \item Chuẩn hóa kết nối về một chuẩn gateway nội bộ.
-            \item Dễ tháo lắp, thay thế theo nhu cầu (đúng mục tiêu Modularity).
+            \item Dễ tháo lắp, thay thế theo nhu cầu.
         \end{itemize}
 
     \subsection{Khảo sát kiến trúc phần mềm gateway: monolithic vs phân lớp/module}
@@ -65,7 +65,7 @@
 
         Đối chiếu với 2 sơ đồ firmware đã xây dựng:
         \begin{itemize}
-            \item Trên MCU LAN, tầng Application tổ chức thành các Handler Task (Zigbee, LoRa, BLE, Thread, Z-Wave, CAN, RS-485…) chạy dưới FreeRTOS; tầng Middleware cung cấp các handler tương ứng và khối lưu trữ (Data Storage) + OTA.
+            \item Trên MCU LAN, tầng Application tổ chức thành các Handler Task (Zigbee, LoRa, BLE, Thread, Z-Wave, CAN, RS-485\ldots) chạy dưới FreeRTOS; tầng Middleware cung cấp các handler tương ứng và khối lưu trữ (Data Storage) + OTA.
             \item Trên MCU WAN, tầng Application tách rõ Internet Communication Handler (Ethernet, Wi-Fi, LTE, NB-IoT), Server Communication Handler (MQTT, HTTP, CoAP) và MCU LAN Comm Handler để nhận dữ liệu từ MCU LAN và đẩy lên server.
         \end{itemize}
 

@@ -42,7 +42,7 @@
             Trong bối cảnh phân cấp mạng IoT, các IoT gateway hoạt động như các điểm hội tụ dữ liệu (aggregation points), nơi nhiều thiết bị IoT hợp nhất luồng dữ liệu của chúng trước khi truyền lên các hệ thống cấp cao hơn. Vị trí chiến lược này cho phép IoT gateway quản lý và tối ưu hóa luồng dữ liệu từ nhiều thiết bị đầu cuối, đảm bảo sử dụng băng thông hiệu quả và giảm tải xử lý cho hạ tầng đám mây.
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.85\textwidth]{figures/Gateway_in_IoT_architecture.jpg}
+                \includegraphics[width=0.75\textwidth]{figures/Gateway_in_IoT_architecture.jpg}
                 \vspace{1em}
                 \caption{Vị trí của IoT gateway trong kiến trúc IoT}
                 \label{fig:iot_gateway_position}
@@ -70,7 +70,7 @@
             Một IoT Gateway hiện đại được thiết kế theo kiến trúc nhiều lớp (layered architecture), trong đó mỗi lớp đảm nhận một nhóm chức năng cụ thể và phối hợp chặt chẽ với các lớp khác. Cấu trúc này không chỉ tạo ra sự tách biệt rõ ràng giữa phần cứng và phần mềm, mà còn cho phép gateway hoạt động như một nền tảng tính toán linh hoạt, có thể mở rộng và dễ bảo trì. Về tổng thể, kiến trúc của gateway có thể chia thành hai khối chính: khối phần cứng (hardware layer) đảm nhiệm việc thu nhận và truyền dẫn tín hiệu vật lý, và khối phần mềm nhiều lớp (multi-layer software stack) thực hiện các chức năng xử lý, quản lý và giao tiếp cấp cao.
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.7\textwidth]{figures/iot_gateway_architecture.png}
+                \includegraphics[width=0.75\textwidth]{figures/iot_gateway_architecture.png}
                 \vspace{1em}
                 \caption{Cấu trúc của IoT gateway}
                 \label{fig:iot_gateway_structure}
@@ -303,7 +303,7 @@
                         
                         \begin{figure}[H]
                             \centering
-                            \includegraphics[width=0.45\textwidth]{figures/lythuyet_ringing.png}
+                            \includegraphics[width=0.4\textwidth]{figures/lythuyet_ringing.png}
                             \caption{Minh hoạ hiện tượng ringing do không khớp trở kháng}
                             \label{fig:lythuyet_ringing}  
                         \end{figure}
@@ -320,7 +320,7 @@
                         
                         \begin{figure}[H]
                             \centering
-                            \includegraphics[width=0.45\textwidth]{figures/lythuyet_highspeedlayout.png}
+                            \includegraphics[width=0.4\textwidth]{figures/lythuyet_highspeedlayout.png}
                             \caption{Minh hoạ return path liên tục dưới trace trên mặt phẳng tham chiếu}
                             \label{fig:sim_highspeedlayout}  
                         \end{figure}
@@ -344,24 +344,33 @@
 
                         Trong thực tế, các giá trị trở kháng mục tiêu đã được chuẩn hóa theo từng giao thức truyền thông và loại đường dẫn nhằm đảm bảo khả năng tương thích giữa linh kiện phát–thu, đường mạch PCB và cáp kết nối. Một số chuẩn trở kháng phổ biến thường được áp dụng trong thiết kế PCB tốc độ cao được liệt kê trong Bảng~\ref{tab:impedance_standards}.
                         
-                        \begin{table}[H]
-                            \centering
+                        \begin{longtable}{|l|c|c|}
                             \caption{Các giá trị trở kháng đặc trưng theo các chuẩn giao thức truyền thông phổ biến.}
-                            \begin{tabular}{|l|c|c|}
-                                \hline
-                                Giao thức/Chuẩn & Loại đường truyền & Trở kháng mục tiêu \\
-                                \hline
-                                RF, tín hiệu high-speed tổng quát & Single-ended & 50~\(\Omega\) \\
-                                USB~2.0/3.x, HDMI & Differential & 90~\(\Omega\) \\
-                                Ethernet (10/100/1000/10G) & Differential & 100~\(\Omega\) \\
-                                PCIe, DDR3/DDR4 & Differential & 100~\(\Omega\) \\
-                                CAN bus, RS-485 & Differential & 120~\(\Omega\) \\
-                                LVDS & Differential & 100~\(\Omega\) \\
-                                SATA & Differential & 100~\(\Omega\) \\
-                                \hline
-                            \end{tabular}
-                            \label{tab:impedance_standards}
-                        \end{table}
+                            \label{tab:impedance_standards} \\
+                            \hline
+                            Giao thức/Chuẩn & Loại đường truyền & Trở kháng mục tiêu \\
+                            \hline
+                            \endfirsthead
+                        
+                            \hline
+                            Giao thức/Chuẩn & Loại đường truyền & Trở kháng mục tiêu \\
+                            \hline
+                            \endhead
+                        
+                            \hline
+                            \endfoot
+                        
+                            \hline
+                            \endlastfoot
+                        
+                            RF, tín hiệu high-speed tổng quát & Single-ended & 50~\(\Omega\) \\
+                            USB~2.0/3.x, HDMI & Differential & 90~\(\Omega\) \\
+                            Ethernet (10/100/1000/10G) & Differential & 100~\(\Omega\) \\
+                            PCIe, DDR3/DDR4 & Differential & 100~\(\Omega\) \\
+                            CAN bus, RS-485 & Differential & 120~\(\Omega\) \\
+                            LVDS & Differential & 100~\(\Omega\) \\
+                            SATA & Differential & 100~\(\Omega\) \\
+                        \end{longtable}
                         
                         Mỗi chuẩn giao thức đều quy định chặt chẽ giá trị trở kháng danh định và dung sai cho phép nhằm đảm bảo đặc tính truyền dẫn và khả năng liên thông giữa các thiết bị. Chẳng hạn, các PHY Ethernet thường yêu cầu cặp đường vi sai có trở kháng 100~\(\Omega\) với dung sai khoảng \(\pm 10\%\), trong khi các bộ điều khiển USB được thiết kế để hoạt động tối ưu với đường truyền vi sai 90~\(\Omega\) từ phía phát đến phía thu. Việc tuân thủ đúng các giá trị trở kháng này là điều kiện tiên quyết để giảm phản xạ, hạn chế méo tín hiệu và đảm bảo độ tin cậy của hệ thống truyền thông tốc độ cao.
                     
@@ -392,7 +401,7 @@
 
                         \begin{figure}[H]
                             \centering
-                            \includegraphics[width=0.45\textwidth]{figures/microstriplines-side-views.png}
+                            \includegraphics[width=0.4\textwidth]{figures/microstriplines-side-views.png}
                             \caption{Minh họa một số cách định tuyến trace trên PCB ảnh hưởng trở kháng}
                             \label{fig:microstriplines-side-views}  
                         \end{figure}
@@ -421,7 +430,7 @@
                         
                         \begin{figure}[H]
                             \centering
-                            \includegraphics[width=0.5\textwidth]{figures/lythuyet_crosstalk.jpg}
+                            \includegraphics[width=0.4\textwidth]{figures/lythuyet_crosstalk.jpg}
                             \caption{Minh họa hiện tượng nhiễu xuyên kênh giữa các đường truyền đặt gần nhau}
                             \label{fig:lythuyet_crosstalk}  
                         \end{figure}
