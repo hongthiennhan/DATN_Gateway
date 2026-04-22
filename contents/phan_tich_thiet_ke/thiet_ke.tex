@@ -317,12 +317,12 @@
                     Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngoài ra, hệ thống hỗ trợ nguồn 5V từ cổng USB Type-C. Hai nguồn này được lựa chọn thông qua IC Power MUX TPS2121RUXR, tích hợp các cơ chế bảo vệ toàn diện như sau:
 
                     \begin{itemize}
-                        \item \textbf{Giới hạn dòng (ILM):} Chủ động kiểm soát dòng tải không vượt quá ngưỡng cài đặt (điều chỉnh thông qua điện trở ngoài);
-                        \item \textbf{Bảo vệ ngắn mạch:} Ngắt tải trong thời gian rất ngắn (khoảng 1\,$\mu$s) khi phát hiện dòng tăng đột biến vượt 2.4 lần giới hạn;
-                        \item \textbf{Bảo vệ quá nhiệt (TSD):} Tự động ngắt khi nhiệt độ vượt 160$^\circ$C hoặc tăng nhanh bất thường, và khôi phục khi điều kiện nhiệt ổn định;
-                        \item \textbf{Bảo vệ quá áp (OVx):} Ngắt kênh đầu vào khi điện áp vượt ngưỡng an toàn do người dùng thiết lập;
-                        \item \textbf{Khóa điện áp thấp (UVLO):} Ngăn cấp nguồn khi điện áp giảm xuống dưới mức tối thiểu (khoảng 2.55V);
-                        \item \textbf{Chặn dòng ngược (RCB):} Ngăn dòng điện hồi ngược từ đầu ra về đầu vào với thời gian đáp ứng khoảng 10\,$\mu$s.
+                        \item \textbf{Giới hạn dòng (ILM):} Chủ động kiểm soát dòng tải không vượt quá ngưỡng cài đặt (điều chỉnh thông qua điện trở ngoài)
+                        \item \textbf{Bảo vệ ngắn mạch:} Ngắt tải trong thời gian rất ngắn (khoảng 1\,$\mu$s) khi phát hiện dòng tăng đột biến vượt 2.4 lần giới hạn
+                        \item \textbf{Bảo vệ quá nhiệt (TSD):} Tự động ngắt khi nhiệt độ vượt 160$^\circ$C hoặc tăng nhanh bất thường, và khôi phục khi điều kiện nhiệt ổn định
+                        \item \textbf{Bảo vệ quá áp (OVx):} Ngắt kênh nguồn đầu vào khi điện áp vượt ngưỡng an toàn
+                        \item \textbf{Khóa điện áp thấp (UVLO):} Ngăn cấp nguồn khi điện áp giảm xuống dưới mức tối thiểu (khoảng 2.55V)
+                        \item \textbf{Chặn dòng ngược (RCB):} Ngăn dòng điện hồi ngược từ đầu ra về đầu vào với thời gian đáp ứng khoảng 10\,$\mu$s
                     \end{itemize}
                     
                     Nguồn sau IC Power MUX (+12V\_5V\_VBUS) được đưa đồng thời với pin LiPo (+3V7\_VBAT) vào IC sạc BQ25892RTWR. IC này tự động điều phối hai nguồn, trong đó ưu tiên nguồn ngoài (+12V\_5V\_VBUS), để tạo ra điện áp hệ thống (+4V2\_VSYS).
@@ -529,7 +529,7 @@
                 I_{SAT\_req} \geq 5A + \frac{1}{2} \times 2A = 6A
                 \]
 
-                Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, nhằm đảm bảo biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng $I_{SAT\_req}/0.7$, qua đó bù trừ sai số linh kiện và các điều kiện vận hành thực tế. Cách lựa chọn này góp phần đảm bảo khối nguồn của IC sạc hoạt động ổn định và an toàn.
+                Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, để bảo đảm biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm bù trừ sai số linh kiện và ảnh hưởng của các điều kiện vận hành thực tế. Cách lựa chọn này góp phần bảo đảm khối nguồn của IC sạc hoạt động ổn định và an toàn.
 
                 Pin LiPo sử dụng trong hệ thống đã được tích hợp sẵn mạch bảo vệ và điện trở nhiệt NTC 10k (tiếp xúc trực tiếp trên cell pin), góp phần nâng cao độ an toàn và độ tin cậy trong quá trình vận hành.
 
@@ -711,7 +711,7 @@
             \paragraph{Thiết kế Mạch USB/UART Switch}
                 Vi điều khiển ESP32-S3 hỗ trợ một giao diện USB vật lý, cho phép hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu linh hoạt khi hệ thống chỉ có một cổng USB phần cứng nhưng cần phục vụ hai đầu nối LAN sử dụng giao tiếp USB, thiết kế sử dụng IC analog switch FSUSB42UMX-TP.
 
-                IC analog switch cho phép chuyển mạch tín hiệu USB giữa hai khối chức năng khác nhau. Trong cấu hình mặc định, đường USB từ SoC ESP32-S3 (slave) được kết nối tới đầu nối LAN1 thông qua PCIe connector. Ngoài ra, IC này có thể được sử dụng để chuyển mạch cho giao tiếp UART khi cần thiết.
+                IC analog switch cho phép chuyển mạch tín hiệu USB giữa hai khối chức năng khác nhau. Trong cấu hình mặc định, đường USB từ MCU slave được kết nối tới đầu nối LAN1 thông qua PCIe connector. Ngoài ra, IC này có thể được sử dụng để chuyển mạch cho giao tiếp UART khi cần thiết.
 
                 \begin{figure}[h]
                     \centering
@@ -859,6 +859,7 @@
         \subsubsection{Thiết kế Layout (Layout Design)}
             \paragraph{Thiết kế PCB Stack-up và Kiểm soát trở kháng (Impedance Control)}
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Thiết kế Stack-up:}
                     \begin{itemize}
                         \item \textbf{Lựa chọn cấu trúc lớp:} Hệ thống bao gồm nhiều khối chức năng với các kênh tín hiệu tốc độ cao và đa dạng ray nguồn (power rails). Để đáp ứng các yêu cầu nghiêm ngặt về tính toàn vẹn tín hiệu (Signal Integrity - SI), tính toàn vẹn nguồn (Power Integrity - PI) và tương thích điện từ (EMC), thiết kế sử dụng cấu trúc PCB 6 lớp (6-layer stack-up) với sự phân bổ chức năng như sau:
@@ -891,7 +892,7 @@
                         
                         \begin{figure}[h]
                             \centering
-                            \includegraphics[width=0.8\textwidth]{figures/PCB_design_stackup.png}
+                            \includegraphics[width=0.75\textwidth]{figures/PCB_design_stackup.png}
                             \caption{Layer Stack-up Management}
                         \end{figure}
 
@@ -913,19 +914,19 @@
 
                         \begin{figure}[h]
                             \centering
-                            \includegraphics[width=0.8\textwidth]{figures/impedance_50R.png}
+                            \includegraphics[width=0.75\textwidth]{figures/impedance_50R.png}
                             \caption{Thông số kích thước cho đường tín hiệu Coplanar Single-ended $50\Omega$ (Đơn vị: mm)}
                         \end{figure}
 
                         \begin{figure}[h]
                             \centering
-                            \includegraphics[width=0.8\textwidth]{figures/impedance_90R.png}
+                            \includegraphics[width=0.75\textwidth]{figures/impedance_90R.png}
                             \caption{Thông số kích thước cho cặp tín hiệu vi sai (Coplarar Differential-pair) $90\Omega$ (Đơn vị: mm)}
                         \end{figure}
 
                         \begin{figure}[h]
                             \centering
-                            \includegraphics[width=0.8\textwidth]{figures/jlcpcb_stackup.png}
+                            \includegraphics[width=0.75\textwidth]{figures/jlcpcb_stackup.png}
                             \caption{Cấu trúc Stack-up và thông số vật liệu tiêu chuẩn của JLCPCB}
                         \end{figure}
                             
@@ -935,6 +936,7 @@
                 Việc bố trí linh kiện (Floor-planning) là bước quyết định đến hiệu năng chống nhiễu (EMC) và tính ổn định của hệ thống. Dựa trên sơ đồ nguyên lý và các ràng buộc cơ khí, chiến lược quy hoạch được thực hiện theo các nguyên tắc sau:
 
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Phân vùng chức năng (Functional Partitioning):}
                     \begin{itemize}
                         \item Bo mạch được chia thành các vùng chức năng vật lý riêng biệt dựa trên mức năng lượng và loại tín hiệu để giảm thiểu nhiễu giao thoa. Cụ thể bao gồm:
@@ -947,9 +949,8 @@
                     \end{itemize}
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=0.45\textwidth]{figures/floor_planing.png} 
-                    \includegraphics[width=0.45\textwidth]{figures/floor_planing_3d.png} 
-                    \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/floor_planing_3d.png} 
+                    \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning).}
                     \label{fig:pcb_floorplan}
                 \end{figure}
 
@@ -976,6 +977,7 @@
             Để đảm bảo thiết bị hoạt động ổn định trong môi trường công nghiệp và tuân thủ các tiêu chuẩn về tương thích điện từ (EMC), thiết kế PCB áp dụng các kỹ thuật layout sau:
 
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Kỹ thuật Che chắn và Lồng Faraday:}
                     \begin{itemize}
                         \item \textbf{Phủ mass toàn mạch:} Các diện tích trống trên tất cả các lớp PCB đều được phủ đồng nối đất (GND). Việc này tạo ra một lồng chắn tĩnh điện tự nhiên, giúp hấp thụ các nhiễu bức xạ từ môi trường và giảm thiểu phát xạ từ các đường mạch nội bộ.
@@ -984,16 +986,15 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.4\textwidth]{figures/crysal_shielding_2D.png}
-                        \includegraphics[width=0.4\textwidth]{figures/crysal_shielding_3D.png}
-                        \caption{Kỹ thuật tạo vòng bảo vệ (Guard Ring) và via stitching xung quanh khối thạch anh để cô lập nhiễu.}
+                        \includegraphics[width=0.375\textwidth]{figures/DATN/crysal_shielding_2D.png}
+                        \includegraphics[width=0.375\textwidth]{figures/DATN/crysal_shielding_3D.png}
+                        \caption{Kỹ thuật tạo Guard Ring và via stitching xung quanh khối thạch anh để cô lập nhiễu.}
                         \label{fig:crystal_shielding}
                     \end{figure}
 
-                    \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.8\textwidth]{figures/USB_shielding_2D.png}
+                        \includegraphics[width=0.75\textwidth]{figures/DATN/USB_shielding_2D.png}
                         \caption{Kỹ thuật bọc mass và stitching via dọc theo đường tín hiệu USB tốc độ cao.}
                         \label{fig:usb_shielding}
                     \end{figure}
@@ -1006,8 +1007,8 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.7\textwidth]{figures/incorrect_plane_void_routing.png}
-                        \includegraphics[width=0.7\textwidth]{figures/slave_i2c0.png}
+                        \includegraphics[width=0.75\textwidth]{figures/incorrect_plane_void_routing.png}
+                        \includegraphics[width=0.75\textwidth]{figures/DATN/slave_i2c0.png}
                         \caption{Minh họa tín hiệu Slave\_I2C0 được định tuyến liên tục trên mặt phẳng GND đồng nhất, tránh các vị trí lớp phủ đã bị cắt.}
                     \end{figure}
 
@@ -1018,6 +1019,7 @@
                 Hệ thống nguồn đóng vai trò then chốt trong việc đảm bảo độ ổn định cho toàn bộ thiết bị. Dựa trên các hướng dẫn thiết kế (Design Guidelines) từ nhà sản xuất IC và nguyên lý điện từ trường, quy trình layout tuân thủ các nguyên tắc nghiêm ngặt sau:
 
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop):}
                     \begin{itemize}
                         \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn hoặc cuộn cảm cho nguồn xung.
@@ -1026,7 +1028,7 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.8\textwidth]{figures/hot_loop_minimization.png}
+                        \includegraphics[width=0.75\textwidth]{figures/hot_loop_minimization.png}
                         \caption{Vị trí các tụ điện trong nguồn xung +5V0\_SYS.}
                     \end{figure}
 
@@ -1092,6 +1094,7 @@
                 Để đảm bảo chất lượng tín hiệu (Signal Integrity) cho các giao tiếp USB, SPI và SDIO, quy trình layout tuân thủ các quy tắc định tuyến nghiêm ngặt nhằm kiểm soát trở kháng, đồng bộ pha và giảm thiểu xuyên nhiễu (Crosstalk):
 
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Định tuyến Cặp Vi sai (Differential Pair Routing - USB):}
                     \begin{itemize}
                         \item \textbf{Kiểm soát Trở kháng:} Cặp tín hiệu vi sai USB D+/D- được thiết kế đạt trở kháng đặc tính mục tiêu $Z_{diff} = 90\Omega \pm 10\%$. Cấu trúc định tuyến sử dụng là \textit{Differential Coplanar Waveguide} (vi sai đồng phẳng có mass bao bọc) để tăng khả năng chống nhiễu ngoại vi.
@@ -1133,6 +1136,7 @@
                 Việc mô phỏng được thực hiện trên các đường tín hiệu quan trọng để xác minh tính toán lý thuyết so với thiết kế layout thực tế.
                 
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Mô phỏng đường tín hiệu đơn cực (Single-ended Bus):}
                     
                     \begin{figure}[h]
@@ -1199,6 +1203,7 @@
 
             \paragraph{Phân tích và Mô phỏng Mạng phân phối nguồn (Power Distribution Network - PDN)}
                 \begin{enumerate}
+                    \renewcommand{\labelenumi}{\alph{enumi}.}
                     \item \textbf{Sơ đồ Cây phân phối nguồn (Power Tree):}
                     Hệ thống được thiết kế thành cấu trúc nguồn phân tầng đa nhánh phức tạp, được thể hiện trong \autoref{fig:power_tree}. Mạng lưới này không chỉ đơn thuần là cấp điện, mà là một hệ thống quản lý năng lượng phân tán với nhiều đặc điểm kỹ thuật cần phải đảm bảo trong thiết kế Mạng phân phối nguồn (Power Distribution Network - PDN).
 
@@ -1329,6 +1334,7 @@
                     \end{itemize}
 
                     \begin{enumerate}
+                        \renewcommand{\labelenumi}{\alph{enumi}.}
                         \item \textbf{Phân tích Ray nguồn +5V0\_SYS:}
                             
                             Mô phỏng được thực hiện với dòng tải tiêu thụ cực đại trên thiết kế là $I_{load} = 2.92A$.
