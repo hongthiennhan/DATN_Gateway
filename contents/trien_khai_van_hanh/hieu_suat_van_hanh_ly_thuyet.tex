@@ -1,0 +1,38 @@
+\section{Phân tích hiệu năng vận hành lý thuyết}
+
+\subsection{Thông lượng dữ liệu (Data Throughput)}
+
+\subsubsection{Thông lượng truyền thông nội bộ Inter-MCU}
+Kênh giao tiếp giữa Master (WAN-MCU) và Slave (LAN-MCU) sử dụng Quad SPI, xung nhịp đồng bộ lấy theo giới hạn của thiết bị Slave là $f_{\text{clk}} = 60 \, \text{MHz}$ \cite{189}.
+\begin{itemize}
+    \item \textbf{Thông lượng lý thuyết ($T_{\text{raw}}$):} 
+    $T_{\text{raw}} = f_{\text{clk}} \times \text{4 bits/clock} = 60 \, \text{MHz} \times 4 = 240 \, \text{Mbps}$ (tương đương $30 \, \text{MB/s}$).
+    \item \textbf{Hiệu suất thực tế ($\eta$):} Kết quả thực nghiệm đo đạt $> 10 \, \text{Mbps}$ \cite{303}. Sự hao hụt này (hiệu suất $\approx 4.16\%$) do các yếu tố:
+    \begin{itemize}
+        \item Cơ chế bắt tay vật lý (GPIO Handshake) và trễ ngắt ISR trong FreeRTOS \cite{157, 273}.
+        \item Overhead của khung tin nội bộ (Header, Sequence Number, CRC) \cite{165}.
+        \item Cơ chế xác thực tin cậy ACK/NACK cưỡng bức chờ đợi phản hồi giữa các phiên truyền \cite{168}.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Thông lượng lưu trữ cục bộ (SDIO 4-bit)}
+Giao tiếp với thẻ nhớ Micro SD hỗ trợ chuẩn SDIO 4-bit, tần số hoạt động tối đa $80 \, \text{MHz}$ \cite{214}.
+\begin{itemize}
+    \item \textbf{Thông lượng lý thuyết:} $T_{\text{SDIO}} = 80 \, \text{MHz} \times 4 \, \text{bits} = 320 \, \text{Mbps}$ (tương đương $40 \, \text{MB/s}$).
+    \item \textbf{Hiệu suất thực tế:} Thực nghiệm ghi nhận tốc độ ghi đạt chuẩn Class 10 (tối thiểu $10 \, \text{MB/s} \approx 80 \, \text{Mbps}$) \cite{307}. Tốc độ này nhanh hơn gấp 8 lần thông lượng dữ liệu thực tế từ các module LAN, đảm bảo hệ thống không bị nghẽn khi thực hiện lưu đệm (Store-and-forward) lúc mất mạng WAN \cite{334}.
+\end{itemize}
+
+\subsection{Độ trễ hệ thống (End-to-End Latency)}
+Độ trễ được xác định từ thời điểm cảm biến gửi dữ liệu đến khi dữ liệu được đóng gói MQTT gửi lên Cloud:
+\begin{itemize}
+    \item \textbf{Trễ xử lý tại LAN-MCU:} Bao gồm thời gian thu thập dữ liệu thô, kiểm tra Checksum và chuẩn hóa khung tin nội bộ \cite{119, 136}.
+    \item \textbf{Trễ truyền dẫn SPI:} Thời gian gói tin nằm trên bus SPI, phụ thuộc vào kích thước Payload và thông lượng thực tế $10 \, \text{Mbps}$.
+    \item \textbf{Trễ mạng diện rộng (WAN):} Phụ thuộc vào chất lượng kết nối Wi-Fi/LTE và độ phản hồi của MQTT Broker \cite{272}. Hệ thống sử dụng hàng đợi (Publish Queue) trong 8MB PSRAM để cách ly trễ mạng với trễ xử lý nội bộ \cite{139, 172}.
+\end{itemize}
+
+\subsection{Khả năng chịu tải và Giới hạn kết nối}
+Dựa trên tài nguyên phần cứng ESP32-S3 (16MB Flash, 8MB PSRAM), hệ thống đáp ứng:
+\begin{itemize}
+    \item \textbf{Giới hạn miền Sensing:} Hỗ trợ thu thập đồng thời từ 02 khe cắm LAN (ví dụ: 01 khe Zigbee và 01 khe LoRa TDMA) \cite{141}.
+    \item \textbf{Dung lượng hàng đợi:} Với 8MB PSRAM, Gateway có khả năng lưu trữ tạm thời hàng ngàn gói tin telemetry (kích thước trung bình $1-2 \, \text{KB}$) trước khi phải ghi vào thẻ nhớ SD, đảm bảo vận hành ổn định ngay cả khi Broker Cloud gặp sự cố phản hồi chậm \cite{122, 172}.
+\end{itemize}

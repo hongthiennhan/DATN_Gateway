@@ -30,7 +30,7 @@
             \paragraph{Giao tiếp giữa hai Vi xử lý:}\par
                 Để đảm bảo đồng bộ dữ liệu giữa MASTER WAN-MCU và SLAVE LAN-MCU, hệ thống sử dụng ba đường giao tiếp riêng biệt:
                 \begin{itemize}
-                    \item \textbf{Quad SPI (Request/Data)}: Kênh truyền dữ liệu tốc độ cao, dùng để Slave gửi dữ liệu cảm biến lên Master và Master gửi yêu cầu xuống Slave.
+                    \item \textbf{SPI (Request/Data)}: Kênh truyền dữ liệu tốc độ cao, dùng để Slave gửi dữ liệu cảm biến lên Master và Master gửi yêu cầu xuống Slave.
                     \item \textbf{UART (Firmware Flow)}: Kênh chuyên biệt dùng để nạp firmware cho SLAVE LAN-MCU thông qua MASTER WAN-MCU
                     \item \textbf{GPIO (Control)}: Các đường tín hiệu điều khiển (Boot, Reset, Interrupt) để đảm bảo đồng bộ trạng thái hoạt động.
                 \end{itemize}
@@ -74,56 +74,56 @@
             \paragraph{Thiết kế:}\par
                 Đối với các module có sẵn trên thị trường, các module này thông thường sẽ không theo một tiêu chuẩn cụ thể kể cả các module dạng Mini PCIe hay M.2, do đó việc thiết kế các Module Adapter đóng vai trò quan trọng trong việc chuẩn hóa kết nối giữa các module và Baseboard.
             \paragraph{Chuẩn hóa giao diện:}\par
-                Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa sơ đồ chân:
-                \begin{longtable}{|l|l|p{5cm}|l|}
-                    \caption{\textcolor{red}{Pinout Module Adapter}} \\
-                    \hline
-                    \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
-                    \endfirsthead
-                    \hline
-                    \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
-                    \endhead
-                    \hline
-                    \endfoot
-                    % \hline
-                    \endlastfoot
-                    \multirow{4}{*}{\textbf{Power}}         & +1V8      & 9, 11, 13, 15                                                         & Power Supply +1.8V        \\\cline{2-4}
-                                                            & +3V3      & 1, 3, 5, 32, 34, 36                                                   & Power Supply +3.3V        \\\cline{2-4}
-                                                            & +5V0      & 40, 42, 44, 46, 48                                                    & Power Supply +5.0V        \\\cline{2-4}
-                                                            & GND       & 2, 7, 8, 17, 18, 23, 24, 25, 27, 29, 30, 31, 38, 47, 50, 53, 59, 60   & Ground                    \\\hline
-                    \multirow{2}{*}{\textbf{USB}}           & D+        & 26                                                                    & USB Data Positive         \\\cline{2-3}
-                                                            & D-        & 28                                                                    & USB Data Negative         \\\hline
-                    \multirow{2}{*}{\textbf{I2C}}           & SDA       & 6                                                                     & I2C Serial Data           \\\cline{2-4}
-                                                            & SCL       & 4                                                                     & I2C Serial Clock          \\\hline
-                    \multirow{4}{*}{\textbf{UART}}          & TXD       & 49                                                                    & UART0 Transmit Data       \\\cline{2-4}
-                                                            & RXD       & 51                                                                    & UART0 Receive Data        \\\cline{2-4}
-                                                            & RTS       & 57                                                                    & UART0 Request to Send     \\\cline{2-4}
-                                                            & CTS       & 55                                                                    & UART0 Clear to Send       \\\hline
-                    \multirow{2}{*}{\textbf{COEX\_UART}}    & COEX\_TXD & 20                                                                    & Coexistence UART TXD      \\\cline{2-4}
-                                                            & COEX\_RXD & 22                                                                    & Coexistence UART RXD      \\\hline
-                    \multirow{4}{*}{\textbf{SPI}}           & MOSI      & 12                                                                    & SPI Master Out Slave In   \\\cline{2-4}
-                                                            & MISO      & 16                                                                    & SPI Master In Slave Out   \\\cline{2-4}
-                                                            & CLK       & 14                                                                    & SPI Serial Clock          \\\cline{2-4}
-                                                            & CSN       & 10                                                                    & SPI Chip Select           \\\hline
-                    \multirow{13}{*}{\textbf{GPIO}}         & WAKE\#    & 33                                                                    & Wake Signal               \\\cline{2-4}
-                                                            & PERST\#   & 35                                                                    & Reset Signal              \\\cline{2-4}
-                                                            & GPIO1     & 37                                                                    & General Purpose I/O 1     \\\cline{2-4}
-                                                            & GPIO2     & 39                                                                    & General Purpose I/O 2     \\\cline{2-4}
-                                                            & GPIO3     & 41                                                                    & General Purpose I/O 3     \\\cline{2-4}
-                                                            & GPIO4     & 43                                                                    & General Purpose I/O 4     \\\cline{2-4}
-                                                            & GPIO5     & 45                                                                    & General Purpose I/O 5     \\\cline{2-4}
-                                                            & GPIO6     & 58                                                                    & General Purpose I/O 6     \\\cline{2-4}
-                                                            & GPIO7     & 56                                                                    & General Purpose I/O 7     \\\cline{2-4}
-                                                            & GPIO8     & 54                                                                    & General Purpose I/O 8     \\\cline{2-4}
-                                                            & GPIO9     & 52                                                                    & General Purpose I/O 9     \\\cline{2-4}
-                                                            & GPIO10    & 19                                                                    & General Purpose I/O 10    \\\cline{2-4}
-                                                            & GPIO11    & 21                                                                    & General Purpose I/O 11    \\\hline
-                \end{longtable}
-                \begin{figure}[H]
-                    \centering
-                    \includegraphics[width=0.8\textwidth]{figures/Adapter_Board_Definition.drawio.png}
-                    \caption{Sơ đồ chân Module Adapter}
-                \end{figure}
+                Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa sơ đồ chân.
+                % \begin{longtable}{|l|l|p{5cm}|l|}
+                %     \caption{\textcolor{red}{Pinout Module Adapter}} \\
+                %     \hline
+                %     \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
+                %     \endfirsthead
+                %     \hline
+                %     \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\\hline
+                %     \endhead
+                %     \hline
+                %     \endfoot
+                %     % \hline
+                %     \endlastfoot
+                %     \multirow{4}{*}{\textbf{Power}}         & +1V8      & 9, 11, 13, 15                                                         & Power Supply +1.8V        \\\cline{2-4}
+                %                                             & +3V3      & 1, 3, 5, 32, 34, 36                                                   & Power Supply +3.3V        \\\cline{2-4}
+                %                                             & +5V0      & 40, 42, 44, 46, 48                                                    & Power Supply +5.0V        \\\cline{2-4}
+                %                                             & GND       & 2, 7, 8, 17, 18, 23, 24, 25, 27, 29, 30, 31, 38, 47, 50, 53, 59, 60   & Ground                    \\\hline
+                %     \multirow{2}{*}{\textbf{USB}}           & D+        & 26                                                                    & USB Data Positive         \\\cline{2-3}
+                %                                             & D-        & 28                                                                    & USB Data Negative         \\\hline
+                %     \multirow{2}{*}{\textbf{I2C}}           & SDA       & 6                                                                     & I2C Serial Data           \\\cline{2-4}
+                %                                             & SCL       & 4                                                                     & I2C Serial Clock          \\\hline
+                %     \multirow{4}{*}{\textbf{UART}}          & TXD       & 49                                                                    & UART0 Transmit Data       \\\cline{2-4}
+                %                                             & RXD       & 51                                                                    & UART0 Receive Data        \\\cline{2-4}
+                %                                             & RTS       & 57                                                                    & UART0 Request to Send     \\\cline{2-4}
+                %                                             & CTS       & 55                                                                    & UART0 Clear to Send       \\\hline
+                %     \multirow{2}{*}{\textbf{COEX\_UART}}    & COEX\_TXD & 20                                                                    & Coexistence UART TXD      \\\cline{2-4}
+                %                                             & COEX\_RXD & 22                                                                    & Coexistence UART RXD      \\\hline
+                %     \multirow{4}{*}{\textbf{SPI}}           & MOSI      & 12                                                                    & SPI Master Out Slave In   \\\cline{2-4}
+                %                                             & MISO      & 16                                                                    & SPI Master In Slave Out   \\\cline{2-4}
+                %                                             & CLK       & 14                                                                    & SPI Serial Clock          \\\cline{2-4}
+                %                                             & CSN       & 10                                                                    & SPI Chip Select           \\\hline
+                %     \multirow{13}{*}{\textbf{GPIO}}         & WAKE\#    & 33                                                                    & Wake Signal               \\\cline{2-4}
+                %                                             & PERST\#   & 35                                                                    & Reset Signal              \\\cline{2-4}
+                %                                             & GPIO1     & 37                                                                    & General Purpose I/O 1     \\\cline{2-4}
+                %                                             & GPIO2     & 39                                                                    & General Purpose I/O 2     \\\cline{2-4}
+                %                                             & GPIO3     & 41                                                                    & General Purpose I/O 3     \\\cline{2-4}
+                %                                             & GPIO4     & 43                                                                    & General Purpose I/O 4     \\\cline{2-4}
+                %                                             & GPIO5     & 45                                                                    & General Purpose I/O 5     \\\cline{2-4}
+                %                                             & GPIO6     & 58                                                                    & General Purpose I/O 6     \\\cline{2-4}
+                %                                             & GPIO7     & 56                                                                    & General Purpose I/O 7     \\\cline{2-4}
+                %                                             & GPIO8     & 54                                                                    & General Purpose I/O 8     \\\cline{2-4}
+                %                                             & GPIO9     & 52                                                                    & General Purpose I/O 9     \\\cline{2-4}
+                %                                             & GPIO10    & 19                                                                    & General Purpose I/O 10    \\\cline{2-4}
+                %                                             & GPIO11    & 21                                                                    & General Purpose I/O 11    \\\hline
+                % \end{longtable}
+                % \begin{figure}[H]
+                %     \centering
+                %     \includegraphics[width=0.8\textwidth]{figures/Adapter_Board_Definition.drawio.png}
+                %     \caption{Sơ đồ chân Module Adapter}
+                % \end{figure}
 
         \subsubsection{Xử lý dữ liệu}
             Phần xử lý dữ liệu của gateway được thiết kế theo kiến trúc \textbf{Dual-MCU Master–Slave}, trong đó LAN-MCU chịu trách nhiệm tương tác trực tiếp với thiết bị đầu cuối (thu thập/đẩy lệnh xuống), còn WAN-MCU đảm nhiệm kết nối Internet và giao tiếp Cloud. Toàn bộ luồng dữ liệu được tổ chức theo hai hướng chính: Uplink (Sensor $\to$ Cloud) và Downlink (Cloud $\to$ Sensor), đồng thời bảo đảm độ tin cậy bằng cơ chế CRC/sequence + ACK/NACK + retry trên kênh SPI và cơ chế retry/backoff khi publish lên Cloud.
@@ -899,13 +899,13 @@
                             \item \textbf{Vùng RF (RF Zone):} Dành riêng cho các module không dây và anten.
                         \end{itemize}
                     \end{itemize}
-                \begin{figure}[h]
-                    \centering
-                    \includegraphics[width=0.45\textwidth]{figures/floor_planing.png} 
-                    \includegraphics[width=0.45\textwidth]{figures/floor_planing_3d.png} 
-                    \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
-                    \label{fig:pcb_floorplan}
-                \end{figure}
+                % \begin{figure}[h]
+                %     \centering
+                %     \includegraphics[width=0.45\textwidth]{figures/floor_planing.png} 
+                %     \includegraphics[width=0.45\textwidth]{figures/floor_planing_3d.png} 
+                %     \caption{Sơ đồ quy hoạch phân vùng chức năng trên PCB (Floor-planning)}
+                %     \label{fig:pcb_floorplan}
+                % \end{figure}
 
                     \item \textbf{Tối ưu hóa Luồng tín hiệu (Signal Flow Optimization):}
                     \begin{itemize}
@@ -938,8 +938,8 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.4\textwidth]{figures/crysal_shielding_2D.png}
-                        \includegraphics[width=0.4\textwidth]{figures/crysal_shielding_3D.png}
+                        \includegraphics[width=0.2\textwidth]{figures/crysal_shielding_2D.png}
+                        \includegraphics[width=0.2\textwidth]{figures/crysal_shielding_3D.png}
                         \caption{Kỹ thuật tạo vòng bảo vệ (Guard Ring) và via stitching xung quanh khối thạch anh để cô lập nhiễu.}
                         \label{fig:crystal_shielding}
                     \end{figure}
@@ -947,7 +947,7 @@
                     \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.8\textwidth]{figures/USB_shielding_2D.png}
+                        \includegraphics[width=0.75\textwidth]{figures/USB_shielding_2D.png}
                         \caption{Kỹ thuật bọc mass và stitching via dọc theo đường tín hiệu USB tốc độ cao.}
                         \label{fig:usb_shielding}
                     \end{figure}
@@ -960,8 +960,8 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.7\textwidth]{figures/incorrect_plane_void_routing.png}
-                        \includegraphics[width=0.7\textwidth]{figures/slave_i2c0.png}
+                        \includegraphics[width=0.3\textwidth]{figures/incorrect_plane_void_routing.png}
+                        \includegraphics[width=0.3\textwidth]{figures/slave_i2c0.png}
                         \caption{Minh họa tín hiệu Slave\_I2C0 được định tuyến liên tục trên mặt phẳng GND đồng nhất, tránh các vị trí lớp phủ đã bị cắt.}
                     \end{figure}
 
@@ -980,8 +980,8 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.8\textwidth]{figures/hot_loop_minimization.png}
-                        \caption{Vị trí các tụ điện trong nguồn xung +5V0\_SYS.}
+                        \includegraphics[width=0.5\textwidth]{figures/hot_loop_minimization.png}
+                        \caption{Vị trí các tụ điện trong nguồn xung +3V3.}
                     \end{figure}
 
                     \item \textbf{Xử lý Điểm chuyển mạch (Switching Node):}
@@ -993,8 +993,8 @@
                     \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.6\textwidth]{figures/switching_node.png}
-                        \caption{Điểm chuyển mạch trong nguồn xung +5V0\_SYS.}
+                        \includegraphics[width=0.5\textwidth]{figures/switching_node.png}
+                        \caption{Điểm chuyển mạch trong nguồn xung +3V3.}
                     \end{figure}        
 
                     \item \textbf{Kỹ thuật Hồi tiếp (Feedback) và Ground:}
@@ -1005,8 +1005,8 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.6\textwidth]{figures/feedback.png}
-                        \caption{Định tuyến hồi tiếp trong nguồn xung +5V0\_SYS.}
+                        \includegraphics[width=0.5\textwidth]{figures/feedback.png}
+                        \caption{Định tuyến hồi tiếp trong nguồn xung +3V3.}
                     \end{figure}   
 
                     \item \textbf{Quản lý Nhiệt (Thermal):}
@@ -1014,12 +1014,12 @@
                         \item Tận dụng Pad tản nhiệt dưới bụng IC, thiết kế sử dụng mảng via tản nhiệt dày đặc để dẫn nhiệt trực tiếp xuống các lớp đồng Ground Plane rộng lớn ở bên dưới (L2, L5). Điều này biến toàn bộ bo mạch thành một lá tản nhiệt tự nhiên, đảm bảo IC hoạt động mát mẻ dưới tải dòng lớn.
                     \end{itemize}
                     
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=0.6\textwidth]{figures/thermal.png}
-                        \includegraphics[width=0.6\textwidth]{figures/thermal_gnd.png}
-                        \caption{Tản nhiệt trong nguồn xung +5V0\_SYS.}
-                    \end{figure}  
+                    % \begin{figure}[h]
+                    %     \centering
+                    %     \includegraphics[width=0.6\textwidth]{figures/thermal.png}
+                    %     \includegraphics[width=0.6\textwidth]{figures/thermal_gnd.png}
+                    %     \caption{Tản nhiệt trong nguồn xung +5V0\_SYS.}
+                    % \end{figure}  
 
                     \item \textbf{Thiết kế Mạng phân phối nguồn (Power Distribution Network - PDN):}
                     Mục tiêu cốt lõi là duy trì trở kháng nguồn ($Z_{PDN}$) thấp hơn trở kháng mục tiêu trên toàn dải tần số hoạt động. Chiến lược thực hiện bao gồm:
@@ -1033,11 +1033,11 @@
                         \end{itemize}
                     \end{itemize}
 
-                    \newpage
+                    % \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.6\textwidth]{figures/3v3_pdn.png}
-                        \caption{Mạng phân phối nguồn +3V3.}
+                        \includegraphics[width=0.5\textwidth]{figures/power_network.png}
+                        \caption{Mạng phân phối nguồn.}
                     \end{figure}                     
                 \end{enumerate}
 
@@ -1055,21 +1055,22 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.6\textwidth]{figures/usb.png}
+                        \includegraphics[width=0.5\textwidth]{figures/usb.png}
                         \caption{Định tuyến USB.}
                     \end{figure} 
 
-                    \newpage
+                    % \newpage
                     \item \textbf{Định tuyến Bus Đơn cực (Single-ended Bus Routing - SPI/SDIO):}
                     \begin{itemize}
                         \item \textbf{Trở kháng $50\Omega$:} Tất cả các đường tín hiệu dữ liệu và điều khiển được thiết kế với trở kháng $Z_0 = 50\Omega \pm 10\%$ theo cấu trúc \textit{Coplanar Waveguide}.
                         \item \textbf{Bảo vệ xung nhịp (Clock Shielding):} Tín hiệu Clock (CLK) là nguồn gây nhiễu mạnh nhất. Đường CLK được định tuyến biệt lập, bao bọc bởi hai đường mass bảo vệ và được khâu via xuống Ground Plane dọc theo đường đi để cô lập trường điện từ.
                         \item \textbf{Cân bằng chiều dài (Trace Length Matching):} Áp dụng các kỹ thuật \textit{Accordion} và \textit{Trombone} để cân bằng chiều dài của các đường dữ liệu với đường Clock. Điều này đảm bảo dữ liệu được lấy mẫu chính xác tại sườn xung nhịp, tránh lỗi Setup/Hold time do độ trễ lan truyền (Propagation Delay).
                     \end{itemize}
-
+                     
+                    % \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.6\textwidth]{figures/sdio.png}
+                        \includegraphics[width=0.3\textwidth]{figures/sdio.png}
                         \caption{Định tuyến SDIO giữa ESP32-S3 Slave với Micro SD Card.}
                     \end{figure} 
 
