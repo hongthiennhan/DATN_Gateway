@@ -8,64 +8,65 @@
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.5\textwidth]{figures/sdio_sim_impedance.jpg}
+                \includegraphics[width=0.5\textwidth]{figures/DATN/sdio_sim_impedance.png}
                 \caption{Biểu đồ phân bố trở kháng (Impedance Heatmap) đường tín hiệu đơn cực.}
                 \label{fig:sdio_impedance}
             \end{figure} 
-            Kết quả mô phỏng cho thấy trở kháng đặc tính ($Z_0$) dao động trong khoảng từ $51.5\Omega$ đến $55\Omega$. Mức biến thiên này hoàn toàn nằm trong phạm vi dung sai thiết kế cho phép ($\pm 10\%$ so với mục tiêu $50\Omega$), đảm bảo phối hợp trở kháng tốt với các linh kiện chuẩn. Tuy có sự mismatch tại các pinout nhưng độ dài mismatch là đủ nhỏ để không ảnh hưởng quá lớn đến trở kháng chung.
+            Kết quả mô phỏng cho thấy trở kháng đặc tính ($Z_0$) dao động trong khoảng từ $45\Omega$ đến $55\Omega$. Mức biến thiên này hoàn toàn nằm trong phạm vi dung sai thiết kế cho phép ($\pm 10\%$ so với mục tiêu $50\Omega$), đảm bảo phối hợp trở kháng tốt với các linh kiện chuẩn. Tuy có sự mismatch tại các pinout nhưng độ dài mismatch là đủ nhỏ để không ảnh hưởng quá lớn đến trở kháng chung.
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.5\textwidth]{figures/sdio_sim_delay.jpg}
+                \includegraphics[width=0.5\textwidth]{figures/DATN/sdio_sim_delay.png}
                 \caption{Biểu đồ phân bố độ trễ lan truyền (Propagation Delay) đường tín hiệu đơn cực.}
                 \label{fig:sdio_delay}
             \end{figure} 
             Độ trễ lan truyền của toàn bộ các đường tín hiệu được kiểm soát dưới ngưỡng $200ps$. Sự đồng nhất của dải màu trên biểu đồ heatmap dọc theo chiều dài đường mạch cho thấy độ lệch pha giữa các tín hiệu là nhỏ, đảm bảo các bit dữ liệu đến đích đồng bộ với xung nhịp.
             
+            Số liệu chi tiết từ báo cáo xác nhận:
+            \begin{itemize}
+                \item Trở kháng trung bình đạt $47\Omega$ - $48\Omega$.
+                \item Độ trễ dao động trong biên độ hẹp ($156ps$ - $159ps$), cho thấy việc cân bằng chiều dài (Length matching) đã được thực hiện tốt.
+                \item Tổn hao chèn (Insertion Loss) gần như bằng $0dB$ và Tổn hao phản xạ (Return Loss) đạt khoảng $-21dB$ (rất thấp), chứng tỏ năng lượng tín hiệu được truyền đi hiệu quả và phản xạ tại tải là không đáng kể.
+            \end{itemize}
+
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.6\textwidth]{figures/sdio_sim_report.jpg}
+                \includegraphics[width=0.6\textwidth]{figures/DATN/sdio_sim_report.png}
                 \caption{Bảng tổng hợp thông số mô phỏng đường tín hiệu đơn cực.}
                 \label{fig:sdio_report}
             \end{figure} 
-            Số liệu chi tiết từ báo cáo xác nhận:
-            \begin{itemize}
-                \item Trở kháng trung bình đạt $54\Omega$.
-                \item Độ trễ dao động trong biên độ hẹp ($175ps$ - $178ps$), cho thấy việc cân bằng chiều dài (Length matching) đã được thực hiện tốt.
-                \item Tổn hao chèn (Insertion Loss) gần như bằng $0dB$ và Tổn hao phản xạ (Return Loss) đạt $-42dB$ (rất thấp), chứng tỏ năng lượng tín hiệu được truyền đi hiệu quả và phản xạ tại tải là không đáng kể.
-            \end{itemize}
-
 
             \item \textbf{Mô phỏng cặp tín hiệu vi sai (Differential-pair):}
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.5\textwidth]{figures/usb_sim_impedance.png}
+                \includegraphics[width=0.5\textwidth]{figures/DATN/usb_sim_impedance.png}
                 \caption{Biểu đồ phân bố trở kháng (Impedance Heatmap) đường vi sai.}
                 \label{fig:usb_impedance}
             \end{figure} 
-            Trở kháng vi sai ($Z_{diff}$) mô phỏng đạt giá trị ổn định quanh mức $90\Omega$. Kết quả này tuân thủ chặt chẽ tiêu chuẩn yêu cầu $90\Omega \pm 10\%$.  Tuy có sự mismatch tại các pinout nhưng độ dài mismatch là đủ nhỏ để không ảnh hưởng quá lớn đến trở kháng chung.
+            Trở kháng vi sai ($Z_{diff}$) mô phỏng đạt giá trị ổn định quanh mức $84\Omega$. Kết quả này tuân thủ chặt chẽ tiêu chuẩn yêu cầu $90\Omega \pm 10\%$.  Tuy có sự mismatch tại các pinout nhưng độ dài mismatch là đủ nhỏ để không ảnh hưởng quá lớn đến trở kháng chung.
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.5\textwidth]{figures/usb_sim_delay.png}
+                \includegraphics[width=0.5\textwidth]{figures/DATN/usb_sim_delay.png}
                 \caption{Biểu đồ phân bố độ trễ lan truyền (Propagation Delay) đường vi sai.}
                 \label{fig:usb_delay}
             \end{figure} 
             Thời gian độ trễ lan truyền được duy trì dưới $200ps$. Sự tương đồng về màu sắc trên hai nhánh D+ và D- khẳng định độ lệch pha là nhỏ, giúp triệt tiêu hiệu quả nhiễu chế độ chung (Common Mode Noise).
             
-            \begin{figure}[h]
+            Kết quả tổng hợp cho thấy:
+            \begin{itemize}
+                \item Trở kháng vi sai đạt $84\Omega$.
+                \item Độ trễ đường truyền là $125ps$.
+                \item Các thông số S-parameter rất tích cực: Insertion Loss xấp xỉ $0dB$ và Return Loss đạt $-15dB$, đảm bảo tính toàn vẹn tín hiệu cho giao tiếp dữ liệu tốc độ cao.
+            \end{itemize}  
+            
+            \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.6\textwidth]{figures/usb_sim_report.png}
+                \includegraphics[width=0.6\textwidth]{figures/DATN/usb_sim_report.png}
                 \caption{Bảng tổng hợp thông số mô phỏng đường vi sai.}
                 \label{fig:usb_report}
             \end{figure} 
-            Kết quả tổng hợp cho thấy:
-            \begin{itemize}
-                \item Trở kháng vi sai đạt chuẩn $90\Omega$.
-                \item Độ trễ đường truyền là $187ps$.
-                \item Các thông số S-parameter rất tích cực: Insertion Loss xấp xỉ $0dB$ và Return Loss đạt $-22dB$, đảm bảo tính toàn vẹn tín hiệu cho giao tiếp dữ liệu tốc độ cao.
-            \end{itemize}      
         \end{enumerate}
 
     \subsection{Mô phỏng Toàn vẹn nguồn (Power Integrity)}
