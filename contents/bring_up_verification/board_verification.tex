@@ -5,29 +5,35 @@
     \subsection{Kiểm tra trạng thái Logic và Điều khiển (Logic State Verification)}
         Các tín hiệu điều khiển tới hạn (Critical Control Signals) bao gồm Reset, Boot Mode và Enable được đo đạc tại thời điểm khởi động và trạng thái ổn định. Việc này nhằm xác minh cấu hình điện trở kéo (Pull-up/Pull-down) đã được thiết kế đúng, đảm bảo MCU vào đúng chế độ hoạt động (Boot mode vs Download mode) và không xảy ra hiện tượng thả nổi tín hiệu (Floating).
 
-        \begin{longtable}{|c|p{4cm}|p{4.5cm}|p{3.5cm}|c|}
+        \begin{longtable}{|c|p{5.5cm}|p{6.5cm}|c|}
             \caption{Kết quả kiểm tra các mức Logic điều khiển.}
             \label{tab:logic_verification} \\
             \hline
-            \textbf{STT} & \textbf{Tín hiệu (Signal)} & \textbf{Điều kiện kiểm tra (Test Condition)} & \textbf{Mức Logic đo được (Measured Logic)} & \textbf{Kết quả} \\ \hline
+            \textbf{STT} & \textbf{Nội dung kiểm tra} & \textbf{Kết quả kỳ vọng} & \textbf{Kết quả} \\ \hline
             \endfirsthead
+        
             \hline
-            \textbf{STT} & \textbf{Tín hiệu} & \textbf{Điều kiện kiểm tra} & \textbf{Mức Logic đo được} & \textbf{Kết quả} \\ \hline
+            \textbf{STT} & \textbf{Nội dung kiểm tra} & \textbf{Kết quả kỳ vọng} & \textbf{Kết quả} \\ \hline
             \endhead
+        
             \hline
             \endfoot
             \endlastfoot
-
-            1 & \textbf{ESP\_EN} (Enable) \newline (U1 \& U2) & Mặc định (RC Delay khi cấp nguồn). & Logic High ($3.3V$). \newline (Stable after 10ms). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            
-            2 & \textbf{IO0} (Boot Pin) \newline (U1 \& U2) & Trạng thái nghỉ (Idle). \newline Không nhấn nút BOOT. & Logic High ($3.3V$). \newline (Internal Pull-up OK). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            
-            3 & \textbf{NRST} (System Reset) & Nhấn nút Reset cứng. & Logic Low ($0V$). \newline (Active Low). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            
-            4 & \textbf{IO\_INT} \newline (IO Expander Interrupt) & Mặc định (Chưa có sự kiện). & Logic High ($3.3V$). \newline (External Pull-up $10k\Omega$). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            
-            5 & \textbf{USB\_VBUS\_DET} \newline (Phát hiện cáp USB) & Cắm cáp USB Type-C. & Logic High ($5.0V \rightarrow 3.3V$ qua phân áp). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-
+        
+            1 & \textbf{PWR\_3V3\_CTRL\_EN} & Tín hiệu mặc định mức 1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & \textbf{PWR\_5V\_CTRL\_EN} & Tín hiệu mặc định mức 1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            3 & \textbf{M\_RESET\#} \newline \textit{(test-point TP3/5)} & Tín hiệu mặc định mức 1, được điều khiển bởi nút nhấn Reset & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            4 & \textbf{M\_BOOT} \newline \textit{(test-point TP4/5)} & Tín hiệu mặc định mức 1, được điều khiển bởi nút nhấn Boot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            5 & \textbf{M\_PWR\_CTRL} \newline \textit{(test-point TP33/34)} & Tín hiệu mặc định mức 1, được điều khiển bởi nút nhấn PWR\_CTRL & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & \textbf{S\_RESET\#} \newline \textit{(test-point TP9/11)} & Tín hiệu mặc định mức 1, được điều khiển bởi ESP32-S3 Master & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            7 & \textbf{S\_BOOT} \newline \textit{(test-point TP10/11)} & Tín hiệu mặc định mức 1, được điều khiển bởi ESP32-S3 Master & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            8 & \textbf{S\_INT} \newline \textit{(test-point TP8/11)} & Tín hiệu mặc định mức 0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            9 & \textbf{UART\_SEL} \newline \textit{(test-point TP25/26)} & Tín hiệu mặc định mức 0, mặc định M\_UART2 kết nối S\_UART0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            10 & \textbf{USB\_SEL} \newline \textit{(test-point TP43/44)} & Tín hiệu mặc định mức 0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            11 & \textbf{MSD\_CD} \newline \textit{(test-point TP27/28)} & Tín hiệu mặc định mức 1 (chưa gắn thẻ MicroSD) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            12 & \textbf{FAN\_CTRL} & Tín hiệu mặc định mức 0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            13 & \textbf{IOX1\_INT} & Tín hiệu mặc định mức 1 (chưa có sự kiện) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
         \end{longtable}
 
     \subsection{Kiểm tra Chất lượng Nguồn (Power Integrity Analysis)}
