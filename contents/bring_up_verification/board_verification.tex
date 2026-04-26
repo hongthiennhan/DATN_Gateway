@@ -56,49 +56,46 @@
 
             % PHẦN 1: DÒNG ĐIỆN
             \multicolumn{7}{|l|}{\textbf{A. DÒNG ĐIỆN ĐẦU VÀO (INPUT CURRENT) - Đơn vị: $mA$}} \\ \hline
-            \multicolumn{6}{|l|}{\textit{*Tiêu chí: Dòng tổng $< 2.35A$ (Công suất thiết kế)}} \\ \hline
-            1 & \textbf{+12V} & Total Input (Jack DC) & $45$ & $276$ & $893$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+            \multicolumn{7}{|l|}{\textit{*Tiêu chí: Dòng tổng $< 3.25A$ (Jack DC, USB) và $< 5A$ (pin LiPo) (Công suất thiết kế)}} \\ \hline
+            1 & \textbf{+12V} & Total Input (Jack DC) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_green}{\textbf{TBD}} \\ \hline
+            2 & \textbf{+5V} & Total Input (USB) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_green}{\textbf{TBD}} \\ \hline
+            3 & \textbf{+3V7\_VBAT} & Total Input (LiPo Battery) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_green}{\textbf{TBD}} \\ \hline
 
             % PHẦN 2: RIPPLE
             \multicolumn{7}{|l|}{\textbf{B. ĐỘ GỢN ĐIỆN ÁP (VOLTAGE RIPPLE) - Đơn vị: $\pm mV_{pp}$}} \\ \hline
-            \multicolumn{6}{|l|}{\textit{*Tiêu chí: Voltage ripple $< 5\%$}} \\ \hline
-            2 & \textbf{+5V0\_SYS} & Test-point (TP15/16) & $12$ & $18$ & $28$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            3 & \textbf{+5V0} & Test-point (TP29/30) & $15$ & $19$ & $32$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            4 & \textbf{+3V3} & Test-point (TP31/32) & $5$ & $7$ & $12$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            5 & \textbf{+1V8} & Test-point (TP33/34) & $4$ & $5$ & $7$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            6 & \textbf{+3V3\_MSYS} & Test-point (TP5/6) & $5$ & $7$ & $8$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \multicolumn{7}{|l|}{\textit{*Tiêu chí: Voltage ripple $< 5\%$}} \\ \hline
+            4 & \textbf{+3V3} & Test-point (TP12/13) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
+            5 & \textbf{+3V3\_CTRL} & Test-point (TP18/19) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
+            6 & \textbf{+5V\_CTRL} & Test-point (TP15/17) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
 
             % PHẦN 3: SỤT ÁP - GIỚI HẠN MỚI MAX 0.1V
             \multicolumn{7}{|l|}{\textbf{C. ĐỘ SỤT ÁP TẠI TẢI (VOLTAGE DROP) - Đơn vị: $V$}} \\ \hline
-            \multicolumn{6}{|l|}{\textit{*Tiêu chí: Voltage drop = voltage at source - voltage at load $< 5\%$}} \\ \hline
-            % Rail +5V0_SYS (Sụt ~0.08V-0.1V)
-            7 & \textbf{+5V0\_SYS} & ESP32-S3 Master & $5.01$ & $5.01$ & $4.96$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \multicolumn{7}{|l|}{\textit{*Tiêu chí: Voltage drop = voltage at source - voltage at load $< 5\%$}} \\ \hline
+            % Rail +3V3
+            7 & \multirow{7}{*}{\textbf{+3V3}} & RTC & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            8 & & Power Monitor & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            9 & & ESP32-S3 Master & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            10 & & IO Expanders & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            11 & & WAN Connector & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            12 & & Buttons & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            13 & & I2C Buffer & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
 
-            % Rail +5V0 (Sụt ~0.08V-0.1V)
-            8 & \multirow{4}{*}{\textbf{+5V0}} & ESP32-S3 Slave & $5.00$ & $5.00$ & $4.98$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            9 & & WAN Adapter Module & $5.01$ & $5.01$ & $4.98$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            10 & & LAN1 Adapter Module & $5.01$ & $5.01$ & $5.00$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            11 & & LAN2 Adapter Module & $5.01$ & $5.01$ & $5.00$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % Rail +3V3_CTRL
+            14 & \multirow{5}{*}{\textbf{+3V3\_CTRL}} & UART Switch & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            15 & & USB Switch & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            16 & & ESP32-S3 Slave & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            17 & & LAN Connectors & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            18 & & MicroSD Card & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
 
-            % Rail +3V3 (Sụt ~0.08V-0.1V)
-            12 & \multirow{7}{*}{\textbf{+3V3}} & Input PWR\_1V8 (LDO) & $3.30$ & $3.30$ & $3.30$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            13 & & IO Expander 2 & $3.30$ & $3.30$ & $3.29$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            14 & & WAN Adapter Module & $3.30$ & $3.30$ & $3.28$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            15 & & LAN1 Adapter Module & $3.30$ & $3.30$ & $3.29$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            16 & & LAN2 Adapter Module & $3.30$ & $3.30$ & $3.29$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            17 & & Micro SD Card & $3.30$ & $3.28$ & $3.27$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            18 & & LCD (OLED) & $3.30$ & $3.28$ & $3.26$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % Rail +5V_CTRL
+            19 & \multirow{2}{*}{\textbf{+5V\_CTRL}} & USART LCD & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
+            20 & & DC FAN & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
 
-            % Rail +1V8 (Sụt max 0.05V)
-            19 & \multirow{3}{*}{\textbf{+1V8}} & WAN Adapter Module & $1.80$ & $1.78$ & $1.76$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            20 & & LAN1 Adapter Module & $1.80$ & $1.80$ & $1.79$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            21 & & LAN2 Adapter Module & $1.80$ & $1.80$ & $1.80$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % Rail +3V7_VBAT
+            21 & \multirow{1}{*}{\textbf{+3V7\_VBAT}} & Battery Fuel Gauge & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
 
-            % Rail +3V3_MSYS (Sụt max 0.05V)
-            22 & \multirow{4}{*}{\shortstack{\textbf{+3V3\_MSYS}}} & RTC (PCF85263) & $3.30$ & $3.30$ & $3.29$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            23 & & IO Expander 1 & $3.30$ & $3.29$ & $3.29$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            24 & & USB Switch (FSUSB42) & $3.30$ & $3.30$ & $3.30$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1} \cline{3-7}
-            25 & & PWR\_BTN (Pull-up) & $3.30$ & $3.30$ & $3.30$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % Rail +5V
+            22 & \multirow{1}{*}{\textbf{+5V}} & USB to UART & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
 
         \end{longtable}
 
@@ -118,45 +115,51 @@
             \endfoot
             \endlastfoot
 
-            % 1. INTER-MCU COMMUNICATION (QUAN TRỌNG NHẤT)
+            % 1. INTER-MCU COMMUNICATION
             \multicolumn{5}{|l|}{\textbf{A. GIAO TIẾP VI ĐIỀU KHIỂN}} \\ \hline
 
-            1 & \textbf{Giao tiếp dữ liệu tốc độ cao} \newline (U1 Master $\leftrightarrow$ U2 Slave) & \textbf{Giao thức Quad SPI (SPI2):} \newline Kiểm tra đường bus 6 dây: CS, CLK, MOSI, MISO, WP, HD (IO[9:14] kết nối tới IO[8:14]). Thực hiện gửi gói dữ liệu lớn (Ping-pong buffer). & Tốc độ truyền tải đạt mức thiết kế (> 10Mbps). Dữ liệu nhận được tại U1 khớp hoàn toàn với dữ liệu gửi từ U2 (Data Integrity Check). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            1 & \textbf{Giao tiếp dữ liệu tốc độ cao} \newline (U1 Master $\leftrightarrow$ U2 Slave) & \textbf{Giao thức Quad SPI (SPI2):} \newline Kiểm tra bus 6 dây: CS, CLK, MOSI, MISO, WP, HD (IO[9:14] kết nối tới IO[9:14]). Gửi gói dữ liệu lớn bằng cơ chế Ping-pong buffer. & Tốc độ truyền đạt mức thiết kế ($> 10Mbps$). Dữ liệu U1 nhận được khớp hoàn toàn với dữ liệu U2 gửi đi (Data Integrity Check). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            2 & \textbf{Nạp Firmware cho Slave} \newline (U1 Programming U2) & \textbf{Giao thức UART + GPIO Control:} \newline U1 điều khiển chân \texttt{U2\_RESET} và \texttt{U2\_BOOT} để đưa U2 vào chế độ Download Mode, sau đó gửi dữ liệu qua \texttt{UART0}. & U1 báo cáo nạp thành công (Successfully Flashed). U2 tự động khởi động lại và chạy firmware mới. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & \textbf{Nạp Firmware cho Slave} \newline (U1 Programming U2) & \textbf{Giao thức UART + GPIO Control:} \newline U1 điều khiển \texttt{S\_RESET} và \texttt{S\_BOOT} để đưa U2 vào Download Mode, sau đó gửi dữ liệu qua \texttt{UART0}. & U1 báo nạp thành công (Successfully Flashed). U2 tự khởi động lại và chạy firmware mới. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            3 & \textbf{Điều khiển \& Đồng bộ} \newline (Handshake Signals) & \textbf{GPIO Interrupt:} \newline Kiểm tra tín hiệu ngắt \texttt{U2\_INT} từ Slave báo về Master và tín hiệu \texttt{Enable} từ Master xuống Slave. & Master nhận được sự kiện ngắt ngay lập tức khi Slave kích hoạt chân \texttt{IO46}. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            3 & \textbf{Điều khiển \& Đồng bộ} \newline (Handshake Signals) & \textbf{GPIO Interrupt:} \newline Kiểm tra tín hiệu ngắt \texttt{S\_INT} từ Slave về Master và tín hiệu \texttt{Enable} từ Master xuống Slave. & Master nhận được sự kiện ngắt ngay khi Slave kích hoạt chân \texttt{IO45}. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
             % 2. KHỐI MASTER PERIPHERALS
             \multicolumn{5}{|l|}{\textbf{B. NGOẠI VI CỦA MASTER}} \\ \hline
 
-            4 & \textbf{Màn hình hiển thị} \newline (OLED Module) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ 0x3C. Gửi lệnh hiển thị Pattern bàn cờ (Checkerboard). & Màn hình sáng đều, không có điểm chết, hiển thị đúng nội dung test. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            4 & \textbf{Đồng hồ thời gian thực} \newline (RTC - PCF8563) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x51}. Ghi thời gian hiện tại và đọc lại sau 1 phút. & Thời gian đọc về tăng đúng 60 giây so với lúc ghi. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            5 & \textbf{Đồng hồ thời gian thực} \newline (RTC - PCF85263) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ 0x51. Gửi lệnh ghi thời gian hiện tại và đọc lại sau 1 phút. & Thời gian đọc về tăng đúng 60 giây so với lúc ghi. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            5 & \textbf{Mở rộng IO} \newline (IO Expander - TCA6416) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x20}. Điều khiển bật/tắt các chân Output P0/P1. & Các tín hiệu điều khiển nguồn (EN\_3V3C, EN\_5VC) thay đổi mức logic đúng theo lệnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            6 & \textbf{Mở rộng IO (Master)} \newline (IO Expander 1 - TCA6424) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ 0x22. Điều khiển bật/tắt các chân Output P0/P1/P2. & Các tín hiệu điều khiển nguồn (EN\_1V8C, EN\_3V3C) thay đổi mức logic đúng theo lệnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & \textbf{Cổng kết nối WAN} \newline (Cho Module LTE/Ethernet) & \textbf{Multi-protocol Check:} \newline - UART1 (IO15/18). \newline - SPI3 (IO4--7). & - UART nhận lại đúng chuỗi đã gửi. \newline - SPI phát hiện thiết bị ngoại vi giả lập. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            7 & \textbf{USB Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Master điều khiển chân \texttt{U1\_USBSEL}. & Khi High: USB Type-C thông với U1. Khi Low: USB Type-C chuyển hướng. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            7 & \textbf{I2C Buffer} \newline (TCA9803DGKR) & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với thiết bị I2C bên ngoài thông qua cổng CON11. & Quét được thiết bị I2C bên ngoài qua cổng CON11; dữ liệu đọc/ghi ổn định. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            8 & \textbf{Cổng kết nối WAN} \newline (Cho Module LTE/Ethernet) & \textbf{Multi-protocol Check:} \newline - Loopback trên UART1 (IO15/16). \newline - Quét thiết bị trên SPI3 (IO4-7). & - UART nhận lại đúng chuỗi đã gửi. \newline - SPI phát hiện thiết bị ngoại vi giả lập. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            8 & \textbf{UART Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Master điều khiển chân \texttt{UART\_SEL}. & Khi Low: UART2 của Master kết nối UART0 của Slave. Khi High: Kết nối LCD. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            9 & \textbf{Màn hình hiển thị} \newline (LCD Module) & \textbf{Giao thức UART2 (Master):} \newline Gửi chuỗi lệnh/khung dữ liệu kiểm tra hiển thị qua UART2. & Màn hình sáng đều, không có điểm chết, hiển thị đúng nội dung test. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            10 & \textbf{DC FAN và RGB LEDs} \newline (IO Expander - TCA6416) & \textbf{Logic Control (GPIO):} \newline Master điều khiển IO Expander để điều khiển DC FAN và RGB LEDs. & DC FAN bật khi chân P15 kéo mức logic cao. RGB LEDs sáng màu trắng khi các chân P1[2:4] kéo mức logic thấp. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            11 & \textbf{Khối sạc và đo năng lượng tiêu thụ} \newline (Battery Charger và Power Monitor) & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với khối sạc và khối đo năng lượng tiêu thụ của thiết bị qua I2C. & Quét được địa chỉ \texttt{0x6B}, \texttt{0x40}, \texttt{0x55}. Đo được dòng tiêu thụ của thiết bị và dòng sạc/xả của pin LiPo. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
             % 3. KHỐI SLAVE PERIPHERALS
             \multicolumn{5}{|l|}{\textbf{C. NGOẠI VI CỦA SLAVE}} \\ \hline
 
-            9 & \textbf{Mở rộng IO (Slave)} \newline (IO Expander 2 - TCA6424) & \textbf{Giao thức I2C0 (Slave):} \newline Quét địa chỉ 0x22 trên bus I2C của U2. Kiểm tra ngắt \texttt{IOX2\_INT}. & U2 giao tiếp thành công, đọc/ghi được trạng thái các chân mở rộng (LAN\_IO). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            12 & \textbf{Thẻ nhớ MicroSD} \newline (Storage) & \textbf{Giao thức SDIO 4-bit:} \newline U2 thực hiện Mount File System (FAT32) và ghi file log mẫu 1MB. & Tốc độ ghi đạt chuẩn Class 10. File đọc lại không bị lỗi (Check MD5). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            10 & \textbf{Thẻ nhớ MicroSD} \newline (Storage) & \textbf{Giao thức SDIO 4-bit:} \newline U2 thực hiện Mount File System (FAT32) và ghi file log mẫu 1MB. & Tốc độ ghi đạt chuẩn Class 10. File đọc lại không bị lỗi (Check MD5). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            13 & \textbf{Cổng kết nối LAN1} \newline (Cho Zigbee/LoRaWAN) & \textbf{Multi-protocol Check:} \newline - UART1 (IO17/18). \newline - SPI3 (CS0). & Giao tiếp ổn định với Module Test LAN1. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            11 & \textbf{Cổng mở rộng LAN1} \newline (Cho Zigbee/Thread) & \textbf{Multi-protocol Check:} \newline - UART1 (IO17/18). \newline - SPI3 (CS0). & Giao tiếp ổn định với Module Test LAN1 (Loopback OK). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            14 & \textbf{Cổng kết nối LAN2} \newline (Cho RS485) & \textbf{Multi-protocol Check:} \newline - UART2 (IO8/21). \newline - SPI3 (CS1). & Giao tiếp ổn định với Module Test LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            12 & \textbf{Cổng mở rộng LAN2} \newline (Cho RS485/CAN) & \textbf{Multi-protocol Check:} \newline - UART2 (IO15/16). \newline - SPI3 (CS1). & Giao tiếp ổn định với Module Test LAN2 (Loopback OK). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            15 & \textbf{USB Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Slave điều khiển chân \texttt{USB\_SEL}. & Khi Low: USB kết nối LAN1. Khi High: USB kết nối LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
             % 4. GIAO DIỆN NGƯỜI DÙNG & HỆ THỐNG
             \multicolumn{5}{|l|}{\textbf{D. GIAO DIỆN HỆ THỐNG (SYSTEM INTERFACE)}} \\ \hline
 
-            13 & \textbf{Master USB-C Port} \newline (Native USB) & \textbf{USB JTAG/Serial:} \newline Cắm cáp vào PC. & PC nhận diện cổng COM (USB Serial/JTAG Controller). Nạp code trực tiếp từ PC OK. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            16 & \textbf{USB-C Port} \newline (USB to UART CP2102) & \textbf{USB to UART:} \newline Cắm cáp vào PC. & PC nhận diện cổng COM (CP2102). Nạp code trực tiếp từ PC OK. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            14 & \textbf{Nút nhấn hệ thống} \newline (Power Button) & \textbf{Physical Interaction:} \newline Nhấn nút Power Button. & ESP32-S3 Master nhận được tín hiệu từ nút nhận và bật/tắt nguồn. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            17 & \textbf{Nút nhấn hệ thống} \newline (Power Button) & \textbf{Physical Interaction:} \newline Nhấn nút Power Button. & ESP32-S3 Master nhận được tín hiệu từ nút nhấn và bật/tắt nguồn. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
         \end{longtable}
 
