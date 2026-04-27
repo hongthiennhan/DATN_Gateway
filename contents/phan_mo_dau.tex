@@ -12,30 +12,64 @@
         
         Nhờ kết hợp hai đặc tính này, mô hình IoT gateway đề xuất không chỉ đáp ứng nhu cầu linh hoạt của các hệ thống IoT mà còn tối ưu hóa tổng chi phí sở hữu và vận hành.
 
-    \section{Mục tiêu Giai đoạn 1 (Đồ án Chuyên ngành)}
-        Trong giai đoạn này, nhóm sinh viên chủ yếu tập trung tìm hiểu các định nghĩa, khái niệm liên quan; tìm hiểu các công nghệ, chuẩn giao tiếp, và các giao thức được sử dụng phổ biến trong các hạ tầng IoT hiện nay, từ đó đưa ra đặc tả chi tiết cho sản phẩm rồi thiết kế ở mức độ khái niệm (proof of concept), và hiện thực ở mức độ nguyên mẫu (prototype).
-        
-        Nhiệm vụ (yêu cầu về nội dung và số liệu ban đầu):
-        \begin{enumerate}
-            \item Tìm hiểu:
-            \begin{enumerate}
-                \item Định nghĩa, khái niệm của IoT gateway.
-                \item Vị trí và vai trò của IoT gateway trong hạ tầng IoT.
-                \item Cấu trúc và nguyên lý hoạt động cơ bản của các IoT gateway.
-                \item Các công nghệ, giao thức, và chuẩn giao tiếp được sử dụng phổ biến trong hạ tầng IoT.
-                \item Các thiết bị IoT gateway khả cấu hình đã có trên thị trường, tập trung vào các chức năng, đặc điểm nổi bật, công nghệ, giao thức, và các chuẩn giao tiếp được hỗ trợ.
-            \end{enumerate}
-            \item Thiết kế khái niệm và đặc tả chi tiết cho sản phẩm sẽ thực hiện.
-            \item Khảo sát và thử nghiệm các kỹ thuật hiện thực sản phẩm, phác thảo các sơ đồ khối và sơ đồ nguyên lý.
-            \item Hiện thực nguyên mẫu. Lưu ý, giai đoạn này sinh viên chưa cần làm ra sản phẩm hoàn chỉnh, chỉ cần demo được ý tưởng và chức năng cơ bản của phần cứng và phần mềm.
-        \end{enumerate}
-    \section{Mục tiêu Giai đoạn 2 (Đồ án Tốt nghiệp)}
-        Đây là giai đoạn mà nhóm sinh viên sẽ tiến hành hoàn thiện sản phẩm dựa trên những kết quả ban đầu đã đạt được ở giai đoạn trước, bao gồm việc tích hợp các thành phần lên mạch in và hoàn thiện hệ thống phần mềm (firmware, software).
+    \section{Lý do chọn đề tài}
+        Trong các hệ thống Internet of Things (IoT) hiện nay, IoT gateway giữ vai trò trung tâm trong việc kết nối các thiết bị đầu cuối với hạ tầng mạng và nền tảng đám mây. Gateway không chỉ thực hiện chức năng chuyển tiếp dữ liệu mà còn đảm nhiệm các tác vụ quan trọng như chuyển đổi giao thức, xử lý dữ liệu tại biên, quản lý thiết bị và thực thi các cơ chế bảo mật.
 
-        Nhiệm vụ (yêu cầu về nội dung và số liệu ban đầu):
-        \begin{enumerate}
-            \item Phân tích ưu nhược điểm của phiên bản đang có, hiệu chỉnh lại đặc tả chi tiết cho sản phẩm, và lên kế hoạch chi tiết cho quá trình hoàn thiện sản phẩm.
-            \item Thiết kế, hiện thực, và gỡ lỗi mạch in.
-            \item Lập trình phần mềm (firmware, software).
-            \item Kiểm thử chức năng và hiệu năng hệ thống.
-        \end{enumerate}
+        Tuy nhiên, thực tế triển khai cho thấy mỗi hệ thống IoT lại có yêu cầu khác nhau về loại thiết bị, chuẩn giao tiếp và giao thức truyền thông. Việc thiết kế hoặc lựa chọn một gateway cố định, tích hợp sẵn nhiều giao thức không cần thiết dẫn đến lãng phí tài nguyên, tăng chi phí phần cứng và giảm tính linh hoạt khi mở rộng hoặc thay đổi thành phần của hệ thống.
+
+        Mặt khác, các gateway thương mại hiện nay thường đi theo hai xu hướng: hoặc tích hợp quá nhiều chức năng dẫn đến giá thành cao và phức tạp trong vận hành, hoặc quá đơn giản, khó mở rộng và không đáp ứng được các bài toán IoT đa dạng trong thực tế. Ngoài ra, việc cấu hình gateway trong nhiều trường hợp vẫn phụ thuộc nhiều vào việc chỉnh sửa firmware, gây khó khăn cho quá trình triển khai và bảo trì tại hiện trường.
+
+        Xuất phát từ những vấn đề trên, nhóm lựa chọn đề tài “Thiết kế và hiện thực một gateway IoT dạng mô-đun có khả năng cấu hình” với định hướng xây dựng một giải pháp kỹ thuật linh hoạt, có thể tùy biến theo nhu cầu sử dụng, tối ưu chi phí và phù hợp với các kịch bản triển khai IoT thực tế.
+    \section{Mục tiêu Đồ án}
+        Mục tiêu tổng quát của đồ án là thiết kế và hiện thực một mô hình IoT gateway, đáp ứng yêu cầu linh hoạt, khả cấu hình và dễ triển khai trong thực tế.
+
+        Cụ thể, đồ án hướng tới các mục tiêu sau:
+        \begin{itemize}
+            \item Thiết kế một kiến trúc IoT gateway dạng mô-đun, cho phép lắp ghép và thay thế các module phần cứng theo từng kịch bản sử dụng cụ thể.
+            \item Xây dựng giải pháp phần cứng và phần mềm phù hợp để hỗ trợ nhiều chuẩn giao tiếp và giao thức phổ biến trong hệ thống IoT.
+            \item Hiện thực nguyên mẫu (prototype) gateway nhằm kiểm chứng tính khả thi của kiến trúc đề xuất.
+            \item Xây dựng cơ chế cấu hình linh hoạt, cho phép thay đổi tham số hệ thống và lựa chọn module mà không cần chỉnh sửa hoặc biên dịch lại firmware.
+            \item Đảm bảo hệ thống hoạt động ổn định, dễ mở rộng và phù hợp cho các bài toán triển khai IoT ở quy mô nhỏ đến trung bình.
+            \item Hoàn thiện sản phẩm với các chức năng được tích hợp đầy đủ, đảm bảo đáp ứng yêu cầu sử dụng và phát triển trong các kịch bản ứng dụng thực tế.
+        \end{itemize}
+
+        Đồ án hướng tới việc áp dụng kiến thức đã học vào bài toán thiết kế – hiện thực một hệ thống kỹ thuật hoàn chỉnh, có tính ứng dụng cao.
+    \section{Phạm vi Đồ án}
+        Khuôn khổ đồ án tập trung vào các nội dung sau:
+        \begin{itemize}
+            \item Phân tích vai trò và yêu cầu kỹ thuật của IoT gateway trong hạ tầng IoT.
+            \item Thiết kế kiến trúc tổng thể của gateway theo hướng mô-đun, bao gồm cả phần cứng và phần mềm.
+            \item Lựa chọn và tích hợp các chuẩn giao tiếp, giao thức truyền thông tiêu biểu phục vụ cho mục tiêu kiểm chứng kiến trúc.
+            \item Hiện thực nguyên mẫu gateway với các chức năng cơ bản: thu thập dữ liệu từ thiết bị đầu cuối, xử lý cục bộ, truyền dữ liệu lên nền tảng phía trên và nhận lệnh điều khiển ngược lại.
+            \item Xây dựng công cụ và quy trình cấu hình hệ thống ở mức cơ bản.
+        \end{itemize}
+        % Đồ án không tập trung vào việc phát triển một sản phẩm thương mại hoàn chỉnh, cũng không đi sâu vào các thuật toán xử lý dữ liệu nâng cao hay tối ưu hóa hiệu năng ở quy mô lớn. Các nội dung nâng cao như triển khai trên diện rộng hoặc tích hợp sâu với nền tảng cloud thương mại sẽ được xem là hướng phát triển trong các giai đoạn tiếp theo.
+    
+
+    % \section{Mục tiêu Giai đoạn 1 (Đồ án Chuyên ngành)}
+    %     Trong giai đoạn này, nhóm sinh viên chủ yếu tập trung tìm hiểu các định nghĩa, khái niệm liên quan; tìm hiểu các công nghệ, chuẩn giao tiếp, và các giao thức được sử dụng phổ biến trong các hạ tầng IoT hiện nay, từ đó đưa ra đặc tả chi tiết cho sản phẩm rồi thiết kế ở mức độ khái niệm (proof of concept), và hiện thực ở mức độ nguyên mẫu (prototype).
+        
+    %     Nhiệm vụ (yêu cầu về nội dung và số liệu ban đầu):
+    %     \begin{enumerate}
+    %         \item Tìm hiểu:
+    %         \begin{enumerate}
+    %             \item Định nghĩa, khái niệm của IoT gateway.
+    %             \item Vị trí và vai trò của IoT gateway trong hạ tầng IoT.
+    %             \item Cấu trúc và nguyên lý hoạt động cơ bản của các IoT gateway.
+    %             \item Các công nghệ, giao thức, và chuẩn giao tiếp được sử dụng phổ biến trong hạ tầng IoT.
+    %             \item Các thiết bị IoT gateway khả cấu hình đã có trên thị trường, tập trung vào các chức năng, đặc điểm nổi bật, công nghệ, giao thức, và các chuẩn giao tiếp được hỗ trợ.
+    %         \end{enumerate}
+    %         \item Thiết kế khái niệm và đặc tả chi tiết cho sản phẩm sẽ thực hiện.
+    %         \item Khảo sát và thử nghiệm các kỹ thuật hiện thực sản phẩm, phác thảo các sơ đồ khối và sơ đồ nguyên lý.
+    %         \item Hiện thực nguyên mẫu. Lưu ý, giai đoạn này sinh viên chưa cần làm ra sản phẩm hoàn chỉnh, chỉ cần demo được ý tưởng và chức năng cơ bản của phần cứng và phần mềm.
+    %     \end{enumerate}
+    % \section{Mục tiêu Giai đoạn 2 (Đồ án Tốt nghiệp)}
+    %     Đây là giai đoạn mà nhóm sinh viên sẽ tiến hành hoàn thiện sản phẩm dựa trên những kết quả ban đầu đã đạt được ở giai đoạn trước, bao gồm việc tích hợp các thành phần lên mạch in và hoàn thiện hệ thống phần mềm (firmware, software).
+
+    %     Nhiệm vụ (yêu cầu về nội dung và số liệu ban đầu):
+    %     \begin{enumerate}
+    %         \item Phân tích ưu nhược điểm của phiên bản đang có, hiệu chỉnh lại đặc tả chi tiết cho sản phẩm, và lên kế hoạch chi tiết cho quá trình hoàn thiện sản phẩm.
+    %         \item Thiết kế, hiện thực, và gỡ lỗi mạch in.
+    %         \item Lập trình phần mềm (firmware, software).
+    %         \item Kiểm thử chức năng và hiệu năng hệ thống.
+    %     \end{enumerate}
