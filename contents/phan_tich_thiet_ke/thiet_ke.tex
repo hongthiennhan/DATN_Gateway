@@ -1169,83 +1169,74 @@
         
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mculanfirmware.png}
+            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mculanfirmware.jpg}
             \caption{MCU LAN Firmware}
             \label{fig:mculan_firmware}
         \end{figure} 
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mcuwanfirmware.png}
+            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mcuwanfirmware.jpg}
             \caption{MCU WAN Firmware}
             \label{fig:mcuwan_firmware}
         \end{figure}
         
         \paragraph{Firmware WAN-MCU: Kết nối Internet, Cloud và điều phối hệ thống}
         
-        Trong prototype, WAN-MCU đóng vai trò là “đầu não giao tiếp ra Internet/Cloud” đồng thời là “router điều phối cấu hình” của toàn gateway. Các giao thức kết nối cảm biến (Zigbee, LoRa, CAN, RS-485,…) được tách khỏi WAN-MCU và triển khai tại LAN-MCU, giúp WAN-MCU giảm tải, tăng ổn định và tập trung vào các nhiệm vụ chính: thiết lập kết nối Internet, giao tiếp Cloud, truyền/nhận dữ liệu với LAN-MCU và quản trị cấu hình.
-        
-        Khối Internet Communication Handler chịu trách nhiệm thiết lập và duy trì đường truyền Internet theo cấu hình người dùng. Trong prototype, các chế độ kết nối chính bao gồm:
+        WAN-MCU đóng vai trò trung tâm điều phối cấu hình và quản trị kết nối ngoại vi cho toàn gateway. Bằng cách tách biệt các giao thức mạng nội bộ sang LAN-MCU, WAN-MCU tập trung nguồn lực thực hiện các nhiệm vụ trọng yếu sau:
+
         \begin{itemize}
-            \item \textbf{Wi-Fi:} hỗ trợ hai chế độ Wi-Fi Personal và Wi-Fi Enterprise. Sau khi kết nối thành công và nhận cấu hình mạng, hệ thống thực hiện đồng bộ thời gian (SNTP) và cập nhật RTC nhằm đảm bảo timestamp thống nhất cho toàn gateway. Khối này theo dõi trạng thái liên kết và tự reconnect khi mất mạng.
-            \item \textbf{LTE:} quản lý kết nối modem LTE qua USB, bao gồm thiết lập đường truyền và giám sát chất lượng kết nối. Khi xảy ra mất kết nối, WAN-MCU thực hiện cơ chế tự khôi phục (reconnect) theo chính sách cấu hình.
+            \item \textbf{Quản lý đa phương thức kết nối Internet:} Thiết lập và duy trì đường truyền qua Wi-Fi (Personal/Enterprise), LTE (giao thức USB) và Ethernet. Hệ thống tích hợp cơ chế tự động khôi phục kết nối (Auto-reconnect) và đồng bộ thời gian thực (SNTP/RTC) để đảm bảo tính thống nhất cho timestamp dữ liệu.
+        
+            \item \textbf{Cơ chế Internet Fallback:} Hệ thống tự động chuyển đổi nguồn Internet dựa trên độ ưu tiên vật lý (Ethernet $>$ Wi-Fi $>$ LTE). Khi phát hiện module LTE hoặc Ethernet được kết nối, WAN-MCU chủ động kiểm tra trạng thái link để thay đổi kênh truyền ưu tiên, đồng thời tự động tái kết nối kênh dự phòng khi có sự cố, đảm bảo duy trì luồng dữ liệu Cloud liên tục.
+        
+            \item \textbf{Điều phối giao tiếp Cloud:} Đảm nhiệm vai trò Gateway chính để xuất bản dữ liệu lên Server và tiếp nhận lệnh điều khiển ngược lại hệ thống.
+        
+            \item \textbf{Quản trị và Cấu hình:} Vận hành Web Config Portal ở chế độ AP (cấu hình ban đầu/FOTA) và STA (truy cập nội bộ) để quản lý toàn bộ thông số vận hành mà không cần can thiệp mã nguồn.
         \end{itemize}
         
-        PPP Server: WAN-MCU có thể bật PPP server qua UART để tạo một đường IP-link phục vụ các kịch bản triển khai đặc thù. Trong prototype, PPP server được sử dụng như một cơ chế hỗ trợ để MCU LAN thực hiện cập nhật FOTA (WAN-MCU đóng vai trò cung cấp/duy trì đường truyền).
+        \paragraph{Server Communication Handler -- Uplink Telemetry và Downlink Command}
+        Server Communication Handler hỗ trợ lựa chọn động ba phương thức giao tiếp MQTT, HTTP và CoAP thông qua tham số cấu hình \texttt{server\_type}, giúp tối ưu hóa khả năng tương thích với đa dạng nền tảng Cloud.
         
-        \paragraph{Server Communication Handler (MQTT) – Uplink telemetry và Downlink command}
-        
-        Trong prototype, Server Communication Handler tập trung chủ yếu vào MQTT (HTTP / CoAP được thể hiện trong sơ đồ để định hướng mở rộng nhưng chưa triển khai).
-        
-        Uplink (telemetry):
         \begin{itemize}
-            \item Dữ liệu uplink từ LAN-MCU sau khi chuyển lên WAN-MCU sẽ được đưa vào hàng đợi publish (publish queue).
-            \item Một publish task riêng chịu trách nhiệm xử lý hàng đợi theo pipeline:
-            \begin{enumerate}
-                \item Lấy dữ liệu từ queue,
-                \item Đóng gói payload (prototype thực hiện nhị phân → hex string và bọc trong JSON theo định dạng quy ước),
-                \item Publish lên broker theo topic telemetry.
-            \end{enumerate}
-            \item Cơ chế queue giúp tách biệt hai luồng “nhận dữ liệu từ SPI” và “gửi Cloud”, tránh việc SPI bị nghẽn khi broker chậm hoặc mạng dao động.
+            \item \textbf{Luồng Uplink (Telemetry):} Dữ liệu từ LAN-MCU được định tuyến đến Handler tương ứng để thực hiện Publish (MQTT), POST (HTTP) hoặc PUT/Observe (CoAP). Việc tách biệt luồng thu thập từ LAN và luồng truyền tải Cloud giúp hệ thống tránh nghẽn mạch khi băng thông mạng biến động hoặc Server phản hồi chậm.
+        
+            \item \textbf{Luồng Downlink (RPC/Command):} WAN-MCU tiếp nhận lệnh điều khiển, thực hiện phân tích Payload để xác định đích xử lý. Các lệnh tác động đến lớp vật lý (Sensor/Actuator) sẽ được đóng gói và chuyển tiếp tức thời xuống LAN-MCU thông qua kênh SPI nội bộ.
+        
+            \item \textbf{Tham số vận hành:} Hệ thống quản lý chặt chẽ các thông số bảo mật và kết nối (Auth token, TLS/DTLS, Port, Timeout) được lưu trữ trong NVS, cho phép hiệu chỉnh tham số vận hành mà không cần tái biên dịch Firmware.
         \end{itemize}
         
-        Downlink (RPC/command):
-        \begin{itemize}
-            \item WAN-MCU subscribe các topic downlink (RPC request/command).
-            \item Khi nhận message, MQTT handler thực hiện:
-            \begin{enumerate}
-                \item Trích payload (thường là JSON),
-                \item Lấy trường tham số (ví dụ params, dạng chuỗi hex hoặc payload quy ước),
-                \item Decode về binary và xác định đích xử lý theo loại handler (ZIG/LOR/CAN/RS4…),
-                \item Đưa command vào downlink queue để chuyển tiếp xuống LAN-MCU.
-            \end{enumerate}
-        \end{itemize}
+        % \paragraph{MCU-to-MCU Handler (WAN phía SPI Slave) – nhận uplink, trả ACK và chủ động đẩy downlink qua GPIO handshake}
         
-        \paragraph{MCU-to-MCU Handler (WAN phía SPI Slave) – nhận uplink, trả ACK và chủ động đẩy downlink qua GPIO handshake}
+        % Đây là khối quan trọng nhất của prototype vì WAN-MCU và LAN-MCU bắt buộc giao tiếp qua SPI, với mô hình LAN-MCU là SPI Master và WAN-MCU là SPI Slave. Khối MCU-to-MCU Handler đảm nhiệm hai chiều dữ liệu: uplink (LAN $\to$ WAN) và downlink (Cloud $\to$ LAN), đồng thời cung cấp cơ chế xác nhận để đảm bảo tin cậy truyền thông.
         
-        Đây là khối quan trọng nhất của prototype vì WAN-MCU và LAN-MCU bắt buộc giao tiếp qua SPI, với mô hình LAN-MCU là SPI Master và WAN-MCU là SPI Slave. Khối MCU-to-MCU Handler đảm nhiệm hai chiều dữ liệu: uplink (LAN $\to$ WAN) và downlink (Cloud $\to$ LAN), đồng thời cung cấp cơ chế xác nhận để đảm bảo tin cậy truyền thông.
+        % Cơ chế uplink (LAN $\to$ WAN): LAN-MCU đóng gói dữ liệu cảm biến thành gói DT và gửi qua SPI. WAN-MCU nhận gói, thực hiện kiểm tra hợp lệ tối thiểu (độ dài, CRC/sequence nếu áp dụng) và phản hồi ACK/NACK ngay trong phiên truyền để LAN-MCU quyết định gửi lại khi cần. Trong prototype, ACK được kèm “cờ Internet” nhằm phản ánh trạng thái kết nối của WAN-MCU tại thời điểm nhận dữ liệu:
+        % \begin{itemize}
+        %     \item Nếu WAN đang online (thường tương ứng trạng thái MQTT connected), ACK báo Internet OK để LAN-MCU tiếp tục gửi bình thường.
+        %     \item Nếu WAN offline, ACK báo No Internet để LAN-MCU chuyển sang lưu đệm/SD (store-and-forward) thay vì tiếp tục đẩy dữ liệu lên, tránh làm đầy queue và lãng phí băng thông liên MCU.
+        % \end{itemize}
         
-        Cơ chế uplink (LAN $\to$ WAN): LAN-MCU đóng gói dữ liệu cảm biến thành gói DT và gửi qua SPI. WAN-MCU nhận gói, thực hiện kiểm tra hợp lệ tối thiểu (độ dài, CRC/sequence nếu áp dụng) và phản hồi ACK/NACK ngay trong phiên truyền để LAN-MCU quyết định gửi lại khi cần. Trong prototype, ACK được kèm “cờ Internet” nhằm phản ánh trạng thái kết nối của WAN-MCU tại thời điểm nhận dữ liệu:
-        \begin{itemize}
-            \item Nếu WAN đang online (thường tương ứng trạng thái MQTT connected), ACK báo Internet OK để LAN-MCU tiếp tục gửi bình thường.
-            \item Nếu WAN offline, ACK báo No Internet để LAN-MCU chuyển sang lưu đệm/SD (store-and-forward) thay vì tiếp tục đẩy dữ liệu lên, tránh làm đầy queue và lãng phí băng thông liên MCU.
-        \end{itemize}
+        % Cơ chế downlink (Cloud $\to$ LAN): Khi nhận lệnh từ Cloud (ví dụ RPC/command) thông qua MQTT, WAN-MCU đưa lệnh vào downlink queue và thực hiện cơ chế push chủ động thay vì để LAN-MCU poll. Cụ thể, WAN-MCU sử dụng một đường GPIO toggle/handshake để thông báo cho LAN-MCU rằng đang có dữ liệu downlink hoặc cấu hình pending. Khi LAN-MCU phát hiện tín hiệu handshake, nó thực hiện phiên SPI để nhận gói lệnh từ WAN-MCU. WAN-MCU gửi gói command/DT tương ứng qua SPI; LAN-MCU kiểm tra hợp lệ và phản hồi ACK/NACK. Nếu nhận NACK hoặc timeout, WAN-MCU thực hiện retry giới hạn nhằm đảm bảo lệnh đến LAN-MCU một cách tin cậy. Sau khi LAN-MCU nhận thành công, lệnh được dispatch tới handler giao thức tương ứng để chuyển xuống sensor node.
         
-        Cơ chế downlink (Cloud $\to$ LAN): Khi nhận lệnh từ Cloud (ví dụ RPC/command) thông qua MQTT, WAN-MCU đưa lệnh vào downlink queue và thực hiện cơ chế push chủ động thay vì để LAN-MCU poll. Cụ thể, WAN-MCU sử dụng một đường GPIO toggle/handshake để thông báo cho LAN-MCU rằng đang có dữ liệu downlink hoặc cấu hình pending. Khi LAN-MCU phát hiện tín hiệu handshake, nó thực hiện phiên SPI để nhận gói lệnh từ WAN-MCU. WAN-MCU gửi gói command/DT tương ứng qua SPI; LAN-MCU kiểm tra hợp lệ và phản hồi ACK/NACK. Nếu nhận NACK hoặc timeout, WAN-MCU thực hiện retry giới hạn nhằm đảm bảo lệnh đến LAN-MCU một cách tin cậy. Sau khi LAN-MCU nhận thành công, lệnh được dispatch tới handler giao thức tương ứng để chuyển xuống sensor node.
+        \paragraph{Data Communication Handler (USB/UART) -- giao tiếp với Configuration Tools trên PC}
+        WAN-MCU cung cấp kênh cấu hình tại chỗ thông qua USB/UART và Web Portal, giúp kỹ thuật viên thay đổi tham số vận hành linh hoạt mà không cần biên dịch lại firmware.
         
-        \newpage
-        \paragraph{Data Communication Handler (USB/UART) – giao tiếp với Configuration Tools trên PC}
+        Đối với tác vụ đọc, khi máy tính gửi lệnh quét, WAN-MCU sẽ truy xuất NVS và bộ nhớ runtime để trả về cấu hình hiện tại dưới dạng các cặp key-value, như thông số mạng, MQTT và chu kỳ gửi. Hệ thống tự động ẩn hoặc mã hóa các dữ liệu nhạy cảm như mật khẩu để đảm bảo an toàn thông tin, đồng thời đính kèm phiên bản firmware và trạng thái kết nối để kỹ thuật viên nắm bắt nhanh tình trạng thiết bị.
         
-        WAN-MCU cung cấp kênh cấu hình tại chỗ thông qua USB/UART nhằm hỗ trợ kỹ thuật viên triển khai nhanh và thay đổi tham số vận hành mà không cần rebuild firmware. 
-        \begin{figure}[h]
+        Đối với tác vụ cập nhật cấu hình, WAN-MCU đóng vai trò tiếp nhận mã lệnh tiêu chuẩn, chuỗi JSON từ ứng dụng PC hoặc các gói cấu hình từ Web Portal thông qua HTTP POST. Mọi dữ liệu đầu vào đều được chuyển đổi về định dạng nội bộ, kiểm tra tính hợp lệ và đưa vào hàng đợi xử lý thống nhất.
+        
+        Tại đây, khối Config Handler sẽ xác thực tham số, lưu vào NVS và lập tức áp dụng vào hệ thống. Trong trường hợp cấu hình thuộc về lớp mạng nội bộ, WAN-MCU sẽ định tuyến gói tin xuống LAN-MCU qua bus SPI. Cuối cùng, Gateway hoàn tất chu trình bằng cách trả về tín hiệu xác nhận OK hoặc FAIL cho người dùng.
+
+        \begin{figure}[H]
+            \centering
             \begin{minipage}{0.3\textwidth}
                 \centering
-                \includegraphics[width=\textwidth]{figures/design_DCH-CT.png}
+                \includegraphics[width=\linewidth]{figures/DATN/design_DCH-CT.png}
                 \caption{Lưu đồ giải thuật Data Communication Handler – giao tiếp cấu hình qua USB/UART}
                 \label{fig:design_DCH-CT}
             \end{minipage}
             \hfill
-            \begin{minipage}{0.65\textwidth}
+            \begin{minipage}{0.3\textwidth}
                 \begin{itemize}
                     \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
                     \begin{itemize}
@@ -1263,6 +1254,12 @@
                     \end{itemize}
                 \end{itemize}  
             \end{minipage}        
+            \begin{minipage}{0.3\textwidth}
+                \centering
+                \includegraphics[width=\linewidth]{figures/DATN/design_wcp.png}
+                \caption{Lưu đồ giải thuật Config qua Web Config Portal}
+                \label{fig:design_wcp}
+            \end{minipage}
         \end{figure}
         % \begin{itemize}
         %     \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
