@@ -12,40 +12,34 @@
                 \item Hỗ trợ các chuẩn giao tiếp ngoại vi phổ thông: UART, SPI, I2C, USB, \dots
             \end{itemize}
             
-            \item \textcolor{red}{\textbf{Khả năng thu thập và xử lý dữ liệu:}
+            \item \textbf{Khả năng thu thập và xử lý dữ liệu:}
             \begin{itemize}
-                \item Tiếp nhận dữ liệu từ cảm biến hoặc thiết bị đầu cuối thông qua các giao thức truyền thông tiêu chuẩn.
-                \item Hỗ trợ thu thập đồng thời từ nhiều nhóm thiết bị hoạt động trên các nền tảng khác nhau: Zigbee, LoRa TDMA, CAN, MODBUS, \dots
-                % \item Triển khai các tiến trình xử lý riêng biệt cho từng giao thức (\textit{Zigbee\_Handler, LoRa\_Handler, CAN\_Handler, Data\_Communication\_Handler}) trên nhân xử lý.
-                \item Triển khai các tiến trình xử lý riêng biệt cho từng giao thức trên nhân xử lý.
-                \item Quy trình xử lý dữ liệu tại mỗi mô-đun bao gồm: Trích xuất dữ liệu thô; kiểm chứng định dạng và Checksum; loại bỏ khung tin lỗi; gắn nhãn nguồn dữ liệu và đóng dấu thời gian (Time-stamping).
-                \item Chuẩn hóa dữ liệu sau kiểm tra về một định dạng khung nội bộ thống nhất.
-                \item Sử dụng hàng đợi (Queue) để đệm dữ liệu, đảm bảo duy trì dữ liệu khi mất kết nối WAN trong một khoảng thời gian xác định.
-                \item Thiết lập kênh truyền thông nội bộ nhằm đồng bộ hóa nội dung khung dữ liệu và thông tin trạng thái.
-                \item Tiến trình \textit{Internet\_Communication\_Handler} trên MCU WAN chịu trách nhiệm đóng gói và chuyển giao dữ liệu lên máy chủ thông qua MQTT, HTTP, hoặc CoAP theo cấu hình tùy chọn.
-            \end{itemize}}
+                \item Hỗ trợ đa giao tiếp và đa nền tảng: Gateway phải có khả năng tiếp nhận dữ liệu đồng thời từ nhiều nhóm thiết bị đầu cuối hoạt động trên các chuẩn giao tiếp khác nhau như Zigbee, LoRa, Bluetooth, và các giao thức công nghiệp (RS-485/\ldots).
+                \item Xử lý song song và biệt lập: Hệ thống phải triển khai các tiến trình xử lý độc lập cho từng giao thức truyền thông, đảm bảo việc thu thập dữ liệu từ một luồng không gây tắc nghẽn hoặc ảnh hưởng đến các luồng dữ liệu khác.
+                \item Tiền xử lý và Chuẩn hóa dữ liệu tại biên: Thực hiện kiểm chứng định dạng, kiểm tra tính toàn vẹn (Checksum/CRC) và loại bỏ các khung tin lỗi ngay tại tầng LAN.
+                \item Cơ chế đệm và đảm bảo an toàn dữ liệu: Sử dụng hàng đợi (Queue) và bộ nhớ đệm để lưu trữ dữ liệu tạm thời, đảm bảo không mất mát thông tin trong trường hợp kết nối mạng diện rộng (WAN) bị gián đoạn.
+                \item Chuyển giao dữ liệu linh hoạt: Hỗ trợ đóng gói và chuyển phát dữ liệu lên các máy chủ quản lý thông qua các giao thức ứng dụng phổ biến như MQTT, HTTP hoặc CoAP tùy theo yêu cầu hệ thống.
+            \end{itemize}
             
-            \item \textcolor{red}{\textbf{Tính khả cấu hình:}}
+            \item \textbf{Khả năng khả cấu hình:}
             \begin{itemize}
-                \item Cung cấp ứng dụng cấu hình trên PC để tinh chỉnh toàn bộ thông số vận hành mà không cần can thiệp vào mã nguồn (Firmware).
-                \item Tích hợp tính năng tự động quét và nhận diện Gateway đang kết nối qua cáp USB.
-                \item Cho phép truy xuất toàn bộ trạng thái cấu hình hiện tại (danh sách mô-đun hiện hữu, thông số mạng WAN, tham số MQTT, \dots).
-                % \item Giao diện cấu hình trực quan dưới dạng biểu mẫu (Form), tối ưu hóa cho kỹ thuật viên vận hành.
-                % \item Hỗ trợ hiệu chỉnh chi tiết: Lựa chọn danh mục mô-đun thực tế; thiết lập tham số lớp vật lý (Baudrate, địa chỉ, ID mạng) cho Zigbee/LoRa/CAN/UART; cấu hình hạ tầng mạng (Wi-Fi/LTE/PPP) và thông số máy chủ MQTT (Host, Port, Credentials, Topics, cấu hình bảo mật TLS); điều chỉnh chu kỳ lấy mẫu, chính sách lưu đệm và cơ chế thử lại (Retry) khi mất kết nối.
-                % \item Thực thi lệnh ghi cấu hình xuống Gateway thông qua giao thức truyền tin nội bộ đã định nghĩa.
+                \item Cấu hình không xâm lấn (Non-intrusive Configuration): Cho phép tinh chỉnh toàn bộ tham số vận hành, mạng và giao thức mà không cần can thiệp vào mã nguồn hoặc biên dịch lại Firmware.
+                \item Định nghĩa Module bằng phần mềm (Software-Defined Module): Hỗ trợ cơ chế cấu hình động dựa trên tệp mô tả (JSON) để đặc tả chi tiết thông số vật lý (Baudrate, Parity), tập lệnh điều khiển (Command Template), trình tự điều khiển chân logic (GPIO Sequence) và các tham số thời gian (Timeout) của module.
+                \item Đa dạng phương thức tương tác: Cung cấp giao diện cấu hình trực quan qua ứng dụng máy tính (PC Tools) và giao diện Web (Web Config Portal) nhúng trực tiếp trên thiết bị.
+                \item Quản lý cấu hình thông minh: Hệ thống phải tự động lưu trữ cấu hình vào bộ nhớ không khả biến (NVS) và có khả năng tự phục hồi trạng thái vận hành sau khi khởi động lại.
+                \item Linh hoạt trong triển khai thực địa: Hỗ trợ chế độ điểm truy cập (AP Mode) với Captive Portal để cấu hình mạng ban đầu và chế độ trạm (STA Mode) để vận hành trong mạng nội bộ.
             \end{itemize}
         \end{itemize}
 
     \subsection{Yêu cầu phi chức năng}
         IoT Gateway phải thỏa mãn các tiêu chuẩn vận hành để đáp ứng điều kiện triển khai thực tế:
-
         \begin{itemize}
             \item \textbf{Độ tin cậy và tính ổn định:}
             \begin{itemize}
                 \item Đảm bảo khả năng vận hành liên tục 24/7 trong thời gian dài.
                 \item Tích hợp cơ chế giám sát phần cứng và phần mềm (Watchdog Timer) để tự động phục hồi khi xảy ra hiện tượng treo hệ thống hoặc xung đột tiến trình.
                 \item Chủ động phát hiện và xử lý có kiểm soát các lỗi ngoại vi (mất Internet, lỗi cảm biến, lỗi mô-đun giao tiếp) thông qua hệ thống bản ghi (Log) và chuyển đổi về trạng thái an toàn.
-                \item Duy trì tính toàn vẹn của dữ liệu bằng bộ đệm nội bộ, hỗ trợ lưu trữ và gửi bù dữ liệu ngay khi kết nối mạng được khôi phục. \textcolor{red}{(cụ thể là bao lâu?)}
+                \item Duy trì tính toàn vẹn của dữ liệu bằng bộ đệm nội bộ, hỗ trợ lưu trữ và gửi bù dữ liệu ngay khi kết nối mạng được khôi phục (trong khoảng 200 đến 300 ms kể từ khi có kết nối lại với server).
                 \item Hỗ trợ cập nhật phần mềm từ xa (FOTA) an toàn cho nhân xử lý với cơ chế kiểm tra tính toàn vẹn, đảm bảo không ghi đè lên Firmware hiện tại khi chưa xác thực thành công bản cập nhật.
                 \item Thiết kế phần cứng có khả năng chống chịu tác động môi trường: bảo vệ chống tĩnh điện (ESD), lọc nhiễu điện từ (EMI).
             \end{itemize}
@@ -58,9 +52,9 @@
             
             \item \textbf{Hiệu năng:}
             \begin{itemize}
-                \item Năng lực xử lý trung tâm đảm bảo độ trễ thấp \textcolor{red}{(cụ thể là bao nhiêu?)} trong việc thu thập và chuyển giao dữ liệu từ tất cả các mô-đun kết nối đồng thời.
-                \item Tốc độ phản hồi giao diện cấu hình và thời gian khởi động hệ thống tối ưu\textcolor{red}{(cụ thể là bao lâu?)}, đảm bảo không gây tắc nghẽn hàng đợi dữ liệu khi mật độ thiết bị đầu cuối tăng cao.\textcolor{red}{(cụ thể là bao nhiêu thiết bị?)}
-                \item \textcolor{red}{(thiết kế cụ thể xử lý được bao nhiêu thiết bị trên lý thuyết?)}
+                \item Năng lực xử lý trung tâm đảm bảo độ trễ thấp (dưới 1 ms) trong việc thu thập và chuyển giao dữ liệu từ tất cả các mô-đun kết nối đồng thời.
+                \item Tốc độ phản hồi giao diện cấu hình và thời gian khởi động hệ thống tối ưu (khoảng 15 giây cho WiFi và 40 giây cho LTE), đảm bảo không gây tắc nghẽn hàng đợi dữ liệu khi mật độ thiết bị đầu cuối tăng cao (có thể kết nối từ 30--40 thiết bị).
+                \item Thiết kế có thể xử lý tối đa kết nối với khoảng 30--40 thiết bị, tuy nhiên còn phụ thuộc vào module sử dụng cho giao thức.
             \end{itemize}
             
             \item \textbf{Tính khả dụng và dễ sử dụng:}

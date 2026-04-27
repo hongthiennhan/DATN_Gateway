@@ -172,64 +172,58 @@
                 \end{longtable}
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.8\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
+                    \includegraphics[width=0.85\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
                     \caption{Sơ đồ chân Module Adapter}
                 \end{figure}
 
         \subsubsection{Xử lý dữ liệu}
-            Phần xử lý dữ liệu của gateway được thiết kế theo kiến trúc \textbf{Dual-MCU Master–Slave}, trong đó LAN-MCU chịu trách nhiệm tương tác trực tiếp với thiết bị đầu cuối (thu thập/đẩy lệnh xuống), còn WAN-MCU đảm nhiệm kết nối Internet và giao tiếp Cloud. Toàn bộ luồng dữ liệu được tổ chức theo hai hướng chính: Uplink (Sensor $\to$ Cloud) và Downlink (Cloud $\to$ Sensor), đồng thời bảo đảm độ tin cậy bằng cơ chế CRC/sequence + ACK/NACK + retry trên kênh SPI và cơ chế retry/backoff khi publish lên Cloud.
+            Hệ thống vận hành theo kiến trúc Dual-MCU Master--Slave. LAN-MCU đóng vai trò Master điều phối các giao thức mạng nội bộ, trong khi WAN-MCU đóng vai trò Slave chuyên trách kết nối Cloud. Để tối ưu hóa hiệu suất truyền tải và giảm thiểu tài nguyên xử lý, cơ chế giao tiếp giữa hai MCU được chuyển đổi từ Polling sang Event-driven Handshake thông qua tín hiệu ngắt (Interrupt).
 
             \paragraph{Luồng Uplink: Sensor $\to$ LAN-MCU $\to$ WAN-MCU $\to$ Cloud}
             
-                Ở chiều uplink, dữ liệu từ cảm biến/thiết bị đầu cuối được LAN-MCU tiếp nhận, sau đó thực hiện các bước xử lý cơ bản như kiểm tra tính hợp lệ, phân tích (parse) và chuẩn hóa (normalize) về định dạng dữ liệu nội bộ trước khi chuyển sang WAN-MCU qua SPI.
-                
-                Trên kênh SPI, gói dữ liệu luôn đi kèm các trường kiểm tra như CRC và sequence. WAN-MCU xác thực gói nhận được:
+                Dữ liệu từ thiết bị đầu cuối được LAN-MCU tiếp nhận, thực hiện hậu xử lý (Validation, Parsing, Normalization) và chuẩn hóa về định dạng khung tin nội bộ.
+
                 \begin{itemize}
-                    \item Nếu gói lỗi (CRC sai hoặc sai thứ tự), WAN-MCU trả NACK, LAN-MCU thực hiện gửi lại (retry).
-                    \item Nếu gói hợp lệ, WAN-MCU trả ACK để LAN-MCU xác nhận hoàn tất giao dịch.
+                    \item \textbf{Giao tiếp SPI tin cậy:} Dữ liệu chuyển giao qua kênh SPI được bảo vệ bởi trường CRC và số thứ tự gói (Sequence Number).
+                    \item \textbf{Bắt tay xác nhận:} WAN-MCU kiểm tra tính toàn vẹn; nếu hợp lệ, phản hồi ACK được gửi lại để LAN-MCU kết thúc giao dịch. Ngược lại, phản hồi NACK sẽ kích hoạt cơ chế Retry.
+                    \item \textbf{Giao tiếp Cloud/Server:} WAN-MCU thực hiện Publish dữ liệu kèm cơ chế Exponential Backoff để đảm bảo độ tin cậy khi kết nối mạng không ổn định.
                 \end{itemize}
-                
-                Sau khi nhận ACK, WAN-MCU thực hiện gửi dữ liệu lên Cloud theo cơ chế publish. Trong trường hợp publish thất bại, WAN-MCU áp dụng retry (có thể kèm backoff) để tránh gửi dồn liên tục gây nghẽn mạng hoặc quá tải broker.
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.65\textwidth]{figures/sequence_diagram_end-to-end_uplink.png}
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
                     \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end uplink}
                 \end{figure}
             
             \paragraph{Luồng Downlink: Cloud $\to$ WAN-MCU $\to$ LAN-MCU $\to$ Sensor}
             
-                Ở chiều downlink, Cloud gửi lệnh/ yêu cầu xuống gateway thông qua WAN-MCU. WAN-MCU chuyển lệnh xuống LAN-MCU bằng SPI (theo cơ chế gói có CRC/sequence tương tự uplink). LAN-MCU nhận lệnh và:
+                Khác với cơ chế cũ, luồng Downlink hiện tại được kích hoạt tức thời thông qua tín hiệu phần cứng:
+
                 \begin{itemize}
-                    \item Nếu gói lỗi $\to$ trả NACK để WAN-MCU gửi lại.
-                    \item Nếu gói đúng $\to$ trả ACK, sau đó forward lệnh tới thiết bị đầu cuối theo giao thức tương ứng.
-                \end{itemize}
-                
-                Sau khi gửi lệnh xuống sensor, LAN-MCU đợi phản hồi:
-                \begin{itemize}
-                    \item Nếu thiết bị không phản hồi (timeout) $\to$ LAN-MCU báo FAIL lên WAN-MCU, WAN-MCU phản hồi FAIL về Cloud.
-                    \item Nếu thiết bị phản hồi $\to$ LAN-MCU báo OK lên WAN-MCU và WAN-MCU phản hồi OK về Cloud.
+                    \item \textbf{Cơ chế GPIO Handshake:} Khi có lệnh từ Cloud, WAN-MCU chủ động kích hoạt (Assert) một chân GPIO Handshake để thông báo dữ liệu đã sẵn sàng.
+                    \item \textbf{Xử lý ngắt (Interrupt-driven):} LAN-MCU không còn thực hiện truy vấn chu kỳ (Polling). Thay vào đó, việc đọc dữ liệu từ WAN-MCU chỉ được kích hoạt khi LAN-MCU phát hiện cạnh tín hiệu ngắt trên chân Handshake.
+                    \item \textbf{Thực thi lệnh:} Sau khi nhận gói dữ liệu hợp lệ qua SPI, LAN-MCU điều phối lệnh xuống thiết bị đầu cuối và phản hồi trạng thái (OK/FAIL) ngược lại WAN-MCU để đồng bộ với Cloud.
                 \end{itemize}
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.65\textwidth]{figures/sequence_diagram_end-to-end_downlink.png}
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
                     \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end downlink}
                 \end{figure}
             
-            \paragraph{Cơ chế giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI (đảm bảo tin cậy)}
-            
-                Kênh SPI giữa hai MCU đóng vai trò xương sống cho luồng dữ liệu. Thiết kế giao tiếp sử dụng các nguyên tắc:
+            \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
+
+                Kênh SPI đóng vai trò xương sống trong truyền tải dữ liệu, vận hành dựa trên các nguyên tắc đảm bảo tính toàn vẹn:
+                
                 \begin{itemize}
-                    \item \textbf{Kiểm tra toàn vẹn:} mỗi gói có CRC, phát hiện lỗi đường truyền.
-                    \item \textbf{Chống mất/trùng gói:} sequence giúp nhận biết gói lặp hoặc sai thứ tự.
-                    \item \textbf{Bắt tay xác nhận:} ACK/NACK cho từng gói, kết hợp retry khi thất bại.
-                    \item \textbf{Downlink theo cơ chế polling/pull:} LAN-MCU (master) thực hiện REQ\_DOWNLINK theo chu kỳ; WAN-MCU trả về CMD khi có dữ liệu hoặc NO\_DATA khi trống.
+                    \item \textbf{Kiểm tra toàn vẹn (Integrity Check):} Áp dụng thuật toán CRC cho từng khung tin để phát hiện lỗi vật lý trên đường truyền.
+                    \item \textbf{Đồng bộ hóa thứ tự (Sequence Management):} Sử dụng Sequence Number để loại bỏ các gói tin trùng lặp hoặc phát hiện mất gói trong quá trình truyền tải.
+                    \item \textbf{Tối ưu hóa năng lượng và tài nguyên:} Thay thế cơ chế REQ\_DOWNLINK tuần tự bằng cơ chế Async Notify qua GPIO Handshake, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ xử lý cảm biến thời gian thực.
                 \end{itemize}
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.5\textwidth]{figures/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
+                    \includegraphics[width=0.5\textwidth]{figures/DATN/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
                     \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
                 \end{figure}
             
@@ -237,18 +231,35 @@
             
                 Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
                 \begin{itemize}
-                    \item Chu kỳ gửi dữ liệu, chính sách retry/backoff
-                    \item Thông số MQTT (host/port/topic/QoS nếu có), lựa chọn kênh Internet
-                    \item Bật/tắt luồng downlink hoặc định tuyến lệnh
-                    \item Các tham số giao tiếp thuộc LAN (phải chuyển tiếp sang LAN-MCU)
+                    \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                    \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
+                    \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
+                    \item Cấu hình file JSON cho từng module cắm vào LAN.
                 \end{itemize}
                 
-                Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\to$ WAN-MCU $\to$ (tùy trường hợp) LAN-MCU. WAN-MCU đóng vai trò “router cấu hình”: nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+                Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\rightarrow$ WAN-MCU $\rightarrow$ LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.65\textwidth]{figures/sequence_diagram_App-PC_update.png}
+                    \includegraphics[width=0.5\textwidth]{figures/DATN/sequence_diagram_App-PC_update.png}
                     \caption{Sequence diagram: cập nhật cấu hình từ App PC}
+                \end{figure}
+
+            \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
+                Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
+                \begin{itemize}
+                    \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                    \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
+                    \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
+                    \item Cấu hình file JSON cho từng module cắm vào LAN.
+                \end{itemize}
+                
+                Quy trình cập nhật cấu hình gồm 3 thành phần chính: Web Browser, WAN-MCU, LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_web-config-portal.png}
+                    \caption{Sequence diagram: cập nhật cấu hình từ Web Config Portal}
                 \end{figure}
 
     \newpage
@@ -919,13 +930,13 @@
 
                         \begin{figure}[h]
                             \centering
-                            \includegraphics[width=0.75\textwidth]{figures/impedance_50R.png}
+                            \includegraphics[width=\textwidth]{figures/impedance_50R.png}
                             \caption{Thông số kích thước cho đường tín hiệu Coplanar Single-ended $50\Omega$ (Đơn vị: mm)}
                         \end{figure}
 
                         \begin{figure}[h]
                             \centering
-                            \includegraphics[width=0.75\textwidth]{figures/impedance_90R.png}
+                            \includegraphics[width=\textwidth]{figures/impedance_90R.png}
                             \caption{Thông số kích thước cho cặp tín hiệu vi sai (Coplarar Differential-pair) $90\Omega$ (Đơn vị: mm)}
                         \end{figure}
 
@@ -1019,9 +1030,9 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.75\textwidth]{figures/incorrect_plane_void_routing.png}
-                        \includegraphics[width=0.75\textwidth]{figures/DATN/slave_i2c0.png}
-                        \caption{Minh họa tín hiệu Slave\_I2C0 được định tuyến liên tục trên mặt phẳng GND đồng nhất, tránh các vị trí lớp phủ đã bị cắt.}
+                        \includegraphics[width=0.7\textwidth]{figures/incorrect_plane_void_routing.png}
+                        \includegraphics[width=0.7\textwidth]{figures/DATN/slave_i2c0.png}
+                        \caption{Tín hiệu Slave\_I2C0 được định tuyến liên tục trên mặt phẳng GND đồng nhất.}
                     \end{figure}
 
                 \end{enumerate}
@@ -1040,7 +1051,7 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.5\textwidth]{figures/hot_loop_minimization.png}
+                        \includegraphics[width=0.45\textwidth]{figures/hot_loop_minimization.png}
                         \caption{Vị trí các tụ điện trong nguồn xung +3V3.}
                     \end{figure}
 
@@ -1053,7 +1064,7 @@
                     \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.5\textwidth]{figures/switching_node.png}
+                        \includegraphics[width=0.45\textwidth]{figures/switching_node.png}
                         \caption{Điểm chuyển mạch trong nguồn xung +3V3.}
                     \end{figure}        
 
@@ -1065,7 +1076,7 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.5\textwidth]{figures/feedback.png}
+                        \includegraphics[width=0.45\textwidth]{figures/feedback.png}
                         \caption{Định tuyến hồi tiếp trong nguồn xung +3V3.}
                     \end{figure}   
 
@@ -1096,7 +1107,7 @@
                     % \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.5\textwidth]{figures/power_network.png}
+                        \includegraphics[width=0.45\textwidth]{figures/power_network.png}
                         \caption{Mạng phân phối nguồn.}
                     \end{figure}                     
                 \end{enumerate}
@@ -1116,7 +1127,7 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.5\textwidth]{figures/usb.png}
+                        \includegraphics[width=0.45\textwidth]{figures/usb.png}
                         \caption{Định tuyến USB.}
                     \end{figure} 
 
@@ -1131,7 +1142,7 @@
                     % \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.3\textwidth]{figures/sdio.png}
+                        \includegraphics[width=0.45\textwidth]{figures/sdio.png}
                         \caption{Định tuyến SDIO giữa ESP32-S3 Slave với Micro SD Card.}
                     \end{figure} 
 
@@ -1148,34 +1159,24 @@
     \subsection{Firmware và Software}
         \paragraph{Tổng quan kiến trúc phần mềm Dual-MCU}
         
-        Prototype phần mềm của IoT Gateway được triển khai theo kiến trúc Dual-MCU Master–Slave và vận hành trên FreeRTOS. Hệ thống được chia thành hai miền xử lý tách bạch: LAN-MCU phụ trách thu thập và xử lý dữ liệu từ thiết bị đầu cuối/sensor; WAN-MCU phụ trách kết nối Internet/Cloud và điều phối luồng dữ liệu, cấu hình và cập nhật. Cách phân tách này giúp giảm tải cho từng MCU, tăng tính ổn định khi chạy lâu dài và tạo nền tảng mở rộng giao thức/module theo nhu cầu.
+        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
+
+        Trong đó, LAN-MCU đóng vai trò điều phối lớp dưới, trực tiếp quản lý các kết nối nội bộ như LoRa, Zigbee, BLE và RS-485. Nhiệm vụ trọng tâm của LAN-MCU là thu thập, kiểm chứng và chuẩn hóa dữ liệu thô từ sensor trước khi đẩy lên kênh truyền thông nội bộ.
         
-        Về cấu trúc phần mềm, cả hai firmware đều tuân theo mô hình phân lớp Application / Middleware / BSP / Driver.
-        \begin{itemize}
-            \item \textbf{Application} chứa các khối điều phối cấp cao và các task xử lý chính.
-            \item \textbf{Middleware} cung cấp lớp trừu tượng giao thức/dịch vụ nền (network stack, MQTT/OTA, storage…).
-            \item \textbf{BSP} hiện thực giao tiếp phần cứng theo board/module (SPI/UART/SD/IO expander…).
-            \item \textbf{Driver} là lớp thấp nhất cho ngoại vi (GPIO/I2C/SPI/UART/USB/SDIO/MAC…).
-        \end{itemize}
+        Ngược lại, WAN-MCU đảm nhiệm vai trò quản lý lớp trên, duy trì kết nối Internet và giao tiếp Cloud qua MQTT. Đây là trung tâm điều phối cấu hình toàn hệ thống, thực hiện các tác vụ nặng như FOTA, Web Config Portal và điều hướng lệnh downlink từ server xuống lớp vật lý thông qua cơ chế ngắt GPIO Handshake.
         
-        Cấu trúc này hỗ trợ tốt mục tiêu modularity (dễ thêm/bớt giao thức, module) và configurability (đổi cấu hình mà không phải sửa kiến trúc chương trình).
-        
-        Ở phía LAN-MCU, firmware đảm nhiệm “mặt dưới” của gateway: quản lý các kết nối nội bộ và thiết bị đầu cuối. Tầng Application tổ chức theo nhiều task theo từng giao thức (LoRa, Zigbee, BLE, Thread, Z-Wave, có thể mở rộng CAN/RS-485), thực hiện nhận dữ liệu thô, kiểm tra hợp lệ và chuẩn hóa trước khi chuyển lên kênh liên MCU. Tầng Middleware cung cấp các handler giao thức, Data Storage để đệm/lưu cục bộ (SD) khi cần và OTA cho cập nhật; BSP/Driver hiện thực các giao tiếp phần cứng và ngoại vi.
-        
-        Ở phía WAN-MCU, firmware đảm nhiệm “mặt trên”: kết nối Internet/Cloud và điều phối hệ thống. Tầng Application gồm Internet handler (Wi-Fi/LTE/Ethernet/PPP), server handler (ưu tiên MQTT để publish telemetry và nhận downlink), kênh cấu hình USB/UART, và khối giao tiếp với LAN-MCU để nhận uplink/chuyển downlink. Tầng Middleware sử dụng các thành phần nền (MQTT, network handlers, OTA), còn BSP/Driver quản lý modem/ethernet, RTC và các ngoại vi như SPI/UART/USB, IO expander.
-        
-        Tổng thể, kiến trúc Dual-MCU tạo luồng dữ liệu rõ ràng: LAN-MCU thu thập \& tiền xử lý, WAN-MCU gửi Cloud \& nhận lệnh, hai MCU trao đổi qua SPI có cơ chế xác nhận để tăng độ tin cậy. Nhờ tách vai trò và phân lớp phần mềm, prototype vừa linh hoạt theo module/giao thức vừa ổn định, dễ triển khai thực tế.
+        Sự phân tách vai trò rõ ràng giúp luồng dữ liệu vận hành mạch lạc: LAN-MCU tập trung vào tính thời gian thực của thiết bị đầu cuối, còn WAN-MCU đảm bảo tính ổn định cho các dịch vụ mạng diện rộng.
         
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.85\textwidth]{figures/design_mculanfirmware.png}
+            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mculanfirmware.png}
             \caption{MCU LAN Firmware}
             \label{fig:mculan_firmware}
         \end{figure} 
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.85\textwidth]{figures/design_mcuwanfirmware.png}
+            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mcuwanfirmware.png}
             \caption{MCU WAN Firmware}
             \label{fig:mcuwan_firmware}
         \end{figure}
