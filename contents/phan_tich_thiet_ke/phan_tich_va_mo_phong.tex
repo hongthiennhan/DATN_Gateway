@@ -165,8 +165,8 @@
                     Trong đó:
                     \begin{itemize}
                         \item U15 là nguồn BQ25892RTWR với trở kháng đầu ra là $27 \text{m}\Omega$\cite{FastChargerBq2589x} tại mức điện áp danh định $U = 4.2\text{V}$.
-                        \item U3 là tải TPS566231RQFR với điện áp đầu vào tối thiểu là 3.0V\cite{StepDownRegulatorTps56623x} tại mức tiêu thụ dòng $I_{\text{U3}} = 0.81\text{A}$.
-                        \item U4 là tải TPS22965DSGR với điện áp đầu vào tối thiểu là 2.5V\cite{LoadSwitchTps22965} tại mức tiêu thụ dòng $I_{\text{U4}} = 0.14\text{A}$.
+                        \item U3 là tải TPS566231RQFR với điện áp đầu vào tối thiểu là 3.0V\cite{StepDownRegulatorTps56623x} tại mức tiêu thụ dòng $I_{\text{U3}} = 810\text{mA}$.
+                        \item U4 là tải TPS22965DSGR với điện áp đầu vào tối thiểu là 2.5V\cite{LoadSwitchTps22965} tại mức tiêu thụ dòng $I_{\text{U4}} = 140\text{mA}$.
                     \end{itemize}
                 \end{minipage}
                 \hfill
@@ -534,30 +534,27 @@
                 \begin{minipage}{0.45\textwidth}
                     Trong đó:
                     \begin{itemize}
-                        \item U6 là nguồn TPS22965DSGR với trở kháng đầu ra là $16 \text{m}\Omega$\cite{LoadSwitchTps22965} tại mức điện áp danh định $U = 3.3\text{V}$.
-                        \item U2 là tải ESP32-S3-WROOM-1U-N16R8 với điện áp đầu vào tối thiểu là 3.0V\cite{Esp32S3WroomDatasheet} tại mức tiêu thụ dòng $I_{\text{U2}} = 92\text{mA}$.
-                        \item CON6 là tải LAN1 Adapter với điện áp đầu vào tối thiểu là 3.0V tại mức tiêu thụ dòng $I_{\text{CON6}} = 200\text{mA}$.
-                        \item CON7 là tải LAN2 Adapter với điện áp đầu vào tối thiểu là 3.0V tại mức tiêu thụ dòng $I_{\text{CON7}} = 200\text{mA}$.
-                        \item CON8 là tải microSD với điện áp đầu vào tối thiểu là 3.0V tại mức tiêu thụ dòng $I_{\text{CON8}} = 90\text{mA}$.
+                        \item U15 là nguồn BQ25892RTWR với trở kháng đầu ra là $11 \text{m}\Omega$\cite{FastChargerBq2589x} tại mức điện áp danh định $U = 4.2\text{V}$.
+                        \item BAT2 là tải pin sạc LiPo với điện áp đầu vào tối thiểu là 3.2V tại mức tiêu thụ dòng sạc $I_{\text{BAT2}} = 1\text{A}$.
                     \end{itemize}
                 \end{minipage}
                 \hfill
                 \begin{minipage}{0.45\textwidth}
                     \centering
-                    \includegraphics[width=\textwidth]{figures/3v7_vbat_power_tree.png}
+                    \includegraphics[width=0.35\textwidth]{figures/3v7_vbat_power_tree.png}
                     \caption{Cây phân phối nguồn +3V7\_VBAT.}
                     \label{fig:3v7_vbat_power_tree}
                 \end{minipage}
             \end{figure}
 
             \textbf{Kết quả mô phỏng Mật độ dòng điện:}
-            Trên tổng thể toàn bộ đường dây đạt được mật độ dòng điện rất thấp, tối đa chỉ đạt 31.2 A/mm$^2$ trên cả hai lớp. Mức này thấp hơn đáng kể so với ngưỡng an toàn, cho thấy thiết kế PDN của ray nguồn +3V3\_CTRL là rất hiệu quả và có khả năng chịu được dòng tải cao hơn so với mức lý thuyết đã sử dụng cho mô phỏng.
+            Trên tổng thể toàn bộ đường dây đạt được mật độ dòng điện tương đối tốt, tuy nhiên vẫn có một số điểm tập trung dòng cao trên 50 A/mm$^2$ trên lớp trong. Do thiết kế mật độ rất cao và chưa ưu tiên về chức năng sử dụng pin, kích thước đường dây cho dòng sạc được giới hạn lại ở 1A, mặc dù trên lý thuyết chip sạc BQ25892RTWR có thể cung cấp dòng sạc tối đa là 5A\cite{FastChargerBq2589x}, dòng tiêu thụ của thiết bị trên lý thuyết khi sử dụng nguồn điện từ pin cũng chỉ đạt chưa tới $10\%$ công suất giới hạn, khoảng dưới 0.5A khi ở chế độ tiết kiệm pin.
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/3v3_ctrl_sim_current_density.png}
-                \caption{Biểu đồ phân bố mật độ dòng điện của nguồn +3V3\_CTRL.}
-                \label{fig:3v3_ctrl_current_density}
+                \includegraphics[width=0.75\textwidth]{figures/3v7_vbat_sim_current_density.png}
+                \caption{Biểu đồ phân bố mật độ dòng điện của nguồn +3V7\_VBAT.}
+                \label{fig:3v7_vbat_current_density}
             \end{figure}
 
             \newpage
@@ -568,20 +565,17 @@
                 \hfill
                 \begin{minipage}{0.45\textwidth}
                     \centering
-                    \includegraphics[width=\textwidth]{figures/3v3_ctrl_sim_voltage_drop.png}
-                    \caption{Biểu đồ phân bố điện áp trên nguồn +3V3\_CTRL.}
-                    \label{fig:3v3_ctrl_voltage_drop}
+                    \includegraphics[width=\textwidth]{figures/3v7_vbat_sim_voltage_drop.png}
+                    \caption{Biểu đồ phân bố điện áp trên nguồn +3V7\_VBAT.}
+                    \label{fig:3v7_vbat_voltage_drop}
                 \end{minipage}
                 \hfill
                 \begin{minipage}{0.45\textwidth}
                     \textbf{\textit{Kết quả mô phỏng:}}
                     \begin{itemize}
-                        \item Điện áp tại nguồn U6:\\ $U_{\text{U6}} = 3.291\text{V}$
-                        \item Điện áp tại tải U2:\\ $U_{\text{U2}} = 3.289\text{V}$
-                        \item Điện áp tại tải CON6:\\ $U_{\text{CON6}} = 3.287\text{V}$
-                        \item Điện áp tại tải CON7:\\ $U_{\text{CON7}} = 3.287\text{V}$
-                        \item Điện áp tại tải CON8:\\ $U_{\text{CON8}} = 3.288\text{V}$
-                        \item Độ sụt áp trung bình:\\ $\Delta U = 10.902\text{mV}$
+                        \item Điện áp tại nguồn U15:\\ $U_{\text{U15}} = 4.189\text{V}$
+                        \item Điện áp tại tải BAT2:\\ $U_{\text{BAT2}} = 4.160\text{V}$
+                        \item Độ sụt áp trung bình:\\ $\Delta U = 19.830\text{mV}$
                     \end{itemize}
                 \end{minipage}
             \end{figure}
@@ -605,19 +599,14 @@
                 \hline
                 \endlastfoot
                 
-                Điện áp đầu ra tại nguồn trên lý thuyết & $3.291\text{V}$ & Khớp với kết quả mô phỏng \\
-                Trở kháng trung bình tương đương toàn đường dẫn & $19.750 \text{m}\Omega$ & Rất thấp, cho thấy thiết kế PDN hiệu quả \\
-                Trở kháng tương đương từ nguồn U6 đến tải U2 & $21.739 \text{m}\Omega$ & Rất thấp, cho thấy đường dẫn đến tải U2 được thiết kế tốt \\
-                Trở kháng tương đương từ nguồn U6 đến tải CON6 & $20.000 \text{m}\Omega$ & Rất thấp, cho thấy đường dẫn đến tải CON6 được thiết kế tốt \\
-                Trở kháng tương đương từ nguồn U6 đến tải CON7 & $20.000 \text{m}\Omega$ & Rất thấp, cho thấy đường dẫn đến tải CON7 được thiết kế tốt \\
-                Trở kháng tương đương từ nguồn U6 đến tải CON8 & $33.333 \text{m}\Omega$ & Rất thấp, cho thấy đường dẫn đến tải CON8 được thiết kế tốt \\
-                Hiệu suất phân phối nguồn đến tải U6 & 99.94\% & Rất cao, gần như không có tổn hao \\
-                Hiệu suất phân phối nguồn đến tải CON6 & 99.88\% & Rất cao, gần như không có tổn hao \\
-                Hiệu suất phân phối nguồn đến tải CON7 & 99.88\% & Rất cao, gần như không có tổn hao \\
-                Hiệu suất phân phối nguồn đến tải CON8 & 99.91\% & Rất cao, gần như không có tổn hao \\
-                Phần trăm sụt áp so với điện áp tại nguồn & $\mathbf{0.33\%}$ & Rất thấp, nằm trong giới hạn 5\% cho phép
+                Điện áp đầu ra tại nguồn trên lý thuyết & $4.189\text{V}$ & Khớp với kết quả mô phỏng \\
+                Trở kháng trung bình tương đương toàn đường dẫn & $19.830 \text{m}\Omega$ & Rất thấp, cho thấy thiết kế PDN hiệu quả \\
+                Trở kháng tương đương từ nguồn U15 đến tải BAT2 & $78.908 \text{m}\Omega$ & Khá thấp, cho thấy đường dẫn đến tải BAT2 được thiết kế ổn \\
+                Hiệu suất phân phối nguồn đến tải BAT2 & 99.31\% & Rất cao, gần như không có tổn hao \\
+                Phần trăm sụt áp so với điện áp tại nguồn & $\mathbf{0.47\%}$ & Rất thấp, nằm trong giới hạn 5\% cho phép
                 \label{tab:3v3_ctrl_calculation}\\
 
                 \hline
             \end{longtable}
+            
             
