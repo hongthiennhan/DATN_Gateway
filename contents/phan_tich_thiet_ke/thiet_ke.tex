@@ -1233,47 +1233,92 @@
         
         Cơ chế downlink (Cloud $\to$ LAN): Khi nhận lệnh từ Cloud (ví dụ RPC/command) thông qua MQTT, WAN-MCU đưa lệnh vào downlink queue và thực hiện cơ chế push chủ động thay vì để LAN-MCU poll. Cụ thể, WAN-MCU sử dụng một đường GPIO toggle/handshake để thông báo cho LAN-MCU rằng đang có dữ liệu downlink hoặc cấu hình pending. Khi LAN-MCU phát hiện tín hiệu handshake, nó thực hiện phiên SPI để nhận gói lệnh từ WAN-MCU. WAN-MCU gửi gói command/DT tương ứng qua SPI; LAN-MCU kiểm tra hợp lệ và phản hồi ACK/NACK. Nếu nhận NACK hoặc timeout, WAN-MCU thực hiện retry giới hạn nhằm đảm bảo lệnh đến LAN-MCU một cách tin cậy. Sau khi LAN-MCU nhận thành công, lệnh được dispatch tới handler giao thức tương ứng để chuyển xuống sensor node.
         
+        \newpage
         \paragraph{Data Communication Handler (USB/UART) – giao tiếp với Configuration Tools trên PC}
         
         WAN-MCU cung cấp kênh cấu hình tại chỗ thông qua USB/UART nhằm hỗ trợ kỹ thuật viên triển khai nhanh và thay đổi tham số vận hành mà không cần rebuild firmware. 
-        
-        \begin{itemize}
-            \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
-            \begin{itemize}
-                \item PC gửi lệnh quét/đọc cấu hình tới gateway.
-                \item WAN-MCU truy xuất cấu hình đang lưu (NVS/runtime) và phản hồi dưới dạng các cặp key–value, ví dụ: loại kết nối Internet đang dùng (Wi-Fi/LTE,…), chế độ Wi-Fi (Personal/Enterprise) và tên đăng nhập, MQTT broker (host/port), topic, chu kỳ gửi dữ liệu…
-                \item Các trường nhạy cảm (password/secret) được ẩn hoặc rút gọn khi phản hồi để đảm bảo an toàn thông tin.
-                \item Có thể kèm thêm một số thông tin phục vụ kiểm tra nhanh như phiên bản firmware và trạng thái kết nối (Internet/MQTT).
-            \end{itemize}
-            \item \textbf{Nhận lệnh cấu hình mới (CF…):}
-            \begin{itemize}
-                \item PC gửi lệnh cấu hình bắt đầu bằng prefix “CF…” kèm tham số tương ứng.
-                \item WAN-MCU tiếp nhận, kiểm tra định dạng/độ dài cơ bản và đóng gói thành “config command” để đưa vào hàng đợi (queue) cho Config Handler xử lý, tránh xử lý nặng ngay trong luồng đọc USB/UART.
-                \item Config Handler thực hiện validate giá trị, sau đó lưu vào NVS và áp dụng cấu hình vào các khối liên quan (Internet/MQTT…). Nếu cấu hình thuộc về LAN-MCU, WAN-MCU sẽ chuyển tiếp xuống LAN-MCU qua kênh liên MCU và nhận phản hồi OK/FAIL trước khi trả kết quả về PC.
-                \item Sau khi hoàn tất, gateway phản hồi OK/FAIL (kèm lý do nếu lỗi) để kỹ thuật viên xác nhận cấu hình đã được ghi và áp dụng thành công.
-            \end{itemize}
-        \end{itemize}
-        
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.5\textwidth]{figures/design_DCH-CT.png}
-            \caption{Lưu đồ giải thuật Data Communication Handler – giao tiếp cấu hình qua USB/UART}
-            \label{fig:design_DCH-CT}
+        \begin{figure}[h]
+            \begin{minipage}{0.3\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/design_DCH-CT.png}
+                \caption{Lưu đồ giải thuật Data Communication Handler – giao tiếp cấu hình qua USB/UART}
+                \label{fig:design_DCH-CT}
+            \end{minipage}
+            \hfill
+            \begin{minipage}{0.65\textwidth}
+                \begin{itemize}
+                    \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
+                    \begin{itemize}
+                        \item PC gửi lệnh quét/đọc cấu hình tới gateway.
+                        \item WAN-MCU truy xuất cấu hình đang lưu (NVS/runtime) và phản hồi dưới dạng các cặp key–value, ví dụ: loại kết nối Internet đang dùng (Wi-Fi/LTE,…), chế độ Wi-Fi (Personal/Enterprise) và tên đăng nhập, MQTT broker (host/port), topic, chu kỳ gửi dữ liệu…
+                        \item Các trường nhạy cảm (password/secret) được ẩn hoặc rút gọn khi phản hồi để đảm bảo an toàn thông tin.
+                        \item Có thể kèm thêm một số thông tin phục vụ kiểm tra nhanh như phiên bản firmware và trạng thái kết nối (Internet/MQTT).
+                    \end{itemize}
+                    \item \textbf{Nhận lệnh cấu hình mới (CF…):}
+                    \begin{itemize}
+                        \item PC gửi lệnh cấu hình bắt đầu bằng prefix “CF…” kèm tham số tương ứng.
+                        \item WAN-MCU tiếp nhận, kiểm tra định dạng/độ dài cơ bản và đóng gói thành “config command” để đưa vào hàng đợi (queue) cho Config Handler xử lý, tránh xử lý nặng ngay trong luồng đọc USB/UART.
+                        \item Config Handler thực hiện validate giá trị, sau đó lưu vào NVS và áp dụng cấu hình vào các khối liên quan (Internet/MQTT…). Nếu cấu hình thuộc về LAN-MCU, WAN-MCU sẽ chuyển tiếp xuống LAN-MCU qua kênh liên MCU và nhận phản hồi OK/FAIL trước khi trả kết quả về PC.
+                        \item Sau khi hoàn tất, gateway phản hồi OK/FAIL (kèm lý do nếu lỗi) để kỹ thuật viên xác nhận cấu hình đã được ghi và áp dụng thành công.
+                    \end{itemize}
+                \end{itemize}  
+            \end{minipage}        
         \end{figure}
+        % \begin{itemize}
+        %     \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
+        %     \begin{itemize}
+        %         \item PC gửi lệnh quét/đọc cấu hình tới gateway.
+        %         \item WAN-MCU truy xuất cấu hình đang lưu (NVS/runtime) và phản hồi dưới dạng các cặp key–value, ví dụ: loại kết nối Internet đang dùng (Wi-Fi/LTE,…), chế độ Wi-Fi (Personal/Enterprise) và tên đăng nhập, MQTT broker (host/port), topic, chu kỳ gửi dữ liệu…
+        %         \item Các trường nhạy cảm (password/secret) được ẩn hoặc rút gọn khi phản hồi để đảm bảo an toàn thông tin.
+        %         \item Có thể kèm thêm một số thông tin phục vụ kiểm tra nhanh như phiên bản firmware và trạng thái kết nối (Internet/MQTT).
+        %     \end{itemize}
+        %     \item \textbf{Nhận lệnh cấu hình mới (CF…):}
+        %     \begin{itemize}
+        %         \item PC gửi lệnh cấu hình bắt đầu bằng prefix “CF…” kèm tham số tương ứng.
+        %         \item WAN-MCU tiếp nhận, kiểm tra định dạng/độ dài cơ bản và đóng gói thành “config command” để đưa vào hàng đợi (queue) cho Config Handler xử lý, tránh xử lý nặng ngay trong luồng đọc USB/UART.
+        %         \item Config Handler thực hiện validate giá trị, sau đó lưu vào NVS và áp dụng cấu hình vào các khối liên quan (Internet/MQTT…). Nếu cấu hình thuộc về LAN-MCU, WAN-MCU sẽ chuyển tiếp xuống LAN-MCU qua kênh liên MCU và nhận phản hồi OK/FAIL trước khi trả kết quả về PC.
+        %         \item Sau khi hoàn tất, gateway phản hồi OK/FAIL (kèm lý do nếu lỗi) để kỹ thuật viên xác nhận cấu hình đã được ghi và áp dụng thành công.
+        %     \end{itemize}
+        % \end{itemize}
+        
+        % \begin{figure}[H]
+        %     \centering
+        %     \includegraphics[width=0.5\textwidth]{figures/design_DCH-CT.png}
+        %     \caption{Lưu đồ giải thuật Data Communication Handler – giao tiếp cấu hình qua USB/UART}
+        %     \label{fig:design_DCH-CT}
+        % \end{figure}
 
+        
+        \newpage
         \paragraph{FOTA/Upgrade – cập nhật firmware cho Gateway (LAN cập nhật trước, WAN cập nhật sau)}
-        
         Trong prototype, cơ chế FOTA được kích hoạt từ server bằng một lệnh cấu hình đặc biệt. Khi gateway nhận được lệnh này, hệ thống chuyển sang “chế độ cập nhật” và thực hiện cập nhật theo thứ tự: LAN-MCU cập nhật trước (nhờ PPP Server do WAN-MCU cung cấp), sau đó WAN-MCU tự cập nhật firmware của chính nó.
-        Cụ thể, khi server gửi lệnh, WAN-MCU sẽ parse lệnh và đánh dấu đây là OTA command. Thay vì cập nhật ngay, WAN-MCU forward lệnh OTA xuống LAN-MCU để LAN-MCU chuẩn bị cập nhật trước. Đồng thời, WAN-MCU khởi động PPP Server qua UART nhằm tạo một đường IP-link cho LAN-MCU truy cập mạng và tải firmware. Nhờ đường PPP này, LAN-MCU có thể thực hiện quá trình OTA theo cơ chế HTTPS (tải image → kiểm tra → ghi firmware → reboot) một cách độc lập, trong khi WAN-MCU giữ vai trò “cấp đường truyền” và điều phối.
         
-        Sau khi LAN-MCU cập nhật xong, LAN-MCU sẽ gửi handshake thông báo cho WAN-MCU bước tiếp theo. Tại thời điểm này, WAN-MCU không phản hồi handshake theo kiểu trao đổi qua lại, mà chuyển thẳng sang bước tự cập nhật firmware của chính nó. WAN-MCU tiến hành OTA (tải → kiểm tra → ghi → reboot) và kết thúc quy trình FOTA toàn gateway. Sau cùng, gateway có thể gửi trạng thái cập nhật (OK/FAIL, version) lên server để xác nhận hoàn tất.
+            \begin{figure}[h]
+                \begin{minipage}[t]{0.3\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/design_FOTA.png}
+                    \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
+                    \label{fig:design_FOTA}
+                \end{minipage}
+                \hfill
+                \begin{minipage}[b]{0.65\textwidth}
+                    Cụ thể, khi server gửi lệnh, WAN-MCU sẽ parse lệnh và đánh dấu đây là OTA command. Thay vì cập nhật ngay, WAN-MCU forward lệnh OTA xuống LAN-MCU để LAN-MCU chuẩn bị cập nhật trước. Đồng thời, WAN-MCU khởi động PPP Server qua UART nhằm tạo một đường IP-link cho LAN-MCU truy cập mạng và tải firmware. Nhờ đường PPP này, LAN-MCU có thể thực hiện quá trình OTA theo cơ chế HTTPS (tải image → kiểm tra → ghi firmware → reboot) một cách độc lập, trong khi WAN-MCU giữ vai trò “cấp đường truyền” và điều phối.
+                    
+                    Sau khi LAN-MCU cập nhật xong, LAN-MCU sẽ gửi handshake thông báo cho WAN-MCU bước tiếp theo. Tại thời điểm này, WAN-MCU không phản hồi handshake theo kiểu trao đổi qua lại, mà chuyển thẳng sang bước tự cập nhật firmware của chính nó. WAN-MCU tiến hành OTA (tải → kiểm tra → ghi → reboot) và kết thúc quy trình FOTA toàn gateway. Sau cùng, gateway có thể gửi trạng thái cập nhật (OK/FAIL, version) lên server để xác nhận hoàn tất.
 
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.5\textwidth]{figures/design_FOTA.png}
-            \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
-            \label{fig:design_FOTA}
-        \end{figure}
+                \end{minipage}
+            \end{figure}
+        % Trong prototype, cơ chế FOTA được kích hoạt từ server bằng một lệnh cấu hình đặc biệt. Khi gateway nhận được lệnh này, hệ thống chuyển sang “chế độ cập nhật” và thực hiện cập nhật theo thứ tự: LAN-MCU cập nhật trước (nhờ PPP Server do WAN-MCU cung cấp), sau đó WAN-MCU tự cập nhật firmware của chính nó.
+        % Cụ thể, khi server gửi lệnh, WAN-MCU sẽ parse lệnh và đánh dấu đây là OTA command. Thay vì cập nhật ngay, WAN-MCU forward lệnh OTA xuống LAN-MCU để LAN-MCU chuẩn bị cập nhật trước. Đồng thời, WAN-MCU khởi động PPP Server qua UART nhằm tạo một đường IP-link cho LAN-MCU truy cập mạng và tải firmware. Nhờ đường PPP này, LAN-MCU có thể thực hiện quá trình OTA theo cơ chế HTTPS (tải image → kiểm tra → ghi firmware → reboot) một cách độc lập, trong khi WAN-MCU giữ vai trò “cấp đường truyền” và điều phối.
+        
+        % Sau khi LAN-MCU cập nhật xong, LAN-MCU sẽ gửi handshake thông báo cho WAN-MCU bước tiếp theo. Tại thời điểm này, WAN-MCU không phản hồi handshake theo kiểu trao đổi qua lại, mà chuyển thẳng sang bước tự cập nhật firmware của chính nó. WAN-MCU tiến hành OTA (tải → kiểm tra → ghi → reboot) và kết thúc quy trình FOTA toàn gateway. Sau cùng, gateway có thể gửi trạng thái cập nhật (OK/FAIL, version) lên server để xác nhận hoàn tất.
+
+        % \begin{figure}[H]
+        %     \centering
+        %     \includegraphics[width=0.5\textwidth]{figures/design_FOTA.png}
+        %     \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
+        %     \label{fig:design_FOTA}
+        % \end{figure}
         
         \paragraph{Kết nối đến các sensor node – gián tiếp qua LAN-MCU để phân tải và tăng ổn định hệ thống}
         
