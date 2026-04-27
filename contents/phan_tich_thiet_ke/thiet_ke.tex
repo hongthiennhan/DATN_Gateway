@@ -172,7 +172,7 @@
                 \end{longtable}
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.9\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
+                    \includegraphics[width=0.8\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
                     \caption{Sơ đồ chân Module Adapter}
                 \end{figure}
 
@@ -266,7 +266,7 @@
                     \end{figure}
                     Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
 
-                    ESP32-S3-WROOM-1U-N16R8 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA, xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
+                    % ESP32-S3-WROOM-1U-N16R8 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA, xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
                     
                     Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
 
