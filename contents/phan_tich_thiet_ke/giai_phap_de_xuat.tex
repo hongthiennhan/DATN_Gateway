@@ -1,29 +1,33 @@
 \section{Giải pháp đề xuất}
-    Giải pháp hướng tới xây dựng một IoT Gateway có tính linh hoạt cao và khả năng cấu hình tùy biến, thông qua việc tích hợp giữa kiến trúc phần cứng mô-đun và hệ thống xử lý phân tán. Cách tiếp cận này giúp tối ưu hóa chi phí sản xuất và rút ngắn thời gian triển khai cho các kịch bản ứng dụng đa dạng.
+    Giải pháp hướng tới thiết kế IoT Gateway từ những yêu cầu kỹ thuật đã phân tích trong \autoref{sec:phan_tich_yeu_cau}, tập trung vào việc xây dựng một kiến trúc phần cứng mô-đun hóa, tối ưu hóa nhân xử lý chính và triển khai thiết kế kiến trúc để đảm bảo hiệu năng và khả năng mở rộng của hệ thống.
         \subsection{Giải pháp phần cứng}
-
+            Giải pháp phần cứng được xây dựng dựa trên ba đặc tính chính: mô-đun hóa, tối ưu hóa tài nguyên phần cứng và kiến trúc Dual-MCU. Mỗi đặc tính này đóng vai trò quan trọng trong việc đảm bảo rằng hệ thống IoT Gateway có thể đáp ứng các yêu cầu kỹ thuật đã đề ra, đồng thời duy trì tính linh hoạt và khả năng mở rộng trong quá trình triển khai thực tế.
             \subsubsection{Phần cứng mô-đun hóa}
-            Hệ sinh thái phần cứng được thiết kế để đảm bảo khả năng tích hợp và nâng cấp mà không làm thay đổi thiết kế lõi của hệ thống:
-            \begin{itemize}
-                \item \textbf{Bo mạch chủ (Baseboard) chuẩn hóa:} Đóng vai trò là nền tảng trung tâm, tích hợp các khe cắm với giao tiếp vật lý và giao thức được chuẩn hóa để kết nối đồng bộ với các Module Adapter.
-                \item \textbf{Module Adapter linh hoạt:} Đóng vai trò cầu nối trung gian, thực hiện nhiệm vụ chuyển đổi và chuẩn hóa các chuẩn giao tiếp từ thiết bị thương mại về một giao thức nội bộ thống nhất.
-            \end{itemize}
+                Hệ sinh thái phần cứng được thiết kế để đảm bảo khả năng tích hợp và nâng cấp mà không làm thay đổi thiết kế lõi của hệ thống:
+                \begin{itemize}
+                    \item \textbf{Bo mạch chủ (Baseboard) chuẩn hóa:} Đóng vai trò là nền tảng trung tâm, tích hợp các khe cắm với giao tiếp vật lý và giao thức được chuẩn hóa để kết nối đồng bộ với các Module Adapter.
+                    \item \textbf{Module Adapter linh hoạt:} Đóng vai trò cầu nối trung gian, thực hiện nhiệm vụ chuyển đổi và chuẩn hóa các chuẩn giao tiếp từ thiết bị thương mại về một giao thức nội bộ thống nhất.
+                \end{itemize}
 
             \subsubsection{Tối ưu hóa nhân xử lý chính}
-            Thay vì sử dụng các bộ vi xử lý (CPU) hiệu năng cao vốn đòi hỏi thiết kế PCB nhiều lớp phức tạp và làm tăng giá thành linh kiện, nhóm lựa chọn dòng Vi điều khiển (MCU) làm nhân xử lý chính dựa trên các tiêu chí kỹ thuật:
-            \begin{itemize}
-                \item \textbf{Cân bằng Hiệu suất - Chi phí:} Đảm bảo tài nguyên phần cứng đủ mạnh và hỗ trợ đa dạng ngoại vi với giá thành thấp.
-                \item \textbf{Hiệu quả năng lượng:} Đáp ứng các tiêu chuẩn khắt khe cho thiết bị vận hành liên tục hoặc sử dụng nguồn năng lượng hạn chế.
-                \item \textbf{Hệ sinh thái hỗ trợ:} Tận dụng mã nguồn mở dồi dào để đẩy nhanh tốc độ phát triển và tối ưu hóa Firmware.
-            \end{itemize}
+                
+                Thay vì sử dụng các CPU hiệu năng cao chạy hệ điều hành Linux vốn phổ biến trong các gateway IoT thương mại như Raspberry Pi, đồ án lựa chọn dòng vi điều khiển ESP32-S3 làm nhân xử lý cốt lõi. Quyết định này được đưa ra dựa trên sự phân tích và đánh giá các kỹ thuật sau đây:
+                \begin{itemize}
+                    \item \textbf{Tối ưu hóa tài nguyên phần cứng:} Các CPU chạy Linux đòi hỏi thiết kế PCB cực kỳ phức tạp (thường trên 10 lớp) để xử lý các đường bus dữ liệu tốc độ cao như DDR3/DDR4, dẫn đến chi phí BOM (Bill of Materials) và giá thành sản xuất tăng vọt. Việc lựa chọn ESP32-S3 cho phép triển khai thiết kế trên PCB 6 lớp mà vẫn đảm bảo tính toàn vẹn tín hiệu (SI) cho các giao tiếp như Quad SPI và SDIO. Đây là yếu tố then chốt để đạt được mục tiêu tối ưu chi phí triển khai cho các kịch bản IoT từ quy mô nhỏ đến trung bình.
+                    \item \textbf{Cân bằng Hiệu suất - Chi phí:} ESP32-S3 cung cấp hiệu năng xử lý đủ mạnh cho các tác vụ thu thập và xử lý dữ liệu tại biên, đồng thời hỗ trợ đa dạng giao thức truyền thông. Điều này giúp đảm bảo rằng hệ thống có thể đáp ứng yêu cầu về độ trễ thấp và khả năng xử lý song song mà không cần đầu tư vào phần cứng cao cấp hơn.
+                    \item \textbf{Hiệu quả năng lượng và tính khả dụng cao:} Gateway dựa trên MCU có thời gian khởi động (boot-time) gần như tức thời (dưới 5 giây) và tiêu thụ năng lượng thấp hơn nhiều lần so với các nền tảng Linux. Điều này không chỉ giúp hệ thống duy trì tính ổn định khi vận hành bằng nguồn dự phòng (pin LiPo) mà còn giảm thiểu nhiệt lượng tỏa ra, tăng tuổi thọ linh kiện trong môi trường công nghiệp.
+                    \item \textbf{Sự kết hợp giữa kiến trúc Dual-MCU và Hệ sinh thái mã nguồn mở:} Đồ án tận dụng tối đa 16MB Flash và 8MB PSRAM của ESP32-S3 để giải quyết bài toán tràn bộ nhớ khi vận hành đa giao thức. Bằng cách phân tách nhiệm vụ WAN-LAN qua hai nhân xử lý độc lập, hệ thống khắc phục được giới hạn tài nguyên của kiến trúc Single-MCU thông thường mà vẫn giữ được sự tinh gọn, dễ bảo trì.
+                \end{itemize}
 
-            \subsubsection{Kiến trúc phân tán Dual-MCU}
+            \subsubsection{Kiến trúc Dual-MCU}
             Để giải quyết giới hạn về tài nguyên bộ nhớ khi phải vận hành đồng thời nhiều ngăn xếp giao thức (protocol stacks) phức tạp, hệ thống sử dụng hai MCU chuyên biệt hóa:
             \begin{itemize}
                 \item \textbf{WAN-MCU (Master):} Quản lý luồng dữ liệu mạng diện rộng, điều phối toàn bộ hoạt động hệ thống và quản trị các tác vụ cấp cao.
                 \item \textbf{LAN-MCU (Slave):} Chuyên trách giao tiếp mạng nội bộ, quản lý việc thu thập dữ liệu từ các Module Adapter và thiết bị đầu cuối.
             \end{itemize}
-            Hai khối xử lý này được liên kết chặt chẽ thông qua giao thức truyền thông tốc độ cao và hệ thống tín hiệu điều khiển logic, đảm bảo tính đồng bộ và duy trì độ trễ thấp trong quá trình trao đổi thông tin.
+            Hai khối xử lý này được liên kết chặt chẽ thông qua giao thức truyền thông tốc độ cao và hệ thống tín hiệu điều khiển logic, đảm bảo tính đồng bộ và duy trì độ trễ thấp trong quá trình trao đổi thông tin. Quyết định kiến trúc này là một phương hướng giải quyết các vấn đề kỹ thuật trong thiết kế Gateway IoT mô-đun sử dụng MCU, đó là sự hạn chế tài nguyên và xung độ bộ nhớ.
+
+            Việc vận hành đồng thời các ngăn xếp giao thức mạng diện rộng (WAN - như Wi-Fi, LTE, MQTT) và các mạng cảm biến nội bộ (LAN - như Zigbee, LoRa, CAN) tiêu tốn một lượng lớn tài nguyên RAM, Flash và chiếm dụng toàn bộ giao thức ngoại vi. Trong kiến trúc Single-MCU, việc tích hợp quá nhiều "stack" giao thức dễ dẫn đến hiện tượng tràn bộ nhớ đệm (buffer overflow) hoặc xung đột giữa các thư viện mã nguồn mở. Việc tách biệt thành WAN-MCU (Master) và LAN-MCU (Slave) cho phép mỗi nhân xử lý sở hữu một không gian nhớ độc lập, đảm bảo tính ổn định cho hệ thống ngay cả khi khối lượng giao thức tăng lên.
 
 
     \subsection{Giải pháp phần mềm}
