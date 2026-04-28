@@ -76,13 +76,13 @@
 
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.6\textwidth]{figures/power_tree.png}
+                \includegraphics[width=0.5\textwidth]{figures/power_tree.png}
                 \caption{Cấu trúc mạng phân phối nguồn.}
                 \label{fig:power_tree}
             \end{figure}
             
             Với cấu trúc chằng chịt và dòng tải biến động lớn, việc tính toán lý thuyết và thực hiện Mô phỏng PDN để kiểm chứng độ sụt áp (DC IR Drop) và mật độ dòng điện (Current Density), đảm bảo không xảy ra quá nhiệt cục bộ hoặc sụt áp vượt ngưỡng an toàn.\par
-            \newpage
+            % \newpage
             Dựa trên thiết kế, mô phỏng tập trung vào các ray nguồn quan trọng ở trạng thái tải ước tính là $20\%$ công suất lý thuyết\footnote{Đây là giá trị được tính toán để đảm bảo mức tiêu thụ điện thấp, xem trong phần ???}, bao gồm các nguồn có tải cao:
             \begin{itemize}
                 \item Nguồn +4V2\_VSYS (nguồn U14)
@@ -153,7 +153,7 @@
                 \item Đối với sụt áp DC, tổng độ sụt áp giới hạn trên toàn bộ đường dẫn chấp nhận là không vượt quá 5\% so với điện áp danh định của nguồn, và mức sụt áp tải đầu tải không thấp hơn điện áp tối thiểu của tải. Việc tuân thủ giới hạn này đảm bảo rằng các linh kiện nhận được điện áp đủ để hoạt động ổn định và hiệu quả.
             \end{itemize}
         
-            \newpage
+            % \newpage
         \subsubsection{Phân tích Nguồn +4V2\_VSYS}
                 
             Mô phỏng được thực hiện với dòng tải lý thuyết là $I_{load} = 0.95\text{A}$ theo mạng nguồn trong \autoref{fig:4v2_vsys_power_tree}.
@@ -277,19 +277,13 @@
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/5v0_ctrl_sim_current_density.png}
+                \includegraphics[width=0.7\textwidth]{figures/5v0_ctrl_sim_current_density.png}
                 \caption{Biểu đồ phân bố mật độ dòng điện của nguồn +5V0\_CTRL.}
                 \label{fig:5v0_ctrl_current_density}
             \end{figure}
 
             \newpage
             \textbf{Kết quả mô phỏng Sụt áp DC:}
-            \begin{figure}[h]
-                \centering
-                \includegraphics[width=0.75\textwidth]{figures/5v0_ctrl_sim_voltage_drop.png}
-                \caption{Biểu đồ phân bố điện áp trên nguồn +5V0\_CTRL.}
-                \label{fig:5v0_ctrl_voltage_drop}
-            \end{figure}
             
             \textbf{\textit{Kết quả mô phỏng:}}
             \begin{itemize}
@@ -298,6 +292,13 @@
                 \item Điện áp tại tải CON12:\\ $U_{\text{CON12}} = 4.923\text{V}$
                 \item Độ sụt áp trung bình:\\ $\Delta U = 8.226\text{mV}$
             \end{itemize}
+
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.7\textwidth]{figures/5v0_ctrl_sim_voltage_drop.png}
+                \caption{Biểu đồ phân bố điện áp trên nguồn +5V0\_CTRL.}
+                \label{fig:5v0_ctrl_voltage_drop}
+            \end{figure}
             
             \textbf{\textit{Tính toán các giá trị:}}
             \begin{longtable}{|p{0.3\textwidth}|c|p{0.4\textwidth}|}           
@@ -334,7 +335,7 @@
                 
             Mô phỏng được thực hiện với dòng tải lý thuyết là $I_{load} = 372\text{mA}$ theo mạng nguồn trong \autoref{fig:3v3_power_tree}.
 
-            \begin{figure}[h]
+            \begin{figure}[H]
                 \begin{minipage}{0.1\textwidth}
                 \end{minipage}
                 \hfill
@@ -361,14 +362,14 @@
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/3v3_sim_current_density.png}
+                \includegraphics[width=0.7\textwidth]{figures/3v3_sim_current_density.png}
                 \caption{Biểu đồ phân bố mật độ dòng điện của nguồn +3V3.}
                 \label{fig:3v3_current_density}
             \end{figure}
 
             \newpage
             \textbf{Kết quả mô phỏng Sụt áp DC:}
-            \begin{figure}[h]
+            \begin{figure}[H]
                 \begin{minipage}{0.1\textwidth}
                 \end{minipage}
                 \hfill
@@ -457,14 +458,14 @@
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/3v3_ctrl_sim_current_density.png}
+                \includegraphics[width=0.7\textwidth]{figures/3v3_ctrl_sim_current_density.png}
                 \caption{Biểu đồ phân bố mật độ dòng điện của nguồn +3V3\_CTRL.}
                 \label{fig:3v3_ctrl_current_density}
             \end{figure}
 
             \newpage
             \textbf{Kết quả mô phỏng Sụt áp DC:}
-            \begin{figure}[h]
+            \begin{figure}[H]
                 \begin{minipage}{0.1\textwidth}
                 \end{minipage}
                 \hfill
@@ -528,7 +529,7 @@
                 
             Mô phỏng được thực hiện với dòng tải lý thuyết là $I_{load} = 552\text{mA}$ theo mạng nguồn trong \autoref{fig:3v3_ctrl_power_tree}.
 
-            \begin{figure}[h]
+            \begin{figure}[H]
                 \begin{minipage}{0.1\textwidth}
                 \end{minipage}
                 \hfill
@@ -553,14 +554,14 @@
             
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/3v7_vbat_sim_current_density.png}
+                \includegraphics[width=0.7\textwidth]{figures/3v7_vbat_sim_current_density.png}
                 \caption{Biểu đồ phân bố mật độ dòng điện của nguồn +3V7\_VBAT.}
                 \label{fig:3v7_vbat_current_density}
             \end{figure}
 
             \newpage
             \textbf{Kết quả mô phỏng Sụt áp DC:}
-            \begin{figure}[h]
+            \begin{figure}[H]
                 \begin{minipage}{0.1\textwidth}
                 \end{minipage}
                 \hfill

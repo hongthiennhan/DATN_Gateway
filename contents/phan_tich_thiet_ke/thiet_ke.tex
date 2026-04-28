@@ -22,7 +22,7 @@
                     \end{itemize}
                     \item \textbf{SLAVE LAN-MCU}
                     \begin{itemize}
-                        \item Vai trò: Chịu trách nhiệm tương tác trực tiếp với lớp Cảm biến (Sensing Domain), quản lý các kết nối mạng nội bộ thông qua LAN Module Adapter, và lưu trữ dữ liệu.
+                        \item Vai trò: Tương tác trực tiếp với lớp Cảm biến (Sensing Domain), quản lý các kết nối mạng nội bộ thông qua LAN Module Adapter, và lưu trữ dữ liệu.
                         \item Chức năng: Quản lý các giao thức truyền thông nội bộ và mạng cảm biến, thu thập dữ liệu thô, thực hiện tiền xử lý và lưu trữ cục bộ (Micro SD Card) trước khi gửi lên MASTER WAN-MCU.
                     \end{itemize}
                 \end{itemize}
@@ -141,10 +141,6 @@
                     \hline
                     \endlastfoot
                 
-                    \multirow{3}{*}{\textbf{Power}}
-                        & +3V3 & A12, A13, A14, A15, A16, A17, A18 & Power supply +3.3V \\ \cline{2-4}
-                        & GND  & A1, A6, A11, B1, B4, B8, B11, B12, B13, B14, B15, B16, B17, B18 & Ground \\ \hline
-                
                     \multirow{2}{*}{\textbf{USB}}
                         & D+   & B2 & USB Data Positive \\ \cline{2-4}
                         & D-   & B3 & USB Data Negative \\ \hline
@@ -168,11 +164,16 @@
                     \multirow{3}{*}{\textbf{GPIO}}
                         & SLOTDET & B5 & Slot Detection Signal \\ \cline{2-4}
                         & GPIO0   & B6 & General Purpose I/O 0 \\ \cline{2-4}
-                        & GPIO1   & B7 & General Purpose I/O 1 \\ \hline
+                        & GPIO1   & B7 & General Purpose I/O 1 \\ \hline         
+
+                    \multirow{3}{*}{\textbf{Power}}
+                        & +3V3 & A12, A13, A14, A15, A16, A17, A18 & Power supply +3.3V \\ \cline{2-4}
+                        & GND  & A1, A6, A11, B1, B4, B8, B11, B12, B13, B14, B15, B16, B17, B18 & Ground \\ \hline
+
                 \end{longtable}
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.85\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
+                    \includegraphics[width=0.9\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
                     \caption{Sơ đồ chân Module Adapter}
                 \end{figure}
 
@@ -191,7 +192,7 @@
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
                     \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end uplink}
                 \end{figure}
             
@@ -207,59 +208,108 @@
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
                     \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end downlink}
                 \end{figure}
             
-            \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
 
-                Kênh SPI đóng vai trò xương sống trong truyền tải dữ liệu, vận hành dựa trên các nguyên tắc đảm bảo tính toàn vẹn:
-                
-                \begin{itemize}
-                    \item \textbf{Kiểm tra toàn vẹn (Integrity Check):} Áp dụng thuật toán CRC cho từng khung tin để phát hiện lỗi vật lý trên đường truyền.
-                    \item \textbf{Đồng bộ hóa thứ tự (Sequence Management):} Sử dụng Sequence Number để loại bỏ các gói tin trùng lặp hoặc phát hiện mất gói trong quá trình truyền tải.
-                    \item \textbf{Tối ưu hóa năng lượng và tài nguyên:} Thay thế cơ chế REQ\_DOWNLINK tuần tự bằng cơ chế Async Notify qua GPIO Handshake, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ xử lý cảm biến thời gian thực.
-                \end{itemize}
-                
+            % \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.5\textwidth]{figures/DATN/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
-                    \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
-                \end{figure}
-            
-            \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
-            
-                Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
-                \begin{itemize}
-                    \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
-                    \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
-                    \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
-                    \item Cấu hình file JSON cho từng module cắm vào LAN.
-                \end{itemize}
-                
-                Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\rightarrow$ WAN-MCU $\rightarrow$ LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
-
-                \begin{figure}[H]
-                    \centering
-                    \includegraphics[width=0.5\textwidth]{figures/DATN/sequence_diagram_App-PC_update.png}
-                    \caption{Sequence diagram: cập nhật cấu hình từ App PC}
+                    \begin{minipage}[b]{0.55\textwidth}
+                        \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
+                        Kênh SPI đóng vai trò xương sống trong truyền tải dữ liệu, vận hành dựa trên các nguyên tắc đảm bảo tính toàn vẹn:
+                        \begin{itemize}
+                            \item \textbf{Kiểm tra toàn vẹn (Integrity Check):} Áp dụng thuật toán CRC cho từng khung tin để phát hiện lỗi vật lý trên đường truyền.
+                            \item \textbf{Đồng bộ hóa thứ tự (Sequence Management):} Sử dụng Sequence Number để loại bỏ các gói tin trùng lặp hoặc phát hiện mất gói trong quá trình truyền tải.
+                            \item \textbf{Tối ưu hóa năng lượng và tài nguyên:} Thay thế cơ chế REQ\_DOWNLINK tuần tự bằng cơ chế Async Notify qua GPIO Handshake, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ xử lý cảm biến thời gian thực.
+                        \end{itemize}
+                    \end{minipage}
+                    \hfill
+                    \begin{minipage}[t]{0.4\textwidth}
+                        \centering
+                        \includegraphics[width=\linewidth]{figures/DATN/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
+                        \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
+                        \label{fig:seq_lan_wan_spi}
+                    \end{minipage}
                 \end{figure}
 
-            \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
-                Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
-                \begin{itemize}
-                    \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
-                    \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
-                    \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
-                    \item Cấu hình file JSON cho từng module cắm vào LAN.
-                \end{itemize}
+            % \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
+                % Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
+                % \begin{itemize}
+                %     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                %     \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
+                %     \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
+                %     \item Cấu hình file JSON cho từng module cắm vào LAN.
+                % \end{itemize}
                 
-                Quy trình cập nhật cấu hình gồm 3 thành phần chính: Web Browser, WAN-MCU, LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+                % Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\rightarrow$ WAN-MCU $\rightarrow$ LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+
+                % \begin{figure}[H]
+                %     \centering
+                %     \includegraphics[width=0.5\textwidth]{figures/DATN/sequence_diagram_App-PC_update.png}
+                %     \caption{Sequence diagram: cập nhật cấu hình từ App PC}
+                % \end{figure}
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_web-config-portal.png}
-                    \caption{Sequence diagram: cập nhật cấu hình từ Web Config Portal}
+                    \begin{minipage}[b]{0.55\textwidth}
+                        \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
+                        Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
+                        \begin{itemize}
+                            \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                            \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
+                            \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
+                            \item Cấu hình file JSON cho từng module cắm vào LAN.
+                        \end{itemize}
+                        Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\rightarrow$ WAN-MCU $\rightarrow$ LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+                    \end{minipage}
+                    \hfill
+                    \begin{minipage}[t]{0.4\textwidth}
+                        \centering
+                        \includegraphics[width=\linewidth]{figures/DATN/sequence_diagram_App-PC_update.png}
+                        \caption{Sequence diagram: cập nhật cấu hình từ App PC}
+                        \label{fig:seq_app_pc_update}
+                    \end{minipage}
+                \end{figure}
+            
+            % \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
+            %     Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
+                % \begin{itemize}
+                %     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                %     \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
+                %     \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
+                %     \item Cấu hình file JSON cho từng module cắm vào LAN.
+                % \end{itemize}
+                
+                % Quy trình cập nhật cấu hình gồm 3 thành phần chính: Web Browser, WAN-MCU, LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+
+                % \begin{figure}[H]
+                %     \centering
+                %     \includegraphics[width=0.7\textwidth]{figures/DATN/sequence_diagram_web-config-portal.png}
+                %     \caption{Sequence diagram: cập nhật cấu hình từ Web Config Portal}
+                % \end{figure}
+
+                \begin{figure}[H]
+                    \centering
+                    \begin{minipage}[b]{0.55\textwidth}
+                        \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
+                        Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
+                        \begin{itemize}
+                            \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                            \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
+                            \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
+                            \item Cấu hình file JSON cho từng module cắm vào LAN.
+                        \end{itemize}
+                        Quy trình cập nhật cấu hình gồm 3 thành phần chính: Web Browser, WAN-MCU, LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
+                    \end{minipage}
+                    \hfill
+                    \begin{minipage}[t]{0.4\textwidth}
+                        \centering
+                        \includegraphics[width=\linewidth]{figures/DATN/sequence_diagram_web-config-portal.png}
+                        \caption{Sequence diagram: cập nhật cấu hình từ Web Config Portal}
+                        \label{fig:seq_web_config_portal}
+                    \end{minipage}
                 \end{figure}
 
     \newpage
@@ -1051,7 +1101,7 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.45\textwidth]{figures/hot_loop_minimization.png}
+                        \includegraphics[width=0.5\textwidth]{figures/hot_loop_minimization.png}
                         \caption{Vị trí các tụ điện trong nguồn xung +3V3.}
                     \end{figure}
 
@@ -1064,7 +1114,7 @@
                     \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.45\textwidth]{figures/switching_node.png}
+                        \includegraphics[width=0.5\textwidth]{figures/switching_node.png}
                         \caption{Điểm chuyển mạch trong nguồn xung +3V3.}
                     \end{figure}        
 
@@ -1076,7 +1126,7 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.45\textwidth]{figures/feedback.png}
+                        \includegraphics[width=0.5\textwidth]{figures/feedback.png}
                         \caption{Định tuyến hồi tiếp trong nguồn xung +3V3.}
                     \end{figure}   
 
@@ -1107,7 +1157,7 @@
                     % \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.45\textwidth]{figures/power_network.png}
+                        \includegraphics[width=0.5\textwidth]{figures/power_network.png}
                         \caption{Mạng phân phối nguồn.}
                     \end{figure}                     
                 \end{enumerate}
@@ -1127,7 +1177,7 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.45\textwidth]{figures/usb.png}
+                        \includegraphics[width=0.5\textwidth]{figures/usb.png}
                         \caption{Định tuyến USB.}
                     \end{figure} 
 
@@ -1142,7 +1192,7 @@
                     % \newpage
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.45\textwidth]{figures/sdio.png}
+                        \includegraphics[width=0.5\textwidth]{figures/sdio.png}
                         \caption{Định tuyến SDIO giữa ESP32-S3 Slave với Micro SD Card.}
                     \end{figure} 
 
@@ -1155,9 +1205,9 @@
                     \end{itemize}
                 \end{enumerate}
         
-
+    \newpage
     \subsection{Firmware và Software}
-        \paragraph{Tổng quan kiến trúc phần mềm Dual-MCU}
+        \subsubsection{Kiến trúc phần mềm}
         
         Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
 
@@ -1167,19 +1217,38 @@
         
         Sự phân tách vai trò rõ ràng giúp luồng dữ liệu vận hành mạch lạc: LAN-MCU tập trung vào tính thời gian thực của thiết bị đầu cuối, còn WAN-MCU đảm bảo tính ổn định cho các dịch vụ mạng diện rộng.
         
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mculanfirmware.jpg}
-            \caption{MCU LAN Firmware}
-            \label{fig:mculan_firmware}
-        \end{figure} 
+        % \begin{figure}[H]
+        %     \centering
+        %     \includegraphics[width=0.7\textwidth]{figures/DATN/design_mculanfirmware.jpg}
+        %     \caption{MCU LAN Firmware}
+        %     \label{fig:mculan_firmware}
+        % \end{figure} 
+
+        % \begin{figure}[H]
+        %     \centering
+        %     \includegraphics[width=0.7\textwidth]{figures/DATN/design_mcuwanfirmware.jpg}
+        %     \caption{MCU WAN Firmware}
+        %     \label{fig:mcuwan_firmware}
+        % \end{figure}
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.7\textwidth]{figures/DATN/design_mcuwanfirmware.jpg}
-            \caption{MCU WAN Firmware}
-            \label{fig:mcuwan_firmware}
+            \begin{minipage}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\linewidth]{figures/DATN/design_mculanfirmware.jpg}
+                \caption{MCU LAN Firmware}
+                \label{fig:mculan_firmware}
+            \end{minipage}
+            \hfill
+            \begin{minipage}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\linewidth]{figures/DATN/design_mcuwanfirmware.jpg}
+                \caption{MCU WAN Firmware}
+                \label{fig:mcuwan_firmware}
+            \end{minipage}
         \end{figure}
+
+        \newpage
         
         \paragraph{Firmware WAN-MCU: Kết nối Internet, Cloud và điều phối hệ thống}
         
@@ -1218,116 +1287,241 @@
         
         % Cơ chế downlink (Cloud $\to$ LAN): Khi nhận lệnh từ Cloud (ví dụ RPC/command) thông qua MQTT, WAN-MCU đưa lệnh vào downlink queue và thực hiện cơ chế push chủ động thay vì để LAN-MCU poll. Cụ thể, WAN-MCU sử dụng một đường GPIO toggle/handshake để thông báo cho LAN-MCU rằng đang có dữ liệu downlink hoặc cấu hình pending. Khi LAN-MCU phát hiện tín hiệu handshake, nó thực hiện phiên SPI để nhận gói lệnh từ WAN-MCU. WAN-MCU gửi gói command/DT tương ứng qua SPI; LAN-MCU kiểm tra hợp lệ và phản hồi ACK/NACK. Nếu nhận NACK hoặc timeout, WAN-MCU thực hiện retry giới hạn nhằm đảm bảo lệnh đến LAN-MCU một cách tin cậy. Sau khi LAN-MCU nhận thành công, lệnh được dispatch tới handler giao thức tương ứng để chuyển xuống sensor node.
         
-        \paragraph{Data Communication Handler (USB/UART) -- giao tiếp với Configuration Tools trên PC}
-        WAN-MCU cung cấp kênh cấu hình tại chỗ thông qua USB/UART và Web Portal, giúp kỹ thuật viên thay đổi tham số vận hành linh hoạt mà không cần biên dịch lại firmware.
+        % \paragraph{Data Communication Handler (USB/UART) -- giao tiếp với Configuration Tools trên PC}
         
-        Đối với tác vụ đọc, khi máy tính gửi lệnh quét, WAN-MCU sẽ truy xuất NVS và bộ nhớ runtime để trả về cấu hình hiện tại dưới dạng các cặp key-value, như thông số mạng, MQTT và chu kỳ gửi. Hệ thống tự động ẩn hoặc mã hóa các dữ liệu nhạy cảm như mật khẩu để đảm bảo an toàn thông tin, đồng thời đính kèm phiên bản firmware và trạng thái kết nối để kỹ thuật viên nắm bắt nhanh tình trạng thiết bị.
-        
-        Đối với tác vụ cập nhật cấu hình, WAN-MCU đóng vai trò tiếp nhận mã lệnh tiêu chuẩn, chuỗi JSON từ ứng dụng PC hoặc các gói cấu hình từ Web Portal thông qua HTTP POST. Mọi dữ liệu đầu vào đều được chuyển đổi về định dạng nội bộ, kiểm tra tính hợp lệ và đưa vào hàng đợi xử lý thống nhất.
-        
-        Tại đây, khối Config Handler sẽ xác thực tham số, lưu vào NVS và lập tức áp dụng vào hệ thống. Trong trường hợp cấu hình thuộc về lớp mạng nội bộ, WAN-MCU sẽ định tuyến gói tin xuống LAN-MCU qua bus SPI. Cuối cùng, Gateway hoàn tất chu trình bằng cách trả về tín hiệu xác nhận OK hoặc FAIL cho người dùng.
-
         \begin{figure}[H]
             \centering
-            \begin{minipage}{0.3\textwidth}
+            \begin{minipage}[b]{0.55\textwidth}   
+                \paragraph{Data Communication Handler (USB/UART) -- giao tiếp với Configuration Tools trên PC}
+                WAN-MCU cung cấp kênh cấu hình tại chỗ thông qua USB/UART và Web Portal, giúp kỹ thuật viên thay đổi tham số vận hành linh hoạt mà không cần biên dịch lại firmware.
+
+                Đối với tác vụ đọc, khi máy tính gửi lệnh quét, WAN-MCU sẽ truy xuất NVS và bộ nhớ runtime để trả về cấu hình hiện tại dưới dạng các cặp key-value, như thông số mạng, MQTT và chu kỳ gửi. Hệ thống tự động ẩn hoặc mã hóa các dữ liệu nhạy cảm như mật khẩu để đảm bảo an toàn thông tin, đồng thời đính kèm phiên bản firmware và trạng thái kết nối để kỹ thuật viên nắm bắt nhanh tình trạng thiết bị.
+            \end{minipage}
+            \hfill
+            \begin{minipage}[t]{0.4\textwidth}
                 \centering
                 \includegraphics[width=\linewidth]{figures/DATN/design_DCH-CT.png}
                 \caption{Lưu đồ giải thuật Data Communication Handler – giao tiếp cấu hình qua USB/UART}
                 \label{fig:design_DCH-CT}
             \end{minipage}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \begin{minipage}[b]{0.55\textwidth}
+                Đối với tác vụ cập nhật cấu hình, WAN-MCU đóng vai trò tiếp nhận mã lệnh tiêu chuẩn, chuỗi JSON từ ứng dụng PC hoặc các gói cấu hình từ Web Portal thông qua HTTP POST. Mọi dữ liệu đầu vào đều được chuyển đổi về định dạng nội bộ, kiểm tra tính hợp lệ và đưa vào hàng đợi xử lý thống nhất.
+        
+                Tại đây, khối Config Handler sẽ xác thực tham số, lưu vào NVS và lập tức áp dụng vào hệ thống. Trong trường hợp cấu hình thuộc về lớp mạng nội bộ, WAN-MCU sẽ định tuyến gói tin xuống LAN-MCU qua bus SPI. Cuối cùng, Gateway hoàn tất chu trình bằng cách trả về tín hiệu xác nhận OK hoặc FAIL cho người dùng.
+            \end{minipage}
             \hfill
-            \begin{minipage}{0.3\textwidth}
-                \begin{itemize}
-                    \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
-                    \begin{itemize}
-                        \item PC gửi lệnh quét/đọc cấu hình tới gateway.
-                        \item WAN-MCU truy xuất cấu hình đang lưu (NVS/runtime) và phản hồi dưới dạng các cặp key–value, ví dụ: loại kết nối Internet đang dùng (Wi-Fi/LTE,…), chế độ Wi-Fi (Personal/Enterprise) và tên đăng nhập, MQTT broker (host/port), topic, chu kỳ gửi dữ liệu…
-                        \item Các trường nhạy cảm (password/secret) được ẩn hoặc rút gọn khi phản hồi để đảm bảo an toàn thông tin.
-                        \item Có thể kèm thêm một số thông tin phục vụ kiểm tra nhanh như phiên bản firmware và trạng thái kết nối (Internet/MQTT).
-                    \end{itemize}
-                    \item \textbf{Nhận lệnh cấu hình mới (CF…):}
-                    \begin{itemize}
-                        \item PC gửi lệnh cấu hình bắt đầu bằng prefix “CF…” kèm tham số tương ứng.
-                        \item WAN-MCU tiếp nhận, kiểm tra định dạng/độ dài cơ bản và đóng gói thành “config command” để đưa vào hàng đợi (queue) cho Config Handler xử lý, tránh xử lý nặng ngay trong luồng đọc USB/UART.
-                        \item Config Handler thực hiện validate giá trị, sau đó lưu vào NVS và áp dụng cấu hình vào các khối liên quan (Internet/MQTT…). Nếu cấu hình thuộc về LAN-MCU, WAN-MCU sẽ chuyển tiếp xuống LAN-MCU qua kênh liên MCU và nhận phản hồi OK/FAIL trước khi trả kết quả về PC.
-                        \item Sau khi hoàn tất, gateway phản hồi OK/FAIL (kèm lý do nếu lỗi) để kỹ thuật viên xác nhận cấu hình đã được ghi và áp dụng thành công.
-                    \end{itemize}
-                \end{itemize}  
-            \end{minipage}        
-            \begin{minipage}{0.3\textwidth}
+            \begin{minipage}[t]{0.4\textwidth}
                 \centering
                 \includegraphics[width=\linewidth]{figures/DATN/design_wcp.png}
                 \caption{Lưu đồ giải thuật Config qua Web Config Portal}
                 \label{fig:design_wcp}
             \end{minipage}
         \end{figure}
+        
+        % \newpage
+        % \paragraph{FOTA/Upgrade – cập nhật firmware cho Gateway (LAN cập nhật trước, WAN cập nhật sau)}
+
+        \begin{figure}[H]
+            \begin{minipage}[b]{0.55\textwidth}
+                \paragraph{FOTA/Upgrade – cập nhật firmware cho Gateway (LAN cập nhật trước, WAN cập nhật sau)}
+
+                Cơ chế cập nhật Firmware từ xa (FOTA) cho toàn hệ thống được kích hoạt thông qua một lệnh cấu hình chuyên biệt từ Server. Quá trình nâng cấp được thực hiện tuần tự chặt chẽ: LAN-MCU cập nhật trước, sau đó mới đến WAN-MCU.
+
+                Cụ thể, khi tiếp nhận lệnh, WAN-MCU sẽ phân tích, đánh dấu hệ thống chuyển sang chế độ cập nhật và định tuyến lệnh xuống LAN-MCU. Để cung cấp đường truyền tải dữ liệu, WAN-MCU lập tức kích hoạt chế độ điểm truy cập (Wi-Fi AP). Lúc này, LAN-MCU sẽ kết nối vào mạng Wi-Fi nội bộ này để truy cập Internet, từ đó chủ động thực hiện chu trình OTA độc lập, bao gồm tải tệp qua giao thức HTTPS, kiểm tra tính toàn vẹn, ghi vào bộ nhớ flash và khởi động lại.
+
+                Sau khi LAN-MCU hoàn tất cập nhật, nó sẽ gửi tín hiệu handshake nội bộ để thông báo cho WAN-MCU. Ngay khi nhận được tín hiệu đồng bộ này, WAN-MCU bỏ qua bước phản hồi qua lại và lập tức tiến hành chu trình tự cập nhật firmware cho chính mình.
+
+                Kết thúc toàn bộ quy trình, Gateway sẽ gửi bản tin báo cáo trạng thái tổng hợp (OK hoặc FAIL kèm thông tin phiên bản mới) lên Server để xác nhận hoàn tất quá trình nâng cấp hệ thống.
+            \end{minipage}
+            \hfill
+            \begin{minipage}[t]{0.4\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/DATN/design_FOTA.png}
+                \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
+                \label{fig:design_FOTA}
+            \end{minipage}
+        \end{figure}
+        
+        % \paragraph{Kết nối đến các sensor node – gián tiếp qua LAN-MCU để phân tải và tăng ổn định hệ thống}
+        
+        % Trong kiến trúc Dual-MCU Master–Slave, WAN-MCU không trực tiếp chạy các stack giao thức cảm biến (Zigbee/LoRa/CAN/RS-485…), mà tập trung vào Internet/Cloud và điều phối hệ thống. Toàn bộ phần “mặt dưới” gồm kết nối sensor node, giao tiếp đa giao thức, tiền xử lý và chuẩn hoá dữ liệu được đặt tại LAN-MCU. Thiết kế phân vai này giúp giảm tải đáng kể cho WAN-MCU (CPU/RAM/Flash), đồng thời hạn chế hiện tượng blocking giữa các tác vụ I/O nội bộ và tác vụ mạng Internet/Cloud – vốn là điểm yếu phổ biến của kiến trúc single-MCU.
+        
+        % Để chuẩn hoá trao đổi giữa hai MCU, dữ liệu và lệnh được đóng gói theo một định dạng nội bộ thống nhất, trong đó có trường handler\_type nhằm định danh “nguồn/đích giao thức” (ví dụ: CAN / LOR / ZIG / RS4). Nhờ vậy, WAN-MCU có thể xử lý dữ liệu/lệnh theo hướng “định tuyến logic” mà không cần hiểu chi tiết từng stack giao thức.
+        
+        % Với cách tổ chức này, hệ thống vẫn “kết nối tới sensor node” đầy đủ theo nghĩa end-to-end, nhưng theo mô hình phân miền chức năng rõ ràng:
         % \begin{itemize}
-        %     \item \textbf{Quét/đọc cấu hình hiện tại (scan config):}
-        %     \begin{itemize}
-        %         \item PC gửi lệnh quét/đọc cấu hình tới gateway.
-        %         \item WAN-MCU truy xuất cấu hình đang lưu (NVS/runtime) và phản hồi dưới dạng các cặp key–value, ví dụ: loại kết nối Internet đang dùng (Wi-Fi/LTE,…), chế độ Wi-Fi (Personal/Enterprise) và tên đăng nhập, MQTT broker (host/port), topic, chu kỳ gửi dữ liệu…
-        %         \item Các trường nhạy cảm (password/secret) được ẩn hoặc rút gọn khi phản hồi để đảm bảo an toàn thông tin.
-        %         \item Có thể kèm thêm một số thông tin phục vụ kiểm tra nhanh như phiên bản firmware và trạng thái kết nối (Internet/MQTT).
-        %     \end{itemize}
-        %     \item \textbf{Nhận lệnh cấu hình mới (CF…):}
-        %     \begin{itemize}
-        %         \item PC gửi lệnh cấu hình bắt đầu bằng prefix “CF…” kèm tham số tương ứng.
-        %         \item WAN-MCU tiếp nhận, kiểm tra định dạng/độ dài cơ bản và đóng gói thành “config command” để đưa vào hàng đợi (queue) cho Config Handler xử lý, tránh xử lý nặng ngay trong luồng đọc USB/UART.
-        %         \item Config Handler thực hiện validate giá trị, sau đó lưu vào NVS và áp dụng cấu hình vào các khối liên quan (Internet/MQTT…). Nếu cấu hình thuộc về LAN-MCU, WAN-MCU sẽ chuyển tiếp xuống LAN-MCU qua kênh liên MCU và nhận phản hồi OK/FAIL trước khi trả kết quả về PC.
-        %         \item Sau khi hoàn tất, gateway phản hồi OK/FAIL (kèm lý do nếu lỗi) để kỹ thuật viên xác nhận cấu hình đã được ghi và áp dụng thành công.
-        %     \end{itemize}
+        %     \item LAN-MCU chuyên trách giao thức sensor và xử lý dữ liệu gần nguồn (near-sensor processing),
+        %     \item WAN-MCU chuyên trách Internet/Cloud và điều phối (cloud gateway + control router).
         % \end{itemize}
         
+        % Đây là hướng tiếp cận phù hợp với khảo sát kiến trúc gateway thực tế: tránh dư thừa như nền tảng Linux/SoC cho bài toán thu thập-đẩy dữ liệu, đồng thời khắc phục giới hạn tài nguyên và độ ổn định của mô hình single-MCU khi phải gánh đồng thời nhiều giao thức LAN/WAN và giao thức ứng dụng (MQTT/HTTP/CoAP).
+
+        \paragraph{Hệ thống cấu hình Module dựa trên JSON (Module Base Setting)}
+
+        Trong kiến trúc ban đầu của gateway, loại module RF gắn vào từng khe phần cứng được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của module -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO cho reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại module mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên module có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
+
+        Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh tám module BLE phổ biến trên thị trường. Phân tích cho thấy một điều nghịch lý: gần như hầu hết chức năng là giống nhau giữa tất cả các module -- đặt tên thiết bị, quét thiết bị lân cận, kết nối, ngắt kết nối, reset phần mềm, reset phần cứng -- nhưng cú pháp lệnh lại khác hoàn toàn. Ví dụ, chức năng đặt tên thiết bị được gọi bằng \texttt{AT+NAME=} trên HC-05, \texttt{AT+BLENAME=} trên module ESP32, và \texttt{AT+GAPDEVNAME=} trên nRF52. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
+
+        \paragraph{Ý tưởng triển khai}
+
+        Thay vì hard-code thông tin của từng loại module vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của module ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành module đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả chức năng module hỗ trợ. Mỗi chức năng trong danh sách được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
+        
+        Ví dụ khi sử dụng module cho BLE, bằng cách này, firmware không còn quan tâm đến việc module đang dùng là STM32WB55 hay nRF52840 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_SCAN}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo chính xác những gì JSON mô tả. Toàn bộ logic đặc thù của module nằm trong file JSON, không nằm trong firmware. Thay đổi module đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
+        
+        Ba file cấu hình preset đã được chuẩn bị cho giai đoạn kiểm thử: Zigbee E180-ZG120B, BLE STM32WB55 và LoRa Wio-E5. Một file ánh xạ \texttt{stack\_id\_map.json} liên kết định danh khe phần cứng với preset module tương ứng.
+
+
         % \begin{figure}[H]
-        %     \centering
-        %     \includegraphics[width=0.5\textwidth]{figures/design_DCH-CT.png}
-        %     \caption{Lưu đồ giải thuật Data Communication Handler – giao tiếp cấu hình qua USB/UART}
-        %     \label{fig:design_DCH-CT}
+        %     \begin{minipage}[b]{0.55\textwidth}
+        %         \paragraph{Luồng hoạt động}
+        %         Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình module và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển module.
+        %     \end{minipage}
+        %     \hfill
+        %     \begin{minipage}[t]{0.4\textwidth}
+        %         \centering
+        %         \includegraphics[width=\textwidth]{figures/DATN/design_mbs.png}
+        %         \caption{Luồng hoạt động của Module Base Setting}
+        %         \label{fig:design_mbs}
+        %     \end{minipage}
         % \end{figure}
 
+        \paragraph{Luồng hoạt động}
+
+        Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình module và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển module.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\textwidth]{figures/DATN/design_mbs.png}
+            \caption{Luồng hoạt động của Module Base Setting}
+            \label{fig:design_mbs}
+        \end{figure}
+
+        \paragraph{Kịch bản hoạt động}
+
+        Về kịch bản vận hành, khi có yêu cầu từ người dùng, lệnh điều khiển được truyền xuống WAN-MCU và chuyển tiếp sang LAN-MCU. Tại đây, LAN-MCU phân tích tiền tố để nhận diện chức năng và tra cứu khuôn mẫu (\textit{template}) trong file JSON cấu hình. Nếu là lệnh tĩnh, hệ thống trích xuất trực tiếp chuỗi lệnh thô. Nếu là lệnh động, LAN-MCU sẽ tự động ghép nối tham số từ Server vào khuôn mẫu lệnh. Sau cùng, LAN-MCU kích hoạt trình tự điều khiển GPIO nếu được yêu cầu trong JSON, đẩy lệnh hoàn chỉnh xuống module vật lý và gửi phản hồi trạng thái ngược lên Server.
+
+        % \begin{figure}[H]
+        %     \begin{minipage}[b]{0.55\textwidth}
+        %         Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các module phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
+        %     \end{minipage}
+        %     \hfill
+        %     \begin{minipage}[t]{0.4\textwidth}
+        %         \centering
+        %         \includegraphics[width=\textwidth]{figures/DATN/design_server-to-bulb.png}
+        %         \caption{Luồng điều khiển end-to-end từ ThingsBoard đến bóng đèn ESP32 qua gateway DA2}
+        %         \label{fig:design_server-to-bulb}
+        %     \end{minipage}
+        % \end{figure}
+
+        Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các module phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\textwidth]{figures/DATN/design_server-to-bulb.png}
+            \caption{Luồng điều khiển end-to-end từ ThingsBoard đến bóng đèn ESP32 qua GW DA2}
+            \label{fig:design_server-to-bulb}
+        \end{figure}
         
+        \subsubsection{Tính toán và phân tích chỉ số hiệu suất}
+
+        \begin{enumerate}
+            \renewcommand{\labelenumi}{\alph{enumi}.}
+
+            \item \textbf{Kiến trúc hệ thống và chuỗi truyền dẫn dữ liệu}
+
+            Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{Pipeline}) gồm các chặng chính:
+
+            \begin{itemize}
+                \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi gửi dữ liệu qua sóng vô tuyến như Zigbee, LoRa hoặc BLE.
+                \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến truyền dữ liệu vào LAN-MCU (ESP32-S3) qua UART.
+                \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu và đẩy sang WAN-MCU (ESP32-S3) qua bus SPI.
+                \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU serialize dữ liệu sang JSON và publish lên MQTT Server.
+            \end{itemize}
+
+            \item \textbf{Thông lượng dữ liệu và hiệu suất}
+
+            Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích còn lại sau khi trừ overhead của giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
+
+            \[
+                \eta = \frac{R_{app}}{R_{PHY}}
+            \]
+
+            \textbf{Zigbee (E18-ZG120 / CC2530):} Tốc độ vật lý IEEE 802.15.4 đạt $250\,kbps$. Tuy nhiên, mỗi frame Zigbee chỉ chứa tối đa 99 byte payload ứng dụng sau khi trừ các header MAC/NWK/APS, tương đương 28 byte overhead trên tổng 127 byte. Khi truyền, thời gian hoàn thành một chu kỳ phát--nhận ACK khoảng $5\,ms$, tương đương thông lượng air xấp xỉ $158\,kbps$. Tuy nhiên, nút thắt nằm ở UART $115200\,bps$: module E18-ZG120 gửi frame HEX bất đồng bộ lên LAN-MCU cho mỗi gói nhận được, với kích thước khoảng 121 byte gồm 99 byte dữ liệu và 22 byte overhead ZCL/HEX frame.
+
+            \textbf{LoRa (Wio-E5 / STM32WLE5JC) -- chế độ TEST/P2P:} Trong kịch bản kiểm thử, hệ thống sử dụng chế độ TEST/P2P (\texttt{AT+MODE=TEST}) thay vì LoRaWAN. Chế độ này bỏ qua duty cycle và stack LoRaWAN, cho phép phát liên tục, chỉ bị giới hạn bởi Time-on-Air. Tốc độ bit PHY tại SF7/125 kHz đạt $5.470\,bps$. Mỗi chu kỳ phát gồm thời gian truyền AT command qua UART khoảng $15\,ms$ và Time-on-Air khoảng $97.5\,ms$ cho gói 50 byte, tổng khoảng $115\,ms$, cho thông lượng ứng dụng xấp xỉ $3.5\,kbps$. Giới hạn payload tối đa qua AT command là 169 byte/gói do độ dài lệnh tối đa là 528 ký tự.
+
+            \textbf{BLE (Native ESP32-S3):} BLE không qua module ngoài nên không có tầng UART. Thông lượng bị giới hạn bởi Connection Interval ($CI = 20\,ms$) và ATT MTU. Mặc định ATT MTU = 23 byte, tương ứng 20 byte dữ liệu, thông lượng chỉ khoảng $8\,kbps$. Khi kích hoạt Data Length Extension (DLE) và đàm phán MTU lên 247 byte, tương ứng 244 byte dữ liệu, thông lượng đạt khoảng $97.6\,kbps$.
+
+            \begin{longtable}{|p{3.2cm}|p{2.3cm}|p{2.7cm}|p{1.4cm}|p{4cm}|}
+                \caption{So sánh thông lượng và hiệu suất của các giao thức.}
+                \label{tab:throughput_efficiency} \\
+                \hline
+                \textbf{Giao thức} & $\boldsymbol{R_{PHY}}$ & $\boldsymbol{R_{app}}$ \textbf{thực tế} & $\boldsymbol{\eta}$ & \textbf{Nút thắt chính} \\ \hline
+                \endfirsthead
+
+                \hline
+                \textbf{Giao thức} & $\boldsymbol{R_{PHY}}$ & $\boldsymbol{R_{app}}$ \textbf{thực tế} & $\boldsymbol{\eta}$ & \textbf{Nút thắt chính} \\ \hline
+                \endhead
+
+                \hline
+                \endfoot
+                \endlastfoot
+
+                Zigbee & $250\,kbps$ & $\approx 80\,kbps$ & $32\%$ & UART $115200\,bps$ ($10.5\,ms/frame$) \\ \hline
+                LoRa SF7/125 (P2P) & $5.47\,kbps$ & $\approx 3.5\,kbps$ & $64\%$ & Time-on-Air ($\approx 97.5\,ms/gói$) \\ \hline
+                BLE không DLE & $1000\,kbps$ & $\approx 8\,kbps$ & $0.8\%$ & MTU = 20 byte, $CI = 20\,ms$ \\ \hline
+                BLE bật DLE & $1000\,kbps$ & $\approx 97.6\,kbps$ & $9.7\%$ & $CI = 20\,ms$ \\ \hline
+            \end{longtable}
+
+            \item \textbf{Độ trễ hệ thống}
+
+            Độ trễ End-to-End $T_{e2e}$ là tổng thời gian xử lý và truyền dẫn qua tất cả các chặng:
+
+            \[
+                T_{e2e} = T_{air} + T_{UART} + T_{batch} + T_{SPI} + T_{network}
+            \]
+
+            Các thành phần chính gồm:
+
+            \begin{itemize}
+                \item \textbf{Thời gian truyền sóng $T_{air}$:} Zigbee $\approx 5\,ms$, LoRa SF7 $\approx 97.5\,ms$, BLE $\approx 2.2\,ms$.
+                \item \textbf{Độ trễ UART $T_{UART}$:} khoảng $10.5\,ms/gói$ với Zigbee và $\approx 15\,ms$ với LoRa AT command.
+                \item \textbf{Độ trễ gom gói $T_{batch}$:} cố định khoảng $50\,ms$ do cơ chế batch flush tại LAN-MCU.
+                \item \textbf{Độ trễ SPI $T_{SPI}$:} truyền 1 KB mất khoảng $0.204\,ms$ tại xung nhịp $40\,MHz$.
+            \end{itemize}
+
+            \begin{longtable}{|p{5cm}|p{4cm}|p{5cm}|}
+                \caption{Độ trễ dự kiến theo từng kịch bản truyền.}
+                \label{tab:latency_estimation} \\
+                \hline
+                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
+                \endfirsthead
+
+                \hline
+                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
+                \endhead
+
+                \hline
+                \endfoot
+                \endlastfoot
+
+                Zigbee $\rightarrow$ MQTT & $10\,ms$--$60\,ms$ & Gom gói ($T_{batch}$) \\ \hline
+                LoRa SF7 (P2P) $\rightarrow$ MQTT & $100\,ms$--$150\,ms$ & Thời gian truyền sóng ($T_{air}$) \\ \hline
+                BLE $\rightarrow$ MQTT & $4\,ms$--$55\,ms$ & Gom gói ($T_{batch}$) \\ \hline
+            \end{longtable}
+
+            \item \textbf{Khả năng chịu tải}
+
+            \begin{itemize}
+                \item \textbf{Zigbee (E18-ZG120):} Giới hạn bởi 8 KB SRAM của CC2530. Sau khi Z-Stack chiếm khoảng 5 KB, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định Z-Stack (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Lỗi \texttt{0x18} (Not enough cache) và \texttt{0x11} (Memory full) là các chỉ báo điển hình khi vượt ngưỡng này.
+                \item \textbf{LoRa (P2P):} Trong chế độ P2P point-to-point, Gateway chỉ liên kết với một node tại một thời điểm. Không có giới hạn mạng lưới như LoRaWAN.
+                \item \textbf{BLE:} Giao thức GATT giới hạn tối đa 8 kết nối đồng thời trên ESP32-S3 khi sử dụng NimBLE stack.
+            \end{itemize}
+
+        \end{enumerate}
+
         \newpage
-        \paragraph{FOTA/Upgrade – cập nhật firmware cho Gateway (LAN cập nhật trước, WAN cập nhật sau)}
-        Trong prototype, cơ chế FOTA được kích hoạt từ server bằng một lệnh cấu hình đặc biệt. Khi gateway nhận được lệnh này, hệ thống chuyển sang “chế độ cập nhật” và thực hiện cập nhật theo thứ tự: LAN-MCU cập nhật trước (nhờ PPP Server do WAN-MCU cung cấp), sau đó WAN-MCU tự cập nhật firmware của chính nó.
-        
-            \begin{figure}[h]
-                \begin{minipage}[t]{0.3\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/design_FOTA.png}
-                    \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
-                    \label{fig:design_FOTA}
-                \end{minipage}
-                \hfill
-                \begin{minipage}[b]{0.65\textwidth}
-                    Cụ thể, khi server gửi lệnh, WAN-MCU sẽ parse lệnh và đánh dấu đây là OTA command. Thay vì cập nhật ngay, WAN-MCU forward lệnh OTA xuống LAN-MCU để LAN-MCU chuẩn bị cập nhật trước. Đồng thời, WAN-MCU khởi động PPP Server qua UART nhằm tạo một đường IP-link cho LAN-MCU truy cập mạng và tải firmware. Nhờ đường PPP này, LAN-MCU có thể thực hiện quá trình OTA theo cơ chế HTTPS (tải image → kiểm tra → ghi firmware → reboot) một cách độc lập, trong khi WAN-MCU giữ vai trò “cấp đường truyền” và điều phối.
-                    
-                    Sau khi LAN-MCU cập nhật xong, LAN-MCU sẽ gửi handshake thông báo cho WAN-MCU bước tiếp theo. Tại thời điểm này, WAN-MCU không phản hồi handshake theo kiểu trao đổi qua lại, mà chuyển thẳng sang bước tự cập nhật firmware của chính nó. WAN-MCU tiến hành OTA (tải → kiểm tra → ghi → reboot) và kết thúc quy trình FOTA toàn gateway. Sau cùng, gateway có thể gửi trạng thái cập nhật (OK/FAIL, version) lên server để xác nhận hoàn tất.
-
-                \end{minipage}
-            \end{figure}
-        % Trong prototype, cơ chế FOTA được kích hoạt từ server bằng một lệnh cấu hình đặc biệt. Khi gateway nhận được lệnh này, hệ thống chuyển sang “chế độ cập nhật” và thực hiện cập nhật theo thứ tự: LAN-MCU cập nhật trước (nhờ PPP Server do WAN-MCU cung cấp), sau đó WAN-MCU tự cập nhật firmware của chính nó.
-        % Cụ thể, khi server gửi lệnh, WAN-MCU sẽ parse lệnh và đánh dấu đây là OTA command. Thay vì cập nhật ngay, WAN-MCU forward lệnh OTA xuống LAN-MCU để LAN-MCU chuẩn bị cập nhật trước. Đồng thời, WAN-MCU khởi động PPP Server qua UART nhằm tạo một đường IP-link cho LAN-MCU truy cập mạng và tải firmware. Nhờ đường PPP này, LAN-MCU có thể thực hiện quá trình OTA theo cơ chế HTTPS (tải image → kiểm tra → ghi firmware → reboot) một cách độc lập, trong khi WAN-MCU giữ vai trò “cấp đường truyền” và điều phối.
-        
-        % Sau khi LAN-MCU cập nhật xong, LAN-MCU sẽ gửi handshake thông báo cho WAN-MCU bước tiếp theo. Tại thời điểm này, WAN-MCU không phản hồi handshake theo kiểu trao đổi qua lại, mà chuyển thẳng sang bước tự cập nhật firmware của chính nó. WAN-MCU tiến hành OTA (tải → kiểm tra → ghi → reboot) và kết thúc quy trình FOTA toàn gateway. Sau cùng, gateway có thể gửi trạng thái cập nhật (OK/FAIL, version) lên server để xác nhận hoàn tất.
-
-        % \begin{figure}[H]
-        %     \centering
-        %     \includegraphics[width=0.5\textwidth]{figures/design_FOTA.png}
-        %     \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
-        %     \label{fig:design_FOTA}
-        % \end{figure}
-        
-        \paragraph{Kết nối đến các sensor node – gián tiếp qua LAN-MCU để phân tải và tăng ổn định hệ thống}
-        
-        Trong kiến trúc Dual-MCU Master–Slave, WAN-MCU không trực tiếp chạy các stack giao thức cảm biến (Zigbee/LoRa/CAN/RS-485…), mà tập trung vào Internet/Cloud và điều phối hệ thống. Toàn bộ phần “mặt dưới” gồm kết nối sensor node, giao tiếp đa giao thức, tiền xử lý và chuẩn hoá dữ liệu được đặt tại LAN-MCU. Thiết kế phân vai này giúp giảm tải đáng kể cho WAN-MCU (CPU/RAM/Flash), đồng thời hạn chế hiện tượng blocking giữa các tác vụ I/O nội bộ và tác vụ mạng Internet/Cloud – vốn là điểm yếu phổ biến của kiến trúc single-MCU.
-        
-        Để chuẩn hoá trao đổi giữa hai MCU, dữ liệu và lệnh được đóng gói theo một định dạng nội bộ thống nhất, trong đó có trường handler\_type nhằm định danh “nguồn/đích giao thức” (ví dụ: CAN / LOR / ZIG / RS4). Nhờ vậy, WAN-MCU có thể xử lý dữ liệu/lệnh theo hướng “định tuyến logic” mà không cần hiểu chi tiết từng stack giao thức.
-        
-        Với cách tổ chức này, hệ thống vẫn “kết nối tới sensor node” đầy đủ theo nghĩa end-to-end, nhưng theo mô hình phân miền chức năng rõ ràng:
-        \begin{itemize}
-            \item LAN-MCU chuyên trách giao thức sensor và xử lý dữ liệu gần nguồn (near-sensor processing),
-            \item WAN-MCU chuyên trách Internet/Cloud và điều phối (cloud gateway + control router).
-        \end{itemize}
-        
-        Đây là hướng tiếp cận phù hợp với khảo sát kiến trúc gateway thực tế: tránh dư thừa như nền tảng Linux/SoC cho bài toán thu thập-đẩy dữ liệu, đồng thời khắc phục giới hạn tài nguyên và độ ổn định của mô hình single-MCU khi phải gánh đồng thời nhiều giao thức LAN/WAN và giao thức ứng dụng (MQTT/HTTP/CoAP).
-        
