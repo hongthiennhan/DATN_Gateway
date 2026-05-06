@@ -57,45 +57,39 @@
             % PHẦN 1: DÒNG ĐIỆN
             \multicolumn{7}{|l|}{\textbf{A. DÒNG ĐIỆN ĐẦU VÀO (INPUT CURRENT) - Đơn vị: $mA$}} \\ \hline
             \multicolumn{7}{|l|}{\textit{*Tiêu chí: Dòng tổng $< 3.25A$ (Jack DC, USB) và $< 5A$ (pin LiPo) (Công suất thiết kế)}} \\ \hline
-            1 & \textbf{+12V} & Total Input (Jack DC) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_green}{\textbf{TBD}} \\ \hline
-            2 & \textbf{+5V} & Total Input (USB) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_green}{\textbf{TBD}} \\ \hline
-            3 & \textbf{+3V7\_VBAT} & Total Input (LiPo Battery) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_green}{\textbf{TBD}} \\ \hline
+            1 & \textbf{+12V} & Total Input (Jack DC) & $12$ & $92$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+            2 & \textbf{+5V} & Total Input (USB) & $29$ & $221$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+            3 & \textbf{+3V7\_VBAT} & Total Input (LiPo Battery) & $33$ & $250$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
 
             % PHẦN 2: RIPPLE
             \multicolumn{7}{|l|}{\textbf{B. ĐỘ GỢN ĐIỆN ÁP (VOLTAGE RIPPLE) - Đơn vị: $\pm mV_{pp}$}} \\ \hline
             \multicolumn{7}{|l|}{\textit{*Tiêu chí: Voltage ripple $< 5\%$}} \\ \hline
-            4 & \textbf{+3V3} & Test-point (TP12/13) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
-            5 & \textbf{+3V3\_CTRL} & Test-point (TP18/19) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
-            6 & \textbf{+5V\_CTRL} & Test-point (TP15/17) & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
+            4 & \textbf{+3V3} & Test-point (TP12/13) & $40$ & $180$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+            5 & \textbf{+3V3\_CTRL} & Test-point (TP18/19) & $70$ & $150$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+            6 & \textbf{+5V\_CTRL} & Test-point (TP15/17) & $50$ & $50$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
 
-            % PHẦN 3: SỤT ÁP - GIỚI HẠN MỚI MAX 0.1V
+            % PHẦN 3: SỤT ÁP
             \multicolumn{7}{|l|}{\textbf{C. ĐỘ SỤT ÁP TẠI TẢI (VOLTAGE DROP) - Đơn vị: $V$}} \\ \hline
             \multicolumn{7}{|l|}{\textit{*Tiêu chí: Voltage drop = voltage at source - voltage at load $< 5\%$}} \\ \hline
+
             % Rail +3V3
-            7 & \multirow{7}{*}{\textbf{+3V3}} & RTC & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            8 & & Power Monitor & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            9 & & ESP32-S3 Master & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            10 & & IO Expanders & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            11 & & WAN Connector & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            12 & & Buttons & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            13 & & I2C Buffer & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
+            7  & \multirow{6}{*}{\textbf{+3V3}} & Source             & $3.32$ & $3.32$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            8  &                                & RTC                & $3.32$ & $3.32$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            9  &                                & Power Monitor      & $3.32$ & $3.32$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            10 &                                & ESP32-S3 Master    & $3.32$ & $3.32$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            11 &                                & IO Expanders       & $3.32$ & $3.32$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            12 &                                & WAN Connector      & $3.32$ & $3.32$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
 
             % Rail +3V3_CTRL
-            14 & \multirow{5}{*}{\textbf{+3V3\_CTRL}} & UART Switch & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            15 & & USB Switch & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            16 & & ESP32-S3 Slave & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            17 & & LAN Connectors & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            18 & & MicroSD Card & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
+            13 & \multirow{4}{*}{\textbf{+3V3\_CTRL}} & Source           & $3.32$ & $3.31$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            14 &                                     & ESP32-S3 Slave   & $3.32$ & $3.31$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            15 &                                     & LAN Connectors   & $3.32$ & $3.31$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            16 &                                     & MicroSD Card     & $3.32$ & $3.31$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
 
             % Rail +5V_CTRL
-            19 & \multirow{2}{*}{\textbf{+5V\_CTRL}} & USART LCD & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \cline{1-1} \cline{3-7}
-            20 & & DC FAN & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
-
-            % Rail +3V7_VBAT
-            21 & \multirow{1}{*}{\textbf{+3V7\_VBAT}} & Battery Fuel Gauge & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
-
-            % Rail +5V
-            22 & \multirow{1}{*}{\textbf{+5V}} & USB to UART & $TBD$ & $TBD$ & $TBD$ & \textcolor{modern_blue}{\textbf{TBD}} \\ \hline
+            17 & \multirow{3}{*}{\textbf{+5V\_CTRL}} & Source           & $5.08$ & $5.00$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            18 &                                    & USART LCD        & $5.08$ & $4.98$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+            19 &                                    & DC FAN           & $5.08$ & $4.98$ & $TBD$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
 
         \end{longtable}
 
