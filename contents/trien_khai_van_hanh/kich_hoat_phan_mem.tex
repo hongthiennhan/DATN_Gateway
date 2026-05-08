@@ -7,44 +7,49 @@
 
     \begin{itemize}
         \item \textbf{Main Control:} Điều phối trạng thái hoạt động của toàn hệ thống.
-        \item \textbf{Internet Communication Handler:} Quản lý các kết nối mạng (Ethernet, Wi-Fi, LTE 4G).
-        \item \textbf{Server Communication Handler:} Quản lý giao thức tầng ứng dụng (MQTT, HTTP, CoAP).
-        \item \textbf{MCU LAN Communication Handler:} Thiết lập kênh giao tiếp liên vi điều khiển (Inter-MCU) với LAN-MCU.
+        \item \textbf{Internet Communication Handler:} Quản lý các kết nối mạng (Wi-Fi, Ethernet qua W5500, LTE 4G) với cơ chế Internet Monitor tự động chuyển đổi dự phòng (Auto-failover) giữa các giao diện theo thứ tự ưu tiên được cấu hình sẵn.
+        \item \textbf{Server Communication Handler:} Quản lý giao thức tầng ứng dụng (MQTT, HTTP/HTTPS, CoAP).
+        \item \textbf{MCU LAN Communication Handler:} Thiết lập kênh giao tiếp liên vi điều khiển (Inter-MCU) với LAN-MCU qua Quad SPI kết hợp GPIO Handshake Event-driven.
         \item \textbf{FOTA/Bridge Bootloader:} Sẵn sàng cho quy trình cập nhật firmware từ xa.
     \end{itemize}
 
     \subsection{Nạp và áp dụng cấu hình vận hành (Load/Apply Configuration)}
 
-    Hệ thống truy xuất toàn bộ tham số cấu hình được lưu trữ trong bộ nhớ. Gateway sẽ đọc và áp dụng các cấu hình này cho các khối Internet/Cloud và đặc biệt là tải các driver tương ứng cho các module phần cứng đang được lắp đặt. Cơ chế này đảm bảo tính \textbf{modularity} và \textbf{configurability}, cho phép hệ thống chỉ khởi chạy các tài nguyên cần thiết theo nhu cầu triển khai thực tế.
+    Hệ thống truy xuất toàn bộ tham số cấu hình được lưu trữ trong bộ nhớ NVS. Gateway đọc và áp dụng các cấu hình này cho các khối Internet/Cloud và đặc biệt là tải các driver tương ứng cho các module phần cứng đang được lắp đặt dựa trên file JSON preset theo từng stack module. Cơ chế này đảm bảo tính \textbf{modularity} và \textbf{configurability}, cho phép hệ thống chỉ khởi chạy các tài nguyên cần thiết theo nhu cầu triển khai thực tế.
 
     \subsection{Thiết lập kết nối WAN và đồng bộ thời gian}
 
-    Dựa trên cấu hình đã tải, gateway tiến hành thiết lập kết nối Internet ưu tiên (Wi-Fi hoặc LTE).
+    Dựa trên cấu hình đã tải, gateway tiến hành thiết lập kết nối Internet theo thứ tự ưu tiên được định sẵn. Phiên bản 1.0.0 hỗ trợ ba giao diện WAN:
 
     \begin{itemize}
-        \item Đối với kết nối Wi-Fi, hệ thống hỗ trợ cả hai chế độ bảo mật là Personal và Enterprise.
-        \item Ngay sau khi kết nối mạng thành công, gateway thực hiện giao thức SNTP để đồng bộ thời gian thực và cập nhật cho RTC, đảm bảo tính chính xác của nhãn thời gian (timestamp) cho dữ liệu log và telemetry.
+        \item \textbf{Wi-Fi:} Hỗ trợ cả hai chế độ bảo mật Personal và Enterprise.
+        \item \textbf{Ethernet:} Thông qua driver W5500 tích hợp trong firmware WAN-MCU, cung cấp kết nối có dây ổn định cho môi trường công nghiệp.
+        \item \textbf{LTE 4G:} Kết nối dự phòng qua module SIM7600G-H Mini PCIe.
     \end{itemize}
+
+    Cơ chế \textbf{Internet Monitor} giám sát liên tục trạng thái kết nối và tự động chuyển đổi sang giao diện dự phòng (Failover) khi phát hiện mất kết nối, đảm bảo tính sẵn sàng cao cho hệ thống.
+
+    Ngay sau khi kết nối mạng thành công, gateway thực hiện giao thức SNTP để đồng bộ thời gian thực và cập nhật cho RTC, đảm bảo tính chính xác của nhãn thời gian (timestamp) cho dữ liệu log và telemetry.
 
     \subsection{Kết nối Cloud và vòng lặp vận hành dữ liệu}
 
-    Khi kết nối WAN ổn định, gateway khởi tạo kết nối đến Cloud Server (thông qua giao thức MQTT). Lúc này, hệ thống đi vào vòng lặp vận hành chính:
+    Khi kết nối WAN ổn định, gateway khởi tạo kết nối đến Cloud Server thông qua giao thức được cấu hình (MQTT, HTTP/HTTPS hoặc CoAP). Lúc này hệ thống đi vào vòng lặp vận hành chính:
 
     \begin{itemize}
-        \item \textbf{Luồng Uplink:} Dữ liệu thu thập từ LAN-MCU được truyền sang WAN-MCU, đóng gói (packetizing) và đẩy vào hàng đợi (queue) để gửi lên broker/server theo cấu hình.
-        \item \textbf{Luồng Downlink:} Gateway duy trì kết nối để nhận lệnh điều khiển từ server và phân luồng xuống LAN-MCU hoặc xử lý tại chỗ.
-        \item \textbf{Cơ chế bảo vệ:} Hệ thống duy trì cơ chế tự động kết nối lại (auto-reconnect) khi mất mạng để đảm bảo tính sẵn sàng cao.
+        \item \textbf{Luồng Uplink:} Dữ liệu thu thập từ LAN-MCU được truyền qua kênh Quad SPI với cơ chế ACK/NACK, đóng gói và đẩy vào hàng đợi (Publish Queue) trong 8\,MB PSRAM để gửi lên broker/server theo cơ chế Exponential Backoff.
+        \item \textbf{Luồng Downlink:} WAN-MCU nhận lệnh từ server và kích hoạt GPIO Handshake để thông báo tức thì cho LAN-MCU xử lý theo cơ chế Interrupt-driven.
+        \item \textbf{Cơ chế bảo vệ:} Internet Monitor duy trì Auto-failover; khi mất kết nối kéo dài, Data Storage Handler chuyển sang lưu đệm vào microSD và tự động đồng bộ lại khi kết nối được khôi phục.
     \end{itemize}
 
     \subsection{Kích hoạt cấu hình tại chỗ (Local Configuration)}
 
-    Trong trường hợp cần cấu hình thủ công bởi kỹ thuật viên, gateway hỗ trợ chế độ cấu hình qua cổng Programmer USB-C (giao tiếp USB/UART).
+    Gateway hỗ trợ hai phương thức cấu hình tại chỗ:
 
     \begin{itemize}
-        \item \textbf{Scan/Read Config:} PC gửi yêu cầu đọc, gateway trả về các cặp key–value hiện hành (có cơ chế che thông tin nhạy cảm).
-        \item \textbf{Write Config:} PC gửi lệnh cấu hình (prefix “CF…”), gateway đưa vào hàng đợi xử lý $\to$ kiểm tra tính hợp lệ (validate) $\to$ lưu vào NVS $\to$ áp dụng ngay (runtime apply). Nếu cấu hình thuộc về miền LAN, WAN-MCU sẽ chuyển tiếp lệnh xuống LAN-MCU để xử lý đồng bộ.
+        \item \textbf{App cấu hình PC qua cổng USB-C:} Kỹ thuật viên kết nối cáp và sử dụng ứng dụng DATN\_config\_app để đọc/ghi cấu hình. PC gửi yêu cầu đọc, gateway trả về các cặp key–value hiện hành (có cơ chế che thông tin nhạy cảm); khi ghi, firmware thực hiện validate $\to$ lưu NVS $\to$ runtime apply. Hỗ trợ tải lên file JSON preset để provisioning hàng loạt. Tham số thuộc miền LAN được chuyển tiếp qua SPI đến LAN-MCU với phản hồi ACK/FAIL đồng bộ.
+        \item \textbf{Web Config Portal:} Gateway khởi tạo điểm truy cập Wi-Fi (AP mode) với hỗ trợ mDNS và captive portal, cho phép người dùng truy cập giao diện cấu hình trực tiếp qua trình duyệt mà không cần cài đặt phần mềm bổ sung.
     \end{itemize}
 
     \subsection{Cập nhật Firmware (FOTA)}
 
-    Gateway hỗ trợ quy trình cập nhật firmware an toàn (Safety FOTA) nhằm giảm thiểu rủi ro hỏng thiết bị (brick). Quy trình bao gồm kiểm tra tính toàn vẹn (checksum), thực hiện cập nhật tuần tự cho từng MCU (Master và Slave) và cơ chế không ghi đè lên firmware đang chạy cho đến khi gói cập nhật được xác thực thành công.
+    Gateway hỗ trợ quy trình cập nhật firmware an toàn (Safety FOTA) nhằm giảm thiểu rủi ro hỏng thiết bị (brick). Trong phiên bản 1.0.0, LAN-MCU được cập nhật thông qua cơ chế \textbf{Wi-Fi NAT}: WAN-MCU khởi tạo một điểm truy cập Wi-Fi (NAT mode), LAN-MCU kết nối vào đó và tải gói firmware trực tiếp — cải thiện đáng kể băng thông so với phương thức PPP qua UART của phiên bản nguyên mẫu. Quy trình bao gồm kiểm tra tính toàn vẹn (checksum/signature), cập nhật tuần tự từng MCU và cơ chế khôi phục (rollback) nếu quá trình gặp lỗi.
