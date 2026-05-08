@@ -3,7 +3,7 @@
         \subsubsection{Sơ đồ khối Hệ thống}
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.9\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
+                \includegraphics[width=0.75\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
                 \caption{Sơ đồ khối Hệ thống}
             \end{figure}
             
@@ -173,7 +173,7 @@
                 \end{longtable}
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.9\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
                     \caption{Sơ đồ chân Module Adapter}
                 \end{figure}
 
@@ -321,11 +321,12 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
+                        \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
                         \caption{Sơ đồ khối hệ thống}
                         \label{fig:blockdiagram_system}
                     \end{figure}
-                    Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
+                    % Hệ thống phần cứng được thiết kế theo kiến trúc dual-MCU Master--Slave nhằm phân tách chức năng xử lý giữa hai tầng mạng LAN và WAN, qua đó giảm tải cho từng vi điều khiển. Mỗi MCU đảm nhiệm việc giao tiếp và điều khiển các module thuộc miền mạng tương ứng thông qua các tập lệnh và ngoại vi tích hợp sẵn, giúp hệ thống đạt được khả năng cấu hình linh hoạt và nâng cao độ ổn định trong quá trình vận hành. Nền tảng phần cứng sử dụng module SoC ESP32-S3-WROOM-1U-N16R8, đáp ứng tốt các yêu cầu về năng lực xử lý, kết nối và khả năng mở rộng cho các ứng dụng IoT Gateway.
+                    Kiến trúc Dual-MCU Master-Slave phân tách miền WAN-LAN giúp tối ưu tải xử lý, đảm bảo hệ thống vận hành ổn định. Việc sử dụng SoC ESP32-S3 là để đáp ứng tốt năng lực xử lý tại biên và cho phép cấu hình linh hoạt, phù hợp với các yêu cầu mở rộng thực tế.
 
                     % ESP32-S3-WROOM-1U-N16R8 được trang bị vi xử lý lõi kép Xtensa\textsuperscript{\textregistered} 32-bit LX7 với xung nhịp tối đa 240\,MHz, tích hợp sẵn Wi-Fi và Bluetooth Low Energy (BLE). Vi điều khiển hỗ trợ đầy đủ các chuẩn giao tiếp phổ biến như UART, SPI, I\textsuperscript{2}C, USB và SDIO, cho phép kết nối linh hoạt với các module ngoại vi. Bộ nhớ tích hợp gồm 16\,MB Flash và 8\,MB PSRAM, đáp ứng nhu cầu lưu trữ firmware, cập nhật OTA, xử lý dữ liệu đệm dung lượng lớn trong quá trình vận hành.
                     
@@ -334,53 +335,65 @@
                     \begin{itemize}
 
                         \item \textbf{Hệ thống nguồn:} 
-                        Hệ thống nguồn được thiết kế với ba nguồn cấp đầu vào, bao gồm: nguồn 5V từ cổng USB, nguồn 12V từ adapter AC-DC và nguồn dự phòng từ pin LiPo. Việc điều phối các nguồn này được thực hiện bởi IC sạc BQ25892RTWR, trong đó nguồn đầu vào (USB hoặc adapter) được lựa chọn thông qua IC Power MUX TPS2121RUXR trước khi đưa vào chân VBUS của IC sạc. Pin LiPo được kết nối tại chân VBAT và được quản lý thông qua BATFET tích hợp bên trong IC, cho phép thực hiện cơ chế power-path. Nhờ đó, hệ thống có thể được cấp nguồn trực tiếp từ VBUS hoặc từ pin, trong đó đường VBAT được đóng/cắt bởi BATFET nhằm ưu tiên sử dụng nguồn từ VBUS, đồng thời cách ly pin khỏi tải khi không cần thiết. Năng lượng từ VBUS đồng thời được sử dụng để sạc pin LiPo. Khi nguồn đầu vào bị mất, pin sẽ tự động đảm nhận vai trò nguồn cấp cho hệ thống.
-                        
-                        Cách thiết kế này giúp hạn chế việc pin tham gia cấp điện trong điều kiện bình thường, qua đó cải thiện hiệu suất năng lượng, đồng thời nâng cao độ an toàn và kéo dài tuổi thọ pin. Điện áp tại chân VSYS của IC BQ25892RTWR sau đó được đưa tới các bộ chuyển đổi DC-DC nhằm tạo ra các mức điện áp phù hợp để cấp nguồn cho toàn bộ hệ thống.
+                        % Hệ thống nguồn được thiết kế với ba nguồn cấp đầu vào, bao gồm: nguồn 5V từ cổng USB, nguồn 12V từ adapter AC-DC và nguồn dự phòng từ pin LiPo. Việc điều phối các nguồn này được thực hiện bởi IC sạc BQ25892RTWR, trong đó nguồn đầu vào (USB hoặc adapter) được lựa chọn thông qua IC Power MUX TPS2121RUXR trước khi đưa vào chân VBUS của IC sạc. Pin LiPo được kết nối tại chân VBAT và được quản lý thông qua BATFET tích hợp bên trong IC, cho phép thực hiện cơ chế power-path. Nhờ đó, hệ thống có thể được cấp nguồn trực tiếp từ VBUS hoặc từ pin, trong đó đường VBAT được đóng/cắt bởi BATFET nhằm ưu tiên sử dụng nguồn từ VBUS, đồng thời cách ly pin khỏi tải khi không cần thiết. Năng lượng từ VBUS đồng thời được sử dụng để sạc pin LiPo. Khi nguồn đầu vào bị mất, pin sẽ tự động đảm nhận vai trò nguồn cấp cho hệ thống.
+                        % Cách thiết kế này giúp hạn chế việc pin tham gia cấp điện trong điều kiện bình thường, qua đó cải thiện hiệu suất năng lượng, đồng thời nâng cao độ an toàn và kéo dài tuổi thọ pin. Điện áp tại chân VSYS của IC BQ25892RTWR sau đó được đưa tới các bộ chuyển đổi DC-DC nhằm tạo ra các mức điện áp phù hợp để cấp nguồn cho toàn bộ hệ thống.
+                        % Giải pháp quản lý năng lượng được tối ưu hóa thông qua sự phối hợp giữa IC Power MUX TPS2121RUXR và bộ sạc BQ25892RTWR, giúp tự động điều phối ba nguồn cấp (USB, Adapter, LiPo). Việc thực thi cơ chế power-path qua BATFET\cite{FastChargerBq2589x} tích hợp đóng vai trò then chốt để ưu tiên nguồn ngoài và cô lập pin khi không cần thiết, giúp kéo dài tuổi thọ linh kiện và đảm bảo hệ thống vận hành liên tục khi mất điện. Đây là nền tảng quan trọng giúp ổn định điện áp VSYS cho các khối chuyển đổi DC-DC toàn hệ thống.
+                        Mạng phân phối nguồn tích hợp TPS2121RUXR và BQ25892RTWR cho phép điều phối linh hoạt ba nguồn cấp đầu vào (12V, 5V, LiPo). Cơ chế power-path này đảm bảo ưu tiên nguồn ngoài, giúp bảo vệ tuổi thọ pin và tối ưu hóa hiệu suất cung cấp điện cho các tầng DC-DC kế tiếp.
                     
                         \item \textbf{Quản lý tiêu thụ điện năng:} 
-                        Hệ thống tích hợp IC giám sát công suất INA230AIRGTR nhằm theo dõi và đánh giá mức tiêu thụ điện năng trong quá trình vận hành. IC được cấu hình và thu thập dữ liệu thông qua giao tiếp I2C. Hệ thống có thể giám sát hiệu suất sử dụng năng lượng, phát hiện các trạng thái bất thường như quá dòng hoặc tiêu thụ vượt ngưỡng, đồng thời tối ưu hóa hoạt động của các khối chức năng nhằm nâng cao hiệu quả năng lượng và độ tin cậy của toàn hệ thống.
+                        % Hệ thống tích hợp IC giám sát công suất INA230AIRGTR nhằm theo dõi và đánh giá mức tiêu thụ điện năng trong quá trình vận hành. IC được cấu hình và thu thập dữ liệu thông qua giao tiếp I2C. Hệ thống có thể giám sát hiệu suất sử dụng năng lượng, phát hiện các trạng thái bất thường như quá dòng hoặc tiêu thụ vượt ngưỡng, đồng thời tối ưu hóa hoạt động của các khối chức năng nhằm nâng cao hiệu quả năng lượng và độ tin cậy của toàn hệ thống.
+                        Việc tích hợp IC INA230AIRGTR (giao tiếp I2C) giúp chủ động giám sát công suất và phát hiện sớm các trạng thái bất thường như quá dòng. Giải pháp này không chỉ tối ưu hiệu quả năng lượng mà còn trực tiếp đảm bảo độ tin cậy vận hành bền bỉ cho toàn hệ thống.
 
                         \item \textbf{Quản lý pin LiPo:} 
-                        Pin LiPo trong hệ thống được giám sát bởi IC Battery Fuel Gauge BQ27441DRZR-G1B. IC này sử dụng thuật toán Impedance Track\texttrademark\ của Texas Instruments để đo lường và dự đoán chính xác dung lượng còn lại của pin. IC cung cấp các chức năng quản lý pin toàn diện, bao gồm tự động bù trừ sai số do ảnh hưởng của lão hóa và nhiệt độ, ước tính trạng thái sức khỏe pin, phát tín hiệu ngắt khi mức pin thấp, quản lý nhiệt độ và giám sát chi tiết các thông số khác của pin thông qua giao tiếp I2C.
+                        % Pin LiPo trong hệ thống được giám sát bởi IC Battery Fuel Gauge BQ27441DRZR-G1B. IC này sử dụng thuật toán Impedance Track\texttrademark\ của Texas Instruments để đo lường và dự đoán chính xác dung lượng còn lại của pin. IC cung cấp các chức năng quản lý pin toàn diện, bao gồm tự động bù trừ sai số do ảnh hưởng của lão hóa và nhiệt độ, ước tính trạng thái sức khỏe pin, phát tín hiệu ngắt khi mức pin thấp, quản lý nhiệt độ và giám sát chi tiết các thông số khác của pin thông qua giao tiếp I2C.
+                        Việc lựa chọn IC BQ27441DRZR-G1B cùng thuật toán Impedance Track\texttrademark\ giúp hệ thống dự báo chính xác dung lượng pin. Khả năng tự động bù trừ sai số do lão hóa và nhiệt độ là yếu tố then chốt để đảm bảo tính ổn định và an toàn năng lượng lâu dài cho thiết bị.
 
                         \item \textbf{Cổng USB và USB-to-UART Bridge:} 
-                        Hệ thống được tích hợp cổng USB, cho phép cấp nguồn, nạp firmware và cấu hình thiết bị. Giao tiếp USB được chuyển đổi sang UART thông qua IC USB-to-UART Bridge (CP2102-GMR), tạo cổng COM ảo để truyền nhận dữ liệu giữa MCU và máy tính. Giao diện này hỗ trợ gỡ lỗi chương trình, giám sát hoạt động thông qua log dữ liệu trong quá trình phát triển và vận hành.
+                        % Hệ thống được tích hợp cổng USB, cho phép cấp nguồn, nạp firmware và cấu hình thiết bị. Giao tiếp USB được chuyển đổi sang UART thông qua IC USB-to-UART Bridge (CP2102-GMR), tạo cổng COM ảo để truyền nhận dữ liệu giữa MCU và máy tính. Giao diện này hỗ trợ gỡ lỗi chương trình, giám sát hoạt động thông qua log dữ liệu trong quá trình phát triển và vận hành.
+                        Việc tích hợp IC CP2102-GMR thiết lập cổng COM ảo thực hiện quy trình nạp firmware và cấu hình thiết bị, hỗ trợ gỡ lỗi và giám sát vận hành tin cậy thông qua hệ thống log dữ liệu tập trung.
                         
                         \item \textbf{Quản lý thời gian thực (RTC):} 
-                        Hệ thống được trang bị IC RTC PCF8563T/5,518, sử dụng nguồn dự phòng từ pin CR2032 (3.0\,V) nhằm duy trì liên tục thông tin thời gian khi nguồn cấp chính bị gián đoạn. Việc tích hợp RTC giúp hệ thống có khả năng thực hiện các tác vụ theo lịch trình và đồng bộ thời gian với các thiết bị khác trong mạng IoT.
+                        % Hệ thống được trang bị IC RTC PCF8563T/5,518, sử dụng nguồn dự phòng từ pin CR2032 (3.0\,V) nhằm duy trì liên tục thông tin thời gian khi nguồn cấp chính bị gián đoạn. Việc tích hợp RTC giúp hệ thống có khả năng thực hiện các tác vụ theo lịch trình và đồng bộ thời gian với các thiết bị khác trong mạng IoT.
+                        IC RTC PCF8563T dùng pin CR2032 đảm bảo tính liên tục của dữ liệu thời gian, hỗ trợ hiệu quả việc đồng bộ hóa mạng và thực thi các tác vụ theo lịch trình.
                         
                         \item \textbf{Mở rộng GPIO:} 
                         Hệ thống sử dụng IC TCA6416ARTWR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
 
                         \item \textbf{Cổng PCIe mở rộng WAN/LAN:} 
-                        Hệ thống được thiết kế với 3 khe cắm PCIe, 1 khe dành cho module WAN và 2 khe dành cho module LAN. Các khe cắm này hỗ trợ kết nối linh hoạt với các module giao tiếp không dây (LoRa, Zigbee, BLE, Thread, NB-IoT,...) hoặc có dây (RS-485, CAN,...), giúp mở rộng khả năng kết nối của gateway.
+                        % Hệ thống được thiết kế với 3 khe cắm PCIe, 1 khe dành cho module WAN và 2 khe dành cho module LAN. Các khe cắm này hỗ trợ kết nối linh hoạt với các module giao tiếp không dây (LoRa, Zigbee, BLE, Thread, NB-IoT,...) hoặc có dây (RS-485, CAN,...), giúp mở rộng khả năng kết nối của gateway.
+                        Thiết kế modular với ba khe PCIe (01 WAN, 02 LAN) cho phép tích hợp linh hoạt các chuẩn truyền thông, tối ưu khả năng mở rộng hệ thống cho đa dạng ứng dụng IoT.
                         
                         \item \textbf{Mở rộng I2C:} 
-                        Hệ thống tích hợp IC đệm I2C TCA9803DGKR và đưa tín hiệu ra ngoài thông qua connector. IC này có nhiệm vụ giảm ảnh hưởng của điện dung tải phát sinh khi kết nối với các thiết bị ngoại vi qua dây dẫn dài, từ đó cải thiện tính toàn vẹn tín hiệu. Nhờ vậy, giao tiếp I2C của hệ thống vẫn đảm bảo hoạt động ổn định và tuân thủ đúng đặc tính truyền thông theo thiết kế.
+                        % Hệ thống tích hợp IC đệm I2C TCA9803DGKR và đưa tín hiệu ra ngoài thông qua connector. IC này có nhiệm vụ giảm ảnh hưởng của điện dung tải phát sinh khi kết nối với các thiết bị ngoại vi qua dây dẫn dài, từ đó cải thiện tính toàn vẹn tín hiệu. Nhờ vậy, giao tiếp I2C của hệ thống vẫn đảm bảo hoạt động ổn định và tuân thủ đúng đặc tính truyền thông theo thiết kế.
+                        TCA9803DGKR được tích hợp nhằm giảm ảnh hưởng điện dung trên đường truyền dài, bảo toàn tính toàn vẹn tín hiệu và duy trì sự ổn định cho bus I2C.
                         
                         \item \textbf{Hiển thị trạng thái:}  
-                        Hệ thống sử dụng màn hình LCD TFT, tích hợp cảm ứng điện trở và giao tiếp thông qua chuẩn UART. Màn hình có chức năng hiển thị các thông tin trạng thái hoạt động của hệ thống, đồng thời cho phép người dùng tương tác trực tiếp tại vị trí lắp đặt gateway, bao gồm cấu hình tham số và điều khiển thiết bị thông qua giao diện cảm ứng.
+                        % Hệ thống sử dụng màn hình LCD TFT, tích hợp cảm ứng điện trở và giao tiếp thông qua chuẩn UART. Màn hình có chức năng hiển thị các thông tin trạng thái hoạt động của hệ thống, đồng thời cho phép người dùng tương tác trực tiếp tại vị trí lắp đặt gateway, bao gồm cấu hình tham số và điều khiển thiết bị thông qua giao diện cảm ứng.
+                        Giao diện HMI TFT cảm ứng hỗ trợ giám sát và cấu hình trực tiếp, giúp vận hành và bảo trì hệ thống tại chỗ.
                         
                         \item \textbf{Nút nhấn:} 
-                        Hệ thống được tích hợp 3 nút nhấn phục vụ cho việc tương tác của người dùng, bao gồm: nút nhấn bật/tắt nguồn hệ thống, nút nhấn reset và nút nhấn boot. Trong đó, nút nhấn bật/tắt nguồn được sử dụng để gửi lệnh điều khiển đóng/ngắt nguồn cho các khối chức năng thông qua MCU Master. Nút nhấn reset và nút nhấn boot được sử dụng chủ yếu trong quá trình debug thiết bị, đồng thời có thể được cấu hình để đảm nhiệm các chức năng khác trong các phiên bản phát triển sau.
+                        % Hệ thống được tích hợp 3 nút nhấn phục vụ cho việc tương tác của người dùng, bao gồm: nút nhấn bật/tắt nguồn hệ thống, nút nhấn reset và nút nhấn boot. Trong đó, nút nhấn bật/tắt nguồn được sử dụng để gửi lệnh điều khiển đóng/ngắt nguồn cho các khối chức năng thông qua MCU Master. Nút nhấn reset và nút nhấn boot được sử dụng chủ yếu trong quá trình debug thiết bị, đồng thời có thể được cấu hình để đảm nhiệm các chức năng khác trong các phiên bản phát triển sau.
+                        Ba nút nhấn (Power, Reset, Boot) để điểu khiển nguồn và cấu hình thiết bị.
                         
                         \item \textbf{Lưu trữ cục bộ:} 
-                        MCU Slave được trang bị khe cắm thẻ nhớ microSD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log và lưu trữ dữ liệu cục bộ trong quá trình vận hành. Trong trường hợp kết nối mạng bị gián đoạn, thẻ nhớ microSD đồng thời đóng vai trò bộ đệm dữ liệu, hỗ trợ cơ chế lưu trữ tạm thời và gửi lại khi kết nối được khôi phục.
-                        
+                        % MCU Slave được trang bị khe cắm thẻ nhớ microSD giao tiếp theo chuẩn SDIO 4-bit, cho phép ghi log và lưu trữ dữ liệu cục bộ trong quá trình vận hành. Trong trường hợp kết nối mạng bị gián đoạn, thẻ nhớ microSD đồng thời đóng vai trò bộ đệm dữ liệu, hỗ trợ cơ chế lưu trữ tạm thời và gửi lại khi kết nối được khôi phục.
+                        Giao tiếp SDIO 4-bit với thẻ microSD giúp bảo toàn dữ liệu qua cơ chế lưu đệm và gửi bù tự động, đảm bảo tính liên tục ngay cả khi mạng gián đoạn.
+
                         \item \textbf{Các chức năng khác:}
-                        Ngoài các khối chức năng chính, hệ thống còn được trang bị đèn LED RGB nhằm hiển thị trạng thái hoạt động của hệ thống một cách trực quan. Bên cạnh đó, mạch được tích hợp các chân cấp nguồn điều khiển, cho phép kết nối quạt DC không chổi than cho mục đích tản nhiệt cho toàn hệ thống.
+                        % Ngoài các khối chức năng chính, hệ thống còn được trang bị đèn LED RGB nhằm hiển thị trạng thái hoạt động của hệ thống một cách trực quan. Bên cạnh đó, mạch được tích hợp các chân cấp nguồn điều khiển, cho phép kết nối quạt DC không chổi than cho mục đích tản nhiệt cho toàn hệ thống.
+                        Đèn LED RGB và điều khiển quạt DC tản nhiệt hỗ trợ giám sát trực quan và chủ động quản lý nhiệt, đảm bảo hệ thống vận hành ổn định.
                     \end{itemize}
 
                 \paragraph{Sơ đồ khối nguồn:} \par
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
+                        \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
                         \caption{Sơ đồ hệ thống nguồn}
                         \label{fig:blockdiagram_power}
                     \end{figure}
-                    Nguồn đầu vào của hệ thống sử dụng điện áp DC 12\,V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngoài ra, hệ thống hỗ trợ nguồn 5V từ cổng USB Type-C. Hai nguồn này được lựa chọn thông qua IC Power MUX TPS2121RUXR, tích hợp các cơ chế bảo vệ toàn diện như sau:
+                    % Nguồn đầu vào của hệ thống sử dụng điện áp DC 12V, phù hợp với các bộ nguồn công nghiệp và adapter thông dụng. Ngoài ra, hệ thống hỗ trợ nguồn 5V từ cổng USB Type-C. Hai nguồn này được lựa chọn thông qua IC Power MUX TPS2121RUXR, tích hợp các cơ chế bảo vệ toàn diện như sau:
+                    Việc sử dụng TPS2121RUXR cho phép điều phối linh hoạt nguồn 12V và 5V USB, đồng thời đảm bảo an toàn hệ thống thông qua các cơ chế bảo vệ tích hợp sau:
 
                     \begin{itemize}
                         \item \textbf{Giới hạn dòng (ILM):} Chủ động kiểm soát dòng tải không vượt quá ngưỡng cài đặt (điều chỉnh thông qua điện trở ngoài)
@@ -391,9 +404,10 @@
                         \item \textbf{Chặn dòng ngược (RCB):} Ngăn dòng điện hồi ngược từ đầu ra về đầu vào với thời gian đáp ứng khoảng 10\,$\mu$s
                     \end{itemize}
                     
-                    Nguồn sau IC Power MUX (+12V\_5V\_VBUS) được đưa đồng thời với pin LiPo (+3V7\_VBAT) vào IC sạc BQ25892RTWR. IC này tự động điều phối hai nguồn, trong đó ưu tiên nguồn ngoài (+12V\_5V\_VBUS), để tạo ra điện áp hệ thống (+4V2\_VSYS).
+                    % Nguồn sau IC Power MUX (+12V\_5V\_VBUS) được đưa đồng thời với pin LiPo (+3V7\_VBAT) vào IC sạc BQ25892RTWR. IC này tự động điều phối hai nguồn, trong đó ưu tiên nguồn ngoài (+12V\_5V\_VBUS), để tạo ra điện áp hệ thống (+4V2\_VSYS).
 
-                    IC BQ25892RTWR đảm nhiệm chức năng quản lý quá trình sạc và xả, đồng thời cấp nguồn cho hệ thống hoạt động. Các tham số như điện áp và dòng sạc có thể được cấu hình linh hoạt thông qua giao tiếp I2C, đảm bảo đáp ứng các yêu cầu vận hành an toàn. Ngoài ra, IC còn tích hợp cơ chế bảo vệ, tự động ngắt kết nối pin trong các trường hợp quá tải hoặc xả sâu nhằm tránh hư hỏng.
+                    % IC BQ25892RTWR đảm nhiệm chức năng quản lý quá trình sạc và xả, đồng thời cấp nguồn cho hệ thống hoạt động. Các tham số như điện áp và dòng sạc có thể được cấu hình linh hoạt thông qua giao tiếp I2C, đảm bảo đáp ứng các yêu cầu vận hành an toàn. Ngoài ra, IC còn tích hợp cơ chế bảo vệ, tự động ngắt kết nối pin trong các trường hợp quá tải hoặc xả sâu nhằm tránh hư hỏng.
+                    IC BQ25892RTWR cho phép điều phối giữa nguồn ngoài và pin, ưu tiên nguồn ngoài để duy trì điện áp hệ thống 4.2V ổn định. Với khả năng cấu hình qua I2C và các cơ chế bảo vệ tự động (chống quá tải, xả sâu), giải pháp này đảm bảo tính linh hoạt và an toàn tối đa cho mạng phân phối nguồn.
 
                     Các tính năng bảo vệ và điều khiển bổ sung bao gồm:
                     \begin{itemize}
@@ -407,7 +421,8 @@
                         \item Bảo vệ quá áp tại đầu vào và trên toàn hệ thống
                     \end{itemize}
                     
-                    Điện áp tại VSYS có thể được cấu hình thông qua giao tiếp I2C, phụ thuộc vào đặc tính của pin LiPo sử dụng. Trong quá trình vận hành, mức điện áp này được duy trì trong khoảng 3.5V đến 4.2V (tùy theo trạng thái sạc/xả pin). Nguồn VSYS sau đó được phân phối đến các bộ chuyển đổi DC-DC để tạo ra các rail điện áp phục vụ hệ thống:
+                    % Điện áp tại VSYS có thể được cấu hình thông qua giao tiếp I2C, phụ thuộc vào đặc tính của pin LiPo sử dụng. Trong quá trình vận hành, mức điện áp này được duy trì trong khoảng 3.5V đến 4.2V (tùy theo trạng thái sạc/xả pin). Nguồn VSYS sau đó được phân phối đến các bộ chuyển đổi DC-DC để tạo ra các rail điện áp phục vụ hệ thống:
+                    Cơ chế cấu hình VSYS (3.5V-4.2V) qua I2C cho phép tối ưu theo đặc tính pin LiPo. Nguồn VSYS được phần phối đến các tầng DC-DC toàn hệ thống.
                     
                     \begin{itemize}
                         \item \textbf{+3V3:} Được chuyển đổi trực tiếp từ rail +4V2\_VSYS. Đây là nguồn mặc định luôn được duy trì khi có nguồn đầu vào, cấp cho các khối quan trọng như MCU master, IO expander, RTC, power monitor và các ngoại vi cần thiết trong chế độ ngủ sâu (deep sleep);
@@ -427,105 +442,132 @@
                         \item Đơn giản hóa thiết kế phần cứng của baseboard bằng cách chuyển các thành phần đặc thù lên adapter, qua đó tối ưu chi phí.
                     \end{itemize}
 
-                \paragraph{Sơ đồ khối mạch adapter:} \par
+                \paragraph{Sơ đồ khối mạch adapter:}
+                    % Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các module mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn vật lý PCI Express x1, trong đó các đường tín hiệu và nguồn được định nghĩa lại theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
 
-                    Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các module mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn vật lý PCI Express x1, trong đó các đường tín hiệu và nguồn được định nghĩa lại theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
-
-                    Trên mỗi adapter tích hợp một IC IO Expander, được điều khiển bởi MCU master hoặc slave trên baseboard (trong đó master quản lý các module WAN, slave quản lý các module LAN). IC này đảm nhiệm chức năng đóng/ngắt nguồn cấp cho module mạng, đồng thời đọc mã nhận dạng thiết bị (device ID) được mã hóa dưới dạng 4 bit thông qua 4 chân GPIO.
+                    % Trên mỗi adapter tích hợp một IC IO Expander, được điều khiển bởi MCU master hoặc slave trên baseboard (trong đó master quản lý các module WAN, slave quản lý các module LAN). IC này đảm nhiệm chức năng đóng/ngắt nguồn cấp cho module mạng, đồng thời đọc mã nhận dạng thiết bị (device ID) được mã hóa dưới dạng 4 bit thông qua 4 chân GPIO.
                     
-                    Dựa trên mã nhận dạng này, MCU trên baseboard có thể tự động xác định loại module được kết nối trong quá trình cấu hình gateway. Từ đó, hệ thống máy tính cấu hình sẽ truyền các tập lệnh giao tiếp phù hợp với từng loại module đến MCU quản lý, giúp đơn giản hóa quá trình tích hợp và tăng tính linh hoạt của hệ thống.
+                    % Dựa trên mã nhận dạng này, MCU trên baseboard có thể tự động xác định loại module được kết nối trong quá trình cấu hình gateway. Từ đó, hệ thống máy tính cấu hình sẽ truyền các tập lệnh giao tiếp phù hợp với từng loại module đến MCU quản lý, giúp đơn giản hóa quá trình tích hợp và tăng tính linh hoạt của hệ thống.
+                    Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các module mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện module, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
+                        \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
                         \caption{Sơ đồ khối mạch adapter}
                         \label{fig:blockdiagram_adapter}
                     \end{figure}
 
+        \newpage
         \subsubsection{Thiết kế Mạch nguyên lý (Schematic Design)}
             Phần này trình bày các nội dung kỹ thuật của dự án thông qua thiết kế sơ đồ nguyên lý. Thiết kế sơ đồ nguyên lý mô tả chi tiết các kết nối điện giữa các thành phần, nhằm đảm bảo hệ thống hoạt động đúng chức năng, đồng thời đáp ứng các yêu cầu về hiệu năng và các ràng buộc trong thiết kế.
 
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_iotgateway.png}
+                \includegraphics[width=0.75\textwidth]{figures/DATN/sche_iotgateway.png}
                 \caption{Sơ đồ nguyên lý hệ thống}
                 \label{fig:sche_iotgateway}
             \end{figure}
 
             \paragraph{Thiết kế Mạch xử lý trung tâm}
-                Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
+                Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
 
-                Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
-
-                \begin{figure}[h]
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
-                    \caption{Sơ đồ nguyên lý ESP32 Master}
-                    \label{fig:sche_esp32master}
-                \end{figure}
+                % Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
-                    \caption{Sơ đồ nguyên lý ESP32 Slave}
-                    \label{fig:sche_esp32slave}
+                    \begin{subfigure}[t]{0.45\textwidth}
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
+                        \caption{Sơ đồ nguyên lý ESP32 Master}
+                        \label{fig:sche_esp32master}
+                    \end{subfigure}
+                    \begin{subfigure}[t]{0.45\textwidth}
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
+                        \caption{Sơ đồ nguyên lý ESP32 Slave}
+                        \label{fig:sche_esp32slave}
+                    \end{subfigure}
+                    \caption{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
+                    \label{fig:sche_esp32_master_slave}
                 \end{figure}
 
-                Trong hệ thống, hai SoC ESP32-S3-WROOM-1U-N16R8 đóng vai trò là trung tâm điều khiển, được phân tách chức năng rõ ràng theo mô hình master--slave. Để đảm bảo quá trình trao đổi và đồng bộ dữ liệu diễn ra ổn định và toàn vẹn, hai SoC được kết nối thông qua giao diện Quad SPI tốc độ cao, với tần số xung clock lên tới 80\,MHz ở phía master và 60\,MHz ở phía slave.
+                % Trong hệ thống, hai SoC ESP32-S3-WROOM-1U-N16R8 đóng vai trò là trung tâm điều khiển, được phân tách chức năng rõ ràng theo mô hình master--slave. Để đảm bảo quá trình trao đổi và đồng bộ dữ liệu diễn ra ổn định và toàn vẹn, hai SoC được kết nối thông qua giao diện Quad SPI tốc độ cao, với tần số xung clock lên tới 80\,MHz ở phía master và 60\,MHz ở phía slave.
 
-                Bên cạnh đó, SoC master còn quản lý các tín hiệu điều khiển quan trọng của slave như reset, boot và UART0, phục vụ cho quá trình nạp firmware và cập nhật từ xa (FOTA). Trong cấu trúc này, master đóng vai trò điều phối và quản lý tập trung firmware của slave, đồng thời thực hiện cơ chế nạp gián tiếp thông qua các giao diện điều khiển đã được tích hợp. Ngoài kênh truyền dữ liệu chính, một đường tín hiệu ngắt từ slave tới master được sử dụng nhằm thông báo các sự kiện hoặc cờ ngắt phát sinh trong quá trình vận hành, giúp nâng cao khả năng phản hồi và phối hợp giữa hai SoC.
+                % Bên cạnh đó, SoC master còn quản lý các tín hiệu điều khiển quan trọng của slave như reset, boot và UART0, phục vụ cho quá trình nạp firmware và cập nhật từ xa (FOTA). Trong cấu trúc này, master đóng vai trò điều phối và quản lý tập trung firmware của slave, đồng thời thực hiện cơ chế nạp gián tiếp thông qua các giao diện điều khiển đã được tích hợp. Ngoài kênh truyền dữ liệu chính, một đường tín hiệu ngắt từ slave tới master được sử dụng nhằm thông báo các sự kiện hoặc cờ ngắt phát sinh trong quá trình vận hành, giúp nâng cao khả năng phản hồi và phối hợp giữa hai SoC.
+                Kiến trúc Dual-MCU Master-Slave kết nối qua Quad SPI (60MHz) đảm bảo tính toàn vẹn khi đồng bộ dữ liệu giữa hai SoC ESP32-S3. Việc Master quản lý trực tiếp các tín hiệu Reset, Boot và UART0 cho phép điều phối tập trung và thực thi FOTA gián tiếp cho Slave. Cơ chế này, kết hợp cùng tín hiệu ngắt phản hồi, tối ưu hóa tốc độ tương tác và duy trì sự ổn định vận hành của hệ thống.
 
-                Tại chân reset của hai SoC ESP32-S3, một mạch RC delay được sử dụng nhằm đáp ứng yêu cầu về timing nguồn theo khuyến nghị trong datasheet. Cụ thể, nguồn 3.3V cần được ổn định tối thiểu 50\,$\mu$s trước khi tín hiệu tại chân reset (CHIP\_PU) đạt mức logic cao để kích hoạt SoC.
+                Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu\cite{Esp32S3HardwareDesignGuidelines}.
+
+                % \begin{figure}[h]
+                %     \centering
+                %     \includegraphics[width=0.7\textwidth]{figures/DATN/sche_esp32slave.png}
+                %     \caption{Sơ đồ nguyên lý ESP32 Slave}
+                %     \label{fig:sche_esp32slave}
+                % \end{figure}
+
+                Tại chân reset của hai SoC ESP32-S3, một mạch RC delay được sử dụng nhằm đáp ứng yêu cầu về timing nguồn theo khuyến nghị trong datasheet. Cụ thể, nguồn 3.3V cần được ổn định tối thiểu 50\,$\mu$s trước khi tín hiệu tại chân reset (CHIP\_PU) đạt mức logic cao để kích hoạt SoC.\cite{Esp32S3WroomDatasheet}
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/datasheet_esp32timmingreq.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/datasheet_esp32timmingreq.png}
                     \caption{Yêu cầu timing nguồn và reset của ESP32-S3}
                     \label{fig:datasheet_esp32timmingreq}
                 \end{figure}
 
                 Dựa trên yêu cầu này, mạch RC được thiết kế với $R = 10\,k\Omega$ và $C = 1\,\mu F$. Thời gian để điện áp trên tụ đạt đến ngưỡng kích hoạt (xấp xỉ $0.75V_{CC} \approx 2.5V$) được xác định theo biểu thức:
 
-                \[
-                t = -\tau \ln \left(1 - \frac{V_C}{V_S}\right)
-                \]
-
-                Trong đó:
-                \begin{itemize}
-                    \item $t$: thời gian trễ (s),
-                    \item $\tau = RC$: hằng số thời gian của mạch RC (s),
-                    \item $V_C$: điện áp trên tụ tại thời điểm $t$ (V),
-                    \item $V_S$: điện áp nguồn cấp (V).
-                \end{itemize}
+                \begin{minipage}{0.45\textwidth}
+                    \centering
+                    \begin{equation}
+                        t = -\tau \ln \left(1 - \dfrac{V_C}{V_S}\right)
+                    \end{equation}
+                \end{minipage}
+                \hfill
+                \begin{minipage}{0.45\textwidth}
+                    Trong đó:
+                    \begin{itemize}
+                        \item $t$: thời gian trễ (s),
+                        \item $\tau = RC$: hằng số thời gian của mạch RC (s),
+                        \item $V_C$: điện áp trên tụ tại thời điểm $t$ (V),
+                        \item $V_S$: điện áp nguồn cấp (V).
+                    \end{itemize}
+                \end{minipage}
 
                 Thay các giá trị tương ứng vào công thức, thời gian trễ thu được là $t \approx 13.86\,ms$, lớn hơn đáng kể so với yêu cầu tối thiểu 50\,$\mu$s, do đó đảm bảo điều kiện khởi động theo datasheet.
 
                 Tương tự, trong quá trình đưa tín hiệu reset về mức thấp, điện áp tại chân reset (CHIP\_PU) cần một khoảng thời gian xấp xỉ 13.86\,ms để giảm từ 3.3V xuống mức logic thấp (khoảng $0.25V_{CC} \approx 0.8V$). Điều này giúp đảm bảo tín hiệu reset có đủ thời gian chuyển trạng thái một cách ổn định và đáng tin cậy.
 
-                Giá trị điện trở kéo lên của bus I\textsuperscript{2}C được xác định dựa trên đặc tính điện của đường truyền và các yêu cầu về thời gian đáp ứng của giao thức. Theo phương pháp tính toán được tham khảo từ tài liệu \href{https://www.ti.com/lit/an/slva689/slva689.pdf?ts=1765647134197&ref_url=https%253A%252F%252Fwww.google.com%252F}{I\textsuperscript{2}C Bus Pull-Up Resistor Calculation} của Texas Instruments, miền giá trị hợp lệ của điện trở kéo lên \(R_{PU}\) được xác định bởi hai công thức sau:
+                Giá trị điện trở kéo lên của bus I\textsuperscript{2}C được xác định dựa trên đặc tính điện của đường truyền và các yêu cầu về thời gian đáp ứng của giao thức. Miền giá trị hợp lệ của điện trở kéo lên \(R_{PU}\) được xác định bởi hai công thức sau:\cite{I2CBusPullupResistorCalculation}
                 
-                \begin{equation}
-                R_{PU,\max} = \frac{t_r}{0.8473 \cdot C_b}
-                \end{equation}
-                
-                \begin{equation}
-                R_{PU,\min} = \frac{V_{CC} - V_{OL(\max)}}{I_{OL}}
-                \end{equation}
-                
-                Trong đó:
-                \begin{itemize}
-                    \item \(R_{PU}\): điện trở kéo lên của các đường SDA và SCL (đơn vị \(\Omega\)).
-                    \item \(C_b\): điện dung tổng của bus I\textsuperscript{2}C, bao gồm điện dung ký sinh của đường mạch và điện dung ngõ vào của các thiết bị trên bus (F).
-                    \item \(t_r\): thời gian cạnh lên của tín hiệu I\textsuperscript{2}C; đối với chế độ Fast Mode (400\,kHz), \(t_r\) thường được giới hạn ở mức 300\,ns.
-                    \item \(V_{CC}\): điện áp cấp cho bus I\textsuperscript{2}C (V).
-                    \item \(V_{OL(\max)}\): mức điện áp logic thấp tối đa cho phép khi thiết bị nhận mức 0 (V), thường lấy theo datasheet (xấp xỉ \(0.2\,V_{CC}\)).
-                    \item \(I_{OL}\): dòng kéo xuống cực đại của thiết bị khi xuất mức logic thấp (A).
-                \end{itemize}
-                
+                \begin{minipage}{0.35\textwidth}
+                    \centering
+                    \begin{equation}
+                    R_{PU,\max} = \frac{t_r}{0.8473 \cdot C_b}
+                    \end{equation}
+                    
+                    \begin{equation}
+                    R_{PU,\min} = \frac{V_{CC} - V_{OL(\max)}}{I_{OL}}
+                    \end{equation}
+                \end{minipage}
+                \hfill
+                \begin{minipage}{0.55\textwidth}
+                    Trong đó:
+                    \begin{itemize}
+                        \item \(R_{PU}\): điện trở kéo lên của I\textsuperscript{2}C (đơn vị \(\Omega\)).
+                        \item \(C_b\): điện dung tổng của bus I\textsuperscript{2}C\footnote{Bao gồm điện dung ký sinh của đường mạch và điện dung ngõ vào của các thiết bị trên bus.} (F).
+                        \item \(t_r\): thời gian cạnh lên của tín hiệu I\textsuperscript{2}C (s) \footnote{Đối với chế độ Fast Mode (400\,kHz), \(t_r\) được giới hạn ở mức 300\,ns\cite{I2CBusPullupResistorCalculation}.}
+                        \item \(V_{CC}\): điện áp cấp cho bus I\textsuperscript{2}C (V).
+                        \item \(V_{OL(\max)}\): mức điện áp logic thấp tối đa cho phép khi thiết bị nhận mức 0 (V)\footnote{Lấy theo datasheet của ESP32, xấp xỉ \(0.2\,V_{CC}\)\cite{Esp32S3WroomDatasheet}.}
+                        \item \(I_{OL}\): dòng kéo xuống cực đại của thiết bị khi xuất mức logic thấp (A).
+                    \end{itemize}
+                \end{minipage}
+
                 Từ hai ràng buộc trên, điện trở kéo lên được lựa chọn sao cho thỏa mãn điều kiện:
-                \[
+                \begin{equation}
                 R_{PU,\min} \leq R_{PU} \leq R_{PU,\max}
-                \]
+                \end{equation}
+                
+                
 
                 Với các tham số thiết kế: $V_{CC} = 3.3V$, $V_{OL(max)} = 0.2V_{CC}$, $I_{OL} = 3\,mA$, thời gian cạnh lên $t_r$ (Fast-mode) = 300\,ns, cùng điện dung ký sinh ước lượng $C_{b\_master} \approx 75\,pF$ và $C_{b\_slave} \approx 30\,pF$, có thể xác định được khoảng giá trị điện trở kéo lên phù hợp cho bus I\textsuperscript{2}C.
 
@@ -541,11 +583,12 @@
 
             \paragraph{Thiết kế Mạch nguồn}
 
-                IC Power MUX TPS2121RUXR tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Tại mỗi đầu vào, hệ thống tích hợp một diode TVS với điện áp Reverse Standoff tương ứng với mức điện áp danh định của từng nguồn. Linh kiện này có chức năng hấp thụ và triệt tiêu năng lượng của các xung điện áp ngắn hạn (ESD), qua đó bảo vệ khối nguồn và các thành phần phía sau khỏi ảnh hưởng của hiện tượng phóng tĩnh điện hoặc nhiễu xung điện áp cao từ môi trường.
+                % IC Power MUX TPS2121RUXR tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Tại mỗi đầu vào, hệ thống tích hợp một diode TVS với điện áp Reverse Standoff tương ứng với mức điện áp danh định của từng nguồn. Linh kiện này có chức năng hấp thụ và triệt tiêu năng lượng của các xung điện áp ngắn hạn (ESD), qua đó bảo vệ khối nguồn và các thành phần phía sau khỏi ảnh hưởng của hiện tượng phóng tĩnh điện hoặc nhiễu xung điện áp cao từ môi trường.
+                IC Power MUX TPS2121RUXR tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Mạch tích hợp diode TVS tại các ngõ vào +12V và +5V của IC TPS2121RUXR giúp bảo vệ hệ thống trước các rủi ro tĩnh điện. Giải pháp này triệt tiêu xung ESD tức thời, bảo đảm tính toàn vẹn cho khối nguồn và các linh kiện nhạy cảm nguồn trước nhiễu điện áp cao từ môi trường.
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_powermux.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_powermux.png}
                     \caption{Sơ đồ nguyên lý mạch Power MUX}
                     \label{fig:sche_powermux}
                 \end{figure}
@@ -559,53 +602,47 @@
                     \item Thời gian khởi động mềm (soft-start) khi kết nối nguồn +5V: 6.41ms;
                     \item Thời gian khởi động mềm khi kết nối nguồn +12V: 15ms.
                 \end{itemize}
-
                 Các tham số trên được lựa chọn nhằm đảm bảo quá trình chuyển mạch nguồn diễn ra ổn định, hạn chế dòng xung khởi động, đồng thời tăng cường khả năng bảo vệ và độ tin cậy cho toàn bộ hệ thống.
 
-                Nguồn sau Power MUX cùng với nguồn dự phòng từ pin LiPo được đưa vào và quản lý bởi IC sạc BQ25892RTWR. Dòng đầu vào của IC được giới hạn ở mức 2.96A thông qua điện trở cấu hình tại chân ILIM. Các giá trị tụ điện ở đầu vào và đầu ra được lựa chọn theo khuyến nghị trong \href{https://www.ti.com/lit/ds/symlink/bq25892.pdf}{BQ25892RTWR Datasheet} nhằm đảm bảo ổn định điện áp và giảm nhiễu trong quá trình vận hành.
+                Nguồn sau Power MUX cùng với nguồn dự phòng từ pin LiPo được đưa vào và quản lý bởi IC sạc BQ25892RTWR. Dòng đầu vào của IC được giới hạn ở mức 2.96A thông qua điện trở cấu hình tại chân ILIM. Các giá trị tụ điện ở đầu vào và đầu ra được lựa chọn theo khuyến nghị nhằm đảm bảo ổn định điện áp và giảm nhiễu trong quá trình vận hành.\cite{FastChargerBq2589x}
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_batterycharger.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_batterycharger.png}
                     \caption{Sơ đồ nguyên lý mạch sạc, quản lý pin LiPo và giám sát công suất}
                     \label{fig:sche_batterycharger}
                 \end{figure}
 
-                Dòng sạc tối đa của hệ thống được thiết kế với $I_{CHG} = 5A$. Theo hướng dẫn từ datasheet, dòng bão hòa của cuộn cảm phải thỏa mãn điều kiện:
+                Dòng sạc tối đa của hệ thống được thiết kế với $I_{CHG} = 5A$, dòng bão hòa của cuộn cảm phải thỏa mãn điều kiện\cite{FastChargerBq2589x}:
 
-                \[
-                I_{SAT} \geq I_{CHG} + \frac{1}{2} I_{RIPPLE}
-                \]
+                \begin{equation}
+                I_{SAT} \geq I_{CHG} + \dfrac{1}{2} I_{RIPPLE}
+                \end{equation}
 
                 Trong đó, dòng ripple của cuộn cảm được xác định bởi:
 
-                \[
-                I_{RIPPLE} = \frac{V_{BUS} \times D \times (1 - D)}{f_s \times L}
-                \]
+                \begin{equation}
+                I_{RIPPLE} = \dfrac{V_{BUS} \times D \times (1 - D)}{f_s \times L}
+                \end{equation}
 
-                Với các tham số thiết kế: $V_{BUS} = 12V$, $D = 0.5$ (trường hợp xấu nhất), $f_s = 1.5\,MHz$ và $L = 1\,\mu H$, suy ra:
+                Với các tham số thiết kế: $V_{BUS} = 12V$, $D = 0.5$ (trường hợp xấu nhất), $f_s = 1.5\,MHz$ và $L = 1\,\mu H$, suy ra $I_{RIPPLE} \approx 2A$
 
-                \[
-                I_{RIPPLE} \approx 2A
-                \]
+                Từ đó, yêu cầu dòng bão hòa tối thiểu của cuộn cảm $I_{SAT\_req} \geq 5A + \frac{1}{2} \times 2A = 6A$
 
-                Từ đó, yêu cầu dòng bão hòa tối thiểu của cuộn cảm là:
+                % Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, để bảo đảm biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm bù trừ sai số linh kiện và ảnh hưởng của các điều kiện vận hành thực tế. Cách lựa chọn này góp phần bảo đảm khối nguồn của IC sạc hoạt động ổn định và an toàn.
 
-                \[
-                I_{SAT\_req} \geq 5A + \frac{1}{2} \times 2A = 6A
-                \]
-
-                Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, để bảo đảm biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm bù trừ sai số linh kiện và ảnh hưởng của các điều kiện vận hành thực tế. Cách lựa chọn này góp phần bảo đảm khối nguồn của IC sạc hoạt động ổn định và an toàn.
-
-                Pin LiPo sử dụng trong hệ thống đã được tích hợp sẵn mạch bảo vệ và điện trở nhiệt NTC 10k (tiếp xúc trực tiếp trên cell pin), góp phần nâng cao độ an toàn và độ tin cậy trong quá trình vận hành.
+                % Pin LiPo sử dụng trong hệ thống đã được tích hợp sẵn mạch bảo vệ và điện trở nhiệt NTC 10k (tiếp xúc trực tiếp trên cell pin), góp phần nâng cao độ an toàn và độ tin cậy trong quá trình vận hành.
+                Lựa chọn cuộn cảm MDA5030-1R0M ($I_{SAT_typ} = 8.5A$) thiết lập biên độ dự phòng 30-50\% so với tính toán, giúp giảm thiểu rủi ro từ sai số linh kiện và bảo đảm khối nguồn vận hành ổn định. Pin LiPo tích hợp sẵn mạch bảo vệ và NTC 10k, đảm bảo an toàn và tin cậy khi vận hành thiết bị.
 
                 Trong quá trình vận hành, điện áp đầu ra VSYS của IC sạc có thể thay đổi tùy theo trạng thái cấp nguồn của hệ thống, cụ thể như sau:
                 \begin{itemize}
                     \item \textbf{Chỉ có nguồn VBUS (5V từ USB hoặc 12V từ adapter):} 
-                    Với kiến trúc Narrow VDC (NVDC), trong trường hợp không có pin, IC sẽ điều chỉnh để duy trì điện áp hệ thống ở mức tối thiểu cộng thêm một biên độ bù. Với giá trị $SYS\_MIN$ mặc định là 3.5\,V, điện áp VSYS điển hình được duy trì ở khoảng 3.65\,V.
+                    % Với kiến trúc Narrow VDC (NVDC), trong trường hợp không có pin, IC sẽ điều chỉnh để duy trì điện áp hệ thống ở mức tối thiểu cộng thêm một biên độ bù. Với giá trị $SYS\_MIN$ mặc định là 3.5\,V, điện áp VSYS điển hình được duy trì ở khoảng 3.65\,V.
+                    Kiến trúc Narrow VDC duy trì VSYS ở khoảng 3.65V ổn định ngay cả khi thiếu pin, bảo đảm hệ thống vận hành liên tục và giảm rủi ro sụt áp.
 
                     \item \textbf{Chỉ cấp nguồn từ VBAT (mất hoặc không kết nối VBUS):} 
-                    Khi đó, điện áp VSYS xấp xỉ bằng điện áp pin. Với pin LiPo sử dụng trong thiết kế, điện áp thay đổi từ 3.0\,V (hết pin) đến 4.2\,V (đầy pin). Tuy nhiên, để đảm bảo đủ mức điện áp tối thiểu cho các khối nguồn phía sau và tránh hiện tượng xả sâu, ngưỡng điện áp tối thiểu được thiết lập ở mức 3.5\,V. Do đó, VSYS dao động trong khoảng từ 3.5\,V đến 4.2\,V.
+                    % Khi đó, điện áp VSYS xấp xỉ bằng điện áp pin. Với pin LiPo sử dụng trong thiết kế, điện áp thay đổi từ 3.0\,V (hết pin) đến 4.2\,V (đầy pin). Tuy nhiên, để đảm bảo đủ mức điện áp tối thiểu cho các khối nguồn phía sau và tránh hiện tượng xả sâu, ngưỡng điện áp tối thiểu được thiết lập ở mức 3.5\,V. Do đó, VSYS dao động trong khoảng từ 3.5\,V đến 4.2\,V.
+                    Duy trì VSYS trong ngưỡng 3.5V - 4.2V, bảo vệ pin khỏi hiện tượng xả sâu, đồng thời bảo đảm biên độ điện áp ổn định cho các khối nguồn hạ nguồn vận hành tin cậy.
 
                     \item \textbf{Cấp nguồn đồng thời từ VBUS và VBAT (trạng thái sạc):}
                     Trong trường hợp này, điện áp VSYS phụ thuộc vào mức điện áp pin:
@@ -1430,100 +1467,187 @@
 
         \begin{enumerate}
             \renewcommand{\labelenumi}{\arabic{enumi}.}
-        
+
             \item \textbf{Kiến trúc hệ thống và chuỗi truyền dẫn dữ liệu}
-        
-            Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa việc xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{Pipeline}) gồm các chặng chính:
-        
+
+            Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa việc xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{pipeline}) gồm bốn chặng nối tiếp:
+
             \begin{itemize}
-                \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi gửi dữ liệu qua sóng vô tuyến (Zigbee, LoRa, BLE).
-                \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến truyền dữ liệu vào LAN-MCU (ESP32-S3) qua UART.
-                \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu và đẩy sang WAN-MCU (ESP32-S3) qua bus SPI.
-                \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU serialize dữ liệu sang JSON và publish lên MQTT Server.
+                \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi phát dữ liệu qua sóng vô tuyến (Zigbee, LoRa, BLE) đến module thu tại Gateway.
+                \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến chuyển tiếp khung dữ liệu sang LAN-MCU (ESP32-S3) qua giao tiếp UART.
+                \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu từ các giao thức theo chu kỳ batch rồi chuyển toàn bộ sang WAN-MCU (ESP32-S3) qua bus SPI tốc độ cao.
+                \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU tuần tự hóa dữ liệu sang định dạng JSON và publish lên MQTT Broker qua kết nối Wi-Fi.
             \end{itemize}
-        
-            \item \textbf{Thông lượng dữ liệu (Data throughput) và hiệu suất ($\eta$)}
-        
-            Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích còn lại sau khi trừ đi overhead của giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
-        
+
+            Mỗi chặng đều có độ trễ và giới hạn băng thông riêng. Nút thắt (bottleneck) của toàn hệ thống là chặng có thông lượng thấp nhất; phần tiếp theo sẽ định lượng từng chặng.
+
+            % ---------------------------------------------------------------
+            \item \textbf{Thông lượng dữ liệu và hiệu suất băng thông ($\eta$)}
+
+            Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích (payload) còn lại sau khi trừ overhead giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
             \[
                 \eta = \frac{R_{app}}{R_{PHY}}
             \]
-        
-            \textbf{Phân tích thông lượng và nút thắt tại từng giao thức}
-        
-            \textbf{Zigbee (E18-ZG120 / CC2530):} Tốc độ vật lý IEEE 802.15.4 đạt $250\,kbps$ \cite{ieee802154_2020}. Tuy nhiên, mỗi frame Zigbee chỉ chứa tối đa 99 byte payload ứng dụng sau khi trừ các header MAC/NWK/APS (28 byte tổng cộng trên tổng 127 byte \cite{zigbee_spec_r21}). Khi truyền, thời gian hoàn thành một chu kỳ phát--nhận ACK là khoảng $5\,ms$, tương đương thông lượng air $\approx 158\,kbps$ \cite{ti_cc2530_datasheet}. Tuy nhiên, nút thắt nằm ở UART $115200\,bps$: module E18-ZG120 gửi frame HEX bất đồng bộ lên LAN-MCU cho mỗi gói nhận được, với kích thước khoảng 121 byte (99 byte dữ liệu + 22 byte overhead ZCL/HEX frame), dẫn đến thông lượng lý thuyết qua UART giới hạn ở mức $80\,kbps$. Dù vậy, trong kịch bản kiểm thử thực tế, thông lượng ứng dụng (Application throughput) chỉ đạt khoảng $8,2\,kbps$, ngay cả khi cho 2 hoặc nhiều node cùng tham gia gửi dữ liệu đồng thời. Sự suy giảm nghiêm trọng này xuất phát từ hai nguyên nhân kỹ thuật cốt lõi. Thứ nhất, overhead của giao thức ZCL là rất lớn; lệnh \texttt{reportTemperature()} được sử dụng trong bài test chỉ mang theo từ 2 đến 4 byte dữ liệu hữu ích nhưng phải gánh thêm hàng chục byte của các lớp header, làm cho hiệu suất truyền tải thực tế sụt giảm. Thứ hai, đặc thù của mạng Zigbee là chia sẻ chung kênh truyền sóng vô tuyến. Khi các node gửi dữ liệu dồn dập (ví dụ 100 gói/giây), chúng liên tục tranh chấp kênh truyền. Cơ chế tránh va chạm CSMA/CA sẽ phát hiện kênh truyền đang bận và ép các node phải lùi thời gian phát lại (Random Backoff). Do đó, việc có thêm node phát đồng thời không những không làm tăng tổng thông lượng mạng, mà còn làm gia tăng tỷ lệ đụng độ và thời gian chờ đợi. Kết quả là tổng băng thông bị bão hòa ở ngưỡng giới hạn vật lý của môi trường vô tuyến, tức khoảng $8,2\,kbps$ (tương đương 1024 bytes/giây), và khi vượt ngưỡng này thì hàng đợi APS sẽ bị đầy dẫn đến hiện tượng loại bỏ gói tin (packet loss).
-        
-            \textbf{LoRa (Wio-E5 / STM32WLE5JC) -- Chế độ TEST/P2P:} Trong kịch bản kiểm thử, hệ thống sử dụng chế độ TEST/P2P (\texttt{AT+MODE=TEST}) thay vì LoRaWAN. Chế độ này bỏ qua hoàn toàn duty cycle (không áp dụng giới hạn 1\% của ETSI) và stack LoRaWAN, cho phép phát liên tục chỉ bị giới hạn bởi Time-on-Air. Tốc độ bit PHY tại SF7/125 kHz đạt $5.470\,bps$ \cite{semtech_lora_design_guide}. Mỗi chu kỳ phát bao gồm thời gian truyền AT command qua UART ($\approx 15\,ms$) cộng Time-on-Air ($\approx 97,5\,ms$ cho gói 50 byte), tổng khoảng $115\,ms$, cho thông lượng ứng dụng $\approx 3,5\,kbps$. Giới hạn payload tối đa qua AT command là 169 byte/gói do độ dài lệnh tối đa là 528 ký tự \cite{seeed_wioe5_at_cmd}.
-        
-            \textbf{BLE (Native ESP32-S3):} BLE không qua module ngoài nên không có tầng UART. Thông lượng bị giới hạn bởi Connection Interval ($CI = 20\,ms$) và ATT MTU. Mặc định ATT MTU = 23 byte (20 byte dữ liệu), thông lượng chỉ $\approx 8\,kbps$ \cite{bluetooth_core_v5}. Khi kích hoạt Data Length Extension (DLE) và đàm phán MTU lên 247 byte (244 byte dữ liệu), thông lượng đạt $\approx 97,6\,kbps$ \cite{espressif_esp32s3_trm}.
-        
+
+            \textbf{Zigbee (E18-ZG120 / CC2530).} Tốc độ vật lý IEEE 802.15.4 tại băng 2,4~GHz đạt $R_{PHY} = 250\,\text{kbps}$ \cite{ieee802154_2020}. Mỗi frame Zigbee mang tối đa 99 byte payload ứng dụng sau khi trừ 28 byte overhead của các lớp MAC/NWK/APS trên tổng PSDU 127 byte \cite{zigbee_spec_r21}. Một chu kỳ phát--nhận ACK bao gồm: thời gian truyền frame ($127\,\text{B} \times 8 / 250\,\text{kbps} = 4{,}064\,\text{ms}$), khoảng LIFS ($0{,}192\,\text{ms}$) và frame ACK ($0{,}544\,\text{ms}$), tổng $T_{air} \approx 4{,}8\,\text{ms}$.
+
+            Nút thắt thực tế không phải là air interface mà là giao tiếp UART từ module E18-ZG120 lên LAN-MCU. Module đóng gói mỗi khung Zigbee (127 byte PSDU) vào khung HEX của Ebyte với 19 byte framing overhead, tạo ra frame UART 146 byte. Tại tốc độ $115200\,\text{bps}$ với 10 bit/byte (8N1), thời gian truyền một frame là:
+            \[
+                T_{UART,Zigbee} = \frac{146 \times 10}{115200} \approx 12{,}67\,\text{ms}
+            \]
+            Điều này khiến UART chậm hơn air interface $12{,}67\,\text{ms} / 4{,}8\,\text{ms} \approx 2{,}6\times$, và trở thành điểm nghẽn của toàn chặng Zigbee.
+
+            Trong kiểm thử thực tế với lệnh \texttt{reportTemperature()} -- chỉ mang 2--4 byte dữ liệu hữu ích nhưng phải gánh toàn bộ overhead ZCL -- thông lượng ứng dụng chỉ đạt $R_{app} \approx 8{,}2\,\text{kbps}$. Khi nhiều node phát đồng thời, cơ chế CSMA/CA ép các node lùi thời gian phát ngẫu nhiên (random backoff) khiến tổng thông lượng không tăng mà còn bị bão hòa tại ngưỡng này; vượt qua đó hàng đợi APS sẽ tràn và xảy ra mất gói (packet loss).
+
+            \textbf{LoRa (Wio-E5 / STM32WLE5JC) -- Chế độ TEST/P2P.} Hệ thống sử dụng chế độ \texttt{AT+MODE=TEST} thay vì LoRaWAN, cho phép bỏ qua hoàn toàn giới hạn duty cycle 1\% của ETSI và stack LoRaWAN; thông lượng chỉ bị giới hạn bởi Time-on-Air. Tốc độ PHY tại SF7/BW125\,kHz đạt $R_{PHY} = 5{,}47\,\text{kbps}$ \cite{semtech_lora_design_guide}. Với gói 50 byte, Time-on-Air tính theo công thức Semtech là $T_{air} \approx 97{,}5\,\text{ms}$. Mỗi chu kỳ phát còn bao gồm thời gian xử lý AT command và nhận phản hồi \texttt{+TEST: TX DONE} ($\approx 16{,}1\,\text{ms}$), tổng $T_{cycle} \approx 113{,}6\,\text{ms}$, dẫn đến:
+            \[
+                R_{app,LoRa} = \frac{50 \times 8}{113{,}6\,\text{ms}} \approx 3{,}52\,\text{kbps}
+            \]
+            Giới hạn payload tối đa qua AT command là 169 byte/gói do độ dài lệnh tối đa 528 ký tự \cite{seeed_wioe5_at_cmd}.
+
+            \textbf{BLE (Native ESP32-S3).} BLE được triển khai trực tiếp trên LAN-MCU nên không có tầng UART trung gian. Thông lượng bị giới hạn bởi Connection Interval ($CI = 20\,\text{ms}$) và kích thước ATT payload. Ở cấu hình mặc định ATT MTU = 23 byte (20 byte dữ liệu), thông lượng chỉ đạt $\approx 8\,\text{kbps}$ \cite{bluetooth_core_v5}. Khi kích hoạt Data Length Extension (DLE) và đàm phán MTU lên 247 byte (244 byte ATT payload), thông lượng cải thiện đáng kể:
+            \[
+                R_{app,BLE,DLE} = \frac{244 \times 8}{20\,\text{ms}} = 97{,}6\,\text{kbps}
+            \]
+
+            Bảng~\ref{tab:throughput_efficiency} tổng hợp so sánh thông lượng và hiệu suất của ba giao thức.
+
             \begin{longtable}{|p{3.2cm}|p{2.3cm}|p{2.7cm}|p{1.4cm}|p{4.2cm}|}
                 \caption{So sánh thông lượng và hiệu suất của các giao thức.}
                 \label{tab:throughput_efficiency} \\
                 \hline
                 \textbf{Giao thức} & $\boldsymbol{R_{PHY}}$ & $\boldsymbol{R_{app}}$ \textbf{thực tế} & $\boldsymbol{\eta}$ & \textbf{Nút thắt chính} \\ \hline
                 \endfirsthead
-        
                 \hline
                 \textbf{Giao thức} & $\boldsymbol{R_{PHY}}$ & $\boldsymbol{R_{app}}$ \textbf{thực tế} & $\boldsymbol{\eta}$ & \textbf{Nút thắt chính} \\ \hline
                 \endhead
-        
                 \hline
                 \endfoot
                 \endlastfoot
-        
-                Zigbee & $250\,kbps$ & $\approx 8,2\,kbps$ & $3,2\%$ & Cơ chế CSMA/CA \& Overhead chuẩn ZCL \\ \hline
-                LoRa SF7/125 (P2P) & $5,47\,kbps$ & $\approx 3,5\,kbps$ & $64\%$ & Time-on-Air ($\approx 97,5\,ms/gói$) \\ \hline
-                BLE (không DLE) & $1000\,kbps$ & $\approx 8\,kbps$ & $0,8\%$ & MTU = 20 byte, $CI = 20\,ms$ \\ \hline
-                BLE (bật DLE) & $1000\,kbps$ & $\approx 97,6\,kbps$ & $9,7\%$ & $CI = 20\,ms$ \\ \hline
+                Zigbee & $250\,\text{kbps}$ & $\approx 8{,}2\,\text{kbps}$ & $3{,}3\%$ & CSMA/CA contention \& UART 12,67\,ms/frame \\ \hline
+                LoRa SF7/125 (P2P) & $5{,}47\,\text{kbps}$ & $\approx 3{,}5\,\text{kbps}$ & $64\%$ & Time-on-Air ($\approx 97{,}5\,\text{ms/gói}$) \\ \hline
+                BLE (không DLE) & $1000\,\text{kbps}$ & $\approx 8\,\text{kbps}$ & $0{,}8\%$ & MTU = 20 byte, $CI = 20\,\text{ms}$ \\ \hline
+                BLE (bật DLE) & $1000\,\text{kbps}$ & $\approx 97{,}6\,\text{kbps}$ & $9{,}8\%$ & $CI = 20\,\text{ms}$ \\ \hline
             \end{longtable}
-        
-            \item \textbf{Độ trễ hệ thống}
-        
-            Độ trễ End-to-End $T_{e2e}$ là tổng thời gian xử lý và truyền dẫn qua tất cả các chặng:
-        
+
+            % ---------------------------------------------------------------
+            \item \textbf{Độ trễ End-to-End}
+
+            Độ trễ End-to-End $T_{e2e}$ là tổng thời gian từ khi node gửi dữ liệu đến khi bản tin xuất hiện trên MQTT Broker:
             \[
-                T_{e2e} = T_{air} + T_{UART} + T_{batch} + T_{SPI} + T_{network}
+                T_{e2e} = T_{air} + T_{UART} + T_{CI} + T_{batch} + T_{SPI} + T_{network}
             \]
-        
-            Các thành phần chính gồm:
-        
+
+            Các thành phần được định lượng như sau:
+
             \begin{itemize}
-                \item \textbf{Thời gian truyền sóng $T_{air}$:} Zigbee $\approx 5\,ms$, LoRa SF7 $\approx 97,5\,ms$, BLE $\approx 2,2\,ms$.
-                \item \textbf{Độ trễ UART $T_{UART}$:} Khoảng $10,5\,ms/gói$ với Zigbee, $\approx 15\,ms$ với LoRa AT command.
-                \item \textbf{Độ trễ gom gói $T_{batch}$:} Cố định $\approx 50\,ms$ do cơ chế batch flush tại LAN-MCU -- thành phần tốn thời gian nhất với Zigbee và BLE.
-                \item \textbf{Độ trễ SPI $T_{SPI}$:} Truyền 1 KB mất $\approx 0,204\,ms$ tại xung nhịp $40\,MHz$.
+                \item \textbf{$T_{air}$ -- Thời gian truyền sóng:} Zigbee $\approx 4{,}8\,\text{ms}$ (127 byte frame + LIFS + ACK), LoRa SF7 $\approx 97{,}5\,\text{ms}$ (ToA, gói 50 byte), BLE $\approx 2{,}2\,\text{ms}$ (LL PDU 263 byte tại 1 Mbps + turnaround).
+                \item \textbf{$T_{UART}$ -- Độ trễ giao tiếp module--MCU:} Zigbee $\approx 12{,}67\,\text{ms}$ (146 byte Ebyte frame tại 115200 bps, 8N1), LoRa $\approx 16{,}1\,\text{ms}$ (AT command + phản hồi TX DONE). BLE không có thành phần này do tích hợp native trên LAN-MCU.
+                \item \textbf{$T_{CI}$ -- Độ trễ chờ Connection Interval (chỉ BLE):} Vì BLE chỉ truyền dữ liệu tại các thời điểm cố định cách nhau $CI = 20\,\text{ms}$, một gói đến bất kỳ thời điểm nào trong chu kỳ phải chờ đến interval tiếp theo. Độ trễ chờ này dao động $0$--$CI = 0$--$20\,\text{ms}$, trung bình $CI/2 = 10\,\text{ms}$. Zigbee và LoRa không có thành phần này.
+                \item \textbf{$T_{batch}$ -- Độ trễ gom gói:} Dao động $0$--$10\,\text{ms}$ tùy thời điểm dữ liệu đến trong chu kỳ batch flush của LAN-MCU.
+                \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, worst-case burst ($\approx 5193$ byte, xem Mục~4) mất $\approx 0{,}693\,\text{ms}$; hệ số sử dụng bus chỉ đạt $6{,}93\%$.
+                \item \textbf{$T_{network}$ -- Độ trễ WAN lên Cloud:} Trung bình $\approx 30\,\text{ms}$ qua Wi-Fi đến MQTT Broker.
             \end{itemize}
-        
-            \begin{longtable}{|p{4.5cm}|p{4cm}|p{5.5cm}|}
+
+            Với BLE, độ trễ worst-case cần tính thêm $T_{CI,max} = 20\,\text{ms}$ (gói đến ngay sau khi vừa bỏ lỡ một interval):
+            \[
+                T_{e2e,BLE,worst} = T_{air} + T_{CI,max} + T_{batch,max} + T_{SPI} + T_{network}
+                \approx 2{,}2 + 20 + 10 + 0{,}7 + 30 \approx 63\,\text{ms}
+            \]
+
+            \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{5cm}|}
                 \caption{Độ trễ dự kiến theo từng kịch bản truyền.}
                 \label{tab:latency_estimation} \\
                 \hline
-                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
+                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần chiếm ưu thế} \\ \hline
                 \endfirsthead
-        
                 \hline
-                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
+                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần chiếm ưu thế} \\ \hline
                 \endhead
-        
                 \hline
                 \endfoot
                 \endlastfoot
-        
-                Zigbee $\rightarrow$ MQTT & $10\,ms$--$60\,ms$ & Gom gói ($T_{batch}$) \\ \hline
-                LoRa SF7 (P2P) $\rightarrow$ MQTT & $100\,ms$--$150\,ms$ & Thời gian truyền sóng ($T_{air}$) \\ \hline
-                BLE $\rightarrow$ MQTT & $4\,ms$--$55\,ms$ & Gom gói ($T_{batch}$) \\ \hline
+                Zigbee $\rightarrow$ MQTT & $48\,\text{ms}$--$58\,\text{ms}$ & $T_{UART}$ (12,67 ms) \& $T_{network}$ (30 ms) \\ \hline
+                LoRa SF7 (P2P) $\rightarrow$ MQTT & $144\,\text{ms}$--$154\,\text{ms}$ & $T_{air}$ (97,5 ms) -- chiếm $\approx 65\%$ \\ \hline
+                BLE $\rightarrow$ MQTT (trung bình) & $33\,\text{ms}$--$43\,\text{ms}$ & $T_{network}$ (30 ms) -- chiếm $\approx 80\%$ \\ \hline
+                BLE $\rightarrow$ MQTT (worst-case) & $53\,\text{ms}$--$63\,\text{ms}$ & $T_{CI,max}$ (20 ms) \& $T_{network}$ (30 ms) \\ \hline
             \end{longtable}
-        
-            \item \textbf{Khả năng chịu tải}
-        
-            \begin{itemize}
-                \item \textbf{Zigbee (E18-ZG120):} Giới hạn bởi 8 KB SRAM của CC2530. Sau khi Z-Stack chiếm $\approx 5\,KB$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định Z-Stack (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Lỗi \texttt{0x18} (Not enough cache) và \texttt{0x11} (Memory full) là các chỉ báo điển hình khi vượt ngưỡng này.
-                \item \textbf{LoRa (P2P):} Trong chế độ P2P point-to-point, Gateway chỉ liên kết với một node tại một thời điểm. Không có giới hạn mạng lưới như LoRaWAN.
-                \item \textbf{BLE:} Giao thức GATT giới hạn tối đa 8 kết nối đồng thời trên ESP32-S3 (NimBLE stack).
-            \end{itemize}
-        
-        \end{enumerate}
 
-        \newpage
+            % ---------------------------------------------------------------
+            \item \textbf{Khả năng chịu tải và phân tích bus SPI}
+
+            Để đánh giá mức độ sử dụng bus SPI, ta tính lượng dữ liệu tích lũy tại LAN-MCU trong một batch interval $T_{batch} = 10\,\text{ms}$ dựa trên thông lượng thực tế của từng giao thức (Bảng~\ref{tab:batch_data}).
+
+            \begin{longtable}{|p{3cm}|p{4cm}|p{6.5cm}|}
+                \caption{Dữ liệu tích lũy theo giao thức trong một batch interval.}
+                \label{tab:batch_data} \\
+                \hline
+                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch ($T_{batch} = 10\,\text{ms}$)} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch ($T_{batch} = 10\,\text{ms}$)} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                Zigbee     & $8{,}2\,\text{kbps}$   & $8200 / 8 \times 0{,}010 \approx 10\,\text{byte}$   \\ \hline
+                BLE (DLE)  & $97{,}6\,\text{kbps}$  & $97600 / 8 \times 0{,}010 \approx 122\,\text{byte}$ \\ \hline
+                LoRa SF7/125 & $3{,}5\,\text{kbps}$ & $3500 / 8 \times 0{,}010 \approx 4\,\text{byte}$    \\ \hline
+                \textbf{Tổng} & $\mathbf{109{,}3\,\text{kbps}}$ & $\mathbf{\approx 137\,\text{byte}}$ \\ \hline
+            \end{longtable}
+
+            Với 137 byte mỗi batch, thời gian SPI cần thiết là:
+            \[
+                T_{SPI,batch} = \frac{137 \times 8}{60 \times 10^6} \approx 0{,}0183\,\text{ms}
+            \]
+
+            Hệ số sử dụng bus SPI trong điều kiện trung bình:
+            \[
+                U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} \approx 0{,}183\%
+            \]
+
+            Để đánh giá điều kiện worst-case, ta giả thiết tất cả node gửi đồng thời với frame kích thước tối đa. Hệ thống hỗ trợ tối đa 20 node Zigbee, 8 node BLE, và 1 node LoRa (xem ràng buộc phần sau). Burst tổng được tính:
+
+            \begin{longtable}{|p{3cm}|p{2cm}|p{3.5cm}|p{4.5cm}|}
+                \caption{Tính toán burst SPI trong điều kiện worst-case.}
+                \label{tab:spi_worst} \\
+                \hline
+                \textbf{Giao thức} & \textbf{Số node} & \textbf{Frame tối đa/node} & \textbf{Tổng burst} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{Giao thức} & \textbf{Số node} & \textbf{Frame tối đa/node} & \textbf{Tổng burst} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                Zigbee   & 20 & 146 byte (PSDU + Ebyte overhead) & $20 \times 146 = 2920\,\text{byte}$ \\ \hline
+                BLE (DLE) & 8  & 263 byte (LL PDU tối đa)         & $8 \times 263 = 2104\,\text{byte}$  \\ \hline
+                LoRa P2P & 1  & 169 byte (AT command limit)       & $1 \times 169 = 169\,\text{byte}$   \\ \hline
+                \textbf{Tổng} & \textbf{29} & -- & $\mathbf{5193\,\text{byte}}$ \\ \hline
+            \end{longtable}
+
+            Thời gian SPI cần thiết và hệ số sử dụng trong điều kiện worst-case:
+            \[
+                T_{SPI,worst} = \frac{5193 \times 8}{60 \times 10^6} \approx 0{,}693\,\text{ms}
+            \]
+            \[
+                U_{SPI,worst} = \frac{0{,}693}{10} \approx 6{,}93\%
+            \]
+
+            Thông lượng tối đa lý thuyết của SPI là:
+            \[
+                R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
+            \]
+
+            Ngoài giới hạn bus, mỗi giao thức còn chịu ràng buộc về số node:
+
+            \begin{itemize}
+                \item \textbf{Zigbee (E18-ZG120 / CC2530):} CC2530 có $8\,\text{KB}$ SRAM; sau khi Z-Stack chiếm $\approx 5\,\text{KB}$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Vượt ngưỡng này sẽ phát sinh lỗi \texttt{0x18} (Not enough cache) hoặc \texttt{0x11} (Memory full).
+                \item \textbf{LoRa (P2P):} Chế độ point-to-point chỉ hỗ trợ một liên kết tại một thời điểm; không có ràng buộc mạng lưới như LoRaWAN.
+                \item \textbf{BLE:} NimBLE stack trên ESP32-S3 giới hạn tối đa 8 kết nối đồng thời.
+            \end{itemize}
+
+            \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $6{,}93\%$ (khi toàn bộ 29 node gửi frame tối đa đồng thời). Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
+
+        \end{enumerate}
+    \newpage
