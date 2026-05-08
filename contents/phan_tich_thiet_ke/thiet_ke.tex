@@ -795,23 +795,26 @@
                 \end{figure}
 
             \paragraph{Thiết kế Mạch Micro SD Card}
-                Thẻ MicroSD được kết nối với MCU slave thông qua giao thức SDIO 4-bit, với tần số xung clock tối đa lên tới 80\,MHz. Cấu hình giao tiếp này cho phép đạt tốc độ truyền dữ liệu cao, đáp ứng yêu cầu lưu trữ và truy xuất dữ liệu của hệ thống.
+                % Thẻ MicroSD được kết nối với MCU slave thông qua giao thức SDIO 4-bit, với tần số xung clock tối đa lên tới 80\,MHz. Cấu hình giao tiếp này cho phép đạt tốc độ truyền dữ liệu cao, đáp ứng yêu cầu lưu trữ và truy xuất dữ liệu của hệ thống.
 
-                Theo khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}, trên các đường tín hiệu SDIO bao gồm data, clock và cmd cần được bố trí các điện trở pull-up, đồng thời nên bổ sung các điện trở giảm chấn mắc nối tiếp nhằm cải thiện chất lượng tín hiệu. Việc bổ sung các linh kiện này giúp hạn chế hiện tượng ringing, overshoot trên các cạnh xung và nâng cao tính toàn vẹn tín hiệu khi thẻ Micro SD hoạt động ở tần số cao.
+                % Theo khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}, trên các đường tín hiệu SDIO bao gồm data, clock và cmd cần được bố trí các điện trở pull-up, đồng thời nên bổ sung các điện trở giảm chấn mắc nối tiếp nhằm cải thiện chất lượng tín hiệu. Việc bổ sung các linh kiện này giúp hạn chế hiện tượng ringing, overshoot trên các cạnh xung và nâng cao tính toàn vẹn tín hiệu khi thẻ Micro SD hoạt động ở tần số cao.
 
-                Trong thiết kế, mạch sử dụng IC EMIF06-MSD02N16 được đặt ngay tại đầu vào của cổng kết nối thẻ Micro SD. IC này tích hợp sẵn các diode TVS để bảo vệ chống phóng tĩnh điện, các điện trở kéo lên với giá trị xấp xỉ 80--100\,k$\Omega$, cùng các điện trở giảm chấn mắc nối tiếp có giá trị khoảng 36--54\,$\Omega$ trên toàn bộ các đường tín hiệu SDIO của thẻ Micro SD. Việc sử dụng IC tích hợp giúp đơn giản hóa sơ đồ mạch, giảm số lượng linh kiện rời, đồng thời đảm bảo tuân thủ đầy đủ các khuyến nghị về bảo vệ và chất lượng tín hiệu trong quá trình thiết kế phần cứng.
+                % Trong thiết kế, mạch sử dụng IC EMIF06-MSD02N16 được đặt ngay tại đầu vào của cổng kết nối thẻ Micro SD. IC này tích hợp sẵn các diode TVS để bảo vệ chống phóng tĩnh điện, các điện trở kéo lên với giá trị xấp xỉ 80--100\,k$\Omega$, cùng các điện trở giảm chấn mắc nối tiếp có giá trị khoảng 36--54\,$\Omega$ trên toàn bộ các đường tín hiệu SDIO của thẻ Micro SD. Việc sử dụng IC tích hợp giúp đơn giản hóa sơ đồ mạch, giảm số lượng linh kiện rời, đồng thời đảm bảo tuân thủ đầy đủ các khuyến nghị về bảo vệ và chất lượng tín hiệu trong quá trình thiết kế phần cứng.
+                Giao tiếp thẻ MicroSD được thực hiện qua chuẩn SDIO 4-bit (80MHz) nhằm đảm bảo thông lượng lưu trữ dữ liệu tối ưu cho hệ thống. Để triệt tiêu hiện tượng ringing và overshoot phát sinh ở tần số cao, thiết kế tuân thủ nghiêm ngặt khuyến nghị của Espressif bằng cách tích hợp IC EMIF06-MSD02N16 ngay tại ngõ vào. Việc sử dụng linh kiện chuyên dụng này không chỉ giúp tối ưu hóa diện tích bo mạch mà còn là giải pháp kỹ thuật đồng bộ, cung cấp đồng thời trở giảm chấn (36-54\,$\Omega$), điện trở kéo lên (80-100k\,$\Omega$) và tầng bảo vệ ESD, giúp duy trì tính toàn vẹn tín hiệu vượt trội so với việc sử dụng các linh kiện rời rạc.
+
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_microsd.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_microsd.png}
                     \caption{Sơ đồ nguyên lý mạch Micro SD Card} 
                     \label{fig:sche_microsd}
                 \end{figure}
 
             \paragraph{Thiết kế Mạch USB/UART Switch}
-                Vi điều khiển ESP32-S3 hỗ trợ một giao diện USB vật lý, cho phép hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu linh hoạt khi hệ thống chỉ có một cổng USB phần cứng nhưng cần phục vụ hai đầu nối LAN sử dụng giao tiếp USB, thiết kế sử dụng IC analog switch FSUSB42UMX-TP.
+                % Vi điều khiển ESP32-S3 hỗ trợ một giao diện USB vật lý, cho phép hoạt động ở chế độ USB Host. Để đáp ứng yêu cầu linh hoạt khi hệ thống chỉ có một cổng USB phần cứng nhưng cần phục vụ hai đầu nối LAN sử dụng giao tiếp USB, thiết kế sử dụng IC analog switch FSUSB42UMX-TP.
 
-                IC analog switch cho phép chuyển mạch tín hiệu USB giữa hai khối chức năng khác nhau. Trong cấu hình mặc định, đường USB từ MCU slave được kết nối tới đầu nối LAN1 thông qua PCIe connector. Ngoài ra, IC này có thể được sử dụng để chuyển mạch cho giao tiếp UART khi cần thiết.
+                % IC analog switch cho phép chuyển mạch tín hiệu USB giữa hai khối chức năng khác nhau. Trong cấu hình mặc định, đường USB từ MCU slave được kết nối tới đầu nối LAN1 thông qua PCIe connector. Ngoài ra, IC này có thể được sử dụng để chuyển mạch cho giao tiếp UART khi cần thiết.
+                Nhằm khắc phục giới hạn duy nhất một giao diện USB vật lý trên ESP32-S3, thiết kế tích hợp IC FSUSB42UMX-TP làm giải pháp điều phối tín hiệu chủ động. Việc sử dụng switch analog này cho phép hệ thống chuyển mạch linh hoạt giữa các đầu nối LAN hoặc giao tiếp UART, đảm bảo Gateway vận hành đa nhiệm mà không cần tăng số lượng nhân xử lý. Lựa chọn linh kiện chuyên dụng này giúp duy trì tính toàn vẹn tín hiệu USB Host, đồng thời đáp ứng yêu cầu về một kiến trúc phần cứng tinh gọn nhưng vẫn có khả năng mở rộng cao theo nhu cầu thực tế.
 
                 \begin{figure}[h]
                     \centering
@@ -820,37 +823,38 @@
                     \label{fig:sche_usb-uart_switch}
                 \end{figure}
 
-                Đối với giao tiếp UART, phần cứng UART2 của MCU master được sử dụng mặc định để nạp firmware cho MCU slave. Sau khi hoàn tất quá trình nạp, đường UART2 này được chuyển hướng ra một đầu nối để giao tiếp với màn hình cảm ứng, phục vụ cho việc hiển thị và điều khiển hệ thống. 
+                % Đối với giao tiếp UART, phần cứng UART2 của MCU master được sử dụng mặc định để nạp firmware cho MCU slave. Sau khi hoàn tất quá trình nạp, đường UART2 này được chuyển hướng ra một đầu nối để giao tiếp với màn hình cảm ứng, phục vụ cho việc hiển thị và điều khiển hệ thống. 
                 
-                Màn hình LCD sử dụng nguồn cấp 5V, trong khi hệ thống MCU hoạt động ở mức logic 3.3V. Để đảm bảo tương thích điện áp giữa hai khối, thiết kế tích hợp IC chuyển mức logic TXS0102DQER. IC này thực hiện chuyển đổi tín hiệu hai chiều giữa các mức logic 3.3V và 5V, cho phép giao tiếp ổn định và an toàn giữa MCU và màn hình. Các tín hiệu điều khiển và dữ liệu được truyền nhận chính xác, đồng thời hạn chế nguy cơ hư hỏng do sai lệch mức điện áp.
-
+                % Màn hình LCD sử dụng nguồn cấp 5V, trong khi hệ thống MCU hoạt động ở mức logic 3.3V. Để đảm bảo tương thích điện áp giữa hai khối, thiết kế tích hợp IC chuyển mức logic TXS0102DQER. IC này thực hiện chuyển đổi tín hiệu hai chiều giữa các mức logic 3.3V và 5V, cho phép giao tiếp ổn định và an toàn giữa MCU và màn hình. Các tín hiệu điều khiển và dữ liệu được truyền nhận chính xác, đồng thời hạn chế nguy cơ hư hỏng do sai lệch mức điện áp.
+                Kiến trúc hệ thống tối ưu hóa cổng UART2 cho cả nhiệm vụ nạp firmware Slave và giao tiếp HMI, giúp tiết kiệm tối đa tài nguyên phần cứng. Nhằm xử lý triệt để sự chênh lệch điện áp logic giữa MCU (3.3V) và màn hình (5V), thiết kế sử dụng IC TXS0102DQER làm giải pháp chuyển mức hai chiều chuyên dụng. Đây là lựa chọn kỹ thuật cần thiết để bảo vệ chủ động các chân I/O khỏi rủi ro quá áp, đồng thời đảm bảo tính chính xác và độ tin cậy của tín hiệu điều khiển trong suốt quá trình vận hành.
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_lcd.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_lcd.png}
                     \caption{Sơ đồ nguyên lý mạch LCD} 
                     \label{fig:sche_lcd}
                 \end{figure}
             
             \paragraph{Thiết kế Mạch I\textsuperscript{2}C Buffer}   
-                Hệ thống tích hợp nhiều thiết bị ngoại vi sử dụng giao thức I\textsuperscript{2}C, do đó việc bổ sung IC đệm I\textsuperscript{2}C TCA9803DGKR giúp nâng cao chất lượng truyền tín hiệu và độ tin cậy của bus. IC này cho phép phân tách các đoạn bus, giảm ảnh hưởng của nhiễu và đảm bảo tính toàn vẹn dữ liệu trong quá trình giao tiếp.
+                % Hệ thống tích hợp nhiều thiết bị ngoại vi sử dụng giao thức I\textsuperscript{2}C, do đó việc bổ sung IC đệm I\textsuperscript{2}C TCA9803DGKR giúp nâng cao chất lượng truyền tín hiệu và độ tin cậy của bus. IC này cho phép phân tách các đoạn bus, giảm ảnh hưởng của nhiễu và đảm bảo tính toàn vẹn dữ liệu trong quá trình giao tiếp.
 
-                Hệ thống vận hành ở chế độ Fast-mode với tần số $f_{SCL} = 400\,kHz$, trong đó điện dung ký sinh tối đa cho phép trên mỗi đoạn bus là 400\,pF. Phía đầu vào của IC được kết nối với bus I\textsuperscript{2}C master và làm tăng thêm khoảng 10\,pF, tương đương với một thiết bị tiêu chuẩn. Phía đầu ra được đưa ra đầu nối connector để kết nối với các thiết bị ngoại vi thông qua dây dẫn dài, với điện dung ký sinh có thể đạt tới 400\,pF.
+                % Hệ thống vận hành ở chế độ Fast-mode với tần số $f_{SCL} = 400\,kHz$, trong đó điện dung ký sinh tối đa cho phép trên mỗi đoạn bus là 400\,pF. Phía đầu vào của IC được kết nối với bus I\textsuperscript{2}C master và làm tăng thêm khoảng 10\,pF, tương đương với một thiết bị tiêu chuẩn. Phía đầu ra được đưa ra đầu nối connector để kết nối với các thiết bị ngoại vi thông qua dây dẫn dài, với điện dung ký sinh có thể đạt tới 400\,pF.
                 
                 % Trong cấu hình này, IC đệm đóng vai trò như một bộ tái tạo bus (bus buffer), cho phép mở rộng số lượng thiết bị kết nối mà không làm suy giảm chất lượng tín hiệu, đồng thời duy trì sự ổn định của hệ thống.
-
+                Để bảo đảm tính toàn vẹn dữ liệu khi giao tiếp với nhiều thiết bị ngoại vi qua dây dẫn dài, thiết kế tích hợp IC đệm TCA9803DGKR làm giải pháp phân tách bus chủ động. Lựa chọn này là kỹ thuật cần thiết để hệ thống vận hành ổn định ở chế độ Fast-mode (400kHz) mà không bị ảnh hưởng bởi giới hạn điện dung ký sinh 400pF. Việc sử dụng IC đệm giúp cô lập tải chỉ còn 10pF cho bus chính, đồng thời duy trì khả năng truyền dẫn tin cậy cho các nhánh mở rộng, giảm thiểu rủi ro lỗi bit do nhiễu và suy hao tín hiệu.
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_i2cbuffer.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_i2cbuffer.png}
                     \caption{Sơ đồ nguyên lý mạch I\textsuperscript{2}C Buffer} 
                     \label{fig:sche_i2cbuffer}
                 \end{figure}
             \paragraph{Thiết kế Mạch nút nhấn}
-                Đầu ra của nút nhấn được tích hợp một diode TVS với điện áp Reverse Standoff tối đa $V_{RWM(max)} = 3.3V$, phù hợp với mức điện áp làm việc của đường tín hiệu. Linh kiện này có chức năng bảo vệ mạch khỏi các xung ESD phát sinh trong quá trình tương tác cơ khí bên trong nút nhấn.
+                % Đầu ra của nút nhấn được tích hợp một diode TVS với điện áp Reverse Standoff tối đa $V_{RWM(max)} = 3.3V$, phù hợp với mức điện áp làm việc của đường tín hiệu. Linh kiện này có chức năng bảo vệ mạch khỏi các xung ESD phát sinh trong quá trình tương tác cơ khí bên trong nút nhấn.
 
-                Bên cạnh đó, một tụ điện 100\,nF mắc song song và một điện trở 100\,$\Omega$ mắc nối tiếp được bổ sung trên đường tín hiệu nhằm cải thiện đặc tính tín hiệu. Cụ thể, tụ điện giúp giảm nhiễu cao tần và hạn chế hiện tượng dội tiếp điểm (debounce), trong khi điện trở nối tiếp đóng vai trò như một phần tử suy hao (damping/termination), giúp giảm hiện tượng ringing và làm mềm các cạnh xung. Thiết kế này đảm bảo rằng tín hiệu từ nút nhấn được truyền đến MCU một cách ổn định và đáng tin cậy, đồng thời nâng cao độ bền của hệ thống trước các tác động cơ học và điện từ trong quá trình sử dụng.
+                % Bên cạnh đó, một tụ điện 100\,nF mắc song song và một điện trở 100\,$\Omega$ mắc nối tiếp được bổ sung trên đường tín hiệu nhằm cải thiện đặc tính tín hiệu. Cụ thể, tụ điện giúp giảm nhiễu cao tần và hạn chế hiện tượng dội tiếp điểm (debounce), trong khi điện trở nối tiếp đóng vai trò như một phần tử suy hao (damping/termination), giúp giảm hiện tượng ringing và làm mềm các cạnh xung. Thiết kế này đảm bảo rằng tín hiệu từ nút nhấn được truyền đến MCU một cách ổn định và đáng tin cậy, đồng thời nâng cao độ bền của hệ thống trước các tác động cơ học và điện từ trong quá trình sử dụng.
+                Thiết kế tích hợp diode TVS 3.3V để triệt tiêu chủ động xung ESD phát sinh từ tương tác cơ khí tại nút nhấn. Việc phối hợp tụ 100nF và trở giảm chấn 100\,$\Omega$ là giải pháp kỹ thuật cần thiết nhằm xử lý triệt để hiện tượng dội tiếp điểm (debounce) và ringing. Lựa chọn này đảm bảo tính toàn vẹn của tín hiệu truyền đến MCU, đồng thời tăng cường độ bền hệ thống trước các tác động điện-cơ trong điều kiện vận hành thực tế.
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_button.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_button.png}
                     \caption{Sơ đồ nguyên lý mạch nút nhấn} 
                     \label{fig:sche_button}
                 \end{figure}
@@ -887,9 +891,10 @@
 
                 Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet được phát triển dựa trên IC Ethernet PHY W5500. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
                 
-                Việc lựa chọn thành phần và cấu hình phần cứng của adapter LTE được thực hiện dựa trên \href{https://files.waveshare.com/upload/6/69/SIM7600_Series_PCIE_Hardware_Design_V1.03.pdf}{tài liệu thiết kế phần cứng của module SIM7600G-H-PCIE}. Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.
+                Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
 
-                Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu \href{https://docs.wiznet.io/pdf-viewer?file=%2Fassets%2Ffiles%2Fw5500_sch_v110_use_mag_-dfff8bbb103d13be4f25cd2b2f8b950d.pdf}{W5500 Reference Schematic (RJ45)} của Wiznet.
+                Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu.\cite{Sim7600SeriesPcieHardwareDesign}
+                % \href{https://docs.wiznet.io/pdf-viewer?file=%2Fassets%2Ffiles%2Fw5500_sch_v110_use_mag_-dfff8bbb103d13be4f25cd2b2f8b950d.pdf}{W5500 Reference Schematic (RJ45)} của Wiznet.
 
                 \begin{figure}[H]
                     \centering
