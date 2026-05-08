@@ -8,8 +8,8 @@ Quá trình hiện thực hóa nguyên mẫu (prototype) đã bám sát các thi
 
 \begin{itemize}
     \item \textbf{Về phần cứng (Hardware):} Đã chế tạo thành công bo mạch chính (Baseboard) với cấu trúc PCB 6 lớp, đảm bảo tính toàn vẹn tín hiệu cho các giao tiếp tốc độ cao. Hệ thống Dual-MCU (Master-Slave) sử dụng hai vi điều khiển ESP32-S3 vận hành đúng theo thiết kế. Các khe cắm mở rộng (WAN, LAN1, LAN2) tương thích hoàn toàn với các Module Adapter, cho phép tháo lắp và thay đổi linh hoạt các chuẩn kết nối vật lý.
-    \item \textbf{Về phần mềm (Firmware):} Hệ thống Firmware dựa trên RTOS đã được triển khai hiệu quả trên cả hai MCU. Cơ chế giao tiếp nội bộ Inter-MCU thông qua giao thức Quad SPI và các tín hiệu Handshake đạt tốc độ truyền tải dữ liệu đúng như kỳ vọng, đảm bảo không có độ trễ đáng kể trong việc điều phối dữ liệu giữa các lớp mạng.
-    \item \textbf{Khả năng kết nối:} Sản phẩm đã thực hiện kết nối thành công với hạ tầng đám mây thông qua Wi-Fi và LTE. Đồng thời, hệ thống đã đọc và xử lý chính xác dữ liệu từ các cảm biến/thiết bị đầu cuối sử dụng giao thức LoRa, Zigbee, CAN và RS-485 thông qua các module chuyển đổi tương ứng.
+    \item \textbf{Về phần mềm (Firmware):} Hệ thống Firmware dựa trên RTOS đã được triển khai hiệu quả trên cả hai MCU. Cơ chế giao tiếp nội bộ Inter-MCU thông qua giao thức Quad SPI với GPIO Handshake Event-driven (thay thế Polling của phiên bản nguyên mẫu) đạt tốc độ truyền tải dữ liệu đúng như kỳ vọng, đảm bảo không có độ trễ đáng kể trong việc điều phối dữ liệu giữa các lớp mạng.
+    \item \textbf{Khả năng kết nối:} Sản phẩm đã thực hiện kết nối thành công với hạ tầng đám mây thông qua Wi-Fi, Ethernet (W5500) và LTE. Cơ chế Internet Monitor hoạt động đúng, tự động thay thế giao diện khi phát hiện mất kết nối. Đồng thời, hệ thống đã đọc và xử lý chính xác dữ liệu từ các cảm biến/thiết bị đầu cuối sử dụng giao thức LoRa, Zigbee, BLE Native/GATT, CAN và RS-485 thông qua các module chuyển đổi tương ứng. Hệ thống tự động phát hiện module (auto module detection) từ NVS khi khởi động.
 \end{itemize}
 
 \subsection{Mục đích đạt được}
@@ -18,6 +18,6 @@ Việc triển khai thực tế đã chứng minh hệ thống đạt được c
 
 \begin{itemize}
     \item \textbf{Tính mô-đun hóa (Modularity):} Hệ thống có khả năng thích ứng cao với nhiều kịch bản ứng dụng khác nhau chỉ bằng cách thay đổi các module adapter mà không cần thiết kế lại phần cứng cốt lõi, giúp giảm thiểu chi phí và thời gian triển khai.
-    \item \textbf{Khả năng cấu hình (Configurability):} Thông qua ứng dụng cấu hình trên máy tính, người dùng có thể dễ dàng thiết lập các thông số vận hành như tài khoản MQTT, cấu hình mạng Wi-Fi/LTE hay chu kỳ lấy mẫu dữ liệu mà không cần can thiệp vào mã nguồn của thiết bị.
-    \item \textbf{Độ tin cậy và ổn định:} Hệ thống đã vượt qua các bài kiểm tra vận hành liên tục. Cơ chế tự động kết nối lại (auto-reconnect) và lưu trữ dữ liệu tạm thời vào thẻ nhớ microSD khi mất mạng đã đảm bảo tính toàn vẹn của dữ liệu trong quá trình vận hành.
+    \item \textbf{Khả năng cấu hình (Configurability):} Thông qua ứng dụng cấu hình trên máy tính (hỗ trợ tải lên JSON preset cho provisioning hàng loạt) và Web Config Portal (cấu hình qua trình duyệt, không cần cài phần mềm), người dùng có thể dễ dàng thiết lập các thông số vận hành như tài khoản MQTT, cấu hình mạng Wi-Fi/LTE hay chu kỳ lấy mẫu dữ liệu mà không cần can thiệp vào mã nguồn của thiết bị.
+    \item \textbf{Độ tin cậy và ổn định:} Hệ thống đã vượt qua các bài kiểm tra vận hành liên tục. Cơ chế Internet Monitor (Auto-failover giữa Wi-Fi, Ethernet và LTE) và lưu trữ dữ liệu tạm thời vào thẻ nhớ microSD khi mất mạng đã đảm bảo tính toàn vẹn của dữ liệu trong quá trình vận hành. Quy trình Safety FOTA với cơ chế Rollback tự động được xác thực — thiết bị phục hồi thành công về firmware cũ khi gói cập nhật bị lỗi giả lập.
 \end{itemize}
