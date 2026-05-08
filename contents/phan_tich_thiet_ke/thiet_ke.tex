@@ -629,17 +629,20 @@
 
                 Từ đó, yêu cầu dòng bão hòa tối thiểu của cuộn cảm $I_{SAT\_req} \geq 5A + \frac{1}{2} \times 2A = 6A$
 
-                Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, để bảo đảm biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm bù trừ sai số linh kiện và ảnh hưởng của các điều kiện vận hành thực tế. Cách lựa chọn này góp phần bảo đảm khối nguồn của IC sạc hoạt động ổn định và an toàn.
+                % Dựa trên kết quả tính toán, cuộn cảm MDA5030-1R0M được lựa chọn với dòng bão hòa điển hình $I_{SAT\_typ} = 8.5A$. Ngoài ra, để bảo đảm biên độ dự phòng, cuộn cảm được lựa chọn với dòng bão hòa lớn hơn khoảng 30--50\% so với giá trị tính toán nhằm bù trừ sai số linh kiện và ảnh hưởng của các điều kiện vận hành thực tế. Cách lựa chọn này góp phần bảo đảm khối nguồn của IC sạc hoạt động ổn định và an toàn.
 
-                Pin LiPo sử dụng trong hệ thống đã được tích hợp sẵn mạch bảo vệ và điện trở nhiệt NTC 10k (tiếp xúc trực tiếp trên cell pin), góp phần nâng cao độ an toàn và độ tin cậy trong quá trình vận hành.
+                % Pin LiPo sử dụng trong hệ thống đã được tích hợp sẵn mạch bảo vệ và điện trở nhiệt NTC 10k (tiếp xúc trực tiếp trên cell pin), góp phần nâng cao độ an toàn và độ tin cậy trong quá trình vận hành.
+                Lựa chọn cuộn cảm MDA5030-1R0M ($I_{SAT_typ} = 8.5A$) thiết lập biên độ dự phòng 30-50\% so với tính toán, giúp giảm thiểu rủi ro từ sai số linh kiện và bảo đảm khối nguồn vận hành ổn định. Pin LiPo tích hợp sẵn mạch bảo vệ và NTC 10k, đảm bảo an toàn và tin cậy khi vận hành thiết bị.
 
                 Trong quá trình vận hành, điện áp đầu ra VSYS của IC sạc có thể thay đổi tùy theo trạng thái cấp nguồn của hệ thống, cụ thể như sau:
                 \begin{itemize}
                     \item \textbf{Chỉ có nguồn VBUS (5V từ USB hoặc 12V từ adapter):} 
-                    Với kiến trúc Narrow VDC (NVDC), trong trường hợp không có pin, IC sẽ điều chỉnh để duy trì điện áp hệ thống ở mức tối thiểu cộng thêm một biên độ bù. Với giá trị $SYS\_MIN$ mặc định là 3.5\,V, điện áp VSYS điển hình được duy trì ở khoảng 3.65\,V.
+                    % Với kiến trúc Narrow VDC (NVDC), trong trường hợp không có pin, IC sẽ điều chỉnh để duy trì điện áp hệ thống ở mức tối thiểu cộng thêm một biên độ bù. Với giá trị $SYS\_MIN$ mặc định là 3.5\,V, điện áp VSYS điển hình được duy trì ở khoảng 3.65\,V.
+                    Kiến trúc Narrow VDC duy trì VSYS ở khoảng 3.65V ổn định ngay cả khi thiếu pin, bảo đảm hệ thống vận hành liên tục và giảm rủi ro sụt áp.
 
                     \item \textbf{Chỉ cấp nguồn từ VBAT (mất hoặc không kết nối VBUS):} 
-                    Khi đó, điện áp VSYS xấp xỉ bằng điện áp pin. Với pin LiPo sử dụng trong thiết kế, điện áp thay đổi từ 3.0\,V (hết pin) đến 4.2\,V (đầy pin). Tuy nhiên, để đảm bảo đủ mức điện áp tối thiểu cho các khối nguồn phía sau và tránh hiện tượng xả sâu, ngưỡng điện áp tối thiểu được thiết lập ở mức 3.5\,V. Do đó, VSYS dao động trong khoảng từ 3.5\,V đến 4.2\,V.
+                    % Khi đó, điện áp VSYS xấp xỉ bằng điện áp pin. Với pin LiPo sử dụng trong thiết kế, điện áp thay đổi từ 3.0\,V (hết pin) đến 4.2\,V (đầy pin). Tuy nhiên, để đảm bảo đủ mức điện áp tối thiểu cho các khối nguồn phía sau và tránh hiện tượng xả sâu, ngưỡng điện áp tối thiểu được thiết lập ở mức 3.5\,V. Do đó, VSYS dao động trong khoảng từ 3.5\,V đến 4.2\,V.
+                    Duy trì VSYS trong ngưỡng 3.5V - 4.2V, bảo vệ pin khỏi hiện tượng xả sâu, đồng thời bảo đảm biên độ điện áp ổn định cho các khối nguồn hạ nguồn vận hành tin cậy.
 
                     \item \textbf{Cấp nguồn đồng thời từ VBUS và VBAT (trạng thái sạc):}
                     Trong trường hợp này, điện áp VSYS phụ thuộc vào mức điện áp pin:
