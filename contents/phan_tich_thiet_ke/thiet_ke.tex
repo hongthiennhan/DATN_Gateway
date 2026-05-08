@@ -1473,57 +1473,101 @@
                 \endfoot
                 \endlastfoot
         
-                Zigbee & $250\,kbps$ & $\approx 8,2\,kbps$ & $3,2\%$ & Cơ chế CSMA/CA \& Overhead chuẩn ZCL \\ \hline
+                Zigbee & $250\,kbps$ & $\approx 8,2\,kbps$ & $3,3\%$ & Cơ chế CSMA/CA \& Overhead chuẩn ZCL \\ \hline
                 LoRa SF7/125 (P2P) & $5,47\,kbps$ & $\approx 3,5\,kbps$ & $64\%$ & Time-on-Air ($\approx 97,5\,ms/gói$) \\ \hline
                 BLE (không DLE) & $1000\,kbps$ & $\approx 8\,kbps$ & $0,8\%$ & MTU = 20 byte, $CI = 20\,ms$ \\ \hline
-                BLE (bật DLE) & $1000\,kbps$ & $\approx 97,6\,kbps$ & $9,7\%$ & $CI = 20\,ms$ \\ \hline
+                BLE (bật DLE) & $1000\,kbps$ & $\approx 97,6\,kbps$ & $9,8\%$ & $CI = 20\,ms$ \\ \hline
             \end{longtable}
         
             \item \textbf{Độ trễ hệ thống}
-        
+
             Độ trễ End-to-End $T_{e2e}$ là tổng thời gian xử lý và truyền dẫn qua tất cả các chặng:
-        
+            
             \[
                 T_{e2e} = T_{air} + T_{UART} + T_{batch} + T_{SPI} + T_{network}
             \]
-        
+            
             Các thành phần chính gồm:
-        
+            
             \begin{itemize}
-                \item \textbf{Thời gian truyền sóng $T_{air}$:} Zigbee $\approx 5\,ms$, LoRa SF7 $\approx 97,5\,ms$, BLE $\approx 2,2\,ms$.
-                \item \textbf{Độ trễ UART $T_{UART}$:} Khoảng $10,5\,ms/gói$ với Zigbee, $\approx 15\,ms$ với LoRa AT command.
-                \item \textbf{Độ trễ gom gói $T_{batch}$:} Cố định $\approx 50\,ms$ do cơ chế batch flush tại LAN-MCU -- thành phần tốn thời gian nhất với Zigbee và BLE.
-                \item \textbf{Độ trễ SPI $T_{SPI}$:} Truyền 1 KB mất $\approx 0,204\,ms$ tại xung nhịp $40\,MHz$.
+                \item \textbf{Thời gian truyền sóng $T_{air}$:} Zigbee $\approx 5\,ms$, LoRa SF7 $\approx 97{,}5\,ms$, BLE $\approx 2{,}2\,ms$.
+                \item \textbf{Độ trễ UART $T_{UART}$:} Khoảng $10{,}5\,ms/\text{gói}$ với Zigbee, $\approx 15\,ms$ với LoRa AT command, $\approx 5\,ms$ với BLE.
+                \item \textbf{Độ trễ gom gói $T_{batch}$:} Dao động trong khoảng $0\text{--}10\,ms$ do cơ chế batch flush tại LAN-MCU.
+                \item \textbf{Độ trễ SPI $T_{SPI}$:} Truyền dữ liệu tại xung nhịp $60\,MHz$ (cực nhỏ, $\approx 0{,}02\,ms$).
+                \item \textbf{Độ trễ mạng $T_{network}$:} Truyền từ Gateway lên Cloud qua WiFi/Ethernet, trung bình $\approx 30\,ms$.
             \end{itemize}
-        
+            
             \begin{longtable}{|p{4.5cm}|p{4cm}|p{5.5cm}|}
                 \caption{Độ trễ dự kiến theo từng kịch bản truyền.}
                 \label{tab:latency_estimation} \\
                 \hline
                 \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
                 \endfirsthead
-        
+            
                 \hline
                 \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
                 \endhead
-        
+            
                 \hline
                 \endfoot
                 \endlastfoot
-        
-                Zigbee $\rightarrow$ MQTT & $10\,ms$--$60\,ms$ & Gom gói ($T_{batch}$) \\ \hline
-                LoRa SF7 (P2P) $\rightarrow$ MQTT & $100\,ms$--$150\,ms$ & Thời gian truyền sóng ($T_{air}$) \\ \hline
-                BLE $\rightarrow$ MQTT & $4\,ms$--$55\,ms$ & Gom gói ($T_{batch}$) \\ \hline
+            
+                Zigbee $\rightarrow$ MQTT & $46\,ms$--$56\,ms$ & Mạng ($T_{network}$) và UART \\ \hline
+                LoRa SF7 (P2P) $\rightarrow$ MQTT & $143\,ms$--$153\,ms$ & Thời gian truyền sóng ($T_{air}$) \\ \hline
+                BLE $\rightarrow$ MQTT & $37\,ms$--$47\,ms$ & Mạng ($T_{network}$) \\ \hline
             \end{longtable}
-        
+            
             \item \textbf{Khả năng chịu tải}
-        
+            
+            Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,ms$):
+            
+            \begin{longtable}{|p{3cm}|p{4cm}|p{6.5cm}|}
+                \caption{Dữ liệu tích lũy theo giao thức trong một batch interval.}
+                \label{tab:batch_data} \\
+                \hline
+                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
+                \endfirsthead
+            
+                \hline
+                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
+                \endhead
+            
+                \hline
+                \endfoot
+                \endlastfoot
+            
+                Zigbee     & $8{,}2\,\text{kbps}$   & $8200 / 8 \times 0{,}010 \approx 10\,\text{byte}$   \\ \hline
+                BLE (DLE)  & $97{,}6\,\text{kbps}$  & $97600 / 8 \times 0{,}010 \approx 122\,\text{byte}$ \\ \hline
+                LoRa SF7/125 & $3{,}5\,\text{kbps}$ & $3500 / 8 \times 0{,}010 \approx 4\,\text{byte}$    \\ \hline
+                \textbf{Tổng} & $\mathbf{109{,}3\,\text{kbps}}$ & $\mathbf{\approx 137\,\text{byte}}$          \\ \hline
+            \end{longtable}
+            
+            Thời gian SPI cần để truyền $137\,\text{byte}$ sang WAN-MCU:
+            
+            \[
+                T_{SPI,batch} = \frac{137 \times 8}{60 \times 10^6} \approx 0{,}0183\,ms
+            \]
+            
+            Hệ số sử dụng bus SPI:
+            
+            \[
+                U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} = 0{,}183\%
+            \]
+            
+            Thông lượng SPI tối đa lý thuyết tại $60\,MHz$:
+            
+            \[
+                R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
+            \]
+            
             \begin{itemize}
-                \item \textbf{Zigbee (E18-ZG120):} Giới hạn bởi 8 KB SRAM của CC2530. Sau khi Z-Stack chiếm $\approx 5\,KB$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định Z-Stack (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Lỗi \texttt{0x18} (Not enough cache) và \texttt{0x11} (Memory full) là các chỉ báo điển hình khi vượt ngưỡng này.
+                \item \textbf{Zigbee (E18-ZG120):} Giới hạn bởi $8\,KB$ SRAM của CC2530. Sau khi Z-Stack chiếm $\approx 5\,KB$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định Z-Stack (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Lỗi \texttt{0x18} (Not enough cache) và \texttt{0x11} (Memory full) là các chỉ báo điển hình khi vượt ngưỡng này.
                 \item \textbf{LoRa (P2P):} Trong chế độ P2P point-to-point, Gateway chỉ liên kết với một node tại một thời điểm. Không có giới hạn mạng lưới như LoRaWAN.
                 \item \textbf{BLE:} Giao thức GATT giới hạn tối đa 8 kết nối đồng thời trên ESP32-S3 (NimBLE stack).
             \end{itemize}
+            
+            \textbf{Kết luận:} SPI không phải nút thắt -- tải thực tế chỉ chiếm $0{,}183\%$ capacity SPI. Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng; suy giảm chủ yếu do Zigbee Listener buffer ($512\,\text{byte}$) dễ tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,ms$).
         
         \end{enumerate}
 
-        \newpage
+    \newpage
