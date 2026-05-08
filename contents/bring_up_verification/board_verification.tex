@@ -226,105 +226,53 @@
 
             \item \textbf{Kiểm thử đơn kênh -- Max Bandwidth Test}
 
-            \textbf{Phương pháp:} Từng node (Zigbee, LoRa, BLE) gửi dữ liệu liên tục với tốc độ tối đa.
-        
-            \textbf{Chỉ số đánh giá:} Thông lượng thực đo (kbps hoặc byte/s tại LAN-MCU và tại server), tỷ lệ giao tin thành công PDR (\textit{Packet Delivery Ratio}).
-        
-            \textbf{Kết quả baseline kỳ vọng:}
-        
+            \textbf{Phương pháp:} Từng giao thức (Zigbee, LoRa, BLE) gửi dữ liệu liên tục với tốc độ tối đa; đo thông lượng thực tế tại LAN-MCU và tại MQTT Broker, đồng thời ghi nhận PDR (\textit{Packet Delivery Ratio}).
+
             \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{3.5cm}|}
                 \caption{Baseline kỳ vọng cho kiểm thử đơn kênh.}
                 \label{tab:single_channel_baseline} \\
                 \hline
                 \textbf{Giao thức} & \textbf{Thông lượng vào LAN-MCU} & \textbf{PDR kỳ vọng} \\ \hline
                 \endfirsthead
-        
                 \hline
                 \textbf{Giao thức} & \textbf{Thông lượng vào LAN-MCU} & \textbf{PDR kỳ vọng} \\ \hline
                 \endhead
-        
                 \hline
                 \endfoot
                 \endlastfoot
-        
-                Zigbee & $\approx 8,2\,kbps$ & $> 95\%$ \\ \hline
-                LoRa SF7/125 (P2P) & $\approx 3,5\,kbps$ & $> 99\%$ \\ \hline
-                BLE (DLE bật) & $\approx 97,6\,kbps$ & $> 99\%$ \\ \hline
+                Zigbee & $\approx 8{,}2\,\text{kbps}$ & $> 95\%$ \\ \hline
+                LoRa SF7/125 (P2P) & $\approx 3{,}5\,\text{kbps}$ & $> 99\%$ \\ \hline
+                BLE (DLE bật) & $\approx 97{,}6\,\text{kbps}$ & $> 99\%$ \\ \hline
             \end{longtable}
-        
+
             \item \textbf{Kiểm thử đa kênh đồng thời -- Concurrency Test}
-        
-            \textbf{Phương pháp:} 3 node (Zigbee, LoRa, BLE) cùng spam dữ liệu tối đa.
-        
-            Thông lượng LAN$\rightarrow$WAN lý thuyết (tổng 3 giao thức):
-        
+
+            \textbf{Phương pháp:} Cả ba node (Zigbee, LoRa, BLE) cùng phát dữ liệu tối đa. Thông lượng lý thuyết tổng hợp tại chặng LAN$\,\rightarrow\,$WAN:
             \[
-                R_{total,\ theory}
-                = R_{Zigbee} + R_{BLE} + R_{LoRa}
-                = 8,2 + 97,6 + 3,5
-                = 109,3\,kbps
+                R_{total} = R_{Zigbee} + R_{BLE} + R_{LoRa}
+                          = 8{,}2 + 97{,}6 + 3{,}5
+                          = 109{,}3\,\text{kbps}
             \]
-        
-            Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 50\,ms$):
-        
-            \begin{longtable}{|p{4cm}|p{3.5cm}|p{5cm}|}
-                \caption{Dữ liệu tích lũy trong một chu kỳ batch.}
-                \label{tab:batch_data_accumulation} \\
-                \hline
-                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
-                \endfirsthead
-        
-                \hline
-                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
-                \endhead
-        
-                \hline
-                \endfoot
-                \endlastfoot
-        
-                Zigbee & $8,2\,kbps$ & $8200 / 8 \times 0,050 = 51\,byte$ \\ \hline
-                BLE (DLE) & $97,6\,kbps$ & $97600 / 8 \times 0,050 = 610\,byte$ \\ \hline
-                LoRa SF7/125 & $3,5\,kbps$ & $3500 / 8 \times 0,050 \approx 22\,byte$ \\ \hline
-                \textbf{Tổng} & $\textbf{109,3\,kbps}$ & $\approx \textbf{683\,byte}$ \\ \hline
-            \end{longtable}
-        
-            Thời gian SPI cần để truyền $683\,byte$ sang WAN-MCU:
-        
+
+            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại Bảng~\ref{tab:batch_data}. Kết quả:
+
+            \begin{itemize}
+                \item \textbf{Tải trung bình:} $\approx 137\,\text{byte/batch}$, $T_{SPI} \approx 0{,}0183\,\text{ms}$, $U_{SPI} \approx 0{,}183\%$.
+                \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ (xem Bảng~\ref{tab:spi_worst}).
+            \end{itemize}
+
+            Thông lượng tối đa lý thuyết của SPI:
             \[
-                T_{SPI,\ batch}
-                = \frac{683 \times 8}{40 \times 10^{6}}
-                = 0,1366\,ms
+                R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
             \]
-        
-            Hệ số sử dụng bus SPI:
-        
+
+            \textbf{Kết luận:} SPI không phải nút thắt ở bất kỳ điều kiện tải nào. Thông lượng LAN$\,\rightarrow\,$WAN thực tế kỳ vọng, sau khi trừ overhead giao thức và jitter scheduler:
             \[
-                U_{SPI}
-                = \frac{T_{SPI,\ batch}}{T_{batch}}
-                = \frac{0,1366}{50}
-                = 0,2732\%
+                R_{practical} \approx (85 \div 95)\% \times 109{,}3 \approx 93 \div 104\,\text{kbps}
             \]
-        
-            Thông lượng SPI tối đa lý thuyết tại $40\,MHz$:
-        
-            \[
-                R_{SPI\ max}
-                = 40\,MHz \times \frac{1\,byte}{8\,bit} \times 8
-                = 40\,Mbps
-                = 5\,MB/s
-            \]
-        
-            \textbf{Kết luận:} SPI không phải nút thắt. Tải thực tế chỉ chiếm khoảng $0,2732\%$ capacity SPI.
-        
-            Thông lượng LAN$\rightarrow$WAN thực tế kỳ vọng:
-        
-            \[
-                R_{LAN \rightarrow WAN,\ practical}
-                \approx (85 \div 95)\% \times 109,3
-                \approx 93 \div 104\,kbps
-            \]
-        
-            \textbf{Mục tiêu:} PDR toàn hệ thống $> 85\%$ dưới tải nặng. Suy giảm chủ yếu do Zigbee Listener buffer ($512\,byte$) dễ tràn khi LAN-MCU bận phục vụ SPI cho BLE.
+
+            Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng. Nguy cơ suy giảm PDR chủ yếu đến từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao trong mỗi chu kỳ $10\,\text{ms}$.
+
         \end{enumerate}
 
         \paragraph{Bảng kiểm thử chi tiết}

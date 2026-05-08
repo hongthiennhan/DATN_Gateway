@@ -1464,144 +1464,187 @@
 
         \begin{enumerate}
             \renewcommand{\labelenumi}{\arabic{enumi}.}
-        
+
             \item \textbf{Kiến trúc hệ thống và chuỗi truyền dẫn dữ liệu}
-        
-            Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa việc xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{Pipeline}) gồm các chặng chính:
-        
+
+            Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa việc xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{pipeline}) gồm bốn chặng nối tiếp:
+
             \begin{itemize}
-                \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi gửi dữ liệu qua sóng vô tuyến (Zigbee, LoRa, BLE).
-                \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến truyền dữ liệu vào LAN-MCU (ESP32-S3) qua UART.
-                \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu và đẩy sang WAN-MCU (ESP32-S3) qua bus SPI.
-                \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU serialize dữ liệu sang JSON và publish lên MQTT Server.
+                \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi phát dữ liệu qua sóng vô tuyến (Zigbee, LoRa, BLE) đến module thu tại Gateway.
+                \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến chuyển tiếp khung dữ liệu sang LAN-MCU (ESP32-S3) qua giao tiếp UART.
+                \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu từ các giao thức theo chu kỳ batch rồi chuyển toàn bộ sang WAN-MCU (ESP32-S3) qua bus SPI tốc độ cao.
+                \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU tuần tự hóa dữ liệu sang định dạng JSON và publish lên MQTT Broker qua kết nối Wi-Fi.
             \end{itemize}
-        
-            \item \textbf{Thông lượng dữ liệu (Data throughput) và hiệu suất ($\eta$)}
-        
-            Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích còn lại sau khi trừ đi overhead của giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
-        
+
+            Mỗi chặng đều có độ trễ và giới hạn băng thông riêng. Nút thắt (bottleneck) của toàn hệ thống là chặng có thông lượng thấp nhất; phần tiếp theo sẽ định lượng từng chặng.
+
+            % ---------------------------------------------------------------
+            \item \textbf{Thông lượng dữ liệu và hiệu suất băng thông ($\eta$)}
+
+            Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích (payload) còn lại sau khi trừ overhead giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
             \[
                 \eta = \frac{R_{app}}{R_{PHY}}
             \]
-        
-            \textbf{Phân tích thông lượng và nút thắt tại từng giao thức}
-        
-            \textbf{Zigbee (E18-ZG120 / CC2530):} Tốc độ vật lý IEEE 802.15.4 đạt $250\,kbps$ \cite{ieee802154_2020}. Tuy nhiên, mỗi frame Zigbee chỉ chứa tối đa 99 byte payload ứng dụng sau khi trừ các header MAC/NWK/APS (28 byte tổng cộng trên tổng 127 byte \cite{zigbee_spec_r21}). Khi truyền, thời gian hoàn thành một chu kỳ phát--nhận ACK là khoảng $5\,ms$, tương đương thông lượng air $\approx 158\,kbps$ \cite{ti_cc2530_datasheet}. Tuy nhiên, nút thắt nằm ở UART $115200\,bps$: module E18-ZG120 gửi frame HEX bất đồng bộ lên LAN-MCU cho mỗi gói nhận được, với kích thước khoảng 121 byte (99 byte dữ liệu + 22 byte overhead ZCL/HEX frame), dẫn đến thông lượng lý thuyết qua UART giới hạn ở mức $80\,kbps$. Dù vậy, trong kịch bản kiểm thử thực tế, thông lượng ứng dụng (Application throughput) chỉ đạt khoảng $8,2\,kbps$, ngay cả khi cho 2 hoặc nhiều node cùng tham gia gửi dữ liệu đồng thời. Sự suy giảm nghiêm trọng này xuất phát từ hai nguyên nhân kỹ thuật cốt lõi. Thứ nhất, overhead của giao thức ZCL là rất lớn; lệnh \texttt{reportTemperature()} được sử dụng trong bài test chỉ mang theo từ 2 đến 4 byte dữ liệu hữu ích nhưng phải gánh thêm hàng chục byte của các lớp header, làm cho hiệu suất truyền tải thực tế sụt giảm. Thứ hai, đặc thù của mạng Zigbee là chia sẻ chung kênh truyền sóng vô tuyến. Khi các node gửi dữ liệu dồn dập (ví dụ 100 gói/giây), chúng liên tục tranh chấp kênh truyền. Cơ chế tránh va chạm CSMA/CA sẽ phát hiện kênh truyền đang bận và ép các node phải lùi thời gian phát lại (Random Backoff). Do đó, việc có thêm node phát đồng thời không những không làm tăng tổng thông lượng mạng, mà còn làm gia tăng tỷ lệ đụng độ và thời gian chờ đợi. Kết quả là tổng băng thông bị bão hòa ở ngưỡng giới hạn vật lý của môi trường vô tuyến, tức khoảng $8,2\,kbps$ (tương đương 1024 bytes/giây), và khi vượt ngưỡng này thì hàng đợi APS sẽ bị đầy dẫn đến hiện tượng loại bỏ gói tin (packet loss).
-        
-            \textbf{LoRa (Wio-E5 / STM32WLE5JC) -- Chế độ TEST/P2P:} Trong kịch bản kiểm thử, hệ thống sử dụng chế độ TEST/P2P (\texttt{AT+MODE=TEST}) thay vì LoRaWAN. Chế độ này bỏ qua hoàn toàn duty cycle (không áp dụng giới hạn 1\% của ETSI) và stack LoRaWAN, cho phép phát liên tục chỉ bị giới hạn bởi Time-on-Air. Tốc độ bit PHY tại SF7/125 kHz đạt $5.470\,bps$ \cite{semtech_lora_design_guide}. Mỗi chu kỳ phát bao gồm thời gian truyền AT command qua UART ($\approx 15\,ms$) cộng Time-on-Air ($\approx 97,5\,ms$ cho gói 50 byte), tổng khoảng $115\,ms$, cho thông lượng ứng dụng $\approx 3,5\,kbps$. Giới hạn payload tối đa qua AT command là 169 byte/gói do độ dài lệnh tối đa là 528 ký tự \cite{seeed_wioe5_at_cmd}.
-        
-            \textbf{BLE (Native ESP32-S3):} BLE không qua module ngoài nên không có tầng UART. Thông lượng bị giới hạn bởi Connection Interval ($CI = 20\,ms$) và ATT MTU. Mặc định ATT MTU = 23 byte (20 byte dữ liệu), thông lượng chỉ $\approx 8\,kbps$ \cite{bluetooth_core_v5}. Khi kích hoạt Data Length Extension (DLE) và đàm phán MTU lên 247 byte (244 byte dữ liệu), thông lượng đạt $\approx 97,6\,kbps$ \cite{espressif_esp32s3_trm}.
-        
+
+            \textbf{Zigbee (E18-ZG120 / CC2530).} Tốc độ vật lý IEEE 802.15.4 tại băng 2,4~GHz đạt $R_{PHY} = 250\,\text{kbps}$ \cite{ieee802154_2020}. Mỗi frame Zigbee mang tối đa 99 byte payload ứng dụng sau khi trừ 28 byte overhead của các lớp MAC/NWK/APS trên tổng PSDU 127 byte \cite{zigbee_spec_r21}. Một chu kỳ phát--nhận ACK bao gồm: thời gian truyền frame ($127\,\text{B} \times 8 / 250\,\text{kbps} = 4{,}064\,\text{ms}$), khoảng LIFS ($0{,}192\,\text{ms}$) và frame ACK ($0{,}544\,\text{ms}$), tổng $T_{air} \approx 4{,}8\,\text{ms}$.
+
+            Nút thắt thực tế không phải là air interface mà là giao tiếp UART từ module E18-ZG120 lên LAN-MCU. Module đóng gói mỗi khung Zigbee (127 byte PSDU) vào khung HEX của Ebyte với 19 byte framing overhead, tạo ra frame UART 146 byte. Tại tốc độ $115200\,\text{bps}$ với 10 bit/byte (8N1), thời gian truyền một frame là:
+            \[
+                T_{UART,Zigbee} = \frac{146 \times 10}{115200} \approx 12{,}67\,\text{ms}
+            \]
+            Điều này khiến UART chậm hơn air interface $12{,}67\,\text{ms} / 4{,}8\,\text{ms} \approx 2{,}6\times$, và trở thành điểm nghẽn của toàn chặng Zigbee.
+
+            Trong kiểm thử thực tế với lệnh \texttt{reportTemperature()} -- chỉ mang 2--4 byte dữ liệu hữu ích nhưng phải gánh toàn bộ overhead ZCL -- thông lượng ứng dụng chỉ đạt $R_{app} \approx 8{,}2\,\text{kbps}$. Khi nhiều node phát đồng thời, cơ chế CSMA/CA ép các node lùi thời gian phát ngẫu nhiên (random backoff) khiến tổng thông lượng không tăng mà còn bị bão hòa tại ngưỡng này; vượt qua đó hàng đợi APS sẽ tràn và xảy ra mất gói (packet loss).
+
+            \textbf{LoRa (Wio-E5 / STM32WLE5JC) -- Chế độ TEST/P2P.} Hệ thống sử dụng chế độ \texttt{AT+MODE=TEST} thay vì LoRaWAN, cho phép bỏ qua hoàn toàn giới hạn duty cycle 1\% của ETSI và stack LoRaWAN; thông lượng chỉ bị giới hạn bởi Time-on-Air. Tốc độ PHY tại SF7/BW125\,kHz đạt $R_{PHY} = 5{,}47\,\text{kbps}$ \cite{semtech_lora_design_guide}. Với gói 50 byte, Time-on-Air tính theo công thức Semtech là $T_{air} \approx 97{,}5\,\text{ms}$. Mỗi chu kỳ phát còn bao gồm thời gian xử lý AT command và nhận phản hồi \texttt{+TEST: TX DONE} ($\approx 16{,}1\,\text{ms}$), tổng $T_{cycle} \approx 113{,}6\,\text{ms}$, dẫn đến:
+            \[
+                R_{app,LoRa} = \frac{50 \times 8}{113{,}6\,\text{ms}} \approx 3{,}52\,\text{kbps}
+            \]
+            Giới hạn payload tối đa qua AT command là 169 byte/gói do độ dài lệnh tối đa 528 ký tự \cite{seeed_wioe5_at_cmd}.
+
+            \textbf{BLE (Native ESP32-S3).} BLE được triển khai trực tiếp trên LAN-MCU nên không có tầng UART trung gian. Thông lượng bị giới hạn bởi Connection Interval ($CI = 20\,\text{ms}$) và kích thước ATT payload. Ở cấu hình mặc định ATT MTU = 23 byte (20 byte dữ liệu), thông lượng chỉ đạt $\approx 8\,\text{kbps}$ \cite{bluetooth_core_v5}. Khi kích hoạt Data Length Extension (DLE) và đàm phán MTU lên 247 byte (244 byte ATT payload), thông lượng cải thiện đáng kể:
+            \[
+                R_{app,BLE,DLE} = \frac{244 \times 8}{20\,\text{ms}} = 97{,}6\,\text{kbps}
+            \]
+
+            Bảng~\ref{tab:throughput_efficiency} tổng hợp so sánh thông lượng và hiệu suất của ba giao thức.
+
             \begin{longtable}{|p{3.2cm}|p{2.3cm}|p{2.7cm}|p{1.4cm}|p{4.2cm}|}
                 \caption{So sánh thông lượng và hiệu suất của các giao thức.}
                 \label{tab:throughput_efficiency} \\
                 \hline
                 \textbf{Giao thức} & $\boldsymbol{R_{PHY}}$ & $\boldsymbol{R_{app}}$ \textbf{thực tế} & $\boldsymbol{\eta}$ & \textbf{Nút thắt chính} \\ \hline
                 \endfirsthead
-        
                 \hline
                 \textbf{Giao thức} & $\boldsymbol{R_{PHY}}$ & $\boldsymbol{R_{app}}$ \textbf{thực tế} & $\boldsymbol{\eta}$ & \textbf{Nút thắt chính} \\ \hline
                 \endhead
-        
                 \hline
                 \endfoot
                 \endlastfoot
-        
-                Zigbee & $250\,kbps$ & $\approx 8,2\,kbps$ & $3,3\%$ & Cơ chế CSMA/CA \& Overhead chuẩn ZCL \\ \hline
-                LoRa SF7/125 (P2P) & $5,47\,kbps$ & $\approx 3,5\,kbps$ & $64\%$ & Time-on-Air ($\approx 97,5\,ms/gói$) \\ \hline
-                BLE (không DLE) & $1000\,kbps$ & $\approx 8\,kbps$ & $0,8\%$ & MTU = 20 byte, $CI = 20\,ms$ \\ \hline
-                BLE (bật DLE) & $1000\,kbps$ & $\approx 97,6\,kbps$ & $9,8\%$ & $CI = 20\,ms$ \\ \hline
+                Zigbee & $250\,\text{kbps}$ & $\approx 8{,}2\,\text{kbps}$ & $3{,}3\%$ & CSMA/CA contention \& UART 12,67\,ms/frame \\ \hline
+                LoRa SF7/125 (P2P) & $5{,}47\,\text{kbps}$ & $\approx 3{,}5\,\text{kbps}$ & $64\%$ & Time-on-Air ($\approx 97{,}5\,\text{ms/gói}$) \\ \hline
+                BLE (không DLE) & $1000\,\text{kbps}$ & $\approx 8\,\text{kbps}$ & $0{,}8\%$ & MTU = 20 byte, $CI = 20\,\text{ms}$ \\ \hline
+                BLE (bật DLE) & $1000\,\text{kbps}$ & $\approx 97{,}6\,\text{kbps}$ & $9{,}8\%$ & $CI = 20\,\text{ms}$ \\ \hline
             \end{longtable}
-        
-            \item \textbf{Độ trễ hệ thống}
 
-            Độ trễ End-to-End $T_{e2e}$ là tổng thời gian xử lý và truyền dẫn qua tất cả các chặng:
-            
+            % ---------------------------------------------------------------
+            \item \textbf{Độ trễ End-to-End}
+
+            Độ trễ End-to-End $T_{e2e}$ là tổng thời gian từ khi node gửi dữ liệu đến khi bản tin xuất hiện trên MQTT Broker:
             \[
-                T_{e2e} = T_{air} + T_{UART} + T_{batch} + T_{SPI} + T_{network}
+                T_{e2e} = T_{air} + T_{UART} + T_{CI} + T_{batch} + T_{SPI} + T_{network}
             \]
-            
-            Các thành phần chính gồm:
-            
+
+            Các thành phần được định lượng như sau:
+
             \begin{itemize}
-                \item \textbf{Thời gian truyền sóng $T_{air}$:} Zigbee $\approx 5\,ms$, LoRa SF7 $\approx 97{,}5\,ms$, BLE $\approx 2{,}2\,ms$.
-                \item \textbf{Độ trễ UART $T_{UART}$:} Khoảng $10{,}5\,ms/\text{gói}$ với Zigbee, $\approx 15\,ms$ với LoRa AT command, $\approx 5\,ms$ với BLE.
-                \item \textbf{Độ trễ gom gói $T_{batch}$:} Dao động trong khoảng $0\text{--}10\,ms$ do cơ chế batch flush tại LAN-MCU.
-                \item \textbf{Độ trễ SPI $T_{SPI}$:} Truyền dữ liệu tại xung nhịp $60\,MHz$ (cực nhỏ, $\approx 0{,}02\,ms$).
-                \item \textbf{Độ trễ mạng $T_{network}$:} Truyền từ Gateway lên Cloud qua WiFi/Ethernet, trung bình $\approx 30\,ms$.
+                \item \textbf{$T_{air}$ -- Thời gian truyền sóng:} Zigbee $\approx 4{,}8\,\text{ms}$ (127 byte frame + LIFS + ACK), LoRa SF7 $\approx 97{,}5\,\text{ms}$ (ToA, gói 50 byte), BLE $\approx 2{,}2\,\text{ms}$ (LL PDU 263 byte tại 1 Mbps + turnaround).
+                \item \textbf{$T_{UART}$ -- Độ trễ giao tiếp module--MCU:} Zigbee $\approx 12{,}67\,\text{ms}$ (146 byte Ebyte frame tại 115200 bps, 8N1), LoRa $\approx 16{,}1\,\text{ms}$ (AT command + phản hồi TX DONE). BLE không có thành phần này do tích hợp native trên LAN-MCU.
+                \item \textbf{$T_{CI}$ -- Độ trễ chờ Connection Interval (chỉ BLE):} Vì BLE chỉ truyền dữ liệu tại các thời điểm cố định cách nhau $CI = 20\,\text{ms}$, một gói đến bất kỳ thời điểm nào trong chu kỳ phải chờ đến interval tiếp theo. Độ trễ chờ này dao động $0$--$CI = 0$--$20\,\text{ms}$, trung bình $CI/2 = 10\,\text{ms}$. Zigbee và LoRa không có thành phần này.
+                \item \textbf{$T_{batch}$ -- Độ trễ gom gói:} Dao động $0$--$10\,\text{ms}$ tùy thời điểm dữ liệu đến trong chu kỳ batch flush của LAN-MCU.
+                \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, worst-case burst ($\approx 5193$ byte, xem Mục~4) mất $\approx 0{,}693\,\text{ms}$; hệ số sử dụng bus chỉ đạt $6{,}93\%$.
+                \item \textbf{$T_{network}$ -- Độ trễ WAN lên Cloud:} Trung bình $\approx 30\,\text{ms}$ qua Wi-Fi đến MQTT Broker.
             \end{itemize}
-            
-            \begin{longtable}{|p{4.5cm}|p{4cm}|p{5.5cm}|}
+
+            Với BLE, độ trễ worst-case cần tính thêm $T_{CI,max} = 20\,\text{ms}$ (gói đến ngay sau khi vừa bỏ lỡ một interval):
+            \[
+                T_{e2e,BLE,worst} = T_{air} + T_{CI,max} + T_{batch,max} + T_{SPI} + T_{network}
+                \approx 2{,}2 + 20 + 10 + 0{,}7 + 30 \approx 63\,\text{ms}
+            \]
+
+            \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{5cm}|}
                 \caption{Độ trễ dự kiến theo từng kịch bản truyền.}
                 \label{tab:latency_estimation} \\
                 \hline
-                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
+                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần chiếm ưu thế} \\ \hline
                 \endfirsthead
-            
                 \hline
-                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần tốn thời gian} \\ \hline
+                \textbf{Kịch bản truyền} & \textbf{Độ trễ dự kiến} & \textbf{Thành phần chiếm ưu thế} \\ \hline
                 \endhead
-            
                 \hline
                 \endfoot
                 \endlastfoot
-            
-                Zigbee $\rightarrow$ MQTT & $46\,ms$--$56\,ms$ & Mạng ($T_{network}$) và UART \\ \hline
-                LoRa SF7 (P2P) $\rightarrow$ MQTT & $143\,ms$--$153\,ms$ & Thời gian truyền sóng ($T_{air}$) \\ \hline
-                BLE $\rightarrow$ MQTT & $37\,ms$--$47\,ms$ & Mạng ($T_{network}$) \\ \hline
+                Zigbee $\rightarrow$ MQTT & $48\,\text{ms}$--$58\,\text{ms}$ & $T_{UART}$ (12,67 ms) \& $T_{network}$ (30 ms) \\ \hline
+                LoRa SF7 (P2P) $\rightarrow$ MQTT & $144\,\text{ms}$--$154\,\text{ms}$ & $T_{air}$ (97,5 ms) -- chiếm $\approx 65\%$ \\ \hline
+                BLE $\rightarrow$ MQTT (trung bình) & $33\,\text{ms}$--$43\,\text{ms}$ & $T_{network}$ (30 ms) -- chiếm $\approx 80\%$ \\ \hline
+                BLE $\rightarrow$ MQTT (worst-case) & $53\,\text{ms}$--$63\,\text{ms}$ & $T_{CI,max}$ (20 ms) \& $T_{network}$ (30 ms) \\ \hline
             \end{longtable}
-            
-            \item \textbf{Khả năng chịu tải}
-            
-            Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,ms$):
-            
+
+            % ---------------------------------------------------------------
+            \item \textbf{Khả năng chịu tải và phân tích bus SPI}
+
+            Để đánh giá mức độ sử dụng bus SPI, ta tính lượng dữ liệu tích lũy tại LAN-MCU trong một batch interval $T_{batch} = 10\,\text{ms}$ dựa trên thông lượng thực tế của từng giao thức (Bảng~\ref{tab:batch_data}).
+
             \begin{longtable}{|p{3cm}|p{4cm}|p{6.5cm}|}
                 \caption{Dữ liệu tích lũy theo giao thức trong một batch interval.}
                 \label{tab:batch_data} \\
                 \hline
-                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
+                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch ($T_{batch} = 10\,\text{ms}$)} \\ \hline
                 \endfirsthead
-            
                 \hline
-                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
+                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch ($T_{batch} = 10\,\text{ms}$)} \\ \hline
                 \endhead
-            
                 \hline
                 \endfoot
                 \endlastfoot
-            
                 Zigbee     & $8{,}2\,\text{kbps}$   & $8200 / 8 \times 0{,}010 \approx 10\,\text{byte}$   \\ \hline
                 BLE (DLE)  & $97{,}6\,\text{kbps}$  & $97600 / 8 \times 0{,}010 \approx 122\,\text{byte}$ \\ \hline
                 LoRa SF7/125 & $3{,}5\,\text{kbps}$ & $3500 / 8 \times 0{,}010 \approx 4\,\text{byte}$    \\ \hline
-                \textbf{Tổng} & $\mathbf{109{,}3\,\text{kbps}}$ & $\mathbf{\approx 137\,\text{byte}}$          \\ \hline
+                \textbf{Tổng} & $\mathbf{109{,}3\,\text{kbps}}$ & $\mathbf{\approx 137\,\text{byte}}$ \\ \hline
             \end{longtable}
-            
-            Thời gian SPI cần để truyền $137\,\text{byte}$ sang WAN-MCU:
-            
+
+            Với 137 byte mỗi batch, thời gian SPI cần thiết là:
             \[
-                T_{SPI,batch} = \frac{137 \times 8}{60 \times 10^6} \approx 0{,}0183\,ms
+                T_{SPI,batch} = \frac{137 \times 8}{60 \times 10^6} \approx 0{,}0183\,\text{ms}
             \]
-            
-            Hệ số sử dụng bus SPI:
-            
+
+            Hệ số sử dụng bus SPI trong điều kiện trung bình:
             \[
-                U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} = 0{,}183\%
+                U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} \approx 0{,}183\%
             \]
-            
-            Thông lượng SPI tối đa lý thuyết tại $60\,MHz$:
-            
+
+            Để đánh giá điều kiện worst-case, ta giả thiết tất cả node gửi đồng thời với frame kích thước tối đa. Hệ thống hỗ trợ tối đa 20 node Zigbee, 8 node BLE, và 1 node LoRa (xem ràng buộc phần sau). Burst tổng được tính:
+
+            \begin{longtable}{|p{3cm}|p{2cm}|p{3.5cm}|p{4.5cm}|}
+                \caption{Tính toán burst SPI trong điều kiện worst-case.}
+                \label{tab:spi_worst} \\
+                \hline
+                \textbf{Giao thức} & \textbf{Số node} & \textbf{Frame tối đa/node} & \textbf{Tổng burst} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{Giao thức} & \textbf{Số node} & \textbf{Frame tối đa/node} & \textbf{Tổng burst} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                Zigbee   & 20 & 146 byte (PSDU + Ebyte overhead) & $20 \times 146 = 2920\,\text{byte}$ \\ \hline
+                BLE (DLE) & 8  & 263 byte (LL PDU tối đa)         & $8 \times 263 = 2104\,\text{byte}$  \\ \hline
+                LoRa P2P & 1  & 169 byte (AT command limit)       & $1 \times 169 = 169\,\text{byte}$   \\ \hline
+                \textbf{Tổng} & \textbf{29} & -- & $\mathbf{5193\,\text{byte}}$ \\ \hline
+            \end{longtable}
+
+            Thời gian SPI cần thiết và hệ số sử dụng trong điều kiện worst-case:
+            \[
+                T_{SPI,worst} = \frac{5193 \times 8}{60 \times 10^6} \approx 0{,}693\,\text{ms}
+            \]
+            \[
+                U_{SPI,worst} = \frac{0{,}693}{10} \approx 6{,}93\%
+            \]
+
+            Thông lượng tối đa lý thuyết của SPI là:
             \[
                 R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
             \]
-            
-            \begin{itemize}
-                \item \textbf{Zigbee (E18-ZG120):} Giới hạn bởi $8\,KB$ SRAM của CC2530. Sau khi Z-Stack chiếm $\approx 5\,KB$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định Z-Stack (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Lỗi \texttt{0x18} (Not enough cache) và \texttt{0x11} (Memory full) là các chỉ báo điển hình khi vượt ngưỡng này.
-                \item \textbf{LoRa (P2P):} Trong chế độ P2P point-to-point, Gateway chỉ liên kết với một node tại một thời điểm. Không có giới hạn mạng lưới như LoRaWAN.
-                \item \textbf{BLE:} Giao thức GATT giới hạn tối đa 8 kết nối đồng thời trên ESP32-S3 (NimBLE stack).
-            \end{itemize}
-            
-            \textbf{Kết luận:} SPI không phải nút thắt -- tải thực tế chỉ chiếm $0{,}183\%$ capacity SPI. Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng; suy giảm chủ yếu do Zigbee Listener buffer ($512\,\text{byte}$) dễ tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,ms$).
-        
-        \end{enumerate}
 
+            Ngoài giới hạn bus, mỗi giao thức còn chịu ràng buộc về số node:
+
+            \begin{itemize}
+                \item \textbf{Zigbee (E18-ZG120 / CC2530):} CC2530 có $8\,\text{KB}$ SRAM; sau khi Z-Stack chiếm $\approx 5\,\text{KB}$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Vượt ngưỡng này sẽ phát sinh lỗi \texttt{0x18} (Not enough cache) hoặc \texttt{0x11} (Memory full).
+                \item \textbf{LoRa (P2P):} Chế độ point-to-point chỉ hỗ trợ một liên kết tại một thời điểm; không có ràng buộc mạng lưới như LoRaWAN.
+                \item \textbf{BLE:} NimBLE stack trên ESP32-S3 giới hạn tối đa 8 kết nối đồng thời.
+            \end{itemize}
+
+            \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $6{,}93\%$ (khi toàn bộ 29 node gửi frame tối đa đồng thời). Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
+
+        \end{enumerate}
     \newpage
