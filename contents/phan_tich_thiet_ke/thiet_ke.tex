@@ -1498,7 +1498,7 @@
 
             Độ trễ End-to-End $T_{e2e}$ là tổng thời gian từ khi node gửi dữ liệu đến khi bản tin xuất hiện trên MQTT Broker:
             \[
-                T_{e2e} = T_{air} + T_{UART} + T_{batch} + T_{SPI} + T_{network}
+                T_{e2e} = T_{air} + T_{UART} + T_{CI} + T_{batch} + T_{SPI} + T_{network}
             \]
 
             Các thành phần được định lượng như sau:
@@ -1506,12 +1506,19 @@
             \begin{itemize}
                 \item \textbf{$T_{air}$ -- Thời gian truyền sóng:} Zigbee $\approx 4{,}8\,\text{ms}$ (127 byte frame + LIFS + ACK), LoRa SF7 $\approx 97{,}5\,\text{ms}$ (ToA, gói 50 byte), BLE $\approx 2{,}2\,\text{ms}$ (LL PDU 263 byte tại 1 Mbps + turnaround).
                 \item \textbf{$T_{UART}$ -- Độ trễ giao tiếp module--MCU:} Zigbee $\approx 12{,}67\,\text{ms}$ (146 byte Ebyte frame tại 115200 bps, 8N1), LoRa $\approx 16{,}1\,\text{ms}$ (AT command + phản hồi TX DONE). BLE không có thành phần này do tích hợp native trên LAN-MCU.
+                \item \textbf{$T_{CI}$ -- Độ trễ chờ Connection Interval (chỉ BLE):} Vì BLE chỉ truyền dữ liệu tại các thời điểm cố định cách nhau $CI = 20\,\text{ms}$, một gói đến bất kỳ thời điểm nào trong chu kỳ phải chờ đến interval tiếp theo. Độ trễ chờ này dao động $0$--$CI = 0$--$20\,\text{ms}$, trung bình $CI/2 = 10\,\text{ms}$. Zigbee và LoRa không có thành phần này.
                 \item \textbf{$T_{batch}$ -- Độ trễ gom gói:} Dao động $0$--$10\,\text{ms}$ tùy thời điểm dữ liệu đến trong chu kỳ batch flush của LAN-MCU.
-                \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, worst-case burst ($\approx 2083$ byte) mất $\approx 0{,}37\,\text{ms}$; hệ số sử dụng bus chỉ đạt $3{,}7\%$, xác nhận SPI không phải nút thắt.
+                \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, worst-case burst ($\approx 5193$ byte, xem Mục~4) mất $\approx 0{,}693\,\text{ms}$; hệ số sử dụng bus chỉ đạt $6{,}93\%$.
                 \item \textbf{$T_{network}$ -- Độ trễ WAN lên Cloud:} Trung bình $\approx 30\,\text{ms}$ qua Wi-Fi đến MQTT Broker.
             \end{itemize}
 
-            \begin{longtable}{|p{4.5cm}|p{4cm}|p{5.5cm}|}
+            Với BLE, độ trễ worst-case cần tính thêm $T_{CI,max} = 20\,\text{ms}$ (gói đến ngay sau khi vừa bỏ lỡ một interval):
+            \[
+                T_{e2e,BLE,worst} = T_{air} + T_{CI,max} + T_{batch,max} + T_{SPI} + T_{network}
+                \approx 2{,}2 + 20 + 10 + 0{,}7 + 30 \approx 63\,\text{ms}
+            \]
+
+            \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{5cm}|}
                 \caption{Độ trễ dự kiến theo từng kịch bản truyền.}
                 \label{tab:latency_estimation} \\
                 \hline
@@ -1525,7 +1532,8 @@
                 \endlastfoot
                 Zigbee $\rightarrow$ MQTT & $48\,\text{ms}$--$58\,\text{ms}$ & $T_{UART}$ (12,67 ms) \& $T_{network}$ (30 ms) \\ \hline
                 LoRa SF7 (P2P) $\rightarrow$ MQTT & $144\,\text{ms}$--$154\,\text{ms}$ & $T_{air}$ (97,5 ms) -- chiếm $\approx 65\%$ \\ \hline
-                BLE $\rightarrow$ MQTT & $33\,\text{ms}$--$43\,\text{ms}$ & $T_{network}$ (30 ms) -- chiếm $\approx 80\%$ \\ \hline
+                BLE $\rightarrow$ MQTT (trung bình) & $33\,\text{ms}$--$43\,\text{ms}$ & $T_{network}$ (30 ms) -- chiếm $\approx 80\%$ \\ \hline
+                BLE $\rightarrow$ MQTT (worst-case) & $53\,\text{ms}$--$63\,\text{ms}$ & $T_{CI,max}$ (20 ms) \& $T_{network}$ (30 ms) \\ \hline
             \end{longtable}
 
             % ---------------------------------------------------------------
@@ -1561,7 +1569,35 @@
                 U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} \approx 0{,}183\%
             \]
 
-            Ngay cả trong điều kiện worst-case -- tất cả node gửi đồng thời tạo burst $\approx 2083$ byte -- bus SPI chỉ bị chiếm dụng $3{,}7\%$ chu kỳ batch. Thông lượng tối đa lý thuyết của SPI là:
+            Để đánh giá điều kiện worst-case, ta giả thiết tất cả node gửi đồng thời với frame kích thước tối đa. Hệ thống hỗ trợ tối đa 20 node Zigbee, 8 node BLE, và 1 node LoRa (xem ràng buộc phần sau). Burst tổng được tính:
+
+            \begin{longtable}{|p{3cm}|p{2cm}|p{3.5cm}|p{4.5cm}|}
+                \caption{Tính toán burst SPI trong điều kiện worst-case.}
+                \label{tab:spi_worst} \\
+                \hline
+                \textbf{Giao thức} & \textbf{Số node} & \textbf{Frame tối đa/node} & \textbf{Tổng burst} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{Giao thức} & \textbf{Số node} & \textbf{Frame tối đa/node} & \textbf{Tổng burst} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+                Zigbee   & 20 & 146 byte (PSDU + Ebyte overhead) & $20 \times 146 = 2920\,\text{byte}$ \\ \hline
+                BLE (DLE) & 8  & 263 byte (LL PDU tối đa)         & $8 \times 263 = 2104\,\text{byte}$  \\ \hline
+                LoRa P2P & 1  & 169 byte (AT command limit)       & $1 \times 169 = 169\,\text{byte}$   \\ \hline
+                \textbf{Tổng} & \textbf{29} & -- & $\mathbf{5193\,\text{byte}}$ \\ \hline
+            \end{longtable}
+
+            Thời gian SPI cần thiết và hệ số sử dụng trong điều kiện worst-case:
+            \[
+                T_{SPI,worst} = \frac{5193 \times 8}{60 \times 10^6} \approx 0{,}693\,\text{ms}
+            \]
+            \[
+                U_{SPI,worst} = \frac{0{,}693}{10} \approx 6{,}93\%
+            \]
+
+            Thông lượng tối đa lý thuyết của SPI là:
             \[
                 R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
             \]
@@ -1574,8 +1610,7 @@
                 \item \textbf{BLE:} NimBLE stack trên ESP32-S3 giới hạn tối đa 8 kết nối đồng thời.
             \end{itemize}
 
-            \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $3{,}7\%$. Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
+            \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $6{,}93\%$ (khi toàn bộ 29 node gửi frame tối đa đồng thời). Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
 
         \end{enumerate}
-
     \newpage

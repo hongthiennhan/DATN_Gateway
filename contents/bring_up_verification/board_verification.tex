@@ -254,37 +254,14 @@
                           = 109{,}3\,\text{kbps}
             \]
 
-            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) được tính theo thông lượng thực tế của từng giao thức (Bảng~\ref{tab:batch_data_accumulation}).
+            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại Bảng~\ref{tab:batch_data} (Mục~\ref{sec:performance_analysis}). Tóm tắt kết quả:
 
-            \begin{longtable}{|p{4cm}|p{3.5cm}|p{5cm}|}
-                \caption{Dữ liệu tích lũy trong một chu kỳ batch ($T_{batch} = 10\,\text{ms}$).}
-                \label{tab:batch_data_accumulation} \\
-                \hline
-                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
-                \endfirsthead
-                \hline
-                \textbf{Giao thức} & \textbf{Thông lượng} & \textbf{Dữ liệu/batch} \\ \hline
-                \endhead
-                \hline
-                \endfoot
-                \endlastfoot
-                Zigbee       & $8{,}2\,\text{kbps}$  & $8200\,/\,8 \times 0{,}010 \approx 10\,\text{byte}$   \\ \hline
-                BLE (DLE)    & $97{,}6\,\text{kbps}$ & $97600\,/\,8 \times 0{,}010 \approx 122\,\text{byte}$ \\ \hline
-                LoRa SF7/125 & $3{,}5\,\text{kbps}$  & $3500\,/\,8 \times 0{,}010 \approx 4\,\text{byte}$    \\ \hline
-                \textbf{Tổng} & $\mathbf{109{,}3\,\text{kbps}}$ & $\approx \mathbf{137\,\text{byte}}$ \\ \hline
-            \end{longtable}
+            \begin{itemize}
+                \item \textbf{Tải trung bình:} $\approx 137\,\text{byte/batch}$, $T_{SPI} \approx 0{,}0183\,\text{ms}$, $U_{SPI} \approx 0{,}183\%$.
+                \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ (xem Bảng~\ref{tab:spi_worst}).
+            \end{itemize}
 
-            Thời gian SPI cần để truyền 137 byte sang WAN-MCU tại xung nhịp $60\,\text{MHz}$:
-            \[
-                T_{SPI,batch} = \frac{137 \times 8}{60 \times 10^{6}} \approx 0{,}0183\,\text{ms}
-            \]
-
-            Hệ số sử dụng bus SPI trong điều kiện tải trung bình:
-            \[
-                U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} \approx 0{,}183\%
-            \]
-
-            Ngay cả trong điều kiện worst-case -- tất cả node burst đồng thời ($\approx 2083$ byte) -- $U_{SPI}$ chỉ đạt $3{,}7\%$. Thông lượng tối đa lý thuyết của SPI:
+            Thông lượng tối đa lý thuyết của SPI:
             \[
                 R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
             \]
