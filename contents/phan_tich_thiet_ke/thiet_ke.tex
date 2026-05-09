@@ -1119,8 +1119,8 @@
                     
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.7\textwidth]{figures/incorrect_plane_void_routing.png}
-                        \includegraphics[width=0.7\textwidth]{figures/DATN/slave_i2c0.png}
+                        \includegraphics[width=0.48\textwidth]{figures/incorrect_plane_void_routing.png}
+                        \includegraphics[width=0.48\textwidth]{figures/DATN/slave_i2c0.png}
                         \caption{Tín hiệu Slave\_I2C0 được định tuyến liên tục trên mặt phẳng GND đồng nhất.}
                     \end{figure}
 
@@ -1132,43 +1132,52 @@
 
                 \begin{enumerate}
                     \renewcommand{\labelenumi}{\alph{enumi}.}
-                    \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop):}
-                    \begin{itemize}
-                        \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn hoặc cuộn cảm cho nguồn xung.
-                        \item Mục tiêu là giảm thiểu diện tích vật lý của "vòng lặp xung" (Hot Loop Area) - nơi có dòng điện biến thiên $di/dt$ lớn nhất. Việc này giúp giảm cảm kháng ký sinh đường dây, hạn chế các xung gai điện áp (Voltage Spikes) và giảm thiểu bức xạ nhiễu EMI ra môi trường.
-                    \end{itemize}
-                    
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=0.5\textwidth]{figures/hot_loop_minimization.png}
-                        \caption{Vị trí các tụ điện trong nguồn xung +3V3.}
+
+                    \begin{figure}[H]
+                        \begin{minipage}{0.3\textwidth}
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/hot_loop_minimization.png}
+                            \caption{Vị trí các tụ điện trong nguồn xung +3V3.}
+                        \end{minipage}
+                        \hfill
+                        \begin{minipage}{0.65\textwidth}
+                            \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop):}
+                            \begin{itemize}
+                                \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn hoặc cuộn cảm cho nguồn xung.
+                                \item Mục tiêu là giảm thiểu diện tích vật lý của "vòng lặp xung" (Hot Loop Area) - nơi có dòng điện biến thiên $di/dt$ lớn nhất. Việc này giúp giảm cảm kháng ký sinh đường dây, hạn chế các xung gai điện áp (Voltage Spikes) và giảm thiểu bức xạ nhiễu EMI ra môi trường.
+                            \end{itemize}
+                        \end{minipage}
                     \end{figure}
-
-                    \item \textbf{Xử lý Điểm chuyển mạch (Switching Node):}
-                    \begin{itemize}
-                        \item Chân SW (Switching) là nơi dao động điện áp tần số cao với biên độ lớn ($dv/dt$ cao). Đường mạch tại đây được thiết kế dạng khối đồng (Polygon) ngắn và rộng để giảm điện trở và cảm kháng, nhưng diện tích không được quá lớn để hạn chế điện dung ký sinh gây tổn hao.
-                        \item Thiết kế đảm bảo tuyệt đối không định tuyến bất kỳ đường tín hiệu nhạy cảm nào đi ngang qua hoặc đi ở lớp ngay bên dưới (Layer 2) của cuộn cảm và điểm SW để tránh nhiễu.
-                    \end{itemize}
-                    
-                    \newpage
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=0.5\textwidth]{figures/switching_node.png}
-                        \caption{Điểm chuyển mạch trong nguồn xung +3V3.}
-                    \end{figure}        
-
-                    \item \textbf{Kỹ thuật Hồi tiếp (Feedback) và Ground:}
-                    \begin{itemize}
-                        \item \textbf{Kết nối Kelvin:} Đường tín hiệu hồi tiếp (Feedback) được lấy mẫu trực tiếp tại điểm sau tụ đầu ra $C_{OUT}$ để đảm bảo điện áp đo được là chính xác nhất.
-                        \item \textbf{Cách ly nhiễu:} Đường Feedback được đi tránh xa khỏi cuộn cảm và điểm SW. Ground của đường hồi tiếp và các linh kiện tín hiệu nhỏ (như tụ Soft-start, trở định thời) được nối vào Analog Ground (AGND) hoặc chân GND tín hiệu của IC, tách biệt với Power Ground (PGND) đang chịu dòng xung lớn, nhằm tránh nhiễu mặt đất (Ground Bounce).
-                    \end{itemize}
-                    
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=0.5\textwidth]{figures/feedback.png}
-                        \caption{Định tuyến hồi tiếp trong nguồn xung +3V3.}
-                    \end{figure}   
-
+                    \begin{figure}[H]
+                        \begin{minipage}{0.65\textwidth}
+                            \item \textbf{Xử lý Điểm chuyển mạch (Switching Node):}
+                            \begin{itemize}
+                                \item Chân SW (Switching) là nơi dao động điện áp tần số cao với biên độ lớn ($dv/dt$ cao). Đường mạch tại đây được thiết kế dạng khối đồng (Polygon) ngắn và rộng để giảm điện trở và cảm kháng, nhưng diện tích không được quá lớn để hạn chế điện dung ký sinh gây tổn hao.
+                                \item Thiết kế đảm bảo tuyệt đối không định tuyến bất kỳ đường tín hiệu nhạy cảm nào đi ngang qua hoặc đi ở lớp ngay bên dưới (Layer 2) của cuộn cảm và điểm SW để tránh nhiễu.
+                            \end{itemize}
+                        \end{minipage}
+                        \hfill
+                        \begin{minipage}{0.3\textwidth}
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/switching_node.png}
+                            \caption{Điểm chuyển mạch trong nguồn xung +3V3.}
+                        \end{minipage}
+                    \end{figure}
+                    \begin{figure}[H]
+                        \begin{minipage}{0.3\textwidth}
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/feedback.png}
+                            \caption{Định tuyến hồi tiếp trong nguồn xung +3V3.}
+                        \end{minipage}
+                        \hfill
+                        \begin{minipage}{0.65\textwidth}
+                            \item \textbf{Kỹ thuật Hồi tiếp (Feedback) và Ground:}
+                            \begin{itemize}
+                                \item \textbf{Kết nối Kelvin:} Đường tín hiệu hồi tiếp (Feedback) được lấy mẫu trực tiếp tại điểm sau tụ đầu ra $C_{OUT}$ để đảm bảo điện áp đo được là chính xác nhất.
+                                \item \textbf{Cách ly nhiễu:} Đường Feedback được đi tránh xa khỏi cuộn cảm và điểm SW. Ground của đường hồi tiếp và các linh kiện tín hiệu nhỏ (như tụ Soft-start, trở định thời) được nối vào Analog Ground (AGND) hoặc chân GND tín hiệu của IC, tách biệt với Power Ground (PGND) đang chịu dòng xung lớn, nhằm tránh nhiễu mặt đất (Ground Bounce).
+                            \end{itemize}
+                        \end{minipage}
+                    \end{figure}
                     \item \textbf{Quản lý Nhiệt (Thermal):}
                     \begin{itemize}
                         \item Tận dụng Pad tản nhiệt dưới bụng IC, thiết kế sử dụng mảng via tản nhiệt dày đặc để dẫn nhiệt trực tiếp xuống các lớp đồng Ground Plane rộng lớn ở bên dưới (L2, L5). Điều này biến toàn bộ bo mạch thành một lá tản nhiệt tự nhiên, đảm bảo IC hoạt động mát mẻ dưới tải dòng lớn.
@@ -1181,25 +1190,33 @@
                     %     \caption{Tản nhiệt trong nguồn xung +5V0\_SYS.}
                     % \end{figure}  
 
-                    \item \textbf{Thiết kế Mạng phân phối nguồn (Power Distribution Network - PDN):}
-                    Mục tiêu cốt lõi là duy trì trở kháng nguồn ($Z_{PDN}$) thấp hơn trở kháng mục tiêu trên toàn dải tần số hoạt động. Chiến lược thực hiện bao gồm:
+                    % \newpage
+                    \begin{figure}[H]
+                            \begin{minipage}{0.3\textwidth}
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/power_network.png}
+                            \caption{Mạng phân phối nguồn.}
+                        \end{minipage}
+                        \hfill
+                        \begin{minipage}{0.65\textwidth}
+                            \item \textbf{Thiết kế Mạng phân phối nguồn (Power Distribution Network - PDN):}
+                            Mục tiêu cốt lõi là duy trì trở kháng nguồn ($Z_{PDN}$) thấp hơn trở kháng mục tiêu trên toàn dải tần số hoạt động. Chiến lược thực hiện bao gồm:
+                            \begin{itemize}
+                                \item \textbf{Tụ điện phẳng:} Trong cấu trúc Stack-up 6 lớp, việc bố trí Lớp 2 (Ground) và Lớp 3 (Power) liền kề nhau với lớp cách điện mỏng tạo ra một tụ điện ký sinh lớn, giúp lọc các nhiễu tần số cực cao mà tụ điện rời không đáp ứng kịp.
+                                \item \textbf{Tụ điện Decoupling đa tầng:} Sử dụng tổ hợp nhiều giá trị tụ điện song song. Các tụ giá trị nhỏ (10pF - 100nF) đặt sát chân cấp nguồn của IC để triệt tiêu nhiễu cao tần/xung nhịp MCU. Các tụ giá trị lớn (10$\mu$F - 100$\mu$F) đặt gần đó để đáp ứng nhu cầu năng lượng cho các biến động tải lớn.
+                            \end{itemize}
+                        \end{minipage}
+                    \end{figure}     
+
                     \begin{itemize}
-                        \item \textbf{Tụ điện phẳng:} Trong cấu trúc Stack-up 6 lớp, việc bố trí Lớp 2 (Ground) và Lớp 3 (Power) liền kề nhau với lớp cách điện mỏng tạo ra một tụ điện ký sinh lớn, giúp lọc các nhiễu tần số cực cao mà tụ điện rời không đáp ứng kịp.
-                        \item \textbf{Tụ điện Decoupling đa tầng:} Sử dụng tổ hợp nhiều giá trị tụ điện song song. Các tụ giá trị nhỏ (10pF - 100nF) đặt sát chân cấp nguồn của IC để triệt tiêu nhiễu cao tần/xung nhịp MCU. Các tụ giá trị lớn (10$\mu$F - 100$\mu$F) đặt gần đó để đáp ứng nhu cầu năng lượng cho các biến động tải lớn.
                         \item \textbf{Hình dạng đường dây:} 
                         \begin{itemize}
                             \item Các đường dẫn nguồn chính được thiết kế dạng mặt phẳng (Plane) hoặc đường mạch rất rộng. Theo công thức $L \propto \ln(1/W)$, đường mạch càng rộng thì cảm kháng ký sinh ($L$) càng nhỏ.
                             \item Việc giảm cảm kháng $L$ giúp hạn chế hiện tượng sụt áp quá độ ($V_{drop} = L \cdot di/dt$) khi tải thay đổi đột ngột và giảm thiểu hiện tượng đổ chuông (Ringing) gây mất ổn định điện áp. Đồng thời, tiết diện dây lớn giúp giảm mật độ dòng điện, giảm tỏa nhiệt trên đường dây (IR Loss).
-                        \end{itemize}
-                    \end{itemize}
-
-                    % \newpage
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=0.5\textwidth]{figures/power_network.png}
-                        \caption{Mạng phân phối nguồn.}
-                    \end{figure}                     
+                        \end{itemize}   
+                    \end{itemize}      
                 \end{enumerate}
+                \newpage
 
             \paragraph{Kỹ thuật Định tuyến Tín hiệu Tốc độ cao (High-Speed Signal Routing)}
 
@@ -1229,32 +1246,29 @@
                     \end{itemize}
                      
                     % \newpage
-                    \begin{figure}[h]
-                        \centering
-                        \includegraphics[width=0.5\textwidth]{figures/sdio.png}
-                        \caption{Định tuyến SDIO giữa ESP32-S3 Slave với Micro SD Card.}
-                    \end{figure} 
-
                     \item \textbf{Kiểm soát Nhiễu và Toàn vẹn tín hiệu (EMI \& SI Control):}
                     \begin{itemize}
                         \item \textbf{Giảm thiểu Via:} Hạn chế tối đa việc chuyển lớp trên đường tín hiệu tốc độ cao để tránh gây gián đoạn trở kháng. Nếu bắt buộc phải chuyển lớp, các stitching via được đặt ngay cạnh via tín hiệu để duy trì đường hồi tiếp liền mạch.
                         \item \textbf{Định tuyến trực giao:} Để tránh hiện tượng xuyên nhiễu (Crosstalk) giữa các lớp liền kề được đi vuông góc với nhau. Tuyệt đối tránh đi dây song song chồng lên nhau.
-                        \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện.
-                        \item \textbf{Quy tắc khoảng cách:} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng đường dây) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau. Đồng thời, duy trì khoảng cách ly đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn.
                     \end{itemize}
+                    \begin{figure}[H]
+                        \begin{minipage}{0.3\textwidth}
+                            \centering
+                            \includegraphics[width=\textwidth]{figures/sdio.png}
+                            \caption{Định tuyến SDIO giữa ESP32-S3 Slave với Micro SD Card.}
+                        \end{minipage}
+                        \hfill
+                        \begin{minipage}{0.65\textwidth}
+                            \begin{itemize}
+                                \item \textbf{Toàn vẹn mặt phẳng tham chiếu:} Tín hiệu tốc độ cao luôn được tham chiếu tới một mặt phẳng đất liền mạch (Solid Ground Plane). Tuyệt đối không định tuyến băng qua các khe hở (Splits) hoặc vùng trống (Voids) trên lớp đất để tránh làm gãy khúc đường hồi tiếp dòng điện.
+                                \item \textbf{Quy tắc khoảng cách:} Áp dụng quy tắc 3W hoặc 5W (khoảng cách giữa các đường mạch lớn hơn 3-5 lần bề rộng đường dây) để giảm thiểu xuyên nhiễu giữa các bus tín hiệu khác nhau. Đồng thời, duy trì khoảng cách ly đối với các linh kiện gây nhiễu như thạch anh, cuộn cảm nguồn.
+                            \end{itemize}
+                        \end{minipage}
+                    \end{figure} 
                 \end{enumerate}
         
-    \newpage
     \subsection{Firmware và Software}
         \subsubsection{Kiến trúc phần mềm}
-        
-        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
-
-        Trong đó, LAN-MCU đóng vai trò điều phối lớp dưới, trực tiếp quản lý các kết nối nội bộ như LoRa, Zigbee, BLE và RS-485. Nhiệm vụ trọng tâm của LAN-MCU là thu thập, kiểm chứng và chuẩn hóa dữ liệu thô từ sensor trước khi đẩy lên kênh truyền thông nội bộ.
-        
-        Ngược lại, WAN-MCU đảm nhiệm vai trò quản lý lớp trên, duy trì kết nối Internet và giao tiếp Cloud qua MQTT. Đây là trung tâm điều phối cấu hình toàn hệ thống, thực hiện các tác vụ nặng như FOTA, Web Config Portal và điều hướng lệnh downlink từ server xuống lớp vật lý thông qua cơ chế ngắt GPIO Handshake.
-        
-        Sự phân tách vai trò rõ ràng giúp luồng dữ liệu vận hành mạch lạc: LAN-MCU tập trung vào tính thời gian thực của thiết bị đầu cuối, còn WAN-MCU đảm bảo tính ổn định cho các dịch vụ mạng diện rộng.
         
         % \begin{figure}[H]
         %     \centering
@@ -1272,22 +1286,29 @@
 
         \begin{figure}[H]
             \centering
-            \begin{minipage}[t]{0.48\textwidth}
+            \begin{minipage}[t]{0.35\textwidth}
                 \centering
-                \includegraphics[width=\linewidth]{figures/DATN/design_mculanfirmware.jpg}
+                \includegraphics[width=\textwidth]{figures/DATN/design_mculanfirmware.jpg}
                 \caption{MCU LAN Firmware}
                 \label{fig:mculan_firmware}
             \end{minipage}
-            \hfill
-            \begin{minipage}[t]{0.48\textwidth}
+            % \hfill
+            \begin{minipage}[t]{0.35\textwidth}
                 \centering
-                \includegraphics[width=\linewidth]{figures/DATN/design_mcuwanfirmware.jpg}
+                \includegraphics[width=\textwidth]{figures/DATN/design_mcuwanfirmware.jpg}
                 \caption{MCU WAN Firmware}
                 \label{fig:mcuwan_firmware}
             \end{minipage}
         \end{figure}
+        
+        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
 
-        \newpage
+        Trong đó, LAN-MCU đóng vai trò điều phối lớp dưới, trực tiếp quản lý các kết nối nội bộ như LoRa, Zigbee, BLE và RS-485. Nhiệm vụ trọng tâm của LAN-MCU là thu thập, kiểm chứng và chuẩn hóa dữ liệu thô từ sensor trước khi đẩy lên kênh truyền thông nội bộ.
+        
+        Ngược lại, WAN-MCU đảm nhiệm vai trò quản lý lớp trên, duy trì kết nối Internet và giao tiếp Cloud qua MQTT. Đây là trung tâm điều phối cấu hình toàn hệ thống, thực hiện các tác vụ nặng như FOTA, Web Config Portal và điều hướng lệnh downlink từ server xuống lớp vật lý thông qua cơ chế ngắt GPIO Handshake.
+        
+        Sự phân tách vai trò rõ ràng giúp luồng dữ liệu vận hành mạch lạc: LAN-MCU tập trung vào tính thời gian thực của thiết bị đầu cuối, còn WAN-MCU đảm bảo tính ổn định cho các dịch vụ mạng diện rộng.
+
         
         \paragraph{Firmware WAN-MCU: Kết nối Internet, Cloud và điều phối hệ thống}
         
