@@ -192,7 +192,7 @@
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
+                    \includegraphics[width=0.65\textwidth]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
                     \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end uplink}
                 \end{figure}
             
@@ -208,30 +208,48 @@
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
+                    \includegraphics[width=0.65\textwidth]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
                     \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end downlink}
                 \end{figure}
             
 
             % \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
+                % \begin{figure}[H]
+                %     \centering
+                %     \begin{minipage}[b]{0.55\textwidth}
+                %         \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
+                %         Kênh SPI đóng vai trò xương sống trong truyền tải dữ liệu, vận hành dựa trên các nguyên tắc đảm bảo tính toàn vẹn:
+                %         \begin{itemize}
+                %             \item \textbf{Kiểm tra toàn vẹn (Integrity Check):} Áp dụng thuật toán CRC cho từng khung tin để phát hiện lỗi vật lý trên đường truyền.
+                %             \item \textbf{Đồng bộ hóa thứ tự (Sequence Management):} Sử dụng Sequence Number để loại bỏ các gói tin trùng lặp hoặc phát hiện mất gói trong quá trình truyền tải.
+                %             \item \textbf{Tối ưu hóa năng lượng và tài nguyên:} Thay thế cơ chế REQ\_DOWNLINK tuần tự bằng cơ chế Async Notify qua GPIO Handshake, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ xử lý cảm biến thời gian thực.
+                %         \end{itemize}
+                %     \end{minipage}
+                %     \hfill
+                %     \begin{minipage}[t]{0.4\textwidth}
+                %         \centering
+                %         \includegraphics[width=\linewidth]{figures/DATN/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
+                %         \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
+                %         \label{fig:seq_lan_wan_spi}
+                %     \end{minipage}
+                % \end{figure}
+
+            \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
+
+                Kênh SPI đóng vai trò xương sống trong truyền tải dữ liệu, vận hành dựa trên các nguyên tắc đảm bảo tính toàn vẹn:
+                \begin{itemize}
+                    \item \textbf{Kiểm tra toàn vẹn (Integrity Check):} Áp dụng thuật toán CRC cho từng khung tin để phát hiện lỗi vật lý trên đường truyền.
+                    
+                    \item \textbf{Đồng bộ hóa thứ tự (Sequence Management):} Sử dụng Sequence Number để loại bỏ các gói tin trùng lặp hoặc phát hiện mất gói trong quá trình truyền tải.
+                    
+                    \item \textbf{Tối ưu hóa năng lượng và tài nguyên:} Thay thế cơ chế REQ\_DOWNLINK tuần tự bằng cơ chế Async Notify qua GPIO Handshake, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ xử lý cảm biến thời gian thực.
+                \end{itemize}
+                
                 \begin{figure}[H]
                     \centering
-                    \begin{minipage}[b]{0.55\textwidth}
-                        \paragraph{Cơ chế giao tiếp nội bộ LAN-MCU $\leftrightarrow$ WAN-MCU (SPI Reliability)}
-                        Kênh SPI đóng vai trò xương sống trong truyền tải dữ liệu, vận hành dựa trên các nguyên tắc đảm bảo tính toàn vẹn:
-                        \begin{itemize}
-                            \item \textbf{Kiểm tra toàn vẹn (Integrity Check):} Áp dụng thuật toán CRC cho từng khung tin để phát hiện lỗi vật lý trên đường truyền.
-                            \item \textbf{Đồng bộ hóa thứ tự (Sequence Management):} Sử dụng Sequence Number để loại bỏ các gói tin trùng lặp hoặc phát hiện mất gói trong quá trình truyền tải.
-                            \item \textbf{Tối ưu hóa năng lượng và tài nguyên:} Thay thế cơ chế REQ\_DOWNLINK tuần tự bằng cơ chế Async Notify qua GPIO Handshake, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ xử lý cảm biến thời gian thực.
-                        \end{itemize}
-                    \end{minipage}
-                    \hfill
-                    \begin{minipage}[t]{0.4\textwidth}
-                        \centering
-                        \includegraphics[width=\linewidth]{figures/DATN/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
-                        \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
-                        \label{fig:seq_lan_wan_spi}
-                    \end{minipage}
+                    \includegraphics[width=0.48\linewidth]{figures/DATN/sequencediagram_LAN-MCU-WAN-MCU_SPI.png}
+                    \caption{Sequence diagram: giao tiếp LAN-MCU $\leftrightarrow$ WAN-MCU qua SPI}
+                    \label{fig:seq_lan_wan_spi}
                 \end{figure}
 
             % \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
@@ -321,7 +339,7 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
+                        \includegraphics[width=0.95\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
                         \caption{Sơ đồ khối hệ thống}
                         \label{fig:blockdiagram_system}
                     \end{figure}
@@ -388,7 +406,7 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
+                        \includegraphics[width=0.95\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
                         \caption{Sơ đồ hệ thống nguồn}
                         \label{fig:blockdiagram_power}
                     \end{figure}
@@ -452,7 +470,7 @@
 
                     \begin{figure}[h]
                         \centering
-                        \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
+                        \includegraphics[width=0.95\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
                         \caption{Sơ đồ khối mạch adapter}
                         \label{fig:blockdiagram_adapter}
                     \end{figure}
