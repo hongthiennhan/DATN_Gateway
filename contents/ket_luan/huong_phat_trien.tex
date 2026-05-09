@@ -91,28 +91,39 @@
 
 
     \subsection{Phát triển Firmware chuyên sâu và tối ưu hóa hiệu suất}
-    Hiện tại, phần mềm hệ thống trên cả hai vi điều khiển (Master và Slave) mới chỉ dừng lại ở mức độ nguyên mẫu (Proof of Concept) để chứng minh luồng dữ liệu cơ bản. Để sản phẩm đạt độ hoàn thiện cao và sẵn sàng cho triển khai thực tế, các nội dung sau cần được ưu tiên phát triển:
+    % Hiện tại, phần mềm hệ thống trên cả hai vi điều khiển (Master và Slave) mới chỉ dừng lại ở mức độ nguyên mẫu (Proof of Concept) để chứng minh luồng dữ liệu cơ bản. Để sản phẩm đạt độ hoàn thiện cao và sẵn sàng cho triển khai thực tế, các nội dung sau cần được ưu tiên phát triển:
+
+    % \begin{itemize}
+    %     \item \textbf{Hoàn thiện Driver và Stack giao thức cho mạng cảm biến (LAN Domain):}
+    %     \begin{itemize}
+    %         \item Nâng cấp các giao thức hiện hữu (LoRa, Zigbee, RS485): Hiện tại, các module này mới chỉ được phát triển ở mức độ thử nghiệm (demo) gửi/nhận gói tin đơn giản (raw data). Cần triển khai đầy đủ các tầng của ngăn xếp giao thức (Protocol Stack) như cơ chế địa chỉ hóa (Addressing), quản lý mạng (Network Management), và kiểm tra lỗi gói tin (Packet Error Checking) để đảm bảo độ tin cậy.
+    %         \item Phát triển mới các giao thức chưa được hỗ trợ: Tiến hành lập trình driver và tích hợp các giao thức đã có trong thiết kế nhưng chưa được hiện thực hóa, bao gồm Z-Wave, Thread và Bluetooth Low Energy (BLE). Việc này đòi hỏi tích hợp các thư viện stack chuẩn và cấu hình tài nguyên phần cứng (Timer, Interrupt) phù hợp trên LAN-MCU.
+    %     \end{itemize}
+        
+    %     \item \textbf{Mở rộng khả năng kết nối mạng và giao thức ứng dụng (WAN Domain):}
+    %     \begin{itemize}
+    %         \item Đa dạng hóa kênh kết nối Internet: Hiện tại hệ thống chưa hỗ trợ Ethernet và NB-IoT. Cần phát triển driver cho module Ethernet (như W5500 hoặc EMAC tích hợp) và module NB-IoT để tăng tính dự phòng đường truyền khi Wi-Fi hoặc LTE gặp sự cố.
+    %         \item Bổ sung giao thức tầng ứng dụng: Ngoài MQTT hiện đang hoạt động, cần phát triển thêm các client cho HTTP/HTTPS (phục vụ gọi REST API) và CoAP (Constrained Application Protocol) để tương thích với các nền tảng IoT khác nhau và tối ưu hóa băng thông cho các mạng di động.
+    %     \end{itemize}
+        
+    %     \item \textbf{Cải tiến kiến trúc luồng dữ liệu và độ tin cậy hệ thống:}
+    %     \begin{itemize}
+    %         \item Tối ưu hóa luồng Gửi/Nhận (TX/RX Pipeline): Thiết kế lại cơ chế đệm (Buffering) và quản lý hàng đợi (Queue management) giữa các tác vụ (Tasks) trong FreeRTOS. Chuyển đổi từ cơ chế xử lý tuần tự hoặc blocking sang cơ chế hướng sự kiện (Event-driven) hoặc sử dụng DMA (Direct Memory Access) để tăng thông lượng và giảm tải cho CPU.
+    %         \item Xây dựng cơ chế xử lý lỗi (Error Handling) toàn diện: Hiện tại cơ chế xử lý lỗi còn sơ sài. Cần bổ sung các trình phục vụ ngắt và giám sát trạng thái (State Machine) để tự động phát hiện và khôi phục (Self-healing) khi xảy ra các lỗi như: mất kết nối module, treo bus SPI/I2C, hoặc tràn bộ nhớ đệm.
+    %     \end{itemize}
+    % \end{itemize}
+
+    Dựa trên nền tảng vận hành ổn định và kiến trúc hoàn thiện của Phiên bản 1.0.0, các định hướng phát triển tiếp theo tập trung vào việc tối ưu hóa tài nguyên và nâng cao năng lực xử lý để đáp ứng các kịch bản công nghiệp quy mô lớn với mật độ dữ liệu cao:
 
     \begin{itemize}
-        \item \textbf{Hoàn thiện Driver và Stack giao thức cho mạng cảm biến (LAN Domain):}
-        \begin{itemize}
-            \item Nâng cấp các giao thức hiện hữu (LoRa, Zigbee, RS485): Hiện tại, các module này mới chỉ được phát triển ở mức độ thử nghiệm (demo) gửi/nhận gói tin đơn giản (raw data). Cần triển khai đầy đủ các tầng của ngăn xếp giao thức (Protocol Stack) như cơ chế địa chỉ hóa (Addressing), quản lý mạng (Network Management), và kiểm tra lỗi gói tin (Packet Error Checking) để đảm bảo độ tin cậy.
-            \item Phát triển mới các giao thức chưa được hỗ trợ: Tiến hành lập trình driver và tích hợp các giao thức đã có trong thiết kế nhưng chưa được hiện thực hóa, bao gồm Z-Wave, Thread và Bluetooth Low Energy (BLE). Việc này đòi hỏi tích hợp các thư viện stack chuẩn và cấu hình tài nguyên phần cứng (Timer, Interrupt) phù hợp trên LAN-MCU.
-        \end{itemize}
+        \item \textbf{Nâng cấp toàn diện các ngăn xếp giao thức (Protocol Stacks):} Mặc dù hệ thống đã hỗ trợ đa dạng giao thức Sensing (Zigbee, LoRa, RS-485), việc triển khai hiện tại chủ yếu tập trung vào lớp vận chuyển dữ liệu thô. Để sẵn sàng cho các hệ thống Enterprise, cần tích hợp đầy đủ các tầng quản lý mạng chuyên sâu bao gồm: cơ chế định danh thiết bị quy mô lớn, quản lý cấu trúc Mesh phức tạp và các thuật toán kiểm tra lỗi gói tin nâng cao để duy trì tính toàn vẹn dữ liệu tuyệt đối.
         
-        \item \textbf{Mở rộng khả năng kết nối mạng và giao thức ứng dụng (WAN Domain):}
-        \begin{itemize}
-            \item Đa dạng hóa kênh kết nối Internet: Hiện tại hệ thống chưa hỗ trợ Ethernet và NB-IoT. Cần phát triển driver cho module Ethernet (như W5500 hoặc EMAC tích hợp) và module NB-IoT để tăng tính dự phòng đường truyền khi Wi-Fi hoặc LTE gặp sự cố.
-            \item Bổ sung giao thức tầng ứng dụng: Ngoài MQTT hiện đang hoạt động, cần phát triển thêm các client cho HTTP/HTTPS (phục vụ gọi REST API) và CoAP (Constrained Application Protocol) để tương thích với các nền tảng IoT khác nhau và tối ưu hóa băng thông cho các mạng di động.
-        \end{itemize}
+        \item \textbf{Tối ưu hóa pipeline dữ liệu bằng kiến trúc hướng sự kiện (Event-driven):} Kết quả phân tích hiệu suất tại Mục 4.6 chỉ ra rằng dù bus SPI chỉ chiếm 6,93\% băng thông trong điều kiện xấu nhất, rủi ro tràn bộ đệm (buffer overflow) vẫn tồn tại khi LAN-MCU phải phục vụ các ngắt ngoại vi liên tục. Do đó, việc chuyển đổi sang kiến trúc hướng sự kiện kết hợp với cơ chế truy cập bộ nhớ trực tiếp (DMA) là lựa chọn kỹ thuật tất yếu để giải phóng tài nguyên CPU, đảm bảo duy trì tỷ lệ truyền gói tin thành công (PDR) $>$ 85\% ngay cả dưới tải cực nặng.
         
-        \item \textbf{Cải tiến kiến trúc luồng dữ liệu và độ tin cậy hệ thống:}
-        \begin{itemize}
-            \item Tối ưu hóa luồng Gửi/Nhận (TX/RX Pipeline): Thiết kế lại cơ chế đệm (Buffering) và quản lý hàng đợi (Queue management) giữa các tác vụ (Tasks) trong FreeRTOS. Chuyển đổi từ cơ chế xử lý tuần tự hoặc blocking sang cơ chế hướng sự kiện (Event-driven) hoặc sử dụng DMA (Direct Memory Access) để tăng thông lượng và giảm tải cho CPU.
-            \item Xây dựng cơ chế xử lý lỗi (Error Handling) toàn diện: Hiện tại cơ chế xử lý lỗi còn sơ sài. Cần bổ sung các trình phục vụ ngắt và giám sát trạng thái (State Machine) để tự động phát hiện và khôi phục (Self-healing) khi xảy ra các lỗi như: mất kết nối module, treo bus SPI/I2C, hoặc tràn bộ nhớ đệm.
-        \end{itemize}
+        \item \textbf{Mở rộng các giao thức ứng dụng và bảo mật kết nối:} Để tăng cường khả năng tương thích với các nền tảng Cloud công nghiệp khác nhau, hệ thống cần tích hợp thêm các Client chuyên dụng cho HTTP/HTTPS và CoAP bên cạnh MQTT hiện có. Song song đó, cơ chế \textit{Safety FOTA} cần được nâng cấp để hỗ trợ cập nhật song song qua Ethernet, giúp tối ưu hóa băng thông và giảm thiểu thời gian dừng hệ thống (downtime) so với phương thức Wi-Fi NAT hiện tại.
+        
+        \item \textbf{Xây dựng cơ chế tự phục hồi (Self-healing) dựa trên State Machine:} Hệ thống cần bổ sung các máy trạng thái giám sát chuyên sâu để tự động phát hiện và khôi phục các lỗi logic ngoại vi (như treo bus I2C hoặc mất đồng bộ module adapter). Việc tự động hóa quy trình xử lý lỗi này sẽ đảm bảo tính sẵn sàng cao của thiết bị mà không cần sự can thiệp vật lý tại hiện trường.
     \end{itemize}
-
 
     \subsection{Tối ưu hóa chi phí và Hướng tới sản xuất}
     % Tối ưu hóa chi phí thiết kế phần cứng bằng cách phân tích và lựa chọn các linh kiện tương đương có giá thành tốt hơn hoặc các thiết kế tương đương nhưng vẫn đảm kỹ thuật và tiêu chuẩn công nghiệp, đánh giá về chi phí gia công.

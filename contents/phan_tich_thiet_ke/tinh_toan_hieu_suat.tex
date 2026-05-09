@@ -241,31 +241,29 @@
             \caption{Sơ đồ kiến trúc hệ thống và chuỗi truyền dẫn dữ liệu qua 4 chặng.}
             \label{fig:system_architecture}
         \end{figure}
-        % ---------------------------------------------------------------
-        \subsection{Thông lượng dữ liệu và hiệu suất băng thông ($\eta$)}
 
+        \subsection{Thông lượng dữ liệu và hiệu suất băng thông}
+ 
         Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích (payload) còn lại sau khi trừ overhead giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
-        \begin{equation}
-            \eta = \frac{R_{app}}{R_{PHY}}
-        \end{equation}
-
+        \[ \eta = \frac{R_{app}}{R_{PHY}} \]
+        
         \textbf{Zigbee (E18-ZG120 / CC2530).} Tốc độ vật lý IEEE 802.15.4 tại băng 2,4~GHz đạt $R_{PHY} = 250\,\text{kbps}$ \cite{ieee802154_2020}. Mỗi frame Zigbee mang tối đa 99 byte payload ứng dụng sau khi trừ 28 byte overhead của các lớp MAC/NWK/APS trên tổng PSDU 127 byte \cite{zigbee_spec_r21}. Một chu kỳ phát--nhận ACK bao gồm: thời gian truyền frame ($127\,\text{B} \times 8 / 250\,\text{kbps} = 4{,}064\,\text{ms}$), khoảng LIFS ($40\,\text{sym} \times 16\,\mu\text{s} = 0{,}640\,\text{ms}$) và frame ACK ($0{,}544\,\text{ms}$), tổng $T_{air} \approx 5{,}25\,\text{ms}$.
-
-        Nút thắt thực tế không phải là air interface mà là giao tiếp UART từ module E18-ZG120 lên LAN-MCU. Module đóng gói mỗi khung Zigbee (127 byte PSDU) vào khung HEX của Ebyte với 6--7 byte framing overhead, tạo ra frame UART $\approx 133$--$134$ byte. Tại tốc độ $115200\,\text{bps}$ với 10 bit/byte (8N1), thời gian truyền một frame là:
-        \[ T_{UART,Zigbee} = \frac{134 \times 10}{115200} \approx 11{,}6\,\text{ms} \]
-        Điều này khiến UART chậm hơn air interface $11{,}6\,\text{ms} / 5{,}25\,\text{ms} \approx 2{,}2\times$, và trở thành điểm nghẽn của toàn chặng Zigbee.
-
+        
+        Nút thắt thực tế không phải là air interface mà là giao tiếp UART từ module E18-ZG120 lên LAN-MCU. Module đóng gói mỗi khung Zigbee (127 byte PSDU) vào khung HEX của Ebyte với 19 byte framing overhead, tạo ra frame UART 146 byte. Tại tốc độ $115200\,\text{bps}$ với 10 bit/byte (8N1), thời gian truyền một frame là:
+        \[ T_{UART,Zigbee} = \frac{146 \times 10}{115200} \approx 12{,}67\,\text{ms} \]
+        Điều này khiến UART chậm hơn air interface $12{,}67\,\text{ms} / 5{,}25\,\text{ms} \approx 2{,}4\times$, và trở thành điểm nghẽn của toàn chặng Zigbee.
+        
         Trong kiểm thử thực tế với lệnh \texttt{reportTemperature()} -- chỉ mang 2--4 byte dữ liệu hữu ích nhưng phải gánh toàn bộ overhead ZCL -- thông lượng ứng dụng chỉ đạt $R_{app} \approx 8{,}2\,\text{kbps}$. Khi nhiều node phát đồng thời, cơ chế CSMA/CA ép các node lùi thời gian phát ngẫu nhiên (random backoff) khiến tổng thông lượng không tăng mà còn bị bão hòa tại ngưỡng này; vượt qua đó hàng đợi APS sẽ tràn và xảy ra mất gói (packet loss).
-
+        
         \textbf{LoRa (Wio-E5 / STM32WLE5JC) -- Chế độ TEST/P2P.} Hệ thống sử dụng chế độ \texttt{AT+MODE=TEST} thay vì LoRaWAN, cho phép bỏ qua hoàn toàn giới hạn duty cycle 1\% của ETSI và stack LoRaWAN; thông lượng chỉ bị giới hạn bởi Time-on-Air. Tốc độ PHY tại SF7/BW125\,kHz đạt $R_{PHY} = 5{,}47\,\text{kbps}$ \cite{semtech_lora_design_guide}. Với gói 50 byte, Time-on-Air tính theo công thức Semtech là $T_{air} \approx 97{,}5\,\text{ms}$. Mỗi chu kỳ phát còn bao gồm thời gian xử lý AT command và nhận phản hồi \texttt{+TEST: TX DONE} ($\approx 16{,}1\,\text{ms}$), tổng $T_{cycle} \approx 113{,}6\,\text{ms}$, dẫn đến:
         \[ R_{app,LoRa} = \frac{50 \times 8}{113{,}6\,\text{ms}} \approx 3{,}52\,\text{kbps} \]
         Giới hạn payload tối đa qua AT command là 169 byte/gói do độ dài lệnh tối đa 528 ký tự \cite{seeed_wioe5_at_cmd}.
-
+        
         \textbf{BLE (Native ESP32-S3).} BLE được triển khai trực tiếp trên LAN-MCU nên không có tầng UART trung gian. Thông lượng bị giới hạn bởi Connection Interval ($CI = 20\,\text{ms}$) và kích thước ATT payload. Ở cấu hình mặc định ATT MTU = 23 byte (20 byte dữ liệu), thông lượng chỉ đạt $\approx 8\,\text{kbps}$ \cite{bluetooth_core_v5}. Khi kích hoạt Data Length Extension (DLE) và đàm phán MTU lên 247 byte (244 byte ATT payload), thông lượng cải thiện đáng kể:
         \[ R_{app,BLE,DLE} = \frac{244 \times 8}{20\,\text{ms}} = 97{,}6\,\text{kbps} \]
-
+        
         Bảng~\ref{tab:throughput_efficiency} tổng hợp so sánh thông lượng và hiệu suất của ba giao thức.
-
+        
         \begin{longtable}{|p{3.2cm}|p{2.3cm}|p{2.7cm}|p{1.4cm}|p{4.2cm}|}
             \caption{So sánh thông lượng và hiệu suất của các giao thức.} \label{tab:throughput_efficiency} \\
             \hline
@@ -277,31 +275,31 @@
             \hline
             \endfoot
             \endlastfoot
-            Zigbee & $250\,\text{kbps}$ & $\approx 8{,}2\,\text{kbps}$ & $3{,}3\%$ & CSMA/CA contention \& UART 11,6\,ms/frame \\ \hline
+            Zigbee & $250\,\text{kbps}$ & $\approx 8{,}2\,\text{kbps}$ & $3{,}3\%$ & CSMA/CA contention \& UART 12,67\,ms/frame \\ \hline
             LoRa SF7/125 (P2P) & $5{,}47\,\text{kbps}$ & $\approx 3{,}5\,\text{kbps}$ & $64\%$ & Time-on-Air ($\approx 97{,}5\,\text{ms/gói}$) \\ \hline
             BLE (không DLE) & $1000\,\text{kbps}$ & $\approx 8\,\text{kbps}$ & $0{,}8\%$ & MTU = 20 byte, $CI = 20\,\text{ms}$ \\ \hline
             BLE (bật DLE) & $1000\,\text{kbps}$ & $\approx 97{,}6\,\text{kbps}$ & $9{,}8\%$ & $CI = 20\,\text{ms}$ \\ \hline
         \end{longtable}
-
+        
         \subsection{Độ trễ End-to-End}
-
+        
         Độ trễ End-to-End $T_{e2e}$ là tổng thời gian từ khi node gửi dữ liệu đến khi bản tin xuất hiện trên MQTT Broker:
         \[ T_{e2e} = T_{air} + T_{UART} + T_{CI} + T_{batch} + T_{SPI} + T_{network} \]
-
+        
         Các thành phần được định lượng như sau:
-
+        
         \begin{itemize}
             \item \textbf{$T_{air}$ -- Thời gian truyền sóng:} Zigbee $\approx 5{,}25\,\text{ms}$ (127 byte frame + LIFS 0,640 ms + ACK), LoRa SF7 $\approx 97{,}5\,\text{ms}$ (ToA, gói 50 byte), BLE $\approx 2{,}2\,\text{ms}$ (LL PDU 263 byte tại 1 Mbps + turnaround).
-            \item \textbf{$T_{UART}$ -- Độ trễ giao tiếp module--MCU:} Zigbee $\approx 11{,}6\,\text{ms}$ ($\approx 134$ byte Ebyte frame tại 115200 bps, 8N1), LoRa $\approx 16{,}1\,\text{ms}$ (AT command + phản hồi TX DONE). BLE không có thành phần này do tích hợp native trên LAN-MCU.
+            \item \textbf{$T_{UART}$ -- Độ trễ giao tiếp module--MCU:} Zigbee $\approx 12{,}67\,\text{ms}$ (146 byte Ebyte frame tại 115200 bps, 8N1), LoRa $\approx 16{,}1\,\text{ms}$ (AT command + phản hồi TX DONE). BLE không có thành phần này do tích hợp native trên LAN-MCU.
             \item \textbf{$T_{CI}$ -- Độ trễ chờ Connection Interval (chỉ BLE):} Vì BLE chỉ truyền dữ liệu tại các thời điểm cố định cách nhau $CI = 20\,\text{ms}$, một gói đến bất kỳ thời điểm nào trong chu kỳ phải chờ đến interval tiếp theo. Độ trễ chờ này dao động $0$--$CI = 0$--$20\,\text{ms}$, trung bình $CI/2 = 10\,\text{ms}$. Zigbee và LoRa không có thành phần này.
             \item \textbf{$T_{batch}$ -- Độ trễ gom gói:} Dao động $0$--$10\,\text{ms}$ tùy thời điểm dữ liệu đến trong chu kỳ batch flush của LAN-MCU.
             \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, thời gian truyền trong điều kiện tải trung bình thực tế ($\approx 2393$ byte) là $\approx 0{,}32\,\text{ms}$; worst-case burst (5193 byte, xem mục~\ref{subsec:spi}) mất $\approx 0{,}693\,\text{ms}$.
             \item \textbf{$T_{network}$ -- Độ trễ WAN lên Cloud:} Trung bình $\approx 30\,\text{ms}$ bao gồm truyền Wi-Fi, TCP/IP stack và round-trip đến MQTT Broker.
         \end{itemize}
-
+        
         Với BLE, độ trễ worst-case cần tính thêm $T_{CI,max} = 20\,\text{ms}$ (gói đến ngay sau khi vừa bỏ lỡ một interval):
         \[ T_{e2e,BLE,worst} = T_{air} + T_{CI,max} + T_{batch} + T_{SPI} + T_{JSON} + T_{network} \]
-
+        
         \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{5cm}|}
             \caption{Độ trễ dự kiến theo từng kịch bản truyền.} \label{tab:latency_estimation} \\
             \hline
@@ -313,17 +311,17 @@
             \hline
             \endfoot
             \endlastfoot
-            Zigbee $\rightarrow$ MQTT & $47{,}6\,\text{ms}$--$57{,}6\,\text{ms}$ & $T_{UART}$ (11,6 ms) \& $T_{network}$ (30 ms) \\ \hline
+            Zigbee $\rightarrow$ MQTT & $48{,}6\,\text{ms}$--$58{,}6\,\text{ms}$ & $T_{UART}$ (12,67 ms) \& $T_{network}$ (30 ms) \\ \hline
             LoRa SF7 (P2P) $\rightarrow$ MQTT & $144{,}3\,\text{ms}$--$154{,}3\,\text{ms}$ & $T_{air}$ (97,5 ms) -- chiếm $\approx 65\%$ \\ \hline
             BLE $\rightarrow$ MQTT (trung bình) & $42{,}9\,\text{ms}$--$52{,}9\,\text{ms}$ & $T_{network}$ (30 ms) -- chiếm $\approx 65\%$ \\ \hline
             BLE $\rightarrow$ MQTT (worst-case) & $\approx 62{,}9\,\text{ms}$ & $T_{CI,max}$ (20 ms) \& $T_{network}$ (30 ms) \\ \hline
         \end{longtable}
-
+        
         \subsection{Khả năng chịu tải và phân tích bus SPI}
         \label{subsec:spi}
-
+        
         Để đánh giá mức độ sử dụng bus SPI, ta tính lượng dữ liệu tích lũy tại LAN-MCU trong một batch interval $T_{batch} = 10\,\text{ms}$ dựa trên thông lượng thực tế của từng giao thức (Bảng~\ref{tab:batch_data}).
-
+        
         \begin{longtable}{|p{3cm}|p{4cm}|p{6.5cm}|}
             \caption{Dữ liệu tích lũy theo giao thức trong một batch interval.} \label{tab:batch_data} \\
             \hline
@@ -340,15 +338,15 @@
             LoRa SF7/125 & $3{,}5\,\text{kbps}$ & $3500 / 8 \times 0{,}010 \approx 4\,\text{byte}$    \\ \hline
             \textbf{Tổng} & $\mathbf{109{,}3\,\text{kbps}}$ & $\mathbf{\approx 137\,\text{byte}}$ \\ \hline
         \end{longtable}
-
+        
         Với 137 byte mỗi batch, thời gian SPI cần thiết là:
         \[ T_{SPI,batch} = \frac{137 \times 8}{60 \times 10^6} \approx 0{,}0183\,\text{ms} \]
-
+        
         Hệ số sử dụng bus SPI trong điều kiện trung bình:
         \[ U_{SPI} = \frac{T_{SPI,batch}}{T_{batch}} = \frac{0{,}0183}{10} \approx 0{,}183\% \]
-
+        
         Để đánh giá điều kiện worst-case, ta giả thiết tất cả node gửi đồng thời với frame kích thước tối đa. Hệ thống hỗ trợ tối đa 20 node Zigbee, 8 node BLE, và 1 node LoRa (xem ràng buộc phần sau). Burst tổng được tính:
-
+        
         \begin{longtable}{|p{3cm}|p{2cm}|p{3.5cm}|p{4.5cm}|}
             \caption{Tính toán burst SPI trong điều kiện worst-case.} \label{tab:spi_worst} \\
             \hline
@@ -360,38 +358,38 @@
             \hline
             \endfoot
             \endlastfoot
-            Zigbee   & 20 & 134 byte (PSDU + Ebyte overhead) & $20 \times 134 = 2680\,\text{byte}$ \\ \hline
+            Zigbee   & 20 & 146 byte (PSDU + Ebyte overhead) & $20 \times 146 = 2920\,\text{byte}$ \\ \hline
             BLE (DLE) & 8  & 263 byte (LL PDU tối đa)         & $8 \times 263 = 2104\,\text{byte}$  \\ \hline
             LoRa P2P & 1  & 169 byte (AT command limit)       & $1 \times 169 = 169\,\text{byte}$   \\ \hline
-            \textbf{Tổng} & \textbf{29} & -- & $\mathbf{4953\,\text{byte}}$ \\ \hline
+            \textbf{Tổng} & \textbf{29} & -- & $\mathbf{5193\,\text{byte}}$ \\ \hline
         \end{longtable}
-
+        
         Thời gian SPI cần thiết và hệ số sử dụng trong điều kiện worst-case:
-        \[ T_{SPI,worst} = \frac{4953 \times 8}{60 \times 10^6} \approx 0{,}661\,\text{ms} \]
-        \[ U_{SPI,worst} = \frac{0{,}661}{10} \approx 6{,}61\% \]
-
+        \[ T_{SPI,worst} = \frac{5193 \times 8}{60 \times 10^6} \approx 0{,}693\,\text{ms} \]
+        \[ U_{SPI,worst} = \frac{0{,}693}{10} \approx 6{,}93\% \]
+        
         Thông lượng tối đa lý thuyết của SPI là:
         \[ R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s} \]
-
+        
         Ngoài giới hạn bus, mỗi giao thức còn chịu ràng buộc về số node:
-
+        
         \begin{itemize}
             \item \textbf{Zigbee (E18-ZG120 / CC2530):} CC2530 có $8\,\text{KB}$ SRAM; sau khi Z-Stack chiếm $\approx 5\,\text{KB}$, phần còn lại chỉ đủ cho tối đa 20 node trực tiếp theo cấu hình mặc định (\texttt{NWK\_MAX\_DEVICE\_LIST = 20}). Vượt ngưỡng này sẽ phát sinh lỗi \texttt{0x18} (Not enough cache) hoặc \texttt{0x11} (Memory full).
             \item \textbf{LoRa (P2P):} Chế độ point-to-point chỉ hỗ trợ một liên kết tại một thời điểm; không có ràng buộc mạng lưới như LoRaWAN.
             \item \textbf{BLE:} NimBLE stack trên ESP32-S3 giới hạn tối đa 8 kết nối đồng thời.
         \end{itemize}
-
-        \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $6{,}61\%$ (khi toàn bộ 29 node gửi frame tối đa đồng thời). Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
-
-        \subsection{So sánh hiệu năng với Gateway M5Stack CoreS3}
+        
+        \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $6{,}93\%$ (khi toàn bộ 29 node gửi frame tối đa đồng thời). Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
+        
+        \subsection{So sánh hiệu năng với Gateway tham chiếu M5Stack CoreS3}
         \label{subsec:perf_compare}
-
-        Để định vị giá trị thực tiễn của kiến trúc Dual-MCU đề xuất, mục này đối chiếu sản phẩm đồ án với một giải pháp thương mại tiêu biểu là \textbf{M5Stack CoreS3} -- một nền tảng Single-MCU sử dụng một ESP32-S3 duy nhất gánh đồng thời toàn bộ tác vụ LAN (Zigbee, BLE, LoRa) và WAN (Wi-Fi, MQTT, TLS). Cấu hình so sánh giữ nguyên kịch bản tải đã sử dụng ở các mục trước: 20 node Zigbee, 8 node BLE và 1 node LoRa. Hai chỉ số phân biệt cốt lõi giữa hai kiến trúc là độ trễ End-to-End dưới tải và khả năng chịu burst đồng thời; thông lượng peak gần như không khác biệt do hai kiến trúc cùng bị giới hạn bởi UART 115200\,bps tới module Zigbee ($T_{UART} \approx 11{,}6\,\text{ms/frame}$), LoRa ($T_{UART} \approx 16{,}1\,\text{ms/frame}$) và Connection Interval của BLE.
-
-        \textbf{Tương đồng về thông lượng peak.} Cả hai kiến trúc đều đạt $R_{peak,Zigbee} \approx 62\,\text{kbps}$, $R_{peak,BLE} \approx 781\,\text{kbps}$ (8 thiết bị) và $R_{peak,LoRa} \approx 3{,}52\,\text{kbps}$ vì các bottleneck nằm ở giao thức và bus tới module ngoài, không phải ở MCU. Ưu thế thực sự của Dual-MCU không thể hiện ở thông lượng đỉnh mà ở tính ổn định khi tải tăng.
-
-        \textbf{Khác biệt về độ trễ End-to-End theo mức tải.} Ở tải nhẹ, Single-MCU CoreS3 nhanh hơn nhẹ ($\approx 5\,\text{ms}$) do không phải chịu chu kỳ batch cố định 10\,ms của bus SPI. Tuy nhiên, dưới tải nặng (tất cả node phát đồng thời), CoreS3 phải chia sẻ một CPU duy nhất giữa nhận UART, BLE controller, cJSON, mbedTLS, Wi-Fi và MQTT, đồng thời chịu hiện tượng coexist Wi-Fi/BLE TDM ở băng 2,4\,GHz; hệ quả là $T_{internal}$ tăng từ $\approx 5\,\text{ms}$ lên $20$--$40\,\text{ms}$. Kiến trúc Dual-MCU tách biệt hoàn toàn LAN/WAN nên $T_{internal}$ giữ giá trị cố định $\approx 10{,}3\,\text{ms}$ không phụ thuộc tải. Bảng~\ref{tab:e2e_compare} tổng hợp kết quả ở cả hai chế độ tải; khoảng chênh lệch giữa CoreS3 tải nặng so với Dual-MCU là $\approx 19{,}6\,\text{ms}$ cho mọi giao thức, phản ánh đúng mức tăng $T_{internal}$ từ $5\,\text{ms}$ lên $30\,\text{ms}$.
-
+        
+        Để định vị giá trị thực tiễn của kiến trúc Dual-MCU đề xuất, mục này đối chiếu sản phẩm đồ án với một giải pháp thương mại tiêu biểu là \textbf{M5Stack CoreS3} -- một nền tảng Single-MCU sử dụng một ESP32-S3 duy nhất gánh đồng thời toàn bộ tác vụ LAN (Zigbee, BLE, LoRa) và WAN (Wi-Fi, MQTT, TLS). Cấu hình so sánh giữ nguyên kịch bản tải đã sử dụng ở các mục trước: 20 node Zigbee, 8 node BLE và 1 node LoRa. Hai chỉ số phân biệt cốt lõi giữa hai kiến trúc là \emph{độ trễ End-to-End dưới tải} và \emph{khả năng chịu burst đồng thời}; thông lượng peak gần như không khác biệt do hai kiến trúc cùng bị giới hạn bởi UART 115200\,bps tới module Zigbee ($T_{UART} \approx 12{,}67\,\text{ms/frame}$), LoRa ($T_{UART} \approx 16{,}1\,\text{ms/frame}$) và Connection Interval của BLE.
+        
+        \textbf{Tương đồng về thông lượng peak.} Cả hai kiến trúc đều đạt $R_{peak,Zigbee} \approx 62\,\text{kbps}$, $R_{peak,BLE} \approx 781\,\text{kbps}$ (8 thiết bị) và $R_{peak,LoRa} \approx 3{,}52\,\text{kbps}$ vì các bottleneck nằm ở giao thức và bus tới module ngoài, không phải ở MCU. Ưu thế thực sự của Dual-MCU không thể hiện ở thông lượng đỉnh mà ở \emph{tính ổn định khi tải tăng}.
+        
+        \textbf{Khác biệt về độ trễ E2E theo mức tải.} Ở tải nhẹ, Single-MCU CoreS3 nhanh hơn nhẹ ($\approx 5\,\text{ms}$) do không phải chịu chu kỳ batch cố định 10\,ms của bus SPI. Tuy nhiên, dưới tải nặng (tất cả node phát đồng thời), CoreS3 phải chia sẻ một CPU duy nhất giữa nhận UART, BLE controller, cJSON, mbedTLS, Wi-Fi và MQTT, đồng thời chịu hiện tượng coexist Wi-Fi/BLE TDM ở băng 2,4\,GHz; hệ quả là $T_{internal}$ tăng từ $\approx 5\,\text{ms}$ lên $20$--$40\,\text{ms}$. Kiến trúc Dual-MCU tách biệt hoàn toàn LAN/WAN nên $T_{internal}$ giữ giá trị cố định $\approx 10{,}3\,\text{ms}$ không phụ thuộc tải. Bảng~\ref{tab:e2e_compare} tổng hợp kết quả ở cả hai chế độ tải; khoảng chênh lệch giữa CoreS3 tải nặng so với Dual-MCU là $\approx 19{,}6\,\text{ms}$ cho mọi giao thức, phản ánh đúng mức tăng $T_{internal}$ từ $5\,\text{ms}$ lên $30\,\text{ms}$.
+        
         \begin{longtable}{|p{4.2cm}|p{2.7cm}|p{3cm}|p{3cm}|}
             \caption{So sánh độ trễ End-to-End giữa Dual-MCU và M5Stack CoreS3.} \label{tab:e2e_compare} \\
             \hline
@@ -403,23 +401,23 @@
             \hline
             \endfoot
             \endlastfoot
-            Zigbee $\rightarrow$ MQTT & $\approx 57{,}6\,\text{ms}$ & $\approx 52{,}2\,\text{ms}$ & $\approx 77{,}2\,\text{ms}$ \\ \hline
+            Zigbee $\rightarrow$ MQTT & $\approx 58{,}6\,\text{ms}$ & $\approx 53{,}3\,\text{ms}$ & $\approx 78{,}3\,\text{ms}$ \\ \hline
             BLE $\rightarrow$ MQTT & $\approx 42{,}9\,\text{ms}$ & $\approx 37{,}6\,\text{ms}$ & $\approx 62{,}6\,\text{ms}$ \\ \hline
             LoRa $\rightarrow$ MQTT & $\approx 154{,}3\,\text{ms}$ & $\approx 149{,}0\,\text{ms}$ & $\approx 174{,}0\,\text{ms}$ \\ \hline
             Jitter $\sigma$ tổng & $\pm 5$--$10\,\text{ms}$ & $\pm 20$--$40\,\text{ms}$ & $\pm 20$--$40\,\text{ms}$ \\ \hline
         \end{longtable}
-
+        
         \textbf{Khả năng chịu burst đồng thời.} Trong kịch bản worst-case 29 frame phát cùng lúc trong cửa sổ 100\,ms, Dual-MCU cần $\approx 232\,\text{ms}$ để phục vụ hết hàng đợi nhờ LAN-MCU và WAN-MCU làm việc song song (LAN gom UART/SPI, WAN publish MQTT độc lập). Cùng kịch bản, CoreS3 phải xử lý tuần tự trên một CPU và mất $\approx 338\,\text{ms}$, tức chậm hơn $\approx 46\%$, đồng thời rủi ro queue overflow và heap fragmentation tăng cao do mbedTLS và cJSON tranh chấp tài nguyên với BLE controller.
-
+        
         \textbf{Nguồn gốc của ưu thế Dual-MCU.} Việc tách LAN-MCU và WAN-MCU thành hai miền xử lý độc lập mang lại ba lợi ích then chốt: (i) loại bỏ hoàn toàn coexist Wi-Fi/BLE 2,4\,GHz trên cùng một chip, (ii) cố định thời gian xử lý nội bộ ở mức deterministic 10,3\,ms thông qua chu kỳ batch SPI, và (iii) cho phép xử lý song song giữa nhận dữ liệu LAN và publish MQTT WAN. Đánh đổi là khoảng $5\,\text{ms}$ overhead ở tải nhẹ và độ phức tạp firmware cao hơn -- cả hai đều chấp nhận được trong các ứng dụng gateway IoT thực tế nơi tính ổn định và khả năng chịu tải quan trọng hơn độ trễ tối thiểu lúc nhàn rỗi.
-
+        
         \subsection{So sánh chi phí phần cứng}
         \label{subsec:cost_compare}
-
+        
         Bên cạnh hiệu năng, chi phí phần cứng là tiêu chí quyết định khả năng triển khai sản phẩm ở quy mô thương mại. Mục này so sánh tổng giá thành (BOM-level) của Gateway Dual-MCU đề xuất với cấu hình tương đương dựa trên hệ sinh thái M5Stack CoreS3 ở số lượng gia công 1000 board.
-
-        \begin{longtable}{|p{6cm}|c|p{6cm}|}
-            \caption{Bảng so sánh chi phí phần cứng.} \label{tab:cost_compare} \\
+        
+        \begin{longtable}{|p{6cm}|p{2.5cm}|p{6cm}|}
+            \caption{Bảng so sánh chi phí phần cứng (USD).} \label{tab:cost_compare} \\
             \hline
             \textbf{Hạng mục} & \textbf{Đơn giá} & \textbf{Ghi chú} \\ \hline
             \endfirsthead
@@ -430,23 +428,22 @@
             \endfoot
             \endlastfoot
             \multicolumn{3}{|l|}{\textbf{Sản phẩm đồ án (Dual-MCU)}} \\ \hline
-            Baseboard Dual-MCU (gia công 1000 board) & $\mathdollar$19{,}3 & 2$\times$ ESP32-S3 + nguồn + bus SPI + I/O \\ \hline
-            LoRaWAN adapter + Wio-E5 module & $\mathdollar$8{,}9 & STM32WLE5JC, AT command \\ \hline
-            Zigbee adapter + E18-ZG120 module & $\mathdollar$7{,}6 & EFR32MG1B / CC2530, UART HEX \\ \hline
-            Màn hình LCD 2.4'' cảm ứng HMI UART & $\mathdollar$2{,}3 & Hiển thị trạng thái + cấu hình \\ \hline
-            Pin Li-Po 4000\,mAh & $\mathdollar$3{,}0 & Backup khi mất nguồn AC \\ \hline
-            \textbf{Tổng cộng (Dual-MCU)} & \textbf{$\mathdollar$41{,}1} & \\ \hline
+            Baseboard Dual-MCU (gia công 1000 board) & 19{,}3 & 2$\times$ ESP32-S3 + nguồn + bus SPI + I/O \\ \hline
+            LoRaWAN adapter + Wio-E5 module & 8{,}9 & STM32WLE5JC, AT command \\ \hline
+            Zigbee adapter + E18-ZG120 module & 7{,}6 & EFR32MG1B / CC2530, UART HEX \\ \hline
+            Màn hình LCD 2.4'' cảm ứng HMI UART & 2{,}3 & Hiển thị trạng thái + cấu hình \\ \hline
+            Pin Li-Po 4000\,mAh & 3{,}0 & Backup khi mất nguồn AC \\ \hline
+            \textbf{Tổng cộng (Dual-MCU)} & \textbf{41{,}1} & \\ \hline
             \multicolumn{3}{|l|}{\textbf{Cấu hình tham chiếu (M5Stack CoreS3)}} \\ \hline
-            M5Stack CoreS3 (kèm pin Li-Po 500\,mAh) & $\mathdollar$59{,}9 & ESP32-S3 + LCD + camera + mic + speaker + IMU + compass \\ \hline
-            M5Stack COM.Zigbee (CC2630F128) & $\mathdollar$26{,}9 & Module Zigbee chính hãng \\ \hline
-            M5Stack COM.LoRaWAN EU868 (STM32WLE5) & $\mathdollar$24{,}9 & Module LoRaWAN chính hãng \\ \hline
-            \textbf{Tổng cộng (CoreS3)} & \textbf{$\mathdollar$111{,}7} & \\ \hline
+            M5Stack CoreS3 (kèm pin Li-Po 500\,mAh) & 59{,}9 & ESP32-S3 + LCD + camera + mic + speaker + IMU + compass \\ \hline
+            M5Stack COM.Zigbee (CC2630F128) & 26{,}9 & Module Zigbee chính hãng \\ \hline
+            M5Stack COM.LoRaWAN EU868 (STM32WLE5) & 24{,}9 & Module LoRaWAN chính hãng \\ \hline
+            \textbf{Tổng cộng (CoreS3)} & \textbf{111{,}7} & \\ \hline
         \end{longtable}
-
-        Tổng chi phí phần cứng của sản phẩm đồ án thấp hơn cấu hình M5Stack CoreS3 khoảng \textbf{$\mathdollar$70{,}6}, tương đương mức giảm \textbf{$\approx 63\%$}. Lợi thế giá thành đến từ việc thiết kế phần cứng theo đúng yêu cầu chức năng của một Gateway IoT, loại bỏ hoàn toàn các thành phần dư thừa của một nền tảng phát triển đa năng như CoreS3 -- bao gồm camera, microphone, loa, IMU và compass BMM150. Những thành phần này không phục vụ vai trò Gateway (nhận dữ liệu từ node LAN, gom batch và đẩy lên Cloud) nhưng vẫn chiếm tỉ trọng đáng kể trong giá bán của CoreS3.
-
-        Đồng thời, dung lượng pin Li-Po của sản phẩm đồ án (4000\,mAh) lớn hơn $8\times$ so với pin tích hợp trong CoreS3 (500\,mAh), cho phép Gateway tiếp tục vận hành khi mất nguồn trong thời gian đủ dài để hệ thống IoT duy trì kết nối tới Cloud -- một yêu cầu thiết yếu mà CoreS3 không đáp ứng được nếu không bổ sung module pin riêng.
-
+        
+        Tổng chi phí phần cứng của sản phẩm đồ án thấp hơn cấu hình M5Stack CoreS3 khoảng \textbf{70{,}6\,USD}, tương đương mức giảm \textbf{$\approx 63\%$}. Lợi thế giá thành đến từ việc thiết kế phần cứng theo đúng yêu cầu chức năng của một Gateway IoT, loại bỏ hoàn toàn các thành phần dư thừa của một nền tảng phát triển đa năng như CoreS3 -- bao gồm camera, microphone, loa, IMU và compass BMM150. Những thành phần này không phục vụ vai trò Gateway (nhận dữ liệu từ node LAN, gom batch và đẩy lên Cloud) nhưng vẫn chiếm tỉ trọng đáng kể trong giá bán của CoreS3.
+        
+        Đồng thời, dung lượng pin Li-Po của sản phẩm đồ án (4000\,mAh) lớn hơn $8\times$ so với pin tích hợp trong CoreS3 (500\,mAh), cho phép Gateway tiếp tục vận hành khi mất nguồn AC trong thời gian đủ dài để hệ thống IoT duy trì kết nối tới Cloud -- một yêu cầu thiết yếu mà CoreS3 không đáp ứng được nếu không bổ sung module pin riêng.
+        
         Khi kết hợp với phân tích hiệu năng ở mục~\ref{subsec:perf_compare}, có thể kết luận rằng sản phẩm đồ án đạt \textbf{tính ổn định và khả năng chịu tải tốt hơn} (latency deterministic, jitter $\pm 5$--$10\,\text{ms}$, burst nhanh hơn $46\%$) ở \textbf{mức chi phí thấp hơn $63\%$}. Sự đánh đổi duy nhất là độ trễ ở tải nhẹ tăng nhẹ ($\approx 5\,\text{ms}$) -- không ảnh hưởng đến các ứng dụng telemetry IoT điển hình. Đây là minh chứng cho tính khả thi thương mại của thiết kế Dual-MCU đối với phân khúc Gateway IoT chuyên dụng.
-    
     \newpage

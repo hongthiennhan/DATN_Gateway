@@ -1,1 +1,14 @@
 \section{Tổng kết Đồ án Tốt nghiệp}
+Đồ án đã xác nhận tính khả thi của mô hình IoT Gateway định hướng mô-đun thông qua việc hiện thực hóa thành công sản phẩm hoàn thiện có khả năng vận hành ổn định trong điều kiện thực nghiệm. Các mục tiêu kỹ thuật then chốt đặt ra ban đầu đã được chứng minh cụ thể qua các kết quả sau:
+
+\begin{itemize}
+    \item \textbf{Về kiến trúc hệ thống:} Việc áp dụng kiến trúc Dual-MCU (Master WAN-MCU và Slave LAN-MCU) đã được chứng minh là lựa chọn kỹ thuật đúng đắn để giải quyết triệt để rào cản về giới hạn tài nguyên bộ nhớ và xung đột ngăn xếp giao thức (protocol stacks). Kết quả phân tích bus SPI cho thấy hệ số sử dụng trong điều kiện tải nặng nhất (worst-case) chỉ chiếm 6,93\%, khẳng định khả năng xử lý song song hiệu quả mà không tạo ra nút thắt cổ chai về dữ liệu.
+    
+    \item \textbf{Về tính mô-đun và khả năng cấu hình:} Hệ thống chứng minh được sự linh hoạt vượt trội so với các gateway cố định truyền thống thông qua cơ chế \textit{Module Base Setting} dựa trên tệp cấu hình JSON. Thực nghiệm với các Module Adapter (Zigbee, LoRaWAN, RS-485) xác nhận khả năng tự động nhận diện thiết bị (Device ID) và thay đổi tập lệnh điều khiển tại runtime mà không cần can thiệp mã nguồn hay nạp lại firmware.
+    
+    \item \textbf{Về chất lượng thiết kế phần cứng:} Việc kiểm soát trở kháng đặc tính (Impedance Control) trên PCB 6 lớp đã đạt được dung sai $\pm$10\% theo tiêu chuẩn. Mạng phân phối nguồn (PDN) cũng được xác minh qua mô phỏng với mức sụt áp DC tối đa chỉ đạt 0,63\% trên các ray nguồn chính; đồng thời kết quả đo thực tế cho thấy mức sụt áp cực đại chỉ khoảng 0,4\%, qua đó khẳng định độ ổn định nguồn cấp và đảm bảo độ tin cậy vận hành cho các linh kiện nhạy cảm.
+    
+    \item \textbf{Về khả năng tương tác và vận hành:} Đồ án đã cung cấp một quy trình triển khai hoàn chỉnh từ cấu hình tại chỗ qua USB/UART đến quản trị từ xa qua Web Config Portal. Hệ thống cập nhật firmware từ xa (Safety FOTA) với cơ chế Rollback đã được xác thực, đảm bảo tính an toàn cho thiết bị trong các tình huống lỗi mạng không dự kiến.
+\end{itemize}
+
+Nhìn chung, sản phẩm không chỉ dừng lại ở mức mô hình lý thuyết mà đã được định lượng hóa qua các thông số hiệu suất, khẳng định giá trị ứng dụng thực tế trong các hệ thống IoT quy mô nhỏ và trung bình.
