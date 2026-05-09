@@ -293,7 +293,7 @@
             \item \textbf{$T_{UART}$ -- Độ trễ giao tiếp module--MCU:} Zigbee $\approx 12{,}67\,\text{ms}$ (146 byte Ebyte frame tại 115200 bps, 8N1), LoRa $\approx 16{,}1\,\text{ms}$ (AT command + phản hồi TX DONE). BLE không có thành phần này do tích hợp native trên LAN-MCU.
             \item \textbf{$T_{CI}$ -- Độ trễ chờ Connection Interval (chỉ BLE):} Vì BLE chỉ truyền dữ liệu tại các thời điểm cố định cách nhau $CI = 20\,\text{ms}$, một gói đến bất kỳ thời điểm nào trong chu kỳ phải chờ đến interval tiếp theo. Độ trễ chờ này dao động $0$--$CI = 0$--$20\,\text{ms}$, trung bình $CI/2 = 10\,\text{ms}$. Zigbee và LoRa không có thành phần này.
             \item \textbf{$T_{batch}$ -- Độ trễ gom gói:} Dao động $0$--$10\,\text{ms}$ tùy thời điểm dữ liệu đến trong chu kỳ batch flush của LAN-MCU.
-            \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, thời gian truyền trong điều kiện tải trung bình thực tế ($\approx 2393$ byte) là $\approx 0{,}32\,\text{ms}$; worst-case burst (5193 byte, xem mục~\ref{subsec:spi}) mất $\approx 0{,}693\,\text{ms}$.
+            \item \textbf{$T_{SPI}$ -- Độ trễ bus Inter-MCU:} Tại xung nhịp 60\,MHz với DMA, thời gian truyền trong điều kiện tải trung bình thực tế ($\approx 2048$ byte) là $\approx 0{,}273\,\text{ms}$; worst-case burst (5193 byte, xem mục~\ref{subsec:spi}) mất $\approx 0{,}693\,\text{ms}$.
             \item \textbf{$T_{network}$ -- Độ trễ WAN lên Cloud:} Trung bình $\approx 30\,\text{ms}$ bao gồm truyền Wi-Fi, TCP/IP stack và round-trip đến MQTT Broker.
         \end{itemize}
         
