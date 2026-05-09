@@ -242,7 +242,7 @@
             \label{fig:system_architecture}
         \end{figure}
         % ---------------------------------------------------------------
-        \item \textbf{Thông lượng dữ liệu và hiệu suất băng thông ($\eta$)}
+        \subsection{Thông lượng dữ liệu và hiệu suất băng thông ($\eta$)}
 
         Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích (payload) còn lại sau khi trừ overhead giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
         \begin{equation}
@@ -418,8 +418,8 @@ Ngoài giới hạn bus, mỗi giao thức còn chịu ràng buộc về số no
 
 Bên cạnh hiệu năng, chi phí phần cứng là tiêu chí quyết định khả năng triển khai sản phẩm ở quy mô thương mại. Mục này so sánh tổng giá thành (BOM-level) của Gateway Dual-MCU đề xuất với cấu hình tương đương dựa trên hệ sinh thái M5Stack CoreS3 ở số lượng gia công 1000 board.
 
-\begin{longtable}{|p{6cm}|p{2.5cm}|p{6cm}|}
-    \caption{Bảng so sánh chi phí phần cứng (USD).} \label{tab:cost_compare} \\
+\begin{longtable}{|p{6cm}|c|p{6cm}|}
+    \caption{Bảng so sánh chi phí phần cứng.} \label{tab:cost_compare} \\
     \hline
     \textbf{Hạng mục} & \textbf{Đơn giá} & \textbf{Ghi chú} \\ \hline
     \endfirsthead
@@ -430,20 +430,20 @@ Bên cạnh hiệu năng, chi phí phần cứng là tiêu chí quyết định 
     \endfoot
     \endlastfoot
     \multicolumn{3}{|l|}{\textbf{Sản phẩm đồ án (Dual-MCU)}} \\ \hline
-    Baseboard Dual-MCU (gia công 1000 board) & 19{,}3 & 2$\times$ ESP32-S3 + nguồn + bus SPI + I/O \\ \hline
-    LoRaWAN adapter + Wio-E5 module & 8{,}9 & STM32WLE5JC, AT command \\ \hline
-    Zigbee adapter + E18-ZG120 module & 7{,}6 & EFR32MG1B / CC2530, UART HEX \\ \hline
-    Màn hình LCD 2.4'' cảm ứng HMI UART & 2{,}3 & Hiển thị trạng thái + cấu hình \\ \hline
-    Pin Li-Po 4000\,mAh & 3{,}0 & Backup khi mất nguồn AC \\ \hline
-    \textbf{Tổng cộng (Dual-MCU)} & \textbf{41{,}1} & \\ \hline
+    Baseboard Dual-MCU (gia công 1000 board) & $\mathdollar$19{,}3 & 2$\times$ ESP32-S3 + nguồn + bus SPI + I/O \\ \hline
+    LoRaWAN adapter + Wio-E5 module & $\mathdollar$8{,}9 & STM32WLE5JC, AT command \\ \hline
+    Zigbee adapter + E18-ZG120 module & $\mathdollar$7{,}6 & EFR32MG1B / CC2530, UART HEX \\ \hline
+    Màn hình LCD 2.4'' cảm ứng HMI UART & $\mathdollar$2{,}3 & Hiển thị trạng thái + cấu hình \\ \hline
+    Pin Li-Po 4000\,mAh & $\mathdollar$3{,}0 & Backup khi mất nguồn AC \\ \hline
+    \textbf{Tổng cộng (Dual-MCU)} & \textbf{$\mathdollar$41{,}1} & \\ \hline
     \multicolumn{3}{|l|}{\textbf{Cấu hình tham chiếu (M5Stack CoreS3)}} \\ \hline
-    M5Stack CoreS3 (kèm pin Li-Po 500\,mAh) & 59{,}9 & ESP32-S3 + LCD + camera + mic + speaker + IMU + compass \\ \hline
-    M5Stack COM.Zigbee (CC2630F128) & 26{,}9 & Module Zigbee chính hãng \\ \hline
-    M5Stack COM.LoRaWAN EU868 (STM32WLE5) & 24{,}9 & Module LoRaWAN chính hãng \\ \hline
-    \textbf{Tổng cộng (CoreS3)} & \textbf{111{,}7} & \\ \hline
+    M5Stack CoreS3 (kèm pin Li-Po 500\,mAh) & $\mathdollar$59{,}9 & ESP32-S3 + LCD + camera + mic + speaker + IMU + compass \\ \hline
+    M5Stack COM.Zigbee (CC2630F128) & $\mathdollar$26{,}9 & Module Zigbee chính hãng \\ \hline
+    M5Stack COM.LoRaWAN EU868 (STM32WLE5) & $\mathdollar$24{,}9 & Module LoRaWAN chính hãng \\ \hline
+    \textbf{Tổng cộng (CoreS3)} & \textbf{$\mathdollar$111{,}7} & \\ \hline
 \end{longtable}
 
-Tổng chi phí phần cứng của sản phẩm đồ án thấp hơn cấu hình M5Stack CoreS3 khoảng \textbf{70{,}6\,USD}, tương đương mức giảm \textbf{$\approx 63\%$}. Lợi thế giá thành đến từ việc thiết kế phần cứng theo đúng yêu cầu chức năng của một Gateway IoT, loại bỏ hoàn toàn các thành phần dư thừa của một nền tảng phát triển đa năng như CoreS3 -- bao gồm camera, microphone, loa, IMU và compass BMM150. Những thành phần này không phục vụ vai trò Gateway (nhận dữ liệu từ node LAN, gom batch và đẩy lên Cloud) nhưng vẫn chiếm tỉ trọng đáng kể trong giá bán của CoreS3.
+Tổng chi phí phần cứng của sản phẩm đồ án thấp hơn cấu hình M5Stack CoreS3 khoảng \textbf{$\mathdollar$70{,}6}, tương đương mức giảm \textbf{$\approx 63\%$}. Lợi thế giá thành đến từ việc thiết kế phần cứng theo đúng yêu cầu chức năng của một Gateway IoT, loại bỏ hoàn toàn các thành phần dư thừa của một nền tảng phát triển đa năng như CoreS3 -- bao gồm camera, microphone, loa, IMU và compass BMM150. Những thành phần này không phục vụ vai trò Gateway (nhận dữ liệu từ node LAN, gom batch và đẩy lên Cloud) nhưng vẫn chiếm tỉ trọng đáng kể trong giá bán của CoreS3.
 
 Đồng thời, dung lượng pin Li-Po của sản phẩm đồ án (4000\,mAh) lớn hơn $8\times$ so với pin tích hợp trong CoreS3 (500\,mAh), cho phép Gateway tiếp tục vận hành khi mất nguồn AC trong thời gian đủ dài để hệ thống IoT duy trì kết nối tới Cloud -- một yêu cầu thiết yếu mà CoreS3 không đáp ứng được nếu không bổ sung module pin riêng.
 
