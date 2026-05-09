@@ -493,13 +493,13 @@
 
                 \begin{figure}[h]
                     \centering
-                    \begin{subfigure}[t]{0.45\textwidth}
+                    \begin{subfigure}[t]{0.48\textwidth}
                         \centering
                         \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
                         \caption{Sơ đồ nguyên lý ESP32 Master}
                         \label{fig:sche_esp32master}
                     \end{subfigure}
-                    \begin{subfigure}[t]{0.45\textwidth}
+                    \begin{subfigure}[t]{0.48\textwidth}
                         \centering
                         \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
                         \caption{Sơ đồ nguyên lý ESP32 Slave}
@@ -681,7 +681,7 @@
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_powerdcdc.png}
+                    \includegraphics[width=0.9\textwidth]{figures/DATN/sche_powerdcdc.png}
                     \caption{Sơ đồ nguyên lý mạch nguồn DC-DC}
                     \label{fig:sche_powerdcdc}
                 \end{figure}
@@ -776,7 +776,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/datasheet_ioxpowerrecomendation.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/datasheet_ioxpowerrecomendation.png}
                     \caption{Khuyến nghị cấp nguồn cho IC TCA6416ARTWR từ datasheet} 
                     \label{fig:sche_ioxpowerrecomendation}
                 \end{figure}
@@ -795,7 +795,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/sim_ioxdelayvcci.png}
+                    \includegraphics[width=0.8\textwidth]{figures/sim_ioxdelayvcci.png}
                     \caption{Kết quả mô phỏng mạch delay khởi động nguồn VCCI cho IO Expander} 
                     \label{fig:sim_ioxdelayvcci}    
                 \end{figure}
@@ -821,7 +821,7 @@
                 Giao tiếp thẻ MicroSD được thực hiện qua chuẩn SDIO 4-bit (80MHz) nhằm đảm bảo thông lượng lưu trữ dữ liệu tối ưu cho hệ thống. Để triệt tiêu hiện tượng ringing và overshoot phát sinh ở tần số cao, thiết kế tuân thủ nghiêm ngặt khuyến nghị của Espressif bằng cách tích hợp IC EMIF06-MSD02N16 ngay tại ngõ vào. Việc sử dụng linh kiện chuyên dụng này không chỉ giúp tối ưu hóa diện tích bo mạch mà còn là giải pháp kỹ thuật đồng bộ, cung cấp đồng thời trở giảm chấn (36-54\,$\Omega$), điện trở kéo lên (80-100k\,$\Omega$) và tầng bảo vệ ESD, giúp duy trì tính toàn vẹn tín hiệu vượt trội so với việc sử dụng các linh kiện rời rạc.
 
 
-                \begin{figure}[h]
+                \begin{figure}[H]
                     \centering
                     \includegraphics[width=0.75\textwidth]{figures/DATN/sche_microsd.png}
                     \caption{Sơ đồ nguyên lý mạch Micro SD Card} 
@@ -836,7 +836,7 @@
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_usb-uart_switch.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_usb-uart_switch.png}
                     \caption{Sơ đồ nguyên lý mạch USB/UART Switch} 
                     \label{fig:sche_usb-uart_switch}
                 \end{figure}
@@ -847,7 +847,7 @@
                 Kiến trúc hệ thống tối ưu hóa cổng UART2 cho cả nhiệm vụ nạp firmware Slave và giao tiếp HMI, giúp tiết kiệm tối đa tài nguyên phần cứng. Nhằm xử lý triệt để sự chênh lệch điện áp logic giữa MCU (3.3V) và màn hình (5V), thiết kế sử dụng IC TXS0102DQER làm giải pháp chuyển mức hai chiều chuyên dụng. Đây là lựa chọn kỹ thuật cần thiết để bảo vệ chủ động các chân I/O khỏi rủi ro quá áp, đồng thời đảm bảo tính chính xác và độ tin cậy của tín hiệu điều khiển trong suốt quá trình vận hành.
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_lcd.png}
+                    \includegraphics[width=0.6\textwidth]{figures/DATN/sche_lcd.png}
                     \caption{Sơ đồ nguyên lý mạch LCD} 
                     \label{fig:sche_lcd}
                 \end{figure}
@@ -861,7 +861,7 @@
                 Để bảo đảm tính toàn vẹn dữ liệu khi giao tiếp với nhiều thiết bị ngoại vi qua dây dẫn dài, thiết kế tích hợp IC đệm TCA9803DGKR làm giải pháp phân tách bus chủ động. Lựa chọn này là kỹ thuật cần thiết để hệ thống vận hành ổn định ở chế độ Fast-mode (400kHz) mà không bị ảnh hưởng bởi giới hạn điện dung ký sinh 400pF. Việc sử dụng IC đệm giúp cô lập tải chỉ còn 10pF cho bus chính, đồng thời duy trì khả năng truyền dẫn tin cậy cho các nhánh mở rộng, giảm thiểu rủi ro lỗi bit do nhiễu và suy hao tín hiệu.
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_i2cbuffer.png}
+                    \includegraphics[width=0.6\textwidth]{figures/DATN/sche_i2cbuffer.png}
                     \caption{Sơ đồ nguyên lý mạch I\textsuperscript{2}C Buffer} 
                     \label{fig:sche_i2cbuffer}
                 \end{figure}
@@ -872,7 +872,7 @@
                 Thiết kế tích hợp diode TVS 3.3V để triệt tiêu chủ động xung ESD phát sinh từ tương tác cơ khí tại nút nhấn. Việc phối hợp tụ 100nF và trở giảm chấn 100\,$\Omega$ là giải pháp kỹ thuật cần thiết nhằm xử lý triệt để hiện tượng dội tiếp điểm (debounce) và ringing. Lựa chọn này đảm bảo tính toàn vẹn của tín hiệu truyền đến MCU, đồng thời tăng cường độ bền hệ thống trước các tác động điện-cơ trong điều kiện vận hành thực tế.
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_button.png}
+                    \includegraphics[width=0.6\textwidth]{figures/DATN/sche_button.png}
                     \caption{Sơ đồ nguyên lý mạch nút nhấn} 
                     \label{fig:sche_button}
                 \end{figure}
@@ -881,7 +881,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/DATN/sche_dcfan.png}
+                    \includegraphics[width=0.6\textwidth]{figures/DATN/sche_dcfan.png}
                     \caption{Sơ đồ nguyên lý mạch điều khiển quạt DC} 
                     \label{fig:sche_dcfan}
                 \end{figure}
@@ -890,7 +890,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/simu_fandc.png}
+                    \includegraphics[width=0.8\textwidth]{figures/DATN/simu_fandc.png}
                     \caption{Thực hiện mô phỏng mạch điều khiển quạt DC trên LTspice} 
                     \label{fig:simu_fandc}
                 \end{figure}
@@ -902,7 +902,7 @@
 
                 \begin{figure}[h]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_wan-lan_conn.png}
+                    \includegraphics[width=0.75\textwidth]{figures/DATN/sche_wan-lan_conn.png}
                     \caption{Sơ đồ nguyên lý mạch WAN/LAN Connector} 
                     \label{fig:sche_wan-lan_conn}
                 \end{figure}
@@ -916,14 +916,14 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_wanlte.png}
+                    \includegraphics[width=0.9\textwidth]{figures/DATN/sche_wanlte.png}
                     \caption{Sơ đồ nguyên lý mạch WAN Adapter LTE} 
                     \label{fig:sche_wanlte}
                 \end{figure}
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_wanephy.png}
+                    \includegraphics[width=0.9\textwidth]{figures/DATN/sche_wanephy.png}
                     \caption{Sơ đồ nguyên lý mạch WAN Adapter Ethernet} 
                     \label{fig:sche_wanlte}
                 \end{figure}
@@ -940,7 +940,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_lan.png}
+                    \includegraphics[width=0.9\textwidth]{figures/DATN/sche_lan.png}
                     \caption{Sơ đồ nguyên lý mạch LAN Adapter} 
                     \label{fig:sche_lan} 
                 \end{figure}
@@ -1234,7 +1234,7 @@
                         \end{itemize}   
                     \end{itemize}      
                 \end{enumerate}
-                \newpage
+                % \newpage
 
             \paragraph{Kỹ thuật Định tuyến Tín hiệu Tốc độ cao (High-Speed Signal Routing)}
 
