@@ -5,24 +5,64 @@
 
         \item \textbf{Kiến trúc hệ thống và chuỗi truyền dẫn dữ liệu}
 
-        Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa việc xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{pipeline}) gồm bốn chặng nối tiếp:
+        Hệ thống được thiết kế theo kiến trúc Dual-MCU nhằm tối ưu hóa việc xử lý song song và tăng độ tin cậy. Luồng dữ liệu di chuyển qua một ``đường ống'' (\textit{pipeline}) gồm bốn chặng nối tiếp.
 
-        \begin{itemize}
-            \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi phát dữ liệu qua sóng vô tuyến (Zigbee, LoRa, BLE) đến module thu tại Gateway.
-            \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến chuyển tiếp khung dữ liệu sang LAN-MCU (ESP32-S3) qua giao tiếp UART.
-            \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu từ các giao thức theo chu kỳ batch rồi chuyển toàn bộ sang WAN-MCU (ESP32-S3) qua bus SPI tốc độ cao.
-            \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU tuần tự hóa dữ liệu sang định dạng JSON và publish lên MQTT Broker qua kết nối Wi-Fi.
-        \end{itemize}
+        % \begin{itemize}
+        %     \item \textbf{Chặng 1 -- Air Interface:} Node ngoại vi phát dữ liệu qua sóng vô tuyến (Zigbee, LoRa, BLE) đến module thu tại Gateway.
+        %     \item \textbf{Chặng 2 -- Module to MCU:} Module vô tuyến chuyển tiếp khung dữ liệu sang LAN-MCU (ESP32-S3) qua giao tiếp UART.
+        %     \item \textbf{Chặng 3 -- Inter-MCU:} LAN-MCU gom dữ liệu từ các giao thức theo chu kỳ batch rồi chuyển toàn bộ sang WAN-MCU (ESP32-S3) qua bus SPI tốc độ cao.
+        %     \item \textbf{Chặng 4 -- Cloud Interface:} WAN-MCU tuần tự hóa dữ liệu sang định dạng JSON và publish lên MQTT Broker qua kết nối Wi-Fi.
+        % \end{itemize}
 
         Mỗi chặng đều có độ trễ và giới hạn băng thông riêng. Nút thắt (bottleneck) của toàn hệ thống là chặng có thông lượng thấp nhất; phần tiếp theo sẽ định lượng từng chặng.
+        \begin{figure}[htbp]
+            \centering
+            \resizebox{\textwidth}{!}{% Tự động thu phóng vừa với chiều rộng trang
+            \begin{tikzpicture}[
+                node distance=3cm and 2cm,
+                block/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=1.5cm, text centered, align=center, font=\small\bfseries},
+                cloud/.style={ellipse, draw, minimum width=3cm, minimum height=2cm, text centered, align=center, font=\small\bfseries},
+                arrow/.style={-{Stealth[length=3mm, width=2mm]}, thick},
+                label_text/.style={font=\scriptsize, align=center}
+            ]
 
+            % Định nghĩa các Node (Khối)
+            \node[block] (node) {Node ngoại vi};
+            \node[block, right=3.5cm of node] (module) {Module thu};
+            \node[block, right=2.5cm of module] (lan) {LAN-MCU\\(ESP32-S3)};
+            \node[block, right=2.5cm of lan] (wan) {WAN-MCU\\(ESP32-S3)};
+            \node[cloud, right=3cm of wan] (cloud_mqtt) {Cloud\\(MQTT Broker)};
+
+            % Nhóm các Node thuộc Gateway để tạo viền
+            \begin{scope}[on background layer]
+                \node[draw, dashed, thick, fill=gray!5, inner sep=0.5cm, fit=(module)(lan)(wan), label={[font=\bfseries]above:Gateway (Kiến trúc Dual-MCU)}] (gateway) {};
+            \end{scope}
+
+            % Vẽ các mũi tên (Chặng 1 đến 4)
+            % Chặng 1
+            \draw[arrow] (node) -- node[above, label_text] {\textbf{Chặng 1}\\\textbf{Air Interface}} node[below, label_text] {Zigbee/LoRa/BLE} (module);
+            
+            % Chặng 2
+            \draw[arrow] (module) -- node[above, label_text] {\textbf{Chặng 2}\\\textbf{Module to MCU}} node[below, label_text] {UART} (lan);
+            
+            % Chặng 3
+            \draw[arrow] (lan) -- node[above, label_text] {\textbf{Chặng 3}\\\textbf{Inter-MCU}} node[below, label_text] {Bus SPI\\(Gom batch)} (wan);
+            
+            % Chặng 4
+            \draw[arrow] (wan) -- node[above, label_text] {\textbf{Chặng 4}\\\textbf{Cloud Interface}} node[below, label_text] {Wi-Fi\\JSON format} (cloud_mqtt);
+
+            \end{tikzpicture}
+            }
+            \caption{Sơ đồ kiến trúc hệ thống và chuỗi truyền dẫn dữ liệu qua 4 chặng.}
+            \label{fig:system_architecture}
+        \end{figure}
         % ---------------------------------------------------------------
         \item \textbf{Thông lượng dữ liệu và hiệu suất băng thông ($\eta$)}
 
         Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích (payload) còn lại sau khi trừ overhead giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
-        \[
+        \begin{equation}
             \eta = \frac{R_{app}}{R_{PHY}}
-        \]
+        \end{equation}
 
         \textbf{Zigbee (E18-ZG120 / CC2530).} Tốc độ vật lý IEEE 802.15.4 tại băng 2,4~GHz đạt $R_{PHY} = 250\,\text{kbps}$ \cite{ieee802154_2020}. Mỗi frame Zigbee mang tối đa 99 byte payload ứng dụng sau khi trừ 28 byte overhead của các lớp MAC/NWK/APS trên tổng PSDU 127 byte \cite{zigbee_spec_r21}. Một chu kỳ phát--nhận ACK bao gồm: thời gian truyền frame ($127\,\text{B} \times 8 / 250\,\text{kbps} = 4{,}064\,\text{ms}$), khoảng LIFS ($0{,}192\,\text{ms}$) và frame ACK ($0{,}544\,\text{ms}$), tổng $T_{air} \approx 4{,}8\,\text{ms}$.
 

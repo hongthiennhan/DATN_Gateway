@@ -1,8 +1,6 @@
 
-\section{Hướng phát triển trong giai đoạn tiếp theo}
-    Mặc dù sản phẩm đã đạt được những kết quả khả quan và đáp ứng đầy đủ các mục tiêu thiết kế cốt lõi của một IoT Gateway dạng mô-đun, việc đưa thiết bị vào vận hành thực tế trong môi trường công nghiệp đòi hỏi những bước nâng cấp và tối ưu hóa sâu rộng hơn.
-
-    Trong giai đoạn tiếp theo, sản phẩm cần được phân tích ưu nhược điểm của phiên bản hiện tại, hiệu chỉnh lại đặc tả chi tiết cho sản phẩm, và lên kế hoạch chi tiết cho quá trình hoàn thiện sản phẩm.
+\section{Hướng phát triển trong tương lai}
+    Mặc dù sản phẩm đã đạt được những kết quả khả quan và đáp ứng đầy đủ các mục tiêu thiết kế cốt lõi của một IoT Gateway dạng mô-đun, việc đưa thiết bị vào vận hành thực tế trong môi trường công nghiệp đòi hỏi cần đạt được những tiêu chuẩn khắt khe. Trong tương lai, sản phẩm cần được đánh giá dựa trên các tiêu chuẩn công nghiệp nhằm đạt được những yêu cầu thực tế, mục tiêu có thể đưa sản phẩm ra thị trường.
 
     % \subsection{Timeline giai đoạn tiếp theo}
     %     \resizebox{\textwidth}{!}{
@@ -70,15 +68,25 @@
     %     \end{tikzpicture}
     %     }
 
-    \subsection{Hoàn thiện và khắc phục các hạn chế thiết kế}
-    Dù hệ thống đã vận hành ổn định, quá trình thử nghiệm thực tế cho thấy vẫn tồn tại một số lỗi nhỏ về mặt logic phần cứng và bố trí linh kiện. 
+    % \subsection{Hoàn thiện và khắc phục các hạn chế thiết kế}
+    % Dù hệ thống đã vận hành ổn định, quá trình thử nghiệm thực tế cho thấy vẫn tồn tại một số lỗi nhỏ về mặt logic phần cứng và bố trí linh kiện. 
+    %     \begin{itemize}
+    %         \item \textbf{Tối ưu hóa thiết kế:} Mặc dù đã được thiết kế nhỏ gọn với vỏ hộp và cơ chế lắp đặt module adapter dễ dàng hơn, tuy nhiên việc láp ráp thiết bị vẫn còn khá phức tạp và tốn thời gian. Cần cải tiến thiết kế vỏ hộp và cơ chế lắp đặt để giảm thiểu thời gian lắp ráp, đồng thời tăng tính tiện lợi cho người dùng cuối khi triển khai thực tế.
+    %         \item \textbf{Cải thiện Layout PCB:} Tinh chỉnh lại các đường mạch tín hiệu nhạy cảm để giảm thiểu hiện tượng nhiễu xuyên âm (Crosstalk) và cải thiện tính toàn vẹn tín hiệu (Signal Integrity) khi hệ thống hoạt động ở tần số cao.
+    %     \end{itemize}
+
+    \subsection{Cải tiến đến tiêu chuẩn công nghiệp}
+        Để đưa một thiết bị IoT Gateway ra thị trường, đặc biệt là trong môi trường công nghiệp, sản phẩm phải đáp ứng các tiêu chuẩn khắt khe về an toàn, tương thích điện từ, viễn thông và độ bền cơ học.
         \begin{itemize}
-            \item \textbf{Tối ưu hóa thiết kế:} Mặc dù đã được thiết kế nhỏ gọn với vỏ hộp và cơ chế lắp đặt module adapter dễ dàng hơn, tuy nhiên việc láp ráp thiết bị vẫn còn khá phức tạp và tốn thời gian. Cần cải tiến thiết kế vỏ hộp và cơ chế lắp đặt để giảm thiểu thời gian lắp ráp, đồng thời tăng tính tiện lợi cho người dùng cuối khi triển khai thực tế.
-            \item \textbf{Cải thiện Layout PCB:} Tinh chỉnh lại các đường mạch tín hiệu nhạy cảm để giảm thiểu hiện tượng nhiễu xuyên âm (Crosstalk) và cải thiện tính toàn vẹn tín hiệu (Signal Integrity) khi hệ thống hoạt động ở tần số cao.
+            \item \textbf{Tương thích điện từ (EMC/EMI):} Đảm bảo gateway không phát ra nhiễu điện từ vượt mức cho phép và có khả năng chống chịu nhiễu từ các thiết bị công nghiệp khác (motor, biến tần). (IEC 61000-6-2 và IEC 61000-6-2, \dots)
+            \item \textbf{An toàn điện:} Ngăn chặn các rủi ro về giật điện, cháy nổ đối với người vận hành. (IEC/EN 62368-1, \dots)
+            \item \textbf{Chuẩn Viễn thông và Vô tuyến:} Đặc biệt quan trọng đối với IoT Gateway tích hợp nhiều giao thức không dây (LoRa, Zigbee, BLE, Wi-Fi) cần đạt tiêu chuẩn kiểm định các dải băng tần. (ETSI EN 300 328 và ETSI EN 300 220, \dots)
+            \item \textbf{Giao tiếp công nghiệp có dây:} Đối với các node mạng giao tiếp qua các chuẩn công nghiệp như RS-485, hệ thống cần đáp ứng tiêu chuẩn vật lý (TIA/EIA-485-A) và cách ly (UL 1577).
+            \item \textbf{Môi trường và Độ tin cậy:} Đảm bảo thiết bị hoạt động ổn định trong các điều kiện khắc nghiệt của nhà máy, như chuỗi tiêu chuẩn thử nghiệm môi trường gồm nhiệt độ, độ ẩm, rung, sốc cơ học (IEC 60068 Series), tiêu chuẩn chống bụi và nước (IEC 60529) hay tiêu chuẩn về hạn chế các chất độc hại (RoHS).
         \end{itemize}
 
-    \subsection{Nâng cấp và Mở rộng năng lực Phần cứng}
-    Nhằm đưa sản phẩm từ một bản thử nghiệm thành một thiết bị ở quy mô công nghiệp. Sản phẩm prototype hiện tại chỉ đáp ứng được các chức năng cốt lõi của một gateway, song để sản phẩm thực sự hoàn thiện và có thể sử dụng ngoài thực tế thì vẫn còn nhiều chức năng cần phải được đánh giá và nâng cấp.
+    % \subsection{Nâng cấp và Mở rộng năng lực Phần cứng}
+    % Nhằm đưa sản phẩm từ một bản thử nghiệm thành một thiết bị ở quy mô công nghiệp. Sản phẩm prototype hiện tại chỉ đáp ứng được các chức năng cốt lõi của một gateway, song để sản phẩm thực sự hoàn thiện và có thể sử dụng ngoài thực tế thì vẫn còn nhiều chức năng cần phải được đánh giá và nâng cấp.
 
 
 
@@ -107,5 +115,6 @@
 
 
     \subsection{Tối ưu hóa chi phí và Hướng tới sản xuất}
-    Tối ưu hóa chi phí thiết kế phần cứng bằng cách phân tích và lựa chọn các linh kiện tương đương có giá thành tốt hơn nhưng vẫn đảm kỹ thuật, kích thước PCB thu nhỏ lại nhằm giảm chi phí gia công.
+    % Tối ưu hóa chi phí thiết kế phần cứng bằng cách phân tích và lựa chọn các linh kiện tương đương có giá thành tốt hơn hoặc các thiết kế tương đương nhưng vẫn đảm kỹ thuật và tiêu chuẩn công nghiệp, đánh giá về chi phí gia công.
+    Quy trình tối ưu hóa chi phí thiết kế phần cứng được thực hiện thông qua việc phân tích và lựa chọn hệ thống linh kiện thay thế có thông số kỹ thuật tương đương, đảm bảo duy trì độ tin cậy theo tiêu chuẩn công nghiệp trong khi vẫn giảm thiểu tổng giá thành linh kiện (BOM). Song song đó, việc thu nhỏ kích thước PCB được tính toán kỹ lưỡng để trực tiếp cắt giảm chi phí phôi mạch in và chi phí gia công lắp ráp hàng loạt, tạo lợi thế về kinh tế cho sản phẩm mà không làm suy giảm hiệu năng vận hành hay tính toàn vẹn của tín hiệu.
 
