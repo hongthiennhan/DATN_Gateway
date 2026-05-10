@@ -1,13 +1,13 @@
-\section{Phân tích sơ bộ}
+\section{Phân tích sơ bộ}\label{sec:phan_tich_so_bo}
     \subsection{Đặc tả tổng quan}\label{sec:dac_ta_tong_quan}
         Để hiện thực hóa ý tưởng về một Gateway IoT vừa có tính tùy biến cao, vừa tối ưu chi phí và dễ dàng triển khai, hệ thống cần phải thỏa mãn các yêu cầu và ràng buộc tổng quát sau đây:
 
         \subsubsection{Tính module hóa}
             Để đạt được sự linh hoạt trong việc thay đổi chức năng theo từng kịch bản, hệ thống phần cứng không được thiết kế theo dạng "đóng gói cố định" mà phải tuân thủ các nguyên tắc chuẩn hóa giao tiếp:
             \begin{itemize}
-                \item \textbf{Chuẩn hóa giao diện vật lý:} Sản phẩm phải sử dụng một loại đầu nối vật lý thống nhất cho tất cả các khe cắm mở rộng (như chuẩn 36-pin Card Edge Connector của PCI Express x1). Việc này cho phép bo mạch chủ (Baseboard) kết nối đồng bộ với đa dạng các Module Adapter.
+                \item \textbf{Chuẩn hóa giao diện vật lý:} Sản phẩm phải sử dụng một loại đầu nối vật lý thống nhất cho tất cả các khe cắm mở rộng. Việc này cho phép bo mạch chủ (Baseboard) kết nối đồng bộ với đa dạng các Module Adapter.
                 \item \textbf{Giao diện giao tiếp đa năng:} Mỗi khe cắm mô-đun phải hỗ trợ đầy đủ các giao thức ngoại vi phổ thông bao gồm UART, SPI, I2C, USB và các chân GPIO chức năng. Điều này đảm bảo Gateway có thể tiếp nhận bất kỳ loại mô-đun nào từ Zigbee, LoRa đến LTE hay RS-485 mà không cần thay đổi thiết kế bo mạch chính.
-                \item \textbf{Cơ chế nhận diện tự động:} Phần cứng phải tích hợp cơ chế định danh (như Device ID 4-bit qua IC IO Expander) trên mỗi adapter. Yêu cầu này giúp hệ thống tự động nhận biết loại mô-đun đang cắm để nạp đúng driver và tập lệnh tương ứng ngay khi khởi động.
+                \item \textbf{Cơ chế nhận diện tự động:} Phần cứng phải tích hợp cơ chế định danh trên mỗi adapter. Yêu cầu này giúp hệ thống tự động nhận biết loại mô-đun đang cắm để nạp đúng driver và tập lệnh tương ứng ngay khi khởi động.
                 \item \textbf{Hỗ trợ tối thiểu các loại mô-đun:} Hệ thống cần được thiết kế để hỗ trợ ít nhất 01 khe cắm cho miền mạng diện rộng (WAN - LTE/Ethernet) và 02 khe cắm cho miền mạng cảm biến nội bộ (LAN - Zigbee, LoRa, BLE, RS-485) để đảm bảo tính ứng dụng đa dạng.
             \end{itemize}
     
