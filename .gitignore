@@ -32,6 +32,6 @@
 *.swp
 
 # Ignore output files
-# *.pdf
+*.pdf
 main.pdf
 main.synctex(busy)
