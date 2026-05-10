@@ -1,1 +1,61 @@
 \section{Tổng quan thiết kế firmware}
+    \subsection{Kiến trúc phân lớp tổng thể}
+
+    Toàn bộ firmware của hệ thống -- cho cả WAN-MCU lẫn LAN-MCU -- được tổ chức theo kiến trúc phân lớp bốn tầng (Layered Architecture). Cách phân tầng này tách biệt hoàn toàn logic ứng dụng khỏi phần phụ thuộc phần cứng, giúp dễ thay thế hoặc mở rộng từng tầng mà không ảnh hưởng các thành phần còn lại.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.75\textwidth]{figures/DATN/layered_fw.png}
+        \caption{Kiến trúc phân lớp firmware tổng thể -- WAN-MCU (trái) và LAN-MCU (phải)}
+        \label{fig:layered_fw}
+    \end{figure}
+
+    Bảng~\ref{tab:layer_desc} mô tả vai trò của từng tầng và nguyên tắc giao tiếp giữa các tầng.
+
+    \begin{longtable}{|p{3cm}|p{2cm}|p{11cm}|}
+        \caption{Mô tả bốn tầng kiến trúc firmware}
+        \label{tab:layer_desc} \\
+
+        \hline
+        \textbf{Tầng} & \textbf{Ký hiệu} & \textbf{Vai trò} \\ \hline
+        \endfirsthead
+
+        \hline
+        \textbf{Tầng} & \textbf{Ký hiệu} & \textbf{Vai trò} \\ \hline
+        \endhead
+
+        Application Layer & APP & Chứa logic nghiệp vụ theo từng miền chức năng: Config, Data Communication, FOTA, HMI, Internet/Server communication và các handler WAN-LAN uplink/downlink. \\ \hline
+
+        Middleware Layer & MID & Chứa thành phần trung gian: FreeRTOS primitives, middleware theo giao thức/module và network/protocol stack (MQTT/HTTP/CoAP, WiFi/LTE/ETH, NVS, JSON parser/controller). \\ \hline
+
+        Board Support Package & BSP & Đóng gói truy cập phần cứng theo board: modem communication, inter-MCU communication, module communication, SDCard/RS485, I2C device support, stack handler BSP. \\ \hline
+
+        Driver Layer & DRV & Driver/HAL mức thấp của ESP32-S3 và runtime interface của ESP-IDF: GPIO/UART/SPI/I2C/USB/SDIO, WiFi/Ethernet/modem netif, BLE controller/host runtime. \\ \hline
+
+    \end{longtable}
+
+    \subsection{Kiến trúc Dual-MCU và lý do phân tách}
+
+    Việc chạy đồng thời các protocol stack WAN (Wi-Fi, LTE, MQTT) và LAN (Zigbee, LoRa, BLE) trên một MCU đơn dễ gây tràn bộ nhớ đệm và xung đột tài nguyên RAM/Flash. Kiến trúc Dual-MCU Master--Slave giải quyết vấn đề này bằng cách cấp cho mỗi vi điều khiển một không gian bộ nhớ độc lập, chuyên biệt hóa theo miền chức năng.
+
+    \begin{longtable}{|p{4cm}|p{6cm}|p{6cm}|}
+        \caption{So sánh kiến trúc Single-MCU và Dual-MCU}
+        \label{tab:single_dual_compare} \\
+
+        \hline
+        \textbf{Tiêu chí} & \textbf{Single-MCU} & \textbf{Dual-MCU (thiết kế này)} \\ \hline
+        \endfirsthead
+
+        \hline
+        \textbf{Tiêu chí} & \textbf{Single-MCU} & \textbf{Dual-MCU (thiết kế này)} \\ \hline
+        \endhead
+
+        Số lượng protocol stack đồng thời & Bị giới hạn bởi RAM/Flash chung & Mỗi MCU chạy tập stack riêng, không tranh tài nguyên \\ \hline
+
+        Nguy cơ blocking giữa giao thức & Cao (chia sẻ CPU) & Thấp (mỗi MCU có FreeRTOS scheduler độc lập) \\ \hline
+
+        Chi phí phần cứng & Thấp hơn & Cao hơn (hai SoC) nhưng tối ưu tài nguyên tổng thể \\ \hline
+
+        Khả năng mở rộng giao thức & Hạn chế bởi tài nguyên một MCU & Cao -- thêm handler vào MCU phù hợp \\ \hline
+
+    \end{longtable}
