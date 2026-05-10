@@ -258,7 +258,29 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.8\textwidth]{figures/DATN/system_diagram.drawio.png}
+        \includegraphics[width=0.75\textwidth]{figures/DATN/system_diagram.drawio.png}
         \caption{Sơ đồ tổng quan hệ thống Modular IoT Gateway}
         \label{fig:overall_system_diagram}  
     \end{figure}
+
+    Kiến trúc hệ thống được phân định rõ rệt thành ba miền tương tác chính:
+
+    \begin{itemize}
+        \item \textbf{Miền Mạng:} Đây là lõi xử lý trung tâm của thiết bị, thực hiện vai trò của một thực thể điều phối dữ liệu giữa các lớp mạng khác nhau.
+        \begin{itemize}
+            \item \textbf{Master WAN-MCU:} Đóng vai trò là nhân điều phối chính, chịu trách nhiệm xử lý các tác vụ thuộc lớp ứng dụng và kết nối hướng thượng (Uplink) lên hạ tầng đám mây thông qua các \textit{WAN Modules} như LTE hoặc Ethernet. Đây cũng là nơi vận hành các dịch vụ quản trị như \textit{Web Config Portal} và giao tiếp với \textit{PC Config Tool}.
+            \item \textbf{Slave LAN-MCU:} Chuyên trách quản lý các ngăn xếp giao thức mạng cảm biến nội bộ (Downlink) thông qua các \textit{LAN Modules}. Vi điều khiển này trực tiếp thu thập dữ liệu từ các node cảm biến, thực hiện tiền xử lý và quản lý lưu trữ cục bộ trên \textit{MicroSD Card}.
+            \item \textbf{Giao tiếp nội bộ:} Thiết lập sự đồng bộ giữa hai vi điều khiển thông qua các kênh truyền dữ liệu tốc độ cao (Quad SPI), luồng nạp firmware (UART) và các tín hiệu bắt tay điều khiển (GPIO Handshake).
+        \end{itemize}
+
+        \item \textbf{Miền Ứng dụng và Quản trị:} Bao gồm các thực thể ngoại vi tương tác với Master MCU để điều khiển và giám sát toàn bộ hệ thống:
+        \begin{itemize}
+            \item \textbf{Cloud Services:} Nền tảng đám mây tiếp nhận dữ liệu telemetry và gửi lệnh điều khiển từ xa.
+            \item \textbf{Công cụ cấu hình:} Cho phép kỹ thuật viên thiết lập tham số mạng và đặc tả module thông qua tệp cấu hình JSON mà không cần can thiệp mã nguồn.
+            \item \textbf{Thiết bị giao diện:} Các thiết bị đầu cuối hỗ trợ người dùng tương tác trực tiếp với gateway qua các giao thức không dây hoặc có dây.
+        \end{itemize}
+
+        \item \textbf{Miền Cảm biến:} Tập hợp các thiết bị đầu cuối (End-nodes) sử dụng đa dạng các chuẩn truyền thông. Nhờ tính mô-đun hóa, hệ thống có khả năng tiếp nhận đồng thời dữ liệu từ các mạng \textit{Zigbee, LoRa, RS-485} và \textit{BLE} thông qua các module chuyển đổi tương ứng.
+    \end{itemize}
+
+    Sự phân tách kiến trúc này không chỉ giúp tối ưu hóa hiệu năng xử lý song song nhờ mô hình Master-Slave mà còn đảm bảo tính linh hoạt tối đa. Người dùng có thể thay thế các module truyền thông ở Miền Mạng để thích ứng với các kịch bản thực địa khác nhau mà không làm thay đổi cấu trúc logic cốt lõi của toàn hệ thống.
