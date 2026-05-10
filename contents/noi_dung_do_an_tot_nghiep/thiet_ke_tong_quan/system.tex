@@ -1,71 +1,264 @@
 \section{Tổng quan hệ thống}
-    \begin{tikzpicture}[
-    font=\sffamily\small,
-    >=Stealth,
-    node distance=1.8cm and 2.5cm,
-    % Đổi tên các style để tránh trùng với tên shape gốc
-    mcu_node/.style={rectangle, draw, fill=blue!10, text width=2.8cm, align=center, minimum height=1.5cm, line width=1pt, rounded corners},
-    mod_node/.style={rectangle, draw, fill=green!10, text width=2.2cm, align=center, minimum height=1cm, dashed},
-    cloud_node/.style={cloud, draw, fill=gray!5, minimum width=2.5cm, minimum height=1.5cm, aspect=2},
-    sensor_node/.style={circle, draw, fill=orange!10, inner sep=2pt, minimum size=1.2cm, align=center},
-    config_node/.style={rectangle, draw, fill=yellow!10, text width=2cm, align=center, rounded corners},
-    boundary_box/.style={draw, gray!40, dashed, inner sep=15pt, rounded corners=10pt, line width=0.5pt}
-]
+    % \begin{tikzpicture}[
+    %     font=\sffamily\small,
+    %     >=Stealth,
+    %     node distance=1.8cm and 2.5cm,
+    %     % Đổi tên các style để tránh trùng với tên shape gốc
+    %     mcu_node/.style={rectangle, draw, fill=blue!10, text width=2.8cm, align=center, minimum height=1.5cm, line width=1pt, rounded corners},
+    %     mod_node/.style={rectangle, draw, fill=green!10, text width=2.2cm, align=center, minimum height=1cm, dashed},
+    %     cloud_node/.style={cloud, draw, fill=gray!5, minimum width=2.5cm, minimum height=1.5cm, aspect=2},
+    %     sensor_node/.style={circle, draw, fill=orange!10, inner sep=2pt, minimum size=1.2cm, align=center},
+    %     config_node/.style={rectangle, draw, fill=yellow!10, text width=2cm, align=center, rounded corners},
+    %     boundary_box/.style={draw, gray!40, dashed, inner sep=15pt, rounded corners=10pt, line width=0.5pt}
+    % ]
 
-    % --- GATEWAY INTERNAL (KIẾN TRÚC DUAL-MCU) ---
-    % Master MCU - Quản lý WAN [4, 5]
-    \node (master) [mcu_node] {\textbf{MASTER WAN-MCU}\\(Control/Cloud)\\{ESP32-S3}};
-    
-    % Slave MCU - Quản lý LAN [4, 6]
-    \node (slave) [mcu_node, below=2.5cm of master] {\textbf{SLAVE LAN-MCU}\\(Sensing/Data)\\{ESP32-S3}};
-    
-    % Inter-MCU Link [7, 8]
-    \draw [<->, line width=1.5pt, blue!70] (master) -- (slave) 
-        node [midway, right, align=left, font=\scriptsize] {Quad SPI (60MHz) \\ GPIO Handshake};
+    %     % --- GATEWAY INTERNAL (KIẾN TRÚC DUAL-MCU) ---
+    %     % Master MCU - Quản lý WAN [4, 5]
+    %     \node (master) [mcu_node] {\textbf{MASTER WAN-MCU}\\(Control/Cloud)\\{ESP32-S3}};
+        
+    %     % Slave MCU - Quản lý LAN [4, 6]
+    %     \node (slave) [mcu_node, below=2.5cm of master] {\textbf{SLAVE LAN-MCU}\\(Sensing/Data)\\{ESP32-S3}};
+        
+    %     % Inter-MCU Link [7, 8]
+    %     \draw [<->, line width=1.5pt, blue!70] (master) -- (slave) 
+    %         node [midway, right, align=left, font=\scriptsize] {Quad SPI (60MHz) \\ GPIO Handshake};
 
-    % --- MIỀN WAN (UPLINK) ---
-    \node (cloud) [cloud_node, above=2.5cm of master] {Cloud Services \\ (MQTT/HTTP/CoAP)};
-    
-    % WAN Module chuẩn PCIe x1 [9, 10]
-    \node (wan_slot) [mod_node, left=1.5cm of master] {WAN Slot \\ (PCIe x1 Interface)};
-    \node (lte) [mod_node, above=0.5cm of wan_slot, fill=green!5] {LTE / Ethernet \\ Module};
-    
-    \draw [<->, thick] (master) -- (wan_slot);
-    \draw [->, thick] (lte) -- (wan_slot);
-    \draw [<->, line width=1.2pt] (master) -- (cloud) node [midway, right] {Wi-Fi / 4G};
+    %     % --- MIỀN WAN (UPLINK) ---
+    %     \node (cloud) [cloud_node, above=2.5cm of master] {Cloud Services \\ (MQTT/HTTP/CoAP)};
+        
+    %     % WAN Module chuẩn PCIe x1 [9, 10]
+    %     \node (wan_slot) [mod_node, left=1.5cm of master] {WAN Slot \\ (PCIe x1 Interface)};
+    %     \node (lte) [mod_node, above=0.5cm of wan_slot, fill=green!5] {LTE / Ethernet \\ Module};
+        
+    %     \draw [<->, thick] (master) -- (wan_slot);
+    %     \draw [->, thick] (lte) -- (wan_slot);
+    %     \draw [<->, line width=1.2pt] (master) -- (cloud) node [midway, right] {Wi-Fi / 4G};
 
-    % --- MIỀN LAN (SENSING DOMAIN) [9, 10] ---
-    \node (lan_slots) [mod_node, left=1.5cm of slave] {2x LAN Slots \\ (PCIe x1 Interface)};
-    
-    \node (zigbee) [sensor_node, below left=1.5cm and 0.2cm of lan_slots] {Zigbee \\ Node};
-    \node (lora) [sensor_node, left=1.5cm of lan_slots] {LoRa \\ Node};
-    \node (rs485) [sensor_node, below=1.5cm of lan_slots] {RS-485 \\ Device};
+    %     % --- MIỀN LAN (SENSING DOMAIN) [9, 10] ---
+    %     \node (lan_slots) [mod_node, left=1.5cm of slave] {2x LAN Slots \\ (PCIe x1 Interface)};
+        
+    %     \node (zigbee) [sensor_node, below left=1.5cm and 0.2cm of lan_slots] {Zigbee \\ Node};
+    %     \node (lora) [sensor_node, left=1.5cm of lan_slots] {LoRa \\ Node};
+    %     \node (rs485) [sensor_node, below=1.5cm of lan_slots] {RS-485 \\ Device};
 
-    \draw [<->, thick] (slave) -- (lan_slots);
-    \draw [dashed, ->] (lan_slots) -- (zigbee);
-    \draw [dashed, ->] (lan_slots) -- (lora);
-    \draw [->] (lan_slots) -- (rs485);
+    %     \draw [<->, thick] (slave) -- (lan_slots);
+    %     \draw [dashed, ->] (lan_slots) -- (zigbee);
+    %     \draw [dashed, ->] (lan_slots) -- (lora);
+    %     \draw [->] (lan_slots) -- (rs485);
 
-    % --- LƯU TRỮ & CẤU HÌNH [11, 12] ---
-    \node (sd) [mod_node, right=1.5cm of slave, text width=1.5cm] {microSD \\ (SDIO 4-bit)};
-    \draw [<->, thick] (slave) -- (sd);
-    
-    \node (pc) [config_node, right=1.5cm of master] {PC Config Tool \\ (USB-C)};
-    \draw [->, thick, orange] (pc) -- (master) node [midway, above, font=\scriptsize] {JSON Config};
+    %     % --- LƯU TRỮ & CẤU HÌNH [11, 12] ---
+    %     \node (sd) [mod_node, right=1.5cm of slave, text width=1.5cm] {microSD \\ (SDIO 4-bit)};
+    %     \draw [<->, thick] (slave) -- (sd);
+        
+    %     \node (pc) [config_node, right=1.5cm of master] {PC Config Tool \\ (USB-C)};
+    %     \draw [->, thick, orange] (pc) -- (master) node [midway, above, font=\scriptsize] {JSON Config};
 
-    % --- BAO KHUNG GATEWAY (TÍNH MODULE HÓA) ---
-    \begin{scope}[on background layer]
-        \node (gw_box) [boundary_box, fit=(master) (slave) (wan_slot) (lan_slots) (sd)] {};
-        \node [below right, gray] at (gw_box.north west) {\textbf{MODULAR IOT GATEWAY}};
-    \end{scope}
+    %     % --- BAO KHUNG GATEWAY (TÍNH MODULE HÓA) ---
+    %     \begin{scope}[on background layer]
+    %         \node (gw_box) [boundary_box, fit=(master) (slave) (wan_slot) (lan_slots) (sd)] {};
+    %         \node [below right, gray] at (gw_box.north west) {\textbf{MODULAR IOT GATEWAY}};
+    %     \end{scope}
 
-    % Chú thích cho Software-Defined Module [12, 13]
-    \node [right=0.2cm of pc, text width=3.5cm, font=\scriptsize\itshape, blue!80] {
-        \textbf{Software-Defined}:\\ 
-        Nạp file JSON để cấu hình \\ 
-        chân GPIO và tập lệnh AT \\ 
-        cho module mới mà không \\ 
-        cần biên dịch lại Firmware.
-    };
+    %     % Chú thích cho Software-Defined Module [12, 13]
+    %     \node [right=0.2cm of pc, text width=3.5cm, font=\scriptsize\itshape, blue!80] {
+    %         \textbf{Software-Defined}:\\ 
+    %         Nạp file JSON để cấu hình \\ 
+    %         chân GPIO và tập lệnh AT \\ 
+    %         cho module mới mà không \\ 
+    %         cần biên dịch lại Firmware.
+    %     };
 
-\end{tikzpicture}
+    % \end{tikzpicture}
+
+    % \begin{tikzpicture}[
+    %     font=\sffamily\small,
+    %     >=Stealth,
+    %     node distance=0pt,
+    %     %% ── Node styles ─────────────────────────────────────────
+    %     mcu/.style={
+    %         rectangle, draw, rounded corners=6pt,
+    %         fill=violet!15, draw=violet!50,
+    %         text width=4.4cm, align=center,
+    %         minimum height=1.3cm, line width=0.5pt
+    %     },
+    %     cloud/.style={
+    %         rectangle, draw, rounded corners=8pt,
+    %         fill=blue!12, draw=blue!45,
+    %         text width=3.0cm, align=center,
+    %         minimum height=1.1cm, line width=0.5pt
+    %     },
+    %     wan/.style={
+    %         rectangle, draw, rounded corners=6pt,
+    %         fill=teal!15, draw=teal!55,
+    %         text width=2.8cm, align=center,
+    %         minimum height=1.0cm, line width=0.5pt, dashed
+    %     },
+    %     sd/.style={
+    %         rectangle, draw, rounded corners=6pt,
+    %         fill=gray!15, draw=gray!50,
+    %         text width=2.2cm, align=center,
+    %         minimum height=1.0cm, line width=0.5pt, dashed
+    %     },
+    %     cfg/.style={
+    %         rectangle, draw, rounded corners=6pt,
+    %         fill=orange!18, draw=orange!65,
+    %         text width=2.4cm, align=center,
+    %         minimum height=1.0cm, line width=0.5pt
+    %     },
+    %     sensor/.style={
+    %         circle, draw,
+    %         fill=red!12, draw=red!45,
+    %         text width=1.1cm, align=center,
+    %         minimum size=1.4cm, line width=0.5pt
+    %     },
+    %     gw_box/.style={
+    %         draw=gray!45, dashed, inner sep=14pt,
+    %         rounded corners=10pt, line width=0.6pt
+    %     }
+    % ]
+     
+    % %% ── HÀNG TRÊN: Cloud & User Interface (ngoài gateway) ────────
+    % \node (cloud)  [cloud]
+    %     {\textbf{Cloud services}\\
+    %      \scriptsize MQTT / HTTP / CoAP};
+     
+    % \node (ui) [cloud, right=3.0cm of cloud]
+    %     {\textbf{User interface devices}\\
+    %      \scriptsize Dashboard / App / \ldots};
+     
+    % %% ── MASTER MCU ───────────────────────────────────────────────
+    % \node (master) [mcu, below=2.4cm of cloud, xshift=1.8cm]
+    %     {\textbf{Master WAN-MCU}\\
+    %      \small Control / Cloud\\
+    %      \scriptsize ESP32-S3};
+     
+    % %% ── SLAVE MCU ────────────────────────────────────────────────
+    % \node (slave) [mcu, below=2.2cm of master]
+    %     {\textbf{Slave LAN-MCU}\\
+    %      \small Sensing / Data\\
+    %      \scriptsize ESP32-S3};
+     
+    % %% ── WAN MODULE ───────────────────────────────────────────────
+    % \node (wan_mod) [wan, left=1.8cm of master]
+    %     {\textbf{WAN module}\\
+    %      \scriptsize LTE / Ethernet / \ldots};
+     
+    % %% ── LAN MODULES ──────────────────────────────────────────────
+    % \node (lan_mod) [wan, left=1.8cm of slave]
+    %     {\textbf{LAN modules}\\
+    %      \scriptsize LoRa / Zigbee\\
+    %      \scriptsize RS-485 / \ldots};
+     
+    % %% ── MICRO SD ─────────────────────────────────────────────────
+    % \node (sd) [sd, right=1.8cm of slave]
+    %     {\textbf{microSD}\\
+    %      \scriptsize SDIO 4-bit};
+     
+    % %% ── PC CONFIG TOOL (ngoài gateway) ──────────────────────────
+    % \node (pc)  [cfg, right=1.6cm of master, yshift=0.5cm]
+    %     {\textbf{PC config tool}\\
+    %      \scriptsize USB-C / JSON};
+     
+    % %% ── WEB CONFIG PORTAL (ngoài gateway) ───────────────────────
+    % \node (web) [cfg, below=0.4cm of pc]
+    %     {\textbf{Web config portal}\\
+    %      \scriptsize Browser / HTTP};
+     
+    % %% ── SENSOR NODES ─────────────────────────────────────────────
+    % \node (zigbee) [sensor, below left=2.0cm and 0.8cm of lan_mod]
+    %     {\textbf{Zigbee}\\
+    %      \scriptsize node};
+    % \node (lora)   [sensor, below=2.0cm of lan_mod]
+    %     {\textbf{LoRa}\\
+    %      \scriptsize node};
+    % \node (rs485)  [sensor, below right=2.0cm and 0.2cm of lan_mod]
+    %     {\textbf{RS-485}\\
+    %      \scriptsize device};
+    % \node (ble)    [sensor, below=2.0cm of slave]
+    %     {\textbf{BLE}\\
+    %      \scriptsize node};
+     
+    % %% ── GATEWAY BOUNDARY (bao Master, Slave, WAN mod, LAN mod, SD)
+    % \begin{scope}[on background layer]
+    %     \node (gw) [gw_box,
+    %         fit=(master)(slave)(wan_mod)(lan_mod)(sd)] {};
+    %     \node [above left, gray!60, font=\sffamily\scriptsize\itshape]
+    %         at (gw.north east) {\textbf{Modular IoT Gateway}};
+    % \end{scope}
+     
+    % %% ── KẾT NỐI ─────────────────────────────────────────────────
+     
+    % %% Inter-MCU
+    % \draw [<->, line width=1.5pt, violet!60]
+    %     (master) -- (slave)
+    %     node [midway, right=2pt, align=left, font=\scriptsize]
+    %         {Quad SPI (60 MHz)\\GPIO handshake};
+     
+    % %% WAN module ↔ Master
+    % \draw [<->, line width=0.9pt] (wan_mod) -- (master);
+     
+    % %% LAN modules ↔ Slave
+    % \draw [<->, line width=0.9pt] (lan_mod) -- (slave);
+     
+    % %% microSD ↔ Slave
+    % \draw [<->, line width=0.9pt] (sd) -- (slave);
+     
+    % %% PC config → Master
+    % \draw [->, line width=0.9pt, orange!80]
+    %     (pc.west) -- (master.east |- pc.west)
+    %     node [midway, above, font=\scriptsize] {JSON};
+     
+    % %% Web config → Master (nét đứt)
+    % \draw [->, line width=0.9pt, orange!70, dashed]
+    %     (web.west) -- (master.east |- web.west)
+    %     node [midway, below, font=\scriptsize] {HTTP};
+     
+    % %% WAN module → Cloud (Ethernet — nét liền)
+    % \draw [->, line width=1.0pt, teal!70]
+    %     (wan_mod.north) to[out=90, in=200] (cloud.south west)
+    %     node [near end, left, font=\scriptsize\itshape, teal!80] {Ethernet};
+     
+    % %% WAN module → Cloud (LTE — nét đứt)
+    % \draw [->, line width=1.0pt, teal!70, dashed]
+    %     (wan_mod.north) to[out=85, in=220] (cloud.south)
+    %     node [near end, right, font=\scriptsize\itshape, teal!70] {LTE};
+     
+    % %% WAN module → User Interface Devices (Ethernet — nét liền)
+    % \draw [->, line width=1.0pt, teal!70]
+    %     (wan_mod.north) to[out=75, in=230] (ui.south west)
+    %     node [near end, above, font=\scriptsize\itshape, teal!80] {Ethernet};
+     
+    % %% WAN module → User Interface Devices (LTE — nét đứt)
+    % \draw [->, line width=1.0pt, teal!70, dashed]
+    %     (wan_mod.north) to[out=70, in=240] (ui.south)
+    %     node [near end, right, font=\scriptsize\itshape, teal!70] {LTE};
+     
+    % %% LAN modules → Sensor nodes
+    % \draw [->, dashed, gray!60] (lan_mod.south) to[out=250, in=80] (zigbee.north);
+    % \draw [->, dashed, gray!60] (lan_mod.south) -- (lora.north);
+    % \draw [->          , gray!60] (lan_mod.south) to[out=290, in=100] (rs485.north);
+     
+    % %% Slave → BLE
+    % \draw [->, dashed, gray!60] (slave.south) -- (ble.north);
+     
+    % %% ── LEGEND ───────────────────────────────────────────────────
+    % \matrix [
+    %     draw=gray!40, rounded corners=4pt,
+    %     inner sep=6pt,
+    %     below right=0.6cm and 0cm of gw.south west,
+    %     font=\scriptsize
+    % ] {
+    %     \draw [line width=1.0pt, teal!70] (0,0) -- (0.8,0); &
+    %     \node [align=left] {Ethernet (có dây)}; \\
+    %     \draw [line width=1.0pt, teal!70, dashed] (0,0) -- (0.8,0); &
+    %     \node [align=left] {LTE (không dây)}; \\
+    % };
+     
+    % \end{tikzpicture}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{figures/DATN/system_diagram.drawio.png}
+        \caption{Sơ đồ tổng quan hệ thống Modular IoT Gateway}
+        \label{fig:overall_system_diagram}  
+    \end{figure}
