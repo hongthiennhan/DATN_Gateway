@@ -1,4 +1,4 @@
-\section{Ý tưởng}
+\section{Ý tưởng}\label{sec:y_tuong}
 
     \subsection{Cơ sở thực tiễn từ các giải pháp hạ tầng tiêu chuẩn}
         Sự phổ cập rộng rãi của Internet không đến từ các hệ thống máy tính riêng lẻ mà đến từ sự thành công của hạ tầng kết nối, điển hình là các thiết bị định tuyến (router) và điểm phát Wi-Fi thương mại. Những yếu tố thực sự tạo nên sự thành công vượt trội của các thiết bị này bao gồm:
@@ -33,6 +33,12 @@
             \end{itemize}
             \item \textbf{Tối ưu hóa Hiệu suất và Chi phí thông qua kiến trúc Dual-MCU:} Để đảm bảo tính mô-đun hóa và dễ cấu hình hoạt động trơn tru mà vẫn duy trì mức chi phí thấp, hệ thống áp dụng kiến trúc Dual-MCU Master-Slave. Việc phân tách vai trò giữa MCU LAN (quản lý cảm biến nội bộ) và MCU WAN (điều phối kết nối Internet) giúp loại bỏ tình trạng nghẽn (blocking) khi xử lý đa giao thức, đảm bảo hiệu suất xử lý cao tương đương các giải pháp Linux đắt tiền nhưng với mức tiêu thụ năng lượng và chi phí sản xuất tối ưu.
         \end{itemize}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width = 0.75\textwidth]{figures/gateway_concept.png}
+            \caption{Ý tưởng thiết kế sản phẩm}
+        \end{figure}
 
 
 
