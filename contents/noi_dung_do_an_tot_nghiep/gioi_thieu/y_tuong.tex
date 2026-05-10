@@ -21,15 +21,15 @@
         Sản phẩm tập trung vào hai vấn đề cốt lõi nhằm giải quyết các hạn chế đã nêu trong \autoref{sec:han_che_iot}, đó là \textbf{Tính module hóa} và \textbf{Tính dễ cấu hình}.
         Nhằm khắc phục các rào cản về chi phí, sự phức tạp trong vận hành và tính thiếu linh hoạt của các giải pháp hiện nay, đồ án đề xuất phát triển một hệ thống IoT gateway với các đặc điểm sau:
         \begin{itemize}
-            \item \textbf{Tính mô-đun hóa toàn diện:}
+            \item \textbf{Tính module hóa toàn diện:}
             \begin{itemize}
-                \item \textbf{Về phần cứng:} Thay vì tích hợp cố định các chuẩn giao tiếp đắt đỏ hoặc phức tạp, giải pháp sử dụng cơ chế lắp ráp module dựa trên việc chuẩn hóa các giao diện ngoại vi phổ biến như UART, SPI, I2C, và USB. Cách tiếp cận này cho phép thiết bị thay thế nóng hoặc nâng cấp các module truyền thông (như LoRa, Zigbee, LTE) một cách linh hoạt theo từng bài toán thực tế mà không cần thiết kế lại board mạch chính.
+                \item \textbf{Về phần cứng:} Thay vì tích hợp cố định các chuẩn giao tiếp, giải pháp sử dụng cơ chế lắp ráp module dựa trên việc chuẩn hóa các giao diện ngoại vi phổ biến như UART, SPI, I2C, và USB. Cách tiếp cận này cho phép thiết bị thay thế nóng hoặc nâng cấp các module truyền thông (như LoRa, Zigbee, LTE) một cách linh hoạt theo từng bài toán thực tế mà không cần thiết kế lại board mạch chính.
                 \item \textbf{Về phần mềm:} Kiến trúc firmware được thiết kế phân lớp rõ ràng (Driver, BSP, Middleware, Application) và đóng gói các giao thức thành các Handler Task độc lập chạy trên hệ điều hành thời gian thực (FreeRTOS). Cấu trúc này cho phép người phát triển dễ dàng thêm mới, bật hoặc tắt các giao thức mạng cảm biến (LAN) và giao thức đám mây (WAN) mà không gây lỗi dây chuyền hay ảnh hưởng đến tính ổn định của toàn hệ thống.
             \end{itemize}
             \item \textbf{Tính dễ cấu hình và vận hành thân thiện:}
             \begin{itemize}
                 \item \textbf{Loại bỏ rào cản lập trình:} Giải quyết nhược điểm của các nền tảng như M5Stack (vốn yêu cầu người dùng phải nạp lại code khi thay đổi module), giải pháp đề xuất cơ chế cấu hình động. Thông qua công cụ cấu hình trực quan (Configuration Tools) kết nối qua USB/UART, kỹ thuật viên có thể quét thiết bị và điều chỉnh mọi tham số hệ thống qua giao diện phần mềm mà không cần can thiệp vào mã nguồn hay phụ thuộc vào kỹ sư firmware.
-                \item \textbf{Cơ chế tự cấu hình và đồng bộ:} Firmware được thiết kế để tự động nhận diện và áp dụng các thông số từ tệp cấu hình, giúp biến thiết bị từ một sản phẩm kỹ thuật phức tạp thành một giải pháp "Plug-and-Play", phù hợp với cả những người dùng có ít nền tảng chuyên môn sâu.
+                \item \textbf{Cơ chế tự cấu hình và đồng bộ:} Firmware và phần cứng được thiết kế để tự động nhận diện và áp dụng các thông số từ tệp cấu hình, giúp biến thiết bị từ một sản phẩm kỹ thuật phức tạp thành một giải pháp "Plug-and-Play", phù hợp với cả những người dùng có ít nền tảng chuyên môn sâu.
             \end{itemize}
             \item \textbf{Tối ưu hóa Hiệu suất và Chi phí thông qua kiến trúc Dual-MCU:} Để đảm bảo tính mô-đun hóa và dễ cấu hình hoạt động trơn tru mà vẫn duy trì mức chi phí thấp, hệ thống áp dụng kiến trúc Dual-MCU Master-Slave. Việc phân tách vai trò giữa MCU LAN (quản lý cảm biến nội bộ) và MCU WAN (điều phối kết nối Internet) giúp loại bỏ tình trạng nghẽn (blocking) khi xử lý đa giao thức, đảm bảo hiệu suất xử lý cao tương đương các giải pháp Linux đắt tiền nhưng với mức tiêu thụ năng lượng và chi phí sản xuất tối ưu.
         \end{itemize}
