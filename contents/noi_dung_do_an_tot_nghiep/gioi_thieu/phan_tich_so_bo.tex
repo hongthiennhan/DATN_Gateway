@@ -1,0 +1,174 @@
+\section{Phân tích sơ bộ}\label{sec:phan_tich_so_bo}
+    \subsection{Đặc tả tổng quan}\label{sec:dac_ta_tong_quan}
+        Để hiện thực hóa ý tưởng về một Gateway IoT vừa có tính tùy biến cao, vừa tối ưu chi phí và dễ dàng triển khai, hệ thống cần phải thỏa mãn các yêu cầu và ràng buộc tổng quát sau đây:
+
+        \subsubsection{Tính module hóa}
+            Để đạt được sự linh hoạt trong việc thay đổi chức năng theo từng kịch bản, hệ thống phần cứng không được thiết kế theo dạng "đóng gói cố định" mà phải tuân thủ các nguyên tắc chuẩn hóa giao tiếp:
+            \begin{itemize}
+                \item \textbf{Chuẩn hóa giao diện vật lý:} Sản phẩm phải sử dụng một loại đầu nối vật lý thống nhất cho tất cả các khe cắm mở rộng. Việc này cho phép bo mạch chủ (Baseboard) kết nối đồng bộ với đa dạng các Module Adapter.
+                \item \textbf{Giao diện giao tiếp đa năng:} Mỗi khe cắm mô-đun phải hỗ trợ đầy đủ các giao thức ngoại vi phổ thông bao gồm UART, SPI, I2C, USB và các chân GPIO chức năng. Điều này đảm bảo Gateway có thể tiếp nhận bất kỳ loại mô-đun nào từ Zigbee, LoRa đến LTE hay RS-485 mà không cần thay đổi thiết kế bo mạch chính.
+                \item \textbf{Cơ chế nhận diện tự động:} Phần cứng phải tích hợp cơ chế định danh trên mỗi adapter. Yêu cầu này giúp hệ thống tự động nhận biết loại mô-đun đang cắm để nạp đúng driver và tập lệnh tương ứng ngay khi khởi động.
+                \item \textbf{Hỗ trợ tối thiểu các loại mô-đun:} Hệ thống cần được thiết kế để hỗ trợ ít nhất 01 khe cắm cho miền mạng diện rộng (WAN - LTE/Ethernet) và 02 khe cắm cho miền mạng cảm biến nội bộ (LAN - Zigbee, LoRa, BLE, RS-485) để đảm bảo tính ứng dụng đa dạng.
+            \end{itemize}
+    
+        \subsubsection{Khả năng dễ cấu hình}
+            Để người dùng không chuyên sâu vẫn có thể vận hành và bảo trì hệ thống tại thực địa, sản phẩm cần đáp ứng các yêu cầu về phần sụn, phần mềm và phần cứng hỗ trợ:
+            \begin{itemize}
+                \item \textbf{Về phía Firmware:}
+                \begin{itemize}
+                    \item \textbf{Kiến trúc phân lớp và Handler:} FW phải được thiết kế theo kiến trúc phân lớp (Driver, BSP, Middleware, Application) và sử dụng các tiến trình xử lý (tasks) độc lập cho từng giao thức. Điều này cho phép bật/tắt các mô-đun qua cấu hình mà không gây xung đột hay chặn (blocking) hệ thống.
+                    \item \textbf{Định nghĩa mô-đun bằng phần mềm (Software-Defined Module):} FW phải có khả năng đọc và hiểu các tệp mô tả định dạng JSON. Thay vì lập trình cứng (hard-code), các thông số như tập lệnh AT, trình tự điều khiển chân GPIO hay giá trị timeout sẽ được nạp động từ bộ nhớ cấu hình.
+                \end{itemize}
+                
+                \item \textbf{Về phía Software (Phần mềm cấu hình):}
+                \begin{itemize}
+                    \item \textbf{Cấu hình không xâm lấn:} Cung cấp công cụ cấu hình trực quan (PC Tools hoặc Web Config Portal) giúp thay đổi tham số mạng, giao thức và máy chủ mà không cần can thiệp mã nguồn hay biên dịch lại firmware.
+                    \item \textbf{Quản lý cấu hình thông minh:} SW phải hỗ trợ lưu trữ cấu hình vào bộ nhớ không khả biến (NVS) để thiết bị tự phục hồi trạng thái vận hành sau khi mất điện.
+                \end{itemize}
+
+                \item \textbf{Về phía Phần cứng hỗ trợ:}
+                \begin{itemize}
+                    \item \textbf{Khả năng kết nối cấu hình đa dạng:} Phần cứng phải hỗ trợ ít nhất một kênh cấu hình có dây (USB-to-UART) và một kênh không dây (Wi-Fi AP mode với Captive Portal) để người dùng có thể truy cập giao diện quản trị qua trình duyệt điện thoại hoặc máy tính một cách nhanh chóng.
+                \end{itemize}
+            \end{itemize}
+
+        \subsubsection{Các ràng buộc thiết kế}
+            \begin{itemize}
+                \item \textbf{Ràng buộc về chi phí:} Cần đảm bảo chi phí sản xuất và triển khai gateway trên thị trường có khả năng cạnh tranh, tối ưu hóa lựa chọn phần cứng và phần mềm sao cho tiết kiệm mà vẫn đáp ứng được yêu cầu hệ thống.
+                \item \textbf{Ràng buộc về công nghệ:} Cần phải sử dụng các công nghệ phổ biến và đáng tin cậy, đảm bảo khả năng tương thích với các thiết bị hiện có, cũng như dễ dàng tích hợp vào các nền tảng cloud hoặc hệ thống IoT.
+                \item \textbf{Ràng buộc về hiệu suất:} Gateway phải đảm bảo tốc độ truyền dữ liệu, khả năng xử lý song song và đáp ứng các yêu cầu về độ trễ thấp trong quá trình thu thập và truyền tải dữ liệu.
+                \item \textbf{Ràng buộc về khả năng mở rộng:} Hệ thống phải được thiết kế sao cho dễ dàng mở rộng hoặc thay thế các module mà không làm gián đoạn hoạt động của hệ thống, hỗ trợ thêm giao thức hoặc phần cứng khi cần thiết.
+            \end{itemize}
+
+        % \subsubsection{Thông số nhân xử lý}
+        %     Hệ thống áp dụng kiến trúc Dual-MCU Master-Slave để phân tách nhiệm vụ giữa miền mạng diện rộng (WAN) và miền thu thập dữ liệu nội bộ (LAN).
+        %     \begin{itemize}
+        %         \item \textbf{Vi điều khiển chính (Master WAN-MCU):} ESP32-S3-WROOM-1U-N16R8.
+        %         \begin{itemize}
+        %             \item CPU: Xtensa® lõi kép 32-bit LX7, xung nhịp lên đến 240 MHz.
+        %             \item Bộ nhớ: 16 MB Flash và 8 MB PSRAM tích hợp.
+        %             \item Kết nối không dây: Tích hợp Wi-Fi 2.4 GHz và Bluetooth Low Energy (BLE).
+        %             \item Vai trò: Điều phối hệ thống, quản lý kết nối Cloud và thực hiện cập nhật FOTA cho cả hai MCU.
+        %         \end{itemize}
+        %         \item \textbf{Vi điều khiển phụ (Slave LAN-MCU):} ESP32-S3-WROOM-1U-N16R8.
+        %         \begin{itemize}
+        %             \item Vai trò: Quản lý các giao thức mạng nội bộ, thu thập dữ liệu cảm biến và lưu trữ cục bộ.
+        %         \end{itemize}
+        %         \item \textbf{Giao tiếp nội bộ (Inter-MCU):} 
+        %         \begin{itemize}
+        %             \item Quad SPI: Kênh dữ liệu tốc độ cao để trao đổi khung tin dữ liệu và yêu cầu.
+        %             \item UART: Kênh chuyên biệt dành cho luồng nạp Firmware liên chip (Passthrough Flashing).
+        %             \item GPIO: Các đường tín hiệu điều khiển và ngắt (Boot, Reset, Interrupt) để đồng bộ trạng thái.
+        %         \end{itemize}
+        %     \end{itemize}
+
+        % \subsubsection{Khả năng kết nối và Mở rộng mô-đun}
+        %     \begin{itemize}
+        %         \item \textbf{Khe cắm mở rộng:} Gồm 03 khe cắm chuẩn hóa (01 WAN Module, 02 LAN Module) hỗ trợ thay thế linh hoạt.
+        %         \item \textbf{Giao diện tại khe cắm:} Hỗ trợ đầy đủ các giao tiếp UART, SPI, I2C, USB 2.0 và các chân GPIO chức năng.
+        %         \item \textbf{Các mô-đun Adapter hỗ trợ:}
+        %         \begin{itemize}
+        %             \item WAN: LTE 4G, Ethernet\dots
+        %             \item LAN: Zigbee, LoRaWAN, RS-485\dots
+        %         \end{itemize}
+        %         \item \textbf{Lưu trữ cục bộ:} Khe cắm thẻ nhớ Micro SD hỗ trợ giao tiếp SDIO 4-bit phục vụ việc ghi nhật ký dữ liệu ngoại tuyến.
+        %     \end{itemize}
+
+        % \subsubsection{Hệ thống nguồn và Bảo vệ}
+        %     Mạng phân phối nguồn (PDN) được thiết kế phân tầng để đảm bảo tính toàn vẹn năng lượng cho toàn hệ thống.
+        %     \begin{itemize}
+        %         \item \textbf{Nguồn đầu vào:} Hỗ trợ DC 12V qua jack DC, DC 5V qua cổng USB và nguồn dự phòng từ pin sạc LiPo 3.7V.
+        %         \item \textbf{Các mức điện áp hệ thống:} Cung cấp đồng thời các ray nguồn +3V3, +3V3\_CTRL, +5V\_CTRL phục vụ các khối chức năng và mô-đun cắm thêm.
+        %         \item \textbf{Cơ chế Bảo vệ phần cứng:}
+        %         \begin{itemize}
+        %             \item \textbf{Power MUX:} Hỗ trợ bảo vệ nguồn đầu vào trước các tình trạng quá dòng, quá áp và quá nhiệt.
+        %             \item \textbf{Bảo vệ pin LiPo:} Sử dụng mạch bảo vệ tích hợp trên cell pin, hỗ trợ các chức năng bảo vệ quá sạc, quá xả và quá nhiệt.
+        %             \item \textbf{Chống mắc ngược:} Hỗ trợ thông qua đặc tính cơ khí của các đầu nối nguồn đầu vào.
+        %             \item \textbf{Chống tĩnh điện (ESD):} Trang bị TVS diode tại đầu vào nguồn và các diode TVS chuyên dụng trên các đường dữ liệu.
+        %             \item \textbf{Lọc nhiễu:} Hệ thống tụ Decoupling đa tầng đặt sát chân linh kiện để triệt tiêu nhiễu cao tần.
+        %         \end{itemize}
+        %     \end{itemize}
+
+        % \subsubsection{Giao diện người dùng và Đặc điểm cơ khí}
+        %     \begin{itemize}
+        %         \item \textbf{Hiển thị:} Màn hình HMI cảm ứng điện trở 2.4 inch, giao tiếp UART, phục vụ hiển thị trạng thái hoạt động và hỗ trợ cấu hình gateway trực tiếp tại vị trí lắp đặt.
+        %         \item \textbf{Chỉ thị trạng thái:} Hệ thống đèn LED báo hiệu trạng thái nguồn, kết nối WAN/LAN và trạng thái máy chủ.
+        %         \item \textbf{Cổng kết nối:} Hỗ trợ các cổng nguồn (jack DC, USB), cổng cấu hình thiết bị qua USB, cổng mở rộng I2C, khe cắm thẻ MicroSD và khe cắm mở rộng cho các module WAN/LAN.
+        %         \item \textbf{Quản lý thời gian:} IC RTC kèm pin dự phòng CR2032 giúp duy trì thông tin thời gian thực khi mất điện.
+        %         \item \textbf{Tương tác vật lý:} Nút nhấn Reset, Boot và nút nhấn điều khiển nguồn tích hợp.
+        %     \end{itemize}
+
+        % \subsubsection{Đặc tả Phần mềm}
+        %     \begin{itemize}
+        %         \item \textbf{Hệ điều hành nhúng:} Chạy trên nền tảng FreeRTOS, hỗ trợ lập lịch đa nhiệm và xử lý song song.
+        %         \item \textbf{Giao thức truyền dữ liệu:} Hỗ trợ MQTT, HTTP, và CoAP theo cấu hình linh hoạt.
+        %         \item \textbf{Khả năng cấu hình:} Sử dụng công cụ Configuration Tools trên PC để thiết lập tham số (chu kỳ gửi, thông số mạng, lựa chọn mô-đun) qua USB/UART mà không cần nạp lại Firmware.
+        %         \item \textbf{Tính an toàn và ổn định:} Tích hợp Watchdog Timer tự động phục hồi khi có sự cố treo hệ thống và cơ chế lưu đệm hàng đợi (Queue) khi mất kết nối mạng.
+        %     \end{itemize}
+
+
+
+    \subsection{Yêu cầu chức năng}
+        Hệ thống Gateway IoT cần đáp ứng các nhóm chức năng chính sau đây nhằm đảm bảo tính linh hoạt và khả năng xử lý dữ liệu tin cậy:
+
+        \begin{itemize}
+            \item \textbf{Tính mô-đun hóa phần cứng:}
+            \begin{itemize}
+                \item Thiết kế theo kiến trúc mô-đun, hỗ trợ kết nối linh hoạt và tương thích với đa dạng các loại mô-đun.
+                \item Cung cấp cơ chế thay thế, nâng cấp mô-đun tùy theo mục đích ứng dụng mà không yêu cầu tái thiết kế bo mạch chủ (Baseboard).
+                \item Hỗ trợ các chuẩn giao tiếp ngoại vi phổ thông: UART, SPI, I2C, USB, \dots
+            \end{itemize}
+            
+            \item \textbf{Khả năng thu thập và xử lý dữ liệu:}
+            \begin{itemize}
+                \item Hỗ trợ đa giao tiếp và đa nền tảng: Gateway phải có khả năng tiếp nhận dữ liệu đồng thời từ nhiều nhóm thiết bị đầu cuối hoạt động trên các chuẩn giao tiếp khác nhau như Zigbee, LoRa, Bluetooth, và các giao thức công nghiệp (RS-485/\ldots).
+                \item Xử lý song song và biệt lập: Hệ thống phải triển khai các tiến trình xử lý độc lập cho từng giao thức truyền thông, đảm bảo việc thu thập dữ liệu từ một luồng không gây tắc nghẽn hoặc ảnh hưởng đến các luồng dữ liệu khác.
+                \item Tiền xử lý và Chuẩn hóa dữ liệu tại biên: Thực hiện kiểm chứng định dạng, kiểm tra tính toàn vẹn (Checksum/CRC) và loại bỏ các khung tin lỗi ngay tại tầng LAN.
+                \item Cơ chế đệm và đảm bảo an toàn dữ liệu: Sử dụng hàng đợi (Queue) và bộ nhớ đệm để lưu trữ dữ liệu tạm thời, đảm bảo không mất mát thông tin trong trường hợp kết nối mạng diện rộng (WAN) bị gián đoạn.
+                \item Chuyển giao dữ liệu linh hoạt: Hỗ trợ đóng gói và chuyển phát dữ liệu lên các máy chủ quản lý thông qua các giao thức ứng dụng phổ biến như MQTT, HTTP hoặc CoAP tùy theo yêu cầu hệ thống.
+            \end{itemize}
+            
+            \item \textbf{Khả năng khả cấu hình:}
+            \begin{itemize}
+                \item Cấu hình không xâm lấn (Non-intrusive Configuration): Cho phép tinh chỉnh toàn bộ tham số vận hành, mạng và giao thức mà không cần can thiệp vào mã nguồn hoặc biên dịch lại Firmware.
+                \item Định nghĩa Module bằng phần mềm (Software-Defined Module): Hỗ trợ cơ chế cấu hình động dựa trên tệp mô tả (JSON) để đặc tả chi tiết thông số vật lý (Baudrate, Parity), tập lệnh điều khiển (Command Template), trình tự điều khiển chân logic (GPIO Sequence) và các tham số thời gian (Timeout) của module.
+                \item Đa dạng phương thức tương tác: Cung cấp giao diện cấu hình trực quan qua ứng dụng máy tính (PC Tools) và giao diện Web (Web Config Portal) nhúng trực tiếp trên thiết bị.
+                \item Quản lý cấu hình thông minh: Hệ thống phải tự động lưu trữ cấu hình vào bộ nhớ không khả biến (NVS) và có khả năng tự phục hồi trạng thái vận hành sau khi khởi động lại.
+                \item Linh hoạt trong triển khai thực địa: Hỗ trợ chế độ điểm truy cập (AP Mode) với Captive Portal để cấu hình mạng ban đầu và chế độ trạm (STA Mode) để vận hành trong mạng nội bộ.
+            \end{itemize}
+        \end{itemize}
+
+    \subsection{Yêu cầu phi chức năng}
+        IoT Gateway phải thỏa mãn các tiêu chuẩn vận hành để đáp ứng điều kiện triển khai thực tế:
+        \begin{itemize}
+            \item \textbf{Độ tin cậy và tính ổn định:}
+            \begin{itemize}
+                \item Đảm bảo khả năng vận hành liên tục 24/7 trong thời gian dài.
+                \item Tích hợp cơ chế giám sát phần cứng và phần mềm (Watchdog Timer) để tự động phục hồi khi xảy ra hiện tượng treo hệ thống hoặc xung đột tiến trình.
+                \item Chủ động phát hiện và xử lý có kiểm soát các lỗi ngoại vi (mất Internet, lỗi cảm biến, lỗi mô-đun giao tiếp) thông qua hệ thống bản ghi (Log) và chuyển đổi về trạng thái an toàn.
+                \item Duy trì tính toàn vẹn của dữ liệu bằng bộ đệm nội bộ, hỗ trợ lưu trữ và gửi bù dữ liệu ngay khi kết nối mạng được khôi phục (trong khoảng 200 đến 300 ms kể từ khi có kết nối lại với server).
+                \item Hỗ trợ cập nhật phần mềm từ xa (FOTA) an toàn cho nhân xử lý với cơ chế kiểm tra tính toàn vẹn, đảm bảo không ghi đè lên Firmware hiện tại khi chưa xác thực thành công bản cập nhật.
+                \item Thiết kế phần cứng có khả năng chống chịu tác động môi trường: bảo vệ chống tĩnh điện (ESD), lọc nhiễu điện từ (EMI).
+            \end{itemize}
+            
+            \item \textbf{Nguồn điện và năng lượng:}
+            \begin{itemize}
+                \item Hệ thống nguồn yêu cầu độ ổn định cao, tích hợp các mạch bảo vệ quá áp (OVP), bảo vệ ngắn mạch (SCP) và chống ngược cực.
+                \item Tối ưu hóa mức tiêu thụ năng lượng thông qua các chế độ tiết kiệm điện (Sleep mode) của vi điều khiển, phù hợp cho các ứng dụng vận hành bằng pin hoặc năng lượng tái tạo.
+            \end{itemize}
+            
+            \item \textbf{Hiệu năng:}
+            \begin{itemize}
+                \item Năng lực xử lý trung tâm đảm bảo độ trễ thấp (dưới 1 ms) trong việc thu thập và chuyển giao dữ liệu từ tất cả các mô-đun kết nối đồng thời.
+                \item Tốc độ phản hồi giao diện cấu hình và thời gian khởi động hệ thống tối ưu (khoảng 15 giây cho WiFi và 40 giây cho LTE), đảm bảo không gây tắc nghẽn hàng đợi dữ liệu khi mật độ thiết bị đầu cuối tăng cao (có thể kết nối từ 30--40 thiết bị).
+                \item Thiết kế có thể xử lý tối đa kết nối với khoảng 30--40 thiết bị, tuy nhiên còn phụ thuộc vào module sử dụng cho giao thức.
+            \end{itemize}
+            
+            \item \textbf{Tính khả dụng và dễ sử dụng:}
+            \begin{itemize}
+                \item Thiết kế cơ khí hỗ trợ tháo lắp mô-đun nhanh chóng, giảm thiểu yêu cầu về công cụ chuyên dụng.
+                \item Giao diện phần mềm thân thiện, lược bỏ các thao tác lập trình phức tạp, cho phép người dùng cấu hình thông qua các tùy chọn có sẵn.
+                \item Hệ thống chỉ thị trực quan qua đèn LED (trạng thái nguồn, kết nối LAN/WAN, trạng thái Server, lỗi hệ thống). Duy trì nhật ký sự kiện chi tiết và cung cấp bộ tài liệu hướng dẫn vận hành, xử lý sự cố (Troubleshooting) toàn diện.
+            \end{itemize}
+        \end{itemize}
+    

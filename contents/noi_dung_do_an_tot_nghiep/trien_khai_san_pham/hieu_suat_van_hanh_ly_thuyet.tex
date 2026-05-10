@@ -1,0 +1,62 @@
+\begin{center}
+\textcolor{red}{\textbf{\LARGE Ném phần này chỗ khác}}
+\end{center}
+\section{Phân tích hiệu năng vận hành lý thuyết}
+
+\subsection{Thông lượng dữ liệu (Data Throughput)}
+
+\subsubsection{Thông lượng truyền thông nội bộ Inter-MCU}
+Kênh giao tiếp giữa Master (WAN-MCU) và Slave (LAN-MCU) sử dụng SPI, xung nhịp đồng bộ lấy theo giới hạn của thiết bị Slave là $f_{\text{clk}} = 60\,\text{MHz}$.
+\begin{itemize}
+    \item \textbf{Thông lượng lý thuyết ($T_{\text{raw}}$):}
+    $T_{\text{raw}} = f_{\text{clk}} \times 1\,\text{bit/clock} = 60\,\text{MHz} \times 1 = 60\,\text{Mbps}$
+    (tương đương $7{,}5\,\text{MB/s}$).
+
+    \item \textbf{Thông lượng hiệu dụng theo giao thức ($T_{\text{protocol}}$):}
+    Sau khi tính overhead khung tin (Header, Sequence Number, CRC), cơ chế bắt tay GPIO Handshake, trễ ngắt ISR và chu trình ACK/NACK, hiệu suất giao thức đạt $\eta \approx 95\%$:
+    \[
+        T_{\text{protocol}} = \eta \times T_{\text{raw}} = 0{,}95 \times 60\,\text{Mbps} = 57\,\text{Mbps}.
+    \]
+
+    \item \textbf{Thông lượng duy trì thực tế ($T_{\text{eff}}$):}
+    Hệ thống hoạt động theo chu kỳ batch: LAN-MCU tích lũy dữ liệu trong $t_{\text{batch}} = 10\,\text{ms}$ rồi mới thực hiện một phiên truyền SPI. Với batch payload điển hình $L = 2048\,\text{bytes} = 16384\,\text{bits}$:
+    \[
+        t_{\text{tx}} = \frac{L}{T_{\text{protocol}}} = \frac{16384}{57 \times 10^{6}} \approx 287\,\mu\text{s},
+    \]
+    \[
+        T_{\text{cycle}} = t_{\text{batch}} + t_{\text{tx}} = 10\,\text{ms} + 0{,}287\,\text{ms} \approx 10{,}287\,\text{ms},
+    \]
+    \[
+        T_{\text{eff}} = \frac{L}{T_{\text{cycle}}} = \frac{16384\,\text{bits}}{10{,}287 \times 10^{-3}\,\text{s}} \approx 1{,}59\,\text{Mbps}.
+    \]
+    Đây là thông lượng duy trì (sustained throughput) của kênh Inter-MCU trong điều kiện vận hành thực tế. Do lưu lượng dữ liệu cảm biến từ LAN-MCU thường nhỏ hơn $1\,\text{Mbps}$, kênh SPI không trở thành điểm nghẽn cổ chai của hệ thống.
+\end{itemize}
+
+\subsubsection{Thông lượng lưu trữ cục bộ (SDIO 4-bit)}
+Giao tiếp với thẻ nhớ Micro SD hỗ trợ chuẩn SDIO 4-bit, tần số hoạt động tối đa $80 \, \text{MHz}$.
+\begin{itemize}
+    \item \textbf{Thông lượng lý thuyết:} $T_{\text{SDIO}} = 80 \, \text{MHz} \times 4 \, \text{bits} = 320 \, \text{Mbps}$ (tương đương $40 \, \text{MB/s}$).
+    \item \textbf{Hiệu suất thực tế:} Thực nghiệm ghi nhận tốc độ ghi đạt chuẩn Class 10 (tối thiểu $10 \, \text{MB/s} \approx 80 \, \text{Mbps}$). Tốc độ này nhanh hơn gấp 8 lần thông lượng dữ liệu thực tế từ các module LAN, đảm bảo hệ thống không bị nghẽn khi thực hiện lưu đệm (Store-and-forward) lúc mất mạng WAN.
+\end{itemize}
+\subsubsection{Thông lượng kết nối WAN}
+Phiên bản 1.0.0 hỗ trợ ba giao diện WAN với thông lượng lý thuyết khác nhau:
+\begin{itemize}
+    \item \textbf{Wi-Fi (802.11n, 2.4\,GHz):} Thông lượng lý thuyết tối đa $150 \, \text{Mbps}$. Trong môi trường thực tế (nhiễu RF, khoảng cách), thông lượng hiệu dụng thường đạt $20\text{--}50 \, \text{Mbps}$.
+    \item \textbf{Ethernet (W5500, SPI):} Chuẩn 10/100BASE-T với thông lượng tối đa $100 \, \text{Mbps}$. Đây là giao diện ổn định nhất, phù hợp với môi trường công nghiệp yêu cầu độ trễ thấp và ổn định cao.
+    \item \textbf{LTE 4G (SIM7600G-H):} Thông lượng lý thuyết Cat-4 là $150 \, \text{Mbps}$ downlink\,/\,$50 \, \text{Mbps}$ uplink. Trong điều kiện thực tế tại Việt Nam, thông lượng uplink (chiều truyền dữ liệu telemetry lên Cloud) thường đạt $5\text{--}20 \, \text{Mbps}$.
+\end{itemize}
+Với lưu lượng dữ liệu telemetry điển hình từ các module cảm biến ($< 1 \, \text{Mbps}$), cả ba giao diện đều đáp ứng dư yêu cầu băng thông. Cơ chế Internet Monitor đảm bảo chuyển đổi dự phòng tự động khi một giao diện gặp sự cố.
+\subsection{Độ trễ hệ thống (End-to-End Latency)}
+Độ trễ được xác định từ thời điểm cảm biến gửi dữ liệu đến khi dữ liệu được đóng gói MQTT gửi lên Cloud:
+\begin{itemize}
+    \item \textbf{Trễ xử lý tại LAN-MCU:} Bao gồm thời gian thu thập dữ liệu thô, kiểm tra Checksum và chuẩn hóa khung tin nội bộ.
+    \item \textbf{Trễ truyền dẫn SPI:} Thời gian gói tin nằm trên bus SPI, phụ thuộc vào kích thước Payload và thông lượng thực tế $\approx 57\,\text{Mbps}$.
+    \item \textbf{Trễ mạng diện rộng (WAN):} Phụ thuộc vào chất lượng kết nối Wi-Fi/Ethernet/LTE và độ phản hồi của MQTT Broker. Hệ thống sử dụng hàng đợi (Publish Queue) trong 8MB PSRAM để cách ly trễ mạng với trễ xử lý nội bộ.
+\end{itemize}
+
+\subsection{Khả năng chịu tải và Giới hạn kết nối}
+Dựa trên tài nguyên phần cứng ESP32-S3 (16MB Flash, 8MB PSRAM), hệ thống đáp ứng:
+\begin{itemize}
+    \item \textbf{Giới hạn miền Sensing:} Hỗ trợ thu thập đồng thời từ 02 khe cắm LAN với đa dạng giao thức: Zigbee (IEEE 802.15.4), BLE Native/GATT, LoRa TDMA, RS485/Modbus, 1-Wire, I2C, SPI. Hệ thống tự động phát hiện (auto module detection) và nạp driver phù hợp từ NVS khi khởi động.
+    \item \textbf{Dung lượng hàng đợi:} Với 8MB PSRAM, Gateway có khả năng lưu trữ tạm thời hàng ngàn gói tin telemetry (kích thước trung bình $1-2 \, \text{KB}$) trước khi phải ghi vào thẻ nhớ SD, đảm bảo vận hành ổn định ngay cả khi Broker Cloud gặp sự cố phản hồi chậm.
+\end{itemize}
