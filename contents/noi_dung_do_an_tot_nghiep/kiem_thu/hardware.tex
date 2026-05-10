@@ -1,1 +1,411 @@
-\section{Kiểm thử phần cứng}
+\section{Kiểm thử Phần cứng}
+
+    \subsection{Quy trình và Kết quả Khởi động Bo mạch}
+
+        Quy trình khởi động bo mạch (Board Bring-up) được thực hiện nhằm xác minh tính toàn vẹn của phần cứng sau quá trình gia công và lắp ráp (PCBA). Mục tiêu của giai đoạn này là đảm bảo các khối nguồn hoạt động ổn định trong ngưỡng dung sai thiết kế và loại bỏ các lỗi vật lý trước khi tiến hành nạp firmware và kiểm thử chức năng. Quy trình thực nghiệm được chia thành 4 giai đoạn tuần tự.
+
+        \subsubsection{Kiểm tra ngoại quan (Visual Inspection)}
+            Trước khi cấp nguồn, công tác kiểm tra ngoại quan được thực hiện nhằm phát hiện các sai sót vật lý phát sinh trong quá trình gia công. Các hạng mục kiểm tra bao gồm:
+
+            \begin{itemize}
+                \item \textbf{Chất lượng mối hàn:} Rà soát các hiện tượng cầu thiếc (solder bridges), mối hàn lạnh (cold joints) hoặc thiếu thiếc, đặc biệt tại các khu vực linh kiện có mật độ chân cao.
+                \item \textbf{Định hướng linh kiện:} Đối chiếu bo mạch thực tế với bản vẽ lắp ráp (Assembly Drawing) để xác nhận tính chính xác về chiều cực tính của các linh kiện phân cực (Diode, IC, Nguồn).
+                \item \textbf{Độ sạch bề mặt:} Đảm bảo bề mặt PCB đã được vệ sinh công nghiệp, loại bỏ hoàn toàn flux thừa và các vụn kim loại có khả năng gây đoản mạch.
+            \end{itemize}
+
+            % \newpage
+            \begin{longtable}{|c|p{2.5cm}|p{6.5cm}|p{4cm}|c|}
+                \caption{Kết quả kiểm tra ngoại quan.}
+                \label{tab:visual_inspection} \\
+                \hline
+                \textbf{STT} & \textbf{Nhóm kiểm tra} & \textbf{Đối tượng kiểm tra cụ thể} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+            
+                \hline
+                \textbf{STT} & \textbf{Nhóm kiểm tra} & \textbf{Đối tượng kiểm tra cụ thể} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
+                \endhead
+            
+                \hline
+                \endfoot
+                \endlastfoot
+            
+                % PHẦN A: KIỂM TRA CHUNG
+                \multicolumn{5}{|l|}{\textbf{A. KIỂM TRA TỔNG QUÁT}} \\ \hline
+            
+                \multirow{2}{*}{1} & \multirow{2}{3cm}{\textbf{Tổng quan} \newline (Physical \& Solder)}
+                    & Bo mạch PCB (Bề mặt, Flux, Vết xước) 
+                    & Sạch sẽ, không lộ đồng, không cong vênh. 
+                    & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
+            
+                    & & Mối hàn tổng thể (Solder Joints) 
+                    & Bóng, đều, không tổ ong, không hàn lạnh. 
+                    & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+                % PHẦN B: KIỂM TRA CHI TIẾT
+                \multicolumn{5}{|l|}{\textbf{B. KIỂM TRA CHI TIẾT LINH KIỆN}} \\ \hline
+            
+                % NHÓM 1: LINH KIỆN CHUNG
+                \multirow{15}{*}{2} & \multirow{15}{3cm}{\textbf{Nhóm Linh kiện} \newline (General Components)}
+                    & \textbf{SoC:} U1, U2 \newline (ESP32-S3-WROOM-1U-N16R8)
+                    & \multirow{15}{4cm}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).}
+                    & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{USB to UART Bridge IC:} U13 \newline (CP2102-GMR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Power MUX IC:} U17 \newline (TPS2121RUXR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Battery Charger IC:} U15 \newline (BQ25892RTWR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Power Monitor IC:} U14 \newline (INA230AIRGTR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Battery Fuel Gauge IC:} U16 \newline (BQ27441DRZR-G1B)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Buck 3V3 IC:} U3 \newline (TPS566231RQFR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Power Switch IC:} U4, U6 \newline (TPS22965DSGR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Boost 5V IC:} U5 \newline (TPS613222ADBVR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{RTC:} U8 \newline (PCF8563T/5,518)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{IO Expanders:} U10 \newline (TCA6416ARTWR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{I2C Buffer:} U18 \newline (TCA9803DGKR)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Analog Switches IC:} U11, U19 \newline (FSUSB42UMX-TP)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Level Shifters IC:} U7 \newline (TXS0102DQER)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{EMI/RFI Filters (MSD):} U12 \newline (EMIF06-MSD02N16)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+                % NHÓM 2: LINH KIỆN PHÂN CỰC
+                \multirow{2}{*}{3} & \multirow{2}{3cm}{\textbf{Nhóm Phân cực} \newline (Polarized Components)}
+                    & \textbf{Bán dẫn phân cực:} \newline (Diode TVS, Schottky, LEDs)
+                    & \multirow{2}{4cm}{\textbf{Đúng Cực tính:} \newline - Cực Dương (+), Cathode (K) gia công đúng chiều.}
+                    & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Nguồn:} BAT1, CON9, CON5 \newline (CR2032, DC-091, TYPE-C-31-M-12)
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            
+                % NHÓM 3: CƠ KHÍ & KẾT NỐI
+                \multirow{8}{*}{4} & \multirow{8}{3cm}{\textbf{Nhóm Cơ khí} \newline (Mechanical Parts)}
+                    & \textbf{USB Type-C Connector:} CON5
+                    & \multirow{8}{4cm}{\textbf{Mức độ chống chịu cơ khí:} \newline - Chân vỏ (Shield) hàn chắc, chịu lực tốt.}
+                    & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Expansion Connectors WAN/LAN:} CON3, CON6, CON7
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{DC Power Jack:} CON9
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Nút nhấn (Buttons):} BTN1, BTN2, BTN3
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Vỏ khe thẻ nhớ Micro SD:} CON8
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Cổng mở rộng I2C:} CON10, CON11
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Khe Pin RTC:} BAT1
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
+            
+                    & & \textbf{Cổng kết nối LCD:} CON4
+                    & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \end{longtable}
+
+        \subsubsection{Kiểm tra thông số nguội (Cold Check Analysis)}
+            Phép đo kiểm tra nguội được thực hiện trong trạng thái bo mạch cách ly hoàn toàn với nguồn điện. Phương pháp này sử dụng đồng hồ vạn năng để xác định trở kháng giữa các đường nguồn (Power Rails) và đất (GND). Mục đích là phát hiện sớm các lỗi ngắn mạch (Short Circuit) nghiêm trọng.
+
+            Kết quả đo đạc thực tế đã kiểm tra:
+
+            \begin{longtable}{|c|p{4cm}|p{5cm}|p{3cm}|c|}
+                \caption{Kết quả kiểm tra trở kháng nguội các đường nguồn.}
+                \label{tab:cold_check_results} \\
+                \hline
+                \textbf{STT} & \textbf{Đường nguồn (Power Rail)} & \textbf{Tiêu chí kỹ thuật} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Đường nguồn (Power Rail)} & \textbf{Tiêu chí kỹ thuật} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+
+                1 & \textbf{+12V} & Không ngắn mạch ($> 10\Omega$) & $72 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+                2 & \textbf{+5V} & Không ngắn mạch ($> 10\Omega$) & $29.2 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                3 & \textbf{+3V7\_VBAT} & Không ngắn mạch ($> 10\Omega$) & $6.3 M\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                4 & \textbf{+12V\_5V\_VBUS} & Không ngắn mạch ($> 10\Omega$) & $2 M\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                5 & \textbf{+4V2\_VSYS} & Không ngắn mạch ($> 10\Omega$) & $1 M\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                6 & \textbf{+3V3} & Không ngắn mạch ($> 10\Omega$) & $20.5 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                7 & \textbf{+3V3\_CTRL} & Không ngắn mạch ($> 10\Omega$) & $930 k\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                8 & \textbf{+5V\_CTRL} & Không ngắn mạch ($> 10\Omega$) & $1.5 M\Omega$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \end{longtable}
+
+        \subsubsection{Kiểm tra cấp nguồn giới hạn (Smoke Test / Hot Check)}
+            Để giảm thiểu rủi ro hư hỏng linh kiện do các lỗi tiềm ẩn không phát hiện được trong pha kiểm tra nguội, quy trình cấp nguồn lần đầu được thực hiện thông qua bộ nguồn đa năng với chế độ bảo vệ quá dòng.
+
+            \textbf{Phương pháp thực hiện:}
+            \begin{enumerate}
+                \item Thiết lập điện áp đầu vào ở mức danh định ($V_{IN} = 12V$).
+                \item Kích hoạt chế độ Giới hạn dòng điện (Current Limiting) ở ngưỡng an toàn $I_{limit} = 25mA$.
+                \item Quan sát trạng thái chuyển đổi chế độ của bộ nguồn (CV - Constant Voltage hoặc CC - Constant Current) để đánh giá tình trạng bo mạch.
+            \end{enumerate}
+
+            \textbf{Kết quả kiểm thử:}
+            Hệ thống hoạt động ổn định ở chế độ Điện áp không đổi (CV). Dòng tiêu thụ tĩnh (Quiescent Current) đo được ở mức thấp ($\approx 25mA$), không xuất hiện hiện tượng sụt áp đầu vào hay quá nhiệt cục bộ trên các linh kiện công suất. Điều này xác nhận bo mạch không có lỗi quá dòng nghiêm trọng.
+            \begin{longtable}{|c|p{4cm}|p{4.5cm}|p{3.5cm}|c|}
+                \caption{Kết quả kiểm tra nóng và dòng tiêu thụ tĩnh.}
+                \label{tab:smoke_test_results_final} \\
+                \hline
+                \textbf{STT} & \textbf{Thiết lập kiểm thử} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả đo thực tế} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Thiết lập kiểm thử} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả đo thực tế} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+
+                1 & \textbf{Bước 1:} Cấp nguồn, giới hạn dòng $I_{limit} = 25mA$ & Không xảy ra hiện tượng sụt áp. & Dòng không tải $= 24mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+                2 & \textbf{Bước 2:} Cấp nguồn, giới hạn dòng $I_{limit} = 50mA$ & Không xảy ra hiện tượng sụt áp. & Dòng không tải $= 24mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                3 & \textbf{Bước 3:} Cấp nguồn, giới hạn dòng $I_{limit} = 100mA$ & Không xảy ra hiện tượng sụt áp. & Dòng không tải $= 24mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                4 & \textbf{Bước 4:} Cấp nguồn, giới hạn dòng $I_{limit} = 200mA$ & Không xảy ra hiện tượng sụt áp. & Dòng không tải $= 24mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                5 & \textbf{Bước 5:} Cấp nguồn bình thường & Hệ thống hoạt động ổn định, không có linh kiện phát nhiệt bất thường. & Dòng không tải $= 24mA$. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \end{longtable}
+
+        \subsubsection{Xác thực thông số điện áp}
+            Sau khi xác nhận tính an toàn của hệ thống, giới hạn dòng điện được tăng đến mức vận hành tiêu chuẩn. Các mức điện áp tại các điểm kiểm tra (Test Points) được đo đạc để xác minh độ chính xác của khối nguồn Buck Converter và LDO so với tính toán thiết kế.
+
+            \begin{longtable}{|c|p{5cm}|p{4.5cm}|p{2.5cm}|c|}
+                \caption{Kết quả đo kiểm điện áp.}
+                \label{tab:voltage_validation_final} \\
+                \hline
+                \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế)} & \textbf{Kết quả} \\ \hline
+                \endfirsthead
+                \hline
+                \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
+                \endhead
+                \hline
+                \endfoot
+                \endlastfoot
+
+                1 & \textbf{+12V} & $12.0 V$ & $12.0 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+                2 & \textbf{+5V} & $5.0 V$ & $5.05 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                3 & \textbf{+3V7\_VBAT} \newline \textit{Test-point TP41/42} & $3.0 V \rightarrow 4.2 V$ & $3.92 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                4 & \textbf{+12V\_5V\_VBUS} \newline \textit{Test-point TP37/39} & $12.0 V$ \newline \textit{Khi chỉ kết nối nguồn 12V từ Jack DC} & $12.0 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
+                
+                &  &  $5.0 V$ \newline \textit{Khi chỉ kết nối nguồn 5V từ USB} & $5.04 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
+                
+                &  &  $12.0 V$ \newline \textit{Khi kết nối hai nguồn cùng lúc} & $12.0 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                5 & \textbf{+4V2\_VSYS} \newline \textit{Test-point TP38/40} & $3.65 V$ \newline \textit{Khi chỉ kết nối nguồn 12V hoặc 5V} & $3.68 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
+                
+                &  &  $3.0 V \rightarrow 4.2 V$ \newline \textit{Khi chỉ kết nối pin LiPo} & $3.9 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
+                
+                &  &  $3.65 V \rightarrow 4.2 V$ \newline \textit{Khi kết nối nguồn 12V/5V và pin LiPo} & $4.23 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                6 & \textbf{+3V3} \newline \textit{Test-point TP12/13} & $3.3 V$ & $3.32 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                7 & \textbf{+3V3\_CTRL} \newline \textit{Test-point TP18/19} & $3.3 V$ & $3.32 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                8 & \textbf{PWR\_5V\_CTRL\_VIN} \newline \textit{Test-point TP14/16} & $3.0 V \rightarrow 4.2 V$ & $3.67 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                9 & \textbf{+5V\_CTRL} \newline \textit{Test-point TP15/17} & $5.0 V$ & $5.07 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                10 & \textbf{+3V\_U2T} \newline \textit{Test-point TP35/36} & $3.0 V$ & $3.5 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                11 & \textbf{+3V0\_BAT} \newline \textit{Test-point TP20/21} & $3.0 V$ & $3.33 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                12 & \textbf{+3V3\_IOX1\_VCCI} \newline \textit{Test-point TP23/24} & $3.3 V$ & $3.32 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                13 & \textbf{FAN\_VCC} & $5.0 V$ & $5.05 V$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+
+            \end{longtable}
+
+        \subsection{Quy trình Kiểm tra sản phẩm}
+
+            Sau quy trình khởi động (Bring-up) thành công, toàn bộ hệ thống được đưa vào quy trình kiểm tra chi tiết. Mục tiêu của giai đoạn này là định lượng các thông số kỹ thuật, đảm bảo các mức logic điều khiển và chất lượng nguồn điện đáp ứng yêu cầu thiết kế trước khi tích hợp firmware ứng dụng.
+        
+            \subsubsection{Kiểm tra trạng thái Logic và Điều khiển (Logic State Verification)}
+                Các tín hiệu điều khiển tới hạn (Critical Control Signals) bao gồm Reset, Boot Mode và Enable được đo đạc tại thời điểm khởi động và trạng thái ổn định. Việc này nhằm xác minh cấu hình điện trở kéo (Pull-up/Pull-down) đã được thiết kế đúng, đảm bảo MCU vào đúng chế độ hoạt động (Boot mode vs Download mode) và không xảy ra hiện tượng thả nổi tín hiệu (Floating).
+        
+                \begin{longtable}{|c|p{5.5cm}|p{6.5cm}|c|}
+                    \caption{Kết quả kiểm tra các mức Logic điều khiển.}
+                    \label{tab:logic_verification} \\
+                    \hline
+                    \textbf{STT} & \textbf{Nội dung kiểm tra} & \textbf{Kết quả kỳ vọng} & \textbf{Kết quả} \\ \hline
+                    \endfirsthead
+                
+                    \hline
+                    \textbf{STT} & \textbf{Nội dung kiểm tra} & \textbf{Kết quả kỳ vọng} & \textbf{Kết quả} \\ \hline
+                    \endhead
+                
+                    \hline
+                    \endfoot
+                    \endlastfoot
+                
+                    1 & \textbf{PWR\_3V3\_CTRL\_EN} & Tín hiệu mặc định mức 1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    2 & \textbf{PWR\_5V\_CTRL\_EN} & Tín hiệu mặc định mức 1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    3 & \textbf{M\_RESET\#} \newline \textit{(test-point TP3/5)} & Tín hiệu mặc định mức 1, được điều khiển bởi nút nhấn Reset & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    4 & \textbf{M\_BOOT} \newline \textit{(test-point TP4/5)} & Tín hiệu mặc định mức 1, được điều khiển bởi nút nhấn Boot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    5 & \textbf{M\_PWR\_CTRL} \newline \textit{(test-point TP33/34)} & Tín hiệu mặc định mức 1, được điều khiển bởi nút nhấn PWR\_CTRL & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    6 & \textbf{S\_RESET\#} \newline \textit{(test-point TP9/11)} & Tín hiệu mặc định mức 1, được điều khiển bởi ESP32-S3 Master & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    7 & \textbf{S\_BOOT} \newline \textit{(test-point TP10/11)} & Tín hiệu mặc định mức 1, được điều khiển bởi ESP32-S3 Master & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    8 & \textbf{S\_INT} \newline \textit{(test-point TP8/11)} & Tín hiệu mặc định mức 0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    9 & \textbf{UART\_SEL} \newline \textit{(test-point TP25/26)} & Tín hiệu mặc định mức 0, mặc định M\_UART2 kết nối S\_UART0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    10 & \textbf{USB\_SEL} \newline \textit{(test-point TP43/44)} & Tín hiệu mặc định mức 0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    11 & \textbf{MSD\_CD} \newline \textit{(test-point TP27/28)} & Tín hiệu mặc định mức 1 (chưa gắn thẻ MicroSD) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    12 & \textbf{FAN\_CTRL} & Tín hiệu mặc định mức 0 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    13 & \textbf{IOX1\_INT} & Tín hiệu mặc định mức 1 (chưa có sự kiện) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                
+                \end{longtable}
+        
+            \subsubsection{Kiểm tra Chất lượng Nguồn (Power Integrity Analysis)}
+                Chất lượng nguồn được đánh giá thông qua đo đạc từ máy hiện sóng (Oscilloscope) để đo độ gợn (Voltage Ripple) và độ sụt áp (Voltage Drop) dưới tải. Các phép đo được thực hiện khi hệ thống đang chạy firmware kiểm thử (Test Firmware) với tải giả định để mô phỏng điều kiện hoạt động thực tế.
+        
+                \begin{longtable}{|c|c|p{4cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|c|}
+                    \caption{Kết quả kiểm tra chất lượng nguồn điện.}
+                    \label{tab:power_analysis} \\
+                    \hline
+                    \multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Rail}} & \multirow{2}{4cm}{\textbf{Điểm đo tại tải}} & \multicolumn{3}{c|}{\textbf{Giá trị đo thực tế}} & \multirow{2}{*}{\textbf{Kết quả}} \\ \cline{4-6}
+                    & & & \textbf{Sleep Mode} & \textbf{Normal Mode} & \textbf{Full Load} & \\ \hline
+                    \endfirsthead
+                    \hline
+                    \multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Rail}} & \multirow{2}{4cm}{\textbf{Điểm đo tại tải}} & \multicolumn{3}{c|}{\textbf{Giá trị đo thực tế}} & \multirow{2}{*}{\textbf{Kết quả}} \\ \cline{4-6}
+                    & & & \textbf{Sleep Mode} & \textbf{Normal Mode} & \textbf{Full Load} & \\ \hline
+                    \endhead
+                    \hline
+                    \endfoot
+                    \endlastfoot
+        
+                    % PHẦN 1: DÒNG ĐIỆN
+                    \multicolumn{7}{|l|}{\textbf{A. DÒNG ĐIỆN ĐẦU VÀO (INPUT CURRENT) - Đơn vị: $mA$}} \\ \hline
+                    \multicolumn{7}{|l|}{\textit{*Tiêu chí: Dòng tổng $< 3.25A$ (Jack DC, USB) và $< 5A$ (pin LiPo) (Công suất thiết kế)}} \\ \hline
+                    1 & \textbf{+12V} & Total Input (Jack DC) & $12$ & $92$ & $198$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+                    2 & \textbf{+5V} & Total Input (USB) & $29$ & $221$ & $474$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+                    3 & \textbf{+3V7\_VBAT} & Total Input (LiPo Battery) & $33$ & $250$ & $525$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+        
+                    % PHẦN 2: RIPPLE
+                    \multicolumn{7}{|l|}{\textbf{B. ĐỘ GỢN ĐIỆN ÁP (VOLTAGE RIPPLE) - Đơn vị: $\pm mV_{pp}$}} \\ \hline
+                    \multicolumn{7}{|l|}{\textit{*Tiêu chí: Voltage ripple $< 5\%$}} \\ \hline
+                    4 & \textbf{+3V3} & Test-point (TP12/13) & $40$ & $180$ & $250$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+                    5 & \textbf{+3V3\_CTRL} & Test-point (TP18/19) & $70$ & $150$ & $270$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+                    6 & \textbf{+5V\_CTRL} & Test-point (TP15/17) & $50$ & $-$ & $50$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+        
+                    % PHẦN 3: SỤT ÁP
+                    \multicolumn{7}{|l|}{\textbf{C. ĐỘ SỤT ÁP TẠI TẢI (VOLTAGE DROP) - Đơn vị: $V$}} \\ \hline
+                    \multicolumn{7}{|l|}{\textit{*Tiêu chí: Voltage drop = voltage at source - voltage at load $< 5\%$}} \\ \hline
+        
+                    % Rail +3V3
+                    7 & \multirow{3}{*}{\textbf{+3V3}} & Source          & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    8 &                                & ESP32-S3 Master & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    9 &                                & WAN Connector   & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ %\hline
+        
+                    \pagebreak
+        
+                    % Rail +3V3_CTRL
+                    10 & \multirow{4}{*}{\textbf{+3V3\_CTRL}} & Source         & $3.32$ & $3.31$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    11 &                                     & ESP32-S3 Slave & $3.32$ & $3.31$ & $3.30$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    12 &                                     & LAN Connectors & $3.32$ & $3.31$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    13 &                                     & MicroSD Card   & $3.32$ & $3.31$ & $3.30$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+        
+                    % Rail +5V_CTRL
+                    14 & \multirow{3}{*}{\textbf{+5V\_CTRL}} & Source     & $5.08$ & $-$ & $5.00$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    15 &                                    & USART LCD  & $5.08$ & $-$ & $4.98$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
+                    16 &                                    & DC FAN     & $5.08$ & $-$ & $4.98$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
+        
+                \end{longtable}
+        
+            \subsubsection{Kiểm tra Chức năng Phần cứng (Functional Verification)}
+                Từng khối chức năng ngoại vi được kiểm tra độc lập thông qua các firmware driver cơ bản. Mục đích là xác nhận sự toàn vẹn của các đường dẫn tín hiệu và khả năng giao tiếp vật lý giữa MCU và các linh kiện ngoại vi.
+        
+                \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                    \caption{Kết quả kiểm tra chức năng.}
+                    \label{tab:detailed_functional_verification_final} \\
+                    \hline
+                    \textbf{STT} & \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra} & \textbf{Dấu hiệu nhận biết} & \textbf{Kết quả} \\ \hline
+                    \endfirsthead
+                    \hline
+                    \textbf{STT} & \textbf{Khối chức năng} & \textbf{Phương pháp kiểm tra} & \textbf{Dấu hiệu nhận biết} & \textbf{Kết quả} \\ \hline
+                    \endhead
+                    \hline
+                    \endfoot
+                    \endlastfoot
+        
+                    % 1. INTER-MCU COMMUNICATION
+                    \multicolumn{5}{|l|}{\textbf{A. GIAO TIẾP VI ĐIỀU KHIỂN}} \\ \hline
+        
+                    1 & \textbf{Giao tiếp dữ liệu tốc độ cao} \newline (U1 Master $\leftrightarrow$ U2 Slave) & \textbf{Giao thức Quad SPI (SPI2):} \newline Kiểm tra bus 6 dây: CS, CLK, MOSI, MISO, WP, HD (IO[9:14] kết nối tới IO[9:14]). Gửi gói dữ liệu lớn bằng cơ chế Ping-pong buffer. & Tốc độ truyền đạt mức thiết kế ($> 10Mbps$). Dữ liệu U1 nhận được khớp hoàn toàn với dữ liệu U2 gửi đi (Data Integrity Check). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    2 & \textbf{Nạp Firmware cho Slave} \newline (U1 Programming U2) & \textbf{Giao thức UART + GPIO Control:} \newline U1 điều khiển \texttt{S\_RESET} và \texttt{S\_BOOT} để đưa U2 vào Download Mode, sau đó gửi dữ liệu qua \texttt{UART0}. & U1 báo nạp thành công (Successfully Flashed). U2 tự khởi động lại và chạy firmware mới. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    3 & \textbf{Điều khiển \& Đồng bộ} \newline (Handshake Signals) & \textbf{GPIO Interrupt:} \newline Kiểm tra tín hiệu ngắt \texttt{S\_INT} từ Slave về Master và tín hiệu \texttt{Enable} từ Master xuống Slave. & Master nhận được sự kiện ngắt ngay khi Slave kích hoạt chân \texttt{IO45}. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    % 2. KHỐI MASTER PERIPHERALS
+                    \multicolumn{5}{|l|}{\textbf{B. NGOẠI VI CỦA MASTER}} \\ \hline
+        
+                    4 & \textbf{Đồng hồ thời gian thực} \newline (RTC - PCF8563) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x51}. Ghi thời gian hiện tại và đọc lại sau 1 phút. & Thời gian đọc về tăng đúng 60 giây so với lúc ghi. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    5 & \textbf{Mở rộng IO} \newline (IO Expander - TCA6416) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x20}. Điều khiển bật/tắt các chân Output P0/P1. & Các tín hiệu điều khiển nguồn (EN\_3V3C, EN\_5VC) thay đổi mức logic đúng theo lệnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    6 & \textbf{Cổng kết nối WAN} \newline (Cho Module LTE/Ethernet) & \textbf{Multi-protocol Check:} \newline - UART1 (IO15/18). \newline - SPI3 (IO4--7). & - UART nhận lại đúng chuỗi đã gửi. \newline - SPI phát hiện thiết bị ngoại vi giả lập. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    7 & \textbf{I2C Buffer} \newline (TCA9803DGKR) & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với thiết bị I2C bên ngoài thông qua cổng CON11. & Quét được thiết bị I2C bên ngoài qua cổng CON11; dữ liệu đọc/ghi ổn định. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    8 & \textbf{UART Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Master điều khiển chân \texttt{UART\_SEL}. & Khi Low: UART2 của Master kết nối UART0 của Slave. Khi High: Kết nối LCD. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    9 & \textbf{Màn hình hiển thị} \newline (LCD Module) & \textbf{Giao thức UART2 (Master):} \newline Gửi chuỗi lệnh/khung dữ liệu kiểm tra hiển thị qua UART2. & Màn hình sáng đều, không có điểm chết, hiển thị đúng nội dung test. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    10 & \textbf{DC FAN và RGB LEDs} \newline (IO Expander - TCA6416) & \textbf{Logic Control (GPIO):} \newline Master điều khiển IO Expander để điều khiển DC FAN và RGB LEDs. & DC FAN bật khi chân P15 kéo mức logic cao. RGB LEDs sáng màu trắng khi các chân P1[2:4] kéo mức logic thấp. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    11 & \textbf{Khối sạc và đo năng lượng tiêu thụ} \newline (Battery Charger và Power Monitor) & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với khối sạc và khối đo năng lượng tiêu thụ của thiết bị qua I2C. & Quét được địa chỉ \texttt{0x6B}, \texttt{0x40}, \texttt{0x55}. Đo được dòng tiêu thụ của thiết bị và dòng sạc/xả của pin LiPo. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    % 3. KHỐI SLAVE PERIPHERALS
+                    \multicolumn{5}{|l|}{\textbf{C. NGOẠI VI CỦA SLAVE}} \\ \hline
+        
+                    12 & \textbf{Thẻ nhớ MicroSD} \newline (Storage) & \textbf{Giao thức SDIO 4-bit:} \newline U2 thực hiện Mount File System (FAT32) và ghi file log mẫu 1MB. & Tốc độ ghi đạt chuẩn Class 10. File đọc lại không bị lỗi (Check MD5). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    13 & \textbf{Cổng kết nối LAN1} \newline (Cho Zigbee/LoRaWAN) & \textbf{Multi-protocol Check:} \newline - UART1 (IO17/18). \newline - SPI3 (CS0). & Giao tiếp ổn định với Module Test LAN1. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    14 & \textbf{Cổng kết nối LAN2} \newline (Cho RS485) & \textbf{Multi-protocol Check:} \newline - UART2 (IO8/21). \newline - SPI3 (CS1). & Giao tiếp ổn định với Module Test LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    15 & \textbf{USB Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Slave điều khiển chân \texttt{USB\_SEL}. & Khi Low: USB kết nối LAN1. Khi High: USB kết nối LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    % 4. GIAO DIỆN NGƯỜI DÙNG & HỆ THỐNG
+                    \multicolumn{5}{|l|}{\textbf{D. GIAO DIỆN HỆ THỐNG (SYSTEM INTERFACE)}} \\ \hline
+        
+                    16 & \textbf{USB-C Port} \newline (USB to UART CP2102) & \textbf{USB to UART:} \newline Cắm cáp vào PC. & PC nhận diện cổng COM (CP2102). Nạp code trực tiếp từ PC OK. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                    17 & \textbf{Nút nhấn hệ thống} \newline (Power Button) & \textbf{Physical Interaction:} \newline Nhấn nút Power Button. & ESP32-S3 Master nhận được tín hiệu từ nút nhấn và bật/tắt nguồn. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        
+                \end{longtable}
