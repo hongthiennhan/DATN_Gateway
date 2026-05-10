@@ -1,0 +1,66 @@
+\documentclass[12pt,a4paper]{report}
+\input{styles/codespace.tex}
+
+\setDocsName{Thiết kế và hiện thực một gateway IoT dạng mô-đun có khả năng cấu hình}
+\setDocsType{ĐỒ ÁN TỐT NGHIỆP}
+\setAuthName{
+    & \textbf{SVTH 1:} & \textbf{Hồng Thiện Nhân (2111900)} \\
+    & \textbf{SVTH 2:} & \textbf{Trần Hải Thảo Quảng (2212767)} \\
+}
+\setCityName{Tp. Hồ Chí Minh}
+\setOrgName{Trường Đại học Bách Khoa - Đại học Quốc Gia TP.HCM}
+
+\begin{document}
+    \input{contents/cover.tex}
+    \clearpage
+    \thispagestyle{empty}
+    \mbox{}
+    \clearpage
+    \input{contents/other_contents/bang_nhiem_vu.tex}
+    \input{contents/other_contents/loicamdoan.tex}
+    \input{contents/other_contents/loicamon.tex}
+    \input{contents/other_contents/tomtat.tex}
+    \tableofcontents
+    \listoftables
+    \listoffigures
+
+    % tập trung so sánh độ trễ, thông lượng, giá thành với M5
+
+    % \input{contents/preparation.tex}
+
+    % \input{contents/timhieu.tex}
+    % \input{contents/concept_design.tex}
+
+    \part{Nội dung Đồ án Tốt nghiệp}
+        \input{contents/noi_dung_do_an_tot_nghiep/gioi_thieu.tex}
+        \input{contents/noi_dung_do_an_tot_nghiep/nen_tang_ky_thuat.tex}
+        \input{contents/noi_dung_do_an_tot_nghiep/thiet_ke_tong_quan.tex}
+        \input{contents/noi_dung_do_an_tot_nghiep/hien_thuc.tex}
+        \input{contents/noi_dung_do_an_tot_nghiep/kiem_thu.tex}
+        \input{contents/noi_dung_do_an_tot_nghiep/ket_luan.tex}
+    % \input{contents/y_tuong/phan_mo_dau.tex}
+
+    \part{Phụ lục}
+        \appendix
+        \input{contents/phu_luc/ma_nguon_va_tai_lieu.tex}
+        \input{contents/phu_luc/thiet_ke_sche_pcb.tex}
+        \input{contents/phu_luc/phan_tich_va_mo_phong.tex}  
+
+
+        % \input{contents/other_contents/tong_quan.tex}
+        % \input{contents/other_contents/co_so_ly_thuyet.tex}
+        % \input{contents/phan_tich_thiet_ke/phan_tich_thiet_ke.tex}
+        % \input{contents/cai_tien_phien_ban/cai_tien_phien_ban.tex}
+        % \input{contents/trien_khai_van_hanh/trien_khai_van_hanh.tex}
+        % \input{contents/bring_up_verification/bring_up_verification.tex}
+        % \input{contents/ket_luan/ket_luan.tex}
+
+
+
+
+    \nocite{*}
+    \newpage
+    \bibliographystyle{plain}
+    \bibliography{bibliography.bib}
+
+\end{document}
