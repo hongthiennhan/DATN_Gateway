@@ -1,0 +1,43 @@
+        \subsubsection{Các công nghệ kết nối phổ biến}
+            Trong hạ tầng IoT hiện đại, các gateway cần hỗ trợ đa dạng công nghệ kết nối để tích hợp với nhiều loại thiết bị khác nhau. Các công nghệ kết nối tầm ngắn như \textbf{WiFi}, \textbf{Bluetooth Low Energy (BLE)}, \textbf{Zigbee}, \textbf{Z-Wave} được sử dụng rộng rãi trong các ứng dụng gia dụng và văn phòng. Các công nghệ \textbf{LPWAN} như \textbf{LoRaWAN}, \textbf{NB-IoT}, \textbf{LTE-M} phù hợp với những kịch bản yêu cầu phạm vi phủ sóng rộng và tiêu thụ năng lượng thấp. Bên cạnh đó, các kết nối có dây như \textbf{Ethernet}, \textbf{RS-485}, \textbf{RS-232}, \textbf{CAN} vẫn giữ vai trò quan trọng trong môi trường công nghiệp nhờ độ ổn định cao và khả năng chống nhiễu tốt.
+
+        \subsubsection{Các giao thức truyền dữ liệu}
+            Tại tầng ứng dụng, các giao thức truyền dữ liệu phổ biến được tích hợp trên gateway gồm:
+            \begin{itemize}
+                \item \textbf{MQTT}: hoạt động theo mô hình publish--subscribe nhẹ, hỗ trợ cơ chế QoS, phù hợp với môi trường hạn chế tài nguyên và đường truyền không ổn định.
+                \item \textbf{CoAP}: hoạt động trên nền UDP, thiết kế tối giản băng thông, thích hợp cho mạng cảm biến và thiết bị có tài nguyên thấp.
+                \item \textbf{HTTP/HTTPS}: hỗ trợ tích hợp trực tiếp với REST API, hệ thống web và các dịch vụ cloud truyền thống, đảm bảo bảo mật ở tầng truyền tải.
+                \item \textbf{AMQP}: cung cấp cơ chế hàng đợi thông điệp tin cậy, đảm bảo giao nhận, phù hợp với các hệ thống tích hợp middleware doanh nghiệp.
+                \item \textbf{XMPP}: hỗ trợ giao tiếp hai chiều theo thời gian thực dựa trên mô hình nhắn tin có thể mở rộng, phù hợp cho các ứng dụng IoT yêu cầu trao đổi sự kiện và trạng thái giữa các nút.
+            \end{itemize}
+
+        \subsubsection{Các mô hình triển khai gateway}
+            Trong thực tế, kiến trúc IoT thường áp dụng hai mô hình triển khai gateway chính:
+            \begin{itemize}
+                \item \textbf{Thiết bị đầu cuối kiêm chức năng gateway (mô hình phân tán)}: Mỗi thiết bị đầu cuối vừa thực hiện chức năng cảm biến/điều khiển, vừa tích hợp đầy đủ khả năng kết nối mạng để giao tiếp trực tiếp với cloud hoặc server trung tâm. Thiết bị cần được trang bị tài nguyên phần cứng đủ mạnh để vận hành hệ điều hành, ngăn xếp giao thức mạng, các cơ chế bảo mật và logic ứng dụng, đồng thời yêu cầu nguồn năng lượng ổn định để duy trì kết nối và xử lý liên tục.
+                \item \textbf{Nhiều thiết bị đầu cuối kết nối đến một gateway trung tâm (mô hình tập trung)}: Trong mô hình tập trung, các cảm biến và thiết bị trường giao tiếp qua kết nối tầm ngắn hoặc fieldbus đến một IoT gateway trung tâm. Gateway đảm nhiệm việc tập trung thu thập, tiền xử lý và tổng hợp dữ liệu; chuyển đổi giao thức và quản lý kết nối lên cloud; cũng như thực thi bảo mật, quản lý thiết bị và hỗ trợ cập nhật phần mềm cho toàn bộ hệ thống.
+            \end{itemize}
+
+        \subsubsection{Các tính năng quan trọng của gateway trên thị trường}
+            Các gateway IoT thương mại hiện nay thường tích hợp những tính năng sau:
+            \begin{itemize}
+                \item Hỗ trợ đa giao thức kết nối (WiFi, Ethernet, Zigbee, LoRa, BLE, LTE,~\ldots)
+                \item Chuyển đổi giao thức hai chiều (protocol translation)
+                \item Xử lý dữ liệu tại biên (edge computing)
+                \item Lưu trữ dữ liệu cục bộ (local storage)
+                \item Quản lý và điều khiển thiết bị từ xa
+                \item Hỗ trợ cập nhật firmware OTA
+                \item Hệ thống bảo mật: mã hóa, xác thực, kiểm soát truy cập
+                \item Giao diện cấu hình trực quan, thân thiện người dùng
+                \item Tích hợp với các nền tảng cloud phổ biến (AWS IoT, Azure IoT, Google Cloud IoT,~\ldots)
+            \end{itemize}
+
+        \subsubsection{Xu hướng phát triển hiện tại}
+            Hiện nay, xu hướng phát triển gateway IoT hướng tới:
+            \begin{itemize}
+                \item \textbf{Modularity}: Các gateway được thiết kế theo dạng module để có thể tùy chỉnh tính năng theo nhu cầu cụ thể, giúp tối ưu chi phí.
+                \item \textbf{Configurability}: Quy trình cấu hình được đơn giản hóa, thân thiện với người dùng, giúp rút ngắn thời gian triển khai.
+                \item \textbf{Edge intelligence}: Tích hợp thêm các chức năng xử lý dữ liệu cao cấp, học máy (machine learning) tại biên mạng.
+                \item \textbf{Interoperability}: Cải thiện khả năng tích hợp giữa các nền tảng và tiêu chuẩn khác nhau.
+                \item \textbf{Security}: Tăng cường các tính năng bảo mật, đặc biệt là trong các ứng dụng công nghiệp và quan trọng.
+            \end{itemize}

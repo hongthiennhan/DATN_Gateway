@@ -1,0 +1,158 @@
+\section{Tổng quan}\label{sec:tong_quan}
+
+    \subsection{Cơ sở thực tiễn từ các giải pháp hạ tầng tiêu chuẩn}
+        % Sự phổ cập rộng rãi của Internet không đến từ các hệ thống máy tính riêng lẻ mà đến từ sự thành công của hạ tầng kết nối, điển hình là các thiết bị định tuyến (router) và điểm phát Wi-Fi thương mại. Những yếu tố thực sự tạo nên sự thành công vượt trội của các thiết bị này bao gồm:
+        % \begin{itemize}
+        %     \item \textbf{Tính chuẩn hóa:} Khả năng tương thích giữa các thiết bị từ nhiều nhà sản xuất khác nhau nhờ tuân thủ chặt chẽ các chuẩn giao tiếp (IEEE 802.11).
+        %     \item \textbf{Khả năng hoạt động liên tục:} Các thiết bị hạ tầng được thiết kế để hoạt động 24/7 với độ ổn định cực cao, xử lý luồng dữ liệu liên tục mà không cần sự can thiệp của con người.
+        %     \item \textbf{Tối ưu hóa giữa hiệu năng và giá thành:} Các hãng sản xuất đã biến những công nghệ thu phát sóng phức tạp thành các thiết bị phần cứng chuyên dụng với chi phí thấp, giúp việc triển khai mạng trở nên phổ cập đến mọi hộ gia đình và doanh nghiệp.
+        % \end{itemize}
+        Trong kỷ nguyên kết nối số, sự bùng nổ và phổ cập của mạng Internet có sự đóng góp rất lớn từ các thiết bị hạ tầng mạng tiêu chuẩn, điển hình là các bộ định tuyến (Router) hay bộ phát Wi-Fi (Access Point) dành cho hộ gia đình và doanh nghiệp (như các sản phẩm của TP-Link, Cisco, Asus, v.v.). Điểm cốt lõi tạo nên sự thành công rực rỡ và mức độ phủ sóng rộng rãi của các thiết bị này không chỉ nằm ở phần cứng mạnh mẽ, mà còn ở thiết kế phần mềm hướng đến sự tối giản trong cấu hình.
+
+Các hãng sản xuất thiết bị mạng đã giải quyết triệt để rào cản kỹ thuật bằng cách trang bị cho thiết bị của họ các Cổng cấu hình Web (Web Configuration Portal) hoặc các phần mềm hỗ trợ thiết lập cực kỳ trực quan (Plug-and-Play). Một người dùng phổ thông, hoàn toàn không có kiến thức sâu về mạng máy tính hay lập trình, vẫn có thể dễ dàng cắm điện, kết nối vào thiết bị và thực hiện các thiết lập phức tạp (như cài đặt bảo mật, đổi mật khẩu, thiết lập dải IP, quản lý băng thông) thông qua vài cú nhấp chuột trên một giao diện đồ họa thân thiện.
+
+    \subsection{Hạn chế của nền tảng IoT và thách thức thị trường}\label{sec:han_che_iot}
+        Dù các sản phẩm IoT gateway trên thị trường đã hỗ trợ rất tốt các yêu cầu cơ bản, tuy nhiên các giải pháp hiện nay vẫn tồn tại những hạn chế về kiến trúc phần cứng và phương thức vận hành, cụ thể:
+        \begin{itemize}
+            \item \textbf{Sự đánh đổi giữa hiệu suất và chi phí đầu tư:} Các dòng Gateway sử dụng SoC chạy Linux (như Raspberry Pi) tuy mạnh mẽ nhưng có chi phí BOM cao và tiêu thụ năng lượng lớn. Ngược lại, các kiến trúc Single-MCU giá rẻ thường gặp tình trạng nghẽn cổ chai (blocking) khi phải xử lý đồng thời nhiều tác vụ mạng (LAN và WAN), dẫn đến thiếu ổn định.
+            \item \textbf{Thiếu khả năng linh hoạt và thay thế giao thức:} Đa số thiết bị hiện nay tích hợp cố định các module truyền thông (Zigbee, LoRa...) lên board mạch chính. Khi nhu cầu thực tế thay đổi, việc không thể thay thế linh hoạt các loại giao thức buộc người dùng phải thay mới toàn bộ thiết bị, gây lãng phí và khó khăn trong việc mở rộng hệ thống.
+            \item \textbf{Yêu cầu trình độ chuyên môn cao trong cấu hình và triển khai:} Mặc dù một số nền tảng như M5Stack cho phép thay thế module vật lý, nhưng việc vận hành vẫn đòi hỏi người dùng phải can thiệp trực tiếp vào mã nguồn (re-code) và nạp lại firmware mỗi khi thay đổi tham số. Điều này tạo ra rào cản lớn đối với những người dùng không có nền tảng chuyên môn sâu về kỹ thuật.
+            \item \textbf{Sự thiếu hụt về giải pháp cấu hình thân thiện:} Hiện tại, thị trường vẫn thiếu các sản phẩm có phần mềm và firmware được thiết kế theo hướng "tự cấu hình". Việc phụ thuộc hoàn toàn vào kỹ sư firmware để thay đổi cấu hình khiến quá trình bảo trì tại hiện trường trở nên chậm chạp và tốn kém.
+        \end{itemize}
+
+    \subsection{Sản phẩm đề xuất}
+        Sản phẩm tập trung vào hai vấn đề cốt lõi nhằm giải quyết các hạn chế đã nêu trong \autoref{sec:han_che_iot}, đó là \textbf{Tính module hóa} và \textbf{Tính dễ cấu hình}.
+        Nhằm khắc phục các rào cản về chi phí, sự phức tạp trong vận hành và tính thiếu linh hoạt của các giải pháp hiện nay, đồ án đề xuất phát triển một hệ thống IoT gateway với các đặc điểm sau:
+        \begin{itemize}
+            \item \textbf{Tính module hóa toàn diện:}
+            \begin{itemize}
+                \item \textbf{Về phần cứng:} Thay vì tích hợp cố định các chuẩn giao tiếp, giải pháp sử dụng cơ chế lắp ráp module dựa trên việc chuẩn hóa các giao diện ngoại vi phổ biến như UART, SPI, I2C, và USB. Cách tiếp cận này cho phép thiết bị thay thế nóng hoặc nâng cấp các module truyền thông (như LoRa, Zigbee, LTE) một cách linh hoạt theo từng bài toán thực tế mà không cần thiết kế lại board mạch chính.
+                \item \textbf{Về phần mềm:} Kiến trúc firmware được thiết kế phân lớp rõ ràng (Driver, BSP, Middleware, Application) và đóng gói các giao thức thành các Handler Task độc lập chạy trên hệ điều hành thời gian thực (FreeRTOS). Cấu trúc này cho phép người phát triển dễ dàng thêm mới, bật hoặc tắt các giao thức mạng cảm biến (LAN) và giao thức đám mây (WAN) mà không gây lỗi dây chuyền hay ảnh hưởng đến tính ổn định của toàn hệ thống.
+            \end{itemize}
+            \item \textbf{Tính dễ cấu hình và vận hành thân thiện:}
+            \begin{itemize}
+                \item \textbf{Loại bỏ rào cản lập trình:} Giải quyết nhược điểm của các nền tảng như M5Stack (vốn yêu cầu người dùng phải nạp lại code khi thay đổi module), giải pháp đề xuất cơ chế cấu hình động. Thông qua công cụ cấu hình trực quan (Configuration Tools) kết nối qua USB/UART, kỹ thuật viên có thể quét thiết bị và điều chỉnh mọi tham số hệ thống qua giao diện phần mềm mà không cần can thiệp vào mã nguồn hay phụ thuộc vào kỹ sư firmware.
+                \item \textbf{Cơ chế tự cấu hình và đồng bộ:} Firmware và phần cứng được thiết kế để tự động nhận diện và áp dụng các thông số từ tệp cấu hình, giúp biến thiết bị từ một sản phẩm kỹ thuật phức tạp thành một giải pháp "Plug-and-Play", phù hợp với cả những người dùng có ít nền tảng chuyên môn sâu.
+            \end{itemize}
+            \item \textbf{Tối ưu hóa Hiệu suất và Chi phí thông qua kiến trúc Dual-MCU:} Để đảm bảo tính module hóa và dễ cấu hình hoạt động trơn tru mà vẫn duy trì mức chi phí thấp, hệ thống áp dụng kiến trúc Dual-MCU Master-Slave. Việc phân tách vai trò giữa MCU LAN (quản lý cảm biến nội bộ) và MCU WAN (điều phối kết nối Internet) giúp loại bỏ tình trạng nghẽn (blocking) khi xử lý đa giao thức, đảm bảo hiệu suất xử lý cao tương đương các giải pháp Linux đắt tiền nhưng với mức tiêu thụ năng lượng và chi phí sản xuất tối ưu.
+        \end{itemize}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width = 0.75\textwidth]{figures/gateway_concept.png}
+            \caption{Ý tưởng thiết kế sản phẩm}
+        \end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    % \subsection{Khảo sát và Thử nghiệm (tham khảo cho mục Ý tưởng)}
+    %     \subsubsection{Khảo sát các mô hình kiến trúc Gateway IoT phổ biến}
+    %         Qua khảo sát các gateway IoT thương mại và các nền tảng triển khai thực tế, kiến trúc gateway hiện nay thường rơi vào ba nhóm chính:
+
+    %         \begin{enumerate}
+    %             \item \textbf{Gateway Linux/SoC (CPU hiệu năng cao)}
+    %             \begin{itemize}
+    %                 \item Loại này dùng SoC/CPU (ARM Cortex-A\ldots) chạy Linux, ưu điểm là tài nguyên lớn, dễ tích hợp nhiều giao thức, hỗ trợ tốt các framework cloud/edge (MQTT broker cục bộ, container, phân tích dữ liệu\ldots).
+    %                 \item Tuy nhiên, nhược điểm là chi phí BOM và PCB cao, tiêu thụ năng lượng lớn, thời gian khởi động dài và độ phức tạp phần mềm cao. Với các bài toán chỉ cần thu thập – tiền xử lý – đẩy dữ liệu lên server, nền tảng Linux thường dư thừa tài nguyên, khó đạt mục tiêu tối ưu chi phí và thời gian triển khai.
+    %             \end{itemize}
+                
+    %             \item \textbf{Gateway một MCU (Single-MCU Gateway)}
+    %             \begin{itemize}
+    %                 \item Ưu điểm nổi bật là rẻ, gọn, tiết kiệm điện. Tuy vậy, khi cần hỗ trợ đồng thời nhiều giao thức LAN (Zigbee/LoRa/CAN/RS-485\ldots) và WAN (Wi-Fi/LTE/Ethernet\ldots) cộng thêm giao thức ứng dụng (MQTT/HTTP/CoAP), một MCU đơn dễ gặp giới hạn tài nguyên: CPU/RAM/Flash, đồng thời dễ xảy ra blocking giữa các tác vụ I/O và tác vụ mạng. Điều này làm giảm tính ổn định và làm hệ thống khó mở rộng.
+    %             \end{itemize}
+                
+    %             \item \textbf{Gateway đa MCU nhưng thiếu chuẩn hóa phân vai}
+    %             \begin{itemize}
+    %                 \item Một số giải pháp tách nhiều MCU nhưng phân chia nhiệm vụ chưa rõ (thường do phát sinh từ yêu cầu phần cứng). Khi đó, giao tiếp giữa các MCU thiếu chuẩn hóa, phần mềm phụ thuộc chặt vào phần cứng, khó bảo trì và khó mở rộng theo hướng module hóa.
+    %             \end{itemize}
+    %         \end{enumerate}
+
+    %         Từ khảo sát trên có thể thấy: để đạt được yêu cầu đa giao thức + ổn định + tiết kiệm chi phí, cần một kiến trúc phân vai rõ ràng theo miền chức năng. Đây là cơ sở để chọn kiến trúc Dual-MCU Master–Slave:
+    %         \begin{itemize}
+    %             \item MCU LAN chuyên thu thập/tiền xử lý và quản lý mạng cảm biến nội bộ.
+    %             \item MCU WAN chuyên kết nối Internet, giao tiếp server và điều phối toàn hệ thống.
+    %         \end{itemize}
+
+    %     \subsubsection{Khảo sát mức độ module hóa phần cứng và khả năng mở rộng giao thức}
+    %         Về phần cứng, nhiều gateway hiện nay tích hợp cố định các module (Zigbee/LoRa/LTE/\ldots) lên board chính. Cách thiết kế này thuận tiện cho sản xuất nhưng có nhiều hạn chế lớn:
+    %         \begin{itemize}
+    %             \item Không linh hoạt theo từng bài toán triển khai.
+    %             \item Khó thay thế/nâng cấp theo nhu cầu thực tế.
+    %             \item Khi thay đổi yêu cầu ứng dụng thường phải thay cả thiết bị.
+    %         \end{itemize}
+
+    %         Một số gateway sử dụng các chuẩn kết nối như Mini-PCIe hoặc M.2, cho phép thay thế các module LTE, 5G, \ldots từ đó tăng tính linh hoạt trong quá trình nâng cấp và mở rộng hệ thống. Tuy nhiên, chi phí module cao và thiết kế phần cứng phức tạp; đồng thời các module cảm biến/fieldbus phổ biến (RS-485, CAN, LoRa, Zigbee dạng rời) vẫn không đồng nhất chuẩn cơ khí – chân – giao thức.
+
+    %         Từ thực tế đó, hướng tiếp cận phù hợp là chuẩn hóa giao diện (UART/SPI/I2C/USB/GPIO) thay vì phụ thuộc vào chuẩn module vật lý. Vì vậy, giải pháp Module Adapter trong đồ án giúp:
+    %         \begin{itemize}
+    %             \item Dùng được module thị trường đa dạng.
+    %             \item Chuẩn hóa kết nối về một chuẩn gateway nội bộ.
+    %             \item Dễ tháo lắp, thay thế theo nhu cầu.
+    %         \end{itemize}
+
+    %     \subsubsection{Khảo sát kiến trúc phần mềm gateway: monolithic vs phân lớp/module}
+    %         Về phần mềm, các gateway có thể chia làm hai xu hướng:
+    %         \begin{enumerate}
+    %             \item \textbf{Monolithic (một khối chương trình lớn)}
+    %             \begin{itemize}
+    %                 \item Các module giao thức, quản lý cấu hình, xử lý dữ liệu và truyền cloud được “trộn” chung. Nhược điểm là:
+    %                 \begin{itemize}
+    %                     \item Khó bảo trì, khó kiểm thử theo module.
+    %                     \item Khi thêm giao thức mới phải sửa nhiều phần.
+    %                     \item Dễ tạo lỗi dây chuyền và khó mở rộng.
+    %                 \end{itemize}
+    %             \end{itemize}
+                
+    %             \item \textbf{Phân lớp và module hóa (Layered + Modular)}
+    %             \begin{itemize}
+    %                 \item Phần mềm tách lớp rõ: Driver → BSP → Middleware → Application; mỗi giao thức được đóng gói thành module/handler riêng. Kiểu này phù hợp với hệ thống cần mở rộng giao thức và phù hợp với xu hướng Modularity/Interoperability.
+    %             \end{itemize}
+    %         \end{enumerate}
+
+    %         Đối chiếu với 2 sơ đồ firmware đã xây dựng:
+    %         \begin{itemize}
+    %             \item Trên MCU LAN, tầng Application tổ chức thành các Handler Task (Zigbee, LoRa, BLE, Thread, Z-Wave, CAN, RS-485\ldots) chạy dưới FreeRTOS; tầng Middleware cung cấp các handler tương ứng và khối lưu trữ (Data Storage) + OTA.
+    %             \item Trên MCU WAN, tầng Application tách rõ Internet Communication Handler (Ethernet, Wi-Fi, LTE, NB-IoT), Server Communication Handler (MQTT, HTTP, CoAP) và MCU LAN Comm Handler để nhận dữ liệu từ MCU LAN và đẩy lên server.
+    %         \end{itemize}
+
+    %         Qua khảo sát, kiến trúc phân lớp + handler theo giao thức là phù hợp để đảm bảo:
+    %         \begin{itemize}
+    %             \item Dễ mở rộng giao thức
+    %             \item Chạy song song, giảm blocking
+    %             \item Dễ cấu hình bật/tắt module theo yêu cầu triển khai
+    %         \end{itemize}
+
+    %     \subsubsection{Khảo sát cơ chế cấu hình và cập nhật firmware trong triển khai thực tế}
+    %         Một điểm “nghẽn” thường gặp của gateway là cấu hình và bảo trì. Nhiều thiết bị hiện nay vẫn cấu hình theo kiểu “cứng” trong firmware: thay đổi module/giao thức/WAN/MQTT phải chỉnh code và nạp lại firmware. Cách này:
+    %         \begin{itemize}
+    %             \item Tốn thời gian triển khai
+    %             \item Phụ thuộc kỹ sư firmware
+    %             \item Không phù hợp cho kỹ thuật viên vận hành tại hiện trường
+    %         \end{itemize}
+
+    %         Do đó, xu hướng phù hợp hơn là cấu hình động bằng công cụ (Configuration Tools) qua USB/UART để:
+    %         \begin{itemize}
+    %             \item Quét thiết bị, đọc cấu hình hiện tại
+    %             \item Chỉnh tham số theo form
+    %             \item Ghi cấu hình xuống gateway mà không sửa firmware
+    %         \end{itemize}
+
+    %         Về cập nhật firmware, khảo sát cũng cho thấy FOTA nếu không có cơ chế an toàn sẽ gây rủi ro “brick” thiết bị khi mất điện/mất mạng. Vì vậy, giải pháp cần có:
+    %         \begin{itemize}
+    %             \item Kiểm tra tính toàn vẹn (checksum)
+    %             \item Cơ chế cập nhật có kiểm soát (không ghi đè firmware đang chạy khi chưa xác thực)
+    %             \item Phân luồng cập nhật cho cả WAN-MCU và LAN-MCU (vì hệ thống dual MCU)
+    %         \end{itemize}

@@ -242,9 +242,7 @@
     %             \end{minipage}
     %         \end{figure}
 
-\section{Hiện thực Firmware và Software}
-
-    \subsection{Kiến trúc phần mềm}
+\section{Kiến trúc phần mềm}
  
         Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
         
@@ -254,7 +252,7 @@
         
         Sự phân tách vai trò rõ ràng giúp luồng dữ liệu vận hành thông suốt: LAN-MCU tập trung vào tính thời gian thực của thiết bị đầu cuối, còn WAN-MCU đảm bảo tính ổn định cho các dịch vụ mạng diện rộng.
         
-        \subsubsection{Kiến trúc phân lớp WAN-MCU}
+        \subsection{Kiến trúc phân lớp WAN-MCU}
         
             \begin{figure}[H]
                 \centering
@@ -303,7 +301,7 @@
                 Driver/HAL & ESP-IDF network interface runtime & WiFi, Ethernet stack, modem netif \\ \hline
             \end{longtable}
         
-        \subsubsection{Kiến trúc phân lớp LAN-MCU}
+        \subsection{Kiến trúc phân lớp LAN-MCU}
 
             \begin{figure}[H]
                 \centering
@@ -351,7 +349,7 @@
                 Driver/HAL & BLE controller/host runtime & Runtime BLE controller/host cho BLE app paths \\ \hline
             \end{longtable}
         
-        \subsubsection{Kiến trúc Task và Luồng ưu tiên FreeRTOS}
+        \subsection{Kiến trúc Task và Luồng ưu tiên FreeRTOS}
         
             Hệ thống sử dụng FreeRTOS với mô hình đa task. Trong firmware hiện tại, các tác vụ xử lý đường truyền WAN-LAN và publish dữ liệu được đặt ưu tiên cao hơn các tác vụ giám sát/phụ trợ để giảm trễ giao tiếp và tránh mất khung SPI.
             
@@ -395,7 +393,7 @@
                 FOTA LAN Task & Theo sự kiện & Chạy khi nhận lệnh FOTA để tự cập nhật firmware LAN & Trigger từ WAN-MCU \\ \hline
             \end{longtable}
         
-        \subsubsection{Cơ chế cấu hình và cập nhật}
+        \subsection{Cơ chế cấu hình và cập nhật}
         
             WAN-MCU cung cấp kênh cấu hình tại chỗ thông qua USB/UART và Web Portal, giúp kỹ thuật viên thay đổi tham số vận hành linh hoạt mà không cần biên dịch lại firmware. Hệ thống hiện cung cấp hai kênh cấu hình tại chỗ và một cơ chế giám sát Internet, được trình bày chi tiết ở các mục sau.
             
@@ -495,7 +493,7 @@
                     Wi-Fi & LTE / Ethernet (tùy module hiện có) & \texttt{IN:WIFI[:fallback \newline \_enable[:fallback\_type]]} \\ \hline
                 \end{longtable}
         
-        \subsubsection{Config Handler -- Bảng mã lệnh cấu hình}
+        \subsection{Config Handler -- Bảng mã lệnh cấu hình}
         
             Mọi tham số vận hành được lưu trong NVS của Gateway và có thể cập nhật runtime qua PC App, Web Portal hoặc MQTT mà không cần biên dịch lại firmware. Hệ thống chia làm hai nhóm lệnh: nhóm WAN do WAN-MCU xử lý trực tiếp, và nhóm LAN được WAN-MCU chuyển tiếp xuống LAN-MCU.
             
@@ -546,7 +544,7 @@
                 \texttt{CFBG:<slot>} & BLE GATT Central & Thực thi lệnh GATT (connect / read / write / notify) trên slot chỉ định \\ \hline
             \end{longtable}
         
-        \subsubsection{Cơ chế FOTA cho hệ thống Dual-MCU}
+        \subsection{Cơ chế FOTA cho hệ thống Dual-MCU}
         
             % Quá trình cập nhật firmware từ xa được thiết kế theo thứ tự nghiêm ngặt: \textbf{LAN-MCU cập nhật trước, WAN-MCU cập nhật sau}. Thứ tự này đảm bảo WAN-MCU luôn có thể điều phối, xử lý lỗi và giữ kết nối với Server trong suốt quá trình.
             
@@ -595,7 +593,7 @@
                     LAN FOTA thành công, WAN FOTA thất bại & WAN rollback về firmware cũ; LAN đã cập nhật & Cần FOTA lại WAN ở lần sau \\ \hline
                 \end{longtable}
                 
-        \subsubsection{Đánh giá giải pháp phần mềm}
+        \subsection{Đánh giá giải pháp phần mềm}
         
             Giải pháp phần mềm nhìn chung đáp ứng được năm tiêu chí đặt ra ở \ref{tab:software_spec}. Kiến trúc Dual-MCU giúp mỗi vi điều khiển tập trung vào một miền chức năng riêng, tránh tranh tài nguyên giữa các protocol stack. Các Handler Task FreeRTOS độc lập cho từng giao thức LAN cho phép bật/tắt linh hoạt mà không ảnh hưởng phần còn lại. Cơ chế Watchdog, Retry và store-and-forward đảm bảo hệ thống tự phục hồi khi mạng gián đoạn. Một hạn chế cần nhìn nhận là BLE Native (Mesh) chưa hỗ trợ đầy đủ do ràng buộc bộ nhớ khi chạy đồng thời với các handler khác -- đây là điểm cần hoàn thiện ở phiên bản tiếp theo.
             
@@ -615,9 +613,9 @@
             %     Scalability & Kiến trúc phân lớp Layered; handler mới thêm ở tầng Application không ảnh hưởng BSP/Driver & Đã thêm thành công RS-485 handler mà không sửa tầng Driver & Cần kiểm thử giới hạn số handler đồng thời trên LAN-MCU dưới áp tải cao \\ \hline
             % \end{longtable}
     
-    \subsection{Hệ thống cấu hình Module dựa trên JSON (Module Base Setting)}
+\section{Hệ thống cấu hình Module dựa trên JSON (Module Base Setting)}
         
-        \subsubsection{Vấn đề đặt ra -- Bất đồng nhất cú pháp AT Command}
+        \subsection{Vấn đề đặt ra -- Bất đồng nhất cú pháp AT Command}
         
         Trong kiến trúc ban đầu của gateway, loại module RF gắn vào từng vị trí lắp module được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của module -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO để reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại module mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên module có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
         
@@ -644,7 +642,7 @@
             Khôi phục mặc định & \texttt{AT+DEFAULT} & \texttt{AT+FACTORY} & \texttt{ATRE} & \texttt{AT+ZFACTORY} \\ \hline
         \end{longtable}
         
-        \subsubsection{Giải pháp -- Cấu hình hóa thông qua JSON Preset}
+        \subsection{Giải pháp -- Cấu hình hóa thông qua JSON Preset}
         
         Thay vì hard-code thông tin của từng loại module vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của module ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành module đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả các chức năng module hỗ trợ -- mỗi chức năng được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
         
@@ -675,7 +673,7 @@
             \texttt{functions[i].} \newline \texttt{timeout\_ms} & Phần tử & Thời gian timeout chờ phản hồi (ms) & \texttt{3000}, \texttt{5000} \\ \hline
         \end{longtable}
         
-        \subsubsection{Luồng hoạt động Module Base Setting}
+        \subsection{Luồng hoạt động Module Base Setting}
         
         Hoạt động của hệ thống MBS chia làm hai giai đoạn chính: \textbf{Nạp cấu hình} (provisioning file JSON từ PC/Server vào LAN-MCU) và \textbf{Thực thi lệnh} (Server gửi lệnh $\to$ LAN-MCU tra cứu JSON $\to$ gửi AT xuống module).
         
@@ -686,9 +684,9 @@
             \label{fig:design_server-to-bulb}
         \end{figure}
         
-    \subsection{Xử lý dữ liệu}
+\section{Xử lý dữ liệu}
     
-        \subsubsection{Luồng Uplink: Sensor $\to$ LAN-MCU $\to$ WAN-MCU $\to$ Cloud}
+        \subsection{Luồng Uplink: Sensor $\to$ LAN-MCU $\to$ WAN-MCU $\to$ Cloud}
         
             Dữ liệu từ thiết bị đầu cuối được LAN-MCU tiếp nhận, tiền xử lý qua ba bước -- Validation (kiểm tra tính hợp lệ của khung tin), Parsing (tách header, payload và metadata theo định dạng giao thức tương ứng) và Normalization (chuẩn hóa về định dạng khung tin nội bộ thống nhất) -- trước khi chuyển lên WAN-MCU qua kênh SPI. Việc chuẩn hóa tại LAN-MCU giúp WAN-MCU nhận được dữ liệu theo một định dạng duy nhất bất kể nguồn gốc từ Zigbee, LoRa, BLE hay RS-485, từ đó đơn giản hóa logic xử lý uplink và giảm coupling giữa hai miền.
             
@@ -698,7 +696,7 @@
                 \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end uplink}
             \end{figure}
         
-        \subsubsection{Luồng Downlink: Cloud $\to$ WAN-MCU $\to$ LAN-MCU $\to$ Sensor}
+        \subsection{Luồng Downlink: Cloud $\to$ WAN-MCU $\to$ LAN-MCU $\to$ Sensor}
         
             Luồng Downlink được kích hoạt theo cơ chế Event-driven thông qua tín hiệu ngắt phần cứng GPIO Handshake, thay thế hoàn toàn cơ chế Polling tuần tự trước đây. Việc loại bỏ Polling định kỳ giúp LAN-MCU không còn bị chiếm dụng CPU theo chu kỳ cố định để kiểm tra trạng thái downlink, từ đó giải phóng tài nguyên cho các tác vụ thu thập cảm biến thời gian thực có yêu cầu độ trễ thấp hơn.
             
@@ -708,7 +706,7 @@
                 \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end downlink}
             \end{figure}
         
-        \subsubsection{Cơ chế GPIO Handshake}
+        \subsection{Cơ chế GPIO Handshake}
         
             Cơ chế GPIO Handshake thay thế hoàn toàn REQ\_DOWNLINK polling tuần tự, giúp LAN-MCU giải phóng chu kỳ CPU cho các tác vụ thu thập cảm biến thời gian thực.
             
