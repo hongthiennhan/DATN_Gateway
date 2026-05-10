@@ -1,7 +1,7 @@
 \section{Cơ sở lý thuyết}
     Nội dung trong phần này là nền tảng lý thuyết và kỹ thuật cốt lõi để định hướng và hiện thực hóa sản phẩm IoT Gateway trong đồ án. Thông qua việc nghiên cứu tổng quan về Internet vạn vật (IoT), vị trí, cấu trúc và nguyên lý hoạt động của gateway, cũng như các tiêu chuẩn thiết kế phần cứng chuyên sâu (như High-Speed PCB và Power Distribution Network - PDN), nội dung phần này cung cấp các luận cứ khoa học vững chắc.
     
-    Qua đó, cơ sở lý thuyết giúp làm rõ các phương pháp nhằm giải quyết triệt để những vấn đề kỹ thuật then chốt đã được đặt ra trong \autoref{sec:cac_van_de}. Đồng thời, những kiến thức này là nền tảng giúp hiện thực hóa các yêu cầu được phân tích tại \autoref{sec:phan_tich_so_bo}, đặc biệt là việc thỏa mãn các ràng buộc thiết kế, đảm bảo tính mô-đun hóa, khả năng cấu hình linh hoạt cũng như đáp ứng trọn vẹn các yêu cầu chức năng và phi chức năng của hệ thống.
+    Qua đó, cơ sở lý thuyết giúp làm rõ các phương pháp nhằm giải quyết triệt để những vấn đề kỹ thuật then chốt đã được đặt ra trong \autoref{sec:cac_van_de}. Đồng thời, những kiến thức này là nền tảng giúp hiện thực hóa các yêu cầu được phân tích tại \autoref{sec:phan_tich_so_bo}, đặc biệt là việc thỏa mãn các ràng buộc thiết kế, đảm bảo tính module hóa, khả năng cấu hình linh hoạt cũng như đáp ứng trọn vẹn các yêu cầu chức năng và phi chức năng của hệ thống.
     \subsection{Tổng quan về Lĩnh vực}
         \subsubsection{Khái niệm Internet vạn vật (IoT)}
             Internet vạn vật (Internet of Things – IoT) là một mô hình kết nối các đối tượng vật lý, thiết bị và cảm biến với Internet, cho phép chúng thu thập, trao đổi và phân tích dữ liệu mà không cần sự can thiệp trực tiếp từ con người. IoT tạo ra một mạng lưới các thiết bị không đồng nhất như thiết bị gia dụng, máy móc công nghiệp và cảm biến, có khả năng giao tiếp với nhau thông qua nhiều giao thức và tiêu chuẩn khác nhau.
@@ -108,16 +108,16 @@
                         Hệ điều hành cung cấp nền tảng phần mềm cơ bản để quản lý tài nguyên phần cứng, lập lịch tiến trình, quản lý bộ nhớ và cung cấp môi trường thực thi cho các dịch vụ phía trên. Tuỳ yêu cầu, gateway có thể sử dụng RTOS cho các tác vụ thời gian thực hoặc Linux nhúng (OpenWrt, Debian, Ubuntu Core, \dots) cho các ứng dụng phức tạp hỗ trợ container và tích hợp cloud.
                     
                     \textbf{Lớp trừu tượng phần cứng (Hardware Abstraction Layer -- HAL)}\\
-                        HAL cung cấp tập API thống nhất để các mô-đun phần mềm tương tác với ngoại vi phần cứng (UART, SPI, I\textsuperscript{2}C, radio, \dots) mà không phụ thuộc vào chi tiết triển khai của từng nền tảng gateway. Điều này giúp tăng tính khả chuyển, cho phép cùng một mã nguồn ứng dụng có thể chạy trên các bo mạch phần cứng khác nhau chỉ bằng cách thay đổi HAL.
+                        HAL cung cấp tập API thống nhất để các module phần mềm tương tác với ngoại vi phần cứng (UART, SPI, I\textsuperscript{2}C, radio, \dots) mà không phụ thuộc vào chi tiết triển khai của từng nền tảng gateway. Điều này giúp tăng tính khả chuyển, cho phép cùng một mã nguồn ứng dụng có thể chạy trên các bo mạch phần cứng khác nhau chỉ bằng cách thay đổi HAL.
                     
                     \textbf{Lớp ngăn xếp cảm biến (Sensor Stacks)}\\
-                        Lớp này hiện thực các driver và ngăn xếp giao thức cho mạng cảm biến và thiết bị như ZigBee, 6LoWPAN, EnOcean, BLE, Modbus, PROFIBUS,\dots{} Nó chịu trách nhiệm thu thập dữ liệu từ các nút cảm biến/chấp hành, chuyển về định dạng nội bộ thống nhất để các mô-đun quản lý dữ liệu và ứng dụng có thể sử dụng.
+                        Lớp này hiện thực các driver và ngăn xếp giao thức cho mạng cảm biến và thiết bị như ZigBee, 6LoWPAN, EnOcean, BLE, Modbus, PROFIBUS,\dots{} Nó chịu trách nhiệm thu thập dữ liệu từ các nút cảm biến/chấp hành, chuyển về định dạng nội bộ thống nhất để các module quản lý dữ liệu và ứng dụng có thể sử dụng.
                     
                     \textbf{Lớp giao thức truyền thông (Protocols)}\\
-                        Lớp giao thức cung cấp các protocol ở tầng ứng dụng phục vụ trao đổi dữ liệu với cloud hoặc hệ thống bên ngoài, điển hình như MQTT, CoAP, WebSockets, HTTP/HTTPS,\dots{} Các mô-đun này được xây dựng trên nền TCP/UDP của hệ điều hành và được các khối quản lý dữ liệu, quản lý cloud sử dụng để gửi/nhận các gói tin.
+                        Lớp giao thức cung cấp các protocol ở tầng ứng dụng phục vụ trao đổi dữ liệu với cloud hoặc hệ thống bên ngoài, điển hình như MQTT, CoAP, WebSockets, HTTP/HTTPS,\dots{} Các module này được xây dựng trên nền TCP/UDP của hệ điều hành và được các khối quản lý dữ liệu, quản lý cloud sử dụng để gửi/nhận các gói tin.
                     
                     \textbf{Lớp cập nhật firmware từ xa (FOTA/OTA)}\\
-                        Mô-đun FOTA chịu trách nhiệm kiểm tra, tải về, xác thực và cài đặt các bản cập nhật phần mềm/firmware từ cloud. Ngoài việc đảm bảo gateway luôn được vá lỗi và cập nhật tính năng mới, lớp này còn hỗ trợ cơ chế rollback trong trường hợp cập nhật thất bại, giúp hệ thống duy trì trạng thái ổn định.
+                        Module FOTA chịu trách nhiệm kiểm tra, tải về, xác thực và cài đặt các bản cập nhật phần mềm/firmware từ cloud. Ngoài việc đảm bảo gateway luôn được vá lỗi và cập nhật tính năng mới, lớp này còn hỗ trợ cơ chế rollback trong trường hợp cập nhật thất bại, giúp hệ thống duy trì trạng thái ổn định.
                     
                     \textbf{Lớp bảo mật (Security)}\\
                         Lớp bảo mật cung cấp các dịch vụ như mã hoá, quản lý khoá và chứng chỉ, thư viện bảo mật (ví dụ TLS/OpenSSL, AES), cũng như cơ chế secure boot và xác thực thiết bị. Các dịch vụ này được các lớp giao thức, FOTA, quản lý thiết bị và ứng dụng sử dụng xuyên suốt để đảm bảo tính bảo mật, toàn vẹn và xác thực của dữ liệu.
@@ -126,10 +126,10 @@
                         Lớp này quản lý vòng đời của thiết bị IoT: đăng ký/huỷ đăng ký, lưu trữ thuộc tính (kiểu thiết bị, vị trí, tham số hoạt động), giám sát trạng thái, cấu hình tham số, cũng như hỗ trợ cập nhật firmware và chẩn đoán từ xa. Đây là điểm tập trung cho việc quản lý tập trung số lượng lớn node cảm biến/actuator.
                     
                     \textbf{Lớp quản lý dữ liệu (Data Management)}\\
-                        Lớp quản lý dữ liệu chịu trách nhiệm tiếp nhận luồng dữ liệu từ sensor stacks, thực hiện lọc, tiền xử lý, tổng hợp và lưu trữ đệm. Mô-đun này giúp giảm băng thông bằng việc chỉ gửi dữ liệu cần thiết, bảo vệ dữ liệu khi kết nối cloud không ổn định (buffering và đồng bộ lại khi có mạng), đồng thời hỗ trợ các chức năng xử lý biên như phát hiện bất thường hoặc áp dụng rule engine.
+                        Lớp quản lý dữ liệu chịu trách nhiệm tiếp nhận luồng dữ liệu từ sensor stacks, thực hiện lọc, tiền xử lý, tổng hợp và lưu trữ đệm. Module này giúp giảm băng thông bằng việc chỉ gửi dữ liệu cần thiết, bảo vệ dữ liệu khi kết nối cloud không ổn định (buffering và đồng bộ lại khi có mạng), đồng thời hỗ trợ các chức năng xử lý biên như phát hiện bất thường hoặc áp dụng rule engine.
                     
                     \textbf{Lớp quản lý kết nối cloud (Cloud Connectivity Manager)}\\
-                        Cloud Connectivity Manager đảm nhiệm việc thiết lập và duy trì kết nối hai chiều giữa gateway và nền tảng cloud: quản lý phiên làm việc, gửi heartbeat, xử lý cơ chế reconnect, xác thực gateway với cloud và ánh xạ trạng thái thiết bị trên cloud. Lớp này sử dụng các giao thức ở mô-đun \emph{Protocols} và cung cấp API thống nhất cho lớp ứng dụng.
+                        Cloud Connectivity Manager đảm nhiệm việc thiết lập và duy trì kết nối hai chiều giữa gateway và nền tảng cloud: quản lý phiên làm việc, gửi heartbeat, xử lý cơ chế reconnect, xác thực gateway với cloud và ánh xạ trạng thái thiết bị trên cloud. Lớp này sử dụng các giao thức ở module \emph{Protocols} và cung cấp API thống nhất cho lớp ứng dụng.
                     
                     \textbf{Lớp ứng dụng tuỳ biến (Custom Application)}\\
                         Trên cùng là lớp ứng dụng tuỳ biến, nơi hiện thực logic nghiệp vụ cụ thể của hệ thống: các kịch bản tự động hoá, xử lý cảnh báo và sự kiện, dashboard cục bộ cho cấu hình/giám sát, cũng như các dịch vụ tích hợp với hệ SCADA/MES/ERP hoặc nền tảng quản lý vận hành khác. Các ứng dụng này tận dụng toàn bộ dịch vụ do các lớp phía dưới cung cấp để xây dựng giải pháp IoT hoàn chỉnh.
@@ -244,7 +244,7 @@
         \subsubsection{Xu hướng phát triển hiện tại}
             Hiện nay, xu hướng phát triển gateway IoT hướng tới:
             \begin{itemize}
-                \item \textbf{Modularity}: Các gateway được thiết kế theo dạng mô-đun để có thể tùy chỉnh tính năng theo nhu cầu cụ thể, giúp tối ưu chi phí.
+                \item \textbf{Modularity}: Các gateway được thiết kế theo dạng module để có thể tùy chỉnh tính năng theo nhu cầu cụ thể, giúp tối ưu chi phí.
                 \item \textbf{Configurability}: Quy trình cấu hình được đơn giản hóa, thân thiện với người dùng, giúp rút ngắn thời gian triển khai.
                 \item \textbf{Edge intelligence}: Tích hợp thêm các chức năng xử lý dữ liệu cao cấp, học máy (machine learning) tại biên mạng.
                 \item \textbf{Interoperability}: Cải thiện khả năng tích hợp giữa các nền tảng và tiêu chuẩn khác nhau.
@@ -342,9 +342,9 @@
                         \paragraph{Hiện tượng phản xạ tín hiệu}
                         
                         Khi tín hiệu lan truyền trên đường truyền có trở kháng đặc trưng \(Z_0\) và gặp một điểm có trở kháng tải \(Z_L\), một phần năng lượng bị phản xạ ngược về nguồn, gây méo dạng sóng và có thể tạo rung. Hệ số phản xạ được cho bởi:
-                        \[
-                        \Gamma = \frac{Z_L - Z_0}{Z_L + Z_0}
-                        \]
+                        \begin{equation}
+                            \Gamma = \frac{Z_L - Z_0}{Z_L + Z_0}    
+                        \end{equation}
                         
                         Giá trị \(\Gamma\) càng xa 0, biên độ sóng phản xạ càng lớn. Điều này là lý do cốt lõi phải kiểm soát và thực hiện phối hợp trở kháng trong thiết kế high-speed.
                         
@@ -402,9 +402,9 @@
                             \item Độ dày lớp đồng \(T\): Ảnh hưởng ở mức thứ yếu so với \(W\) và \(H\), thường có quan hệ tỷ lệ nghịch nhẹ với \(Z_0\). Trong thực tế, độ dày đồng phổ biến là 1~oz (khoảng 35~\(\mu\)m) hoặc 0.5~oz (khoảng 17~\(\mu\)m).
                             \item Cấu hình mặt phẳng tham chiếu: Microstrip có ưu điểm dễ chế tạo và dễ định tuyến nhưng chịu ảnh hưởng nhiều hơn từ môi trường bên ngoài và lớp solder mask; stripline được che chắn tốt hơn bởi các plane xung quanh, cho trở kháng ổn định và EMI thấp hơn, nhưng việc định tuyến và kiểm soát stack-up phức tạp hơn.
                             \item Đối với cặp tín hiệu vi sai: Ngoài các yếu tố hình học của từng trace, khoảng cách giữa hai trace \(S\) đóng vai trò quyết định đến mức độ ghép điện dung và điện cảm giữa chúng. Trở kháng vi sai \(Z_{\text{diff}}\) thường được biểu diễn gần đúng theo quan hệ
-                            \[
-                                Z_{\text{diff}} \approx 2 Z_0 (1 - k),
-                            \]
+                            \begin{equation}
+                                Z_{\text{diff}} \approx 2 Z_0 (1 - k)
+                            \end{equation}
                             trong đó \(k\) là hệ số ghép, phụ thuộc vào khoảng cách \(S\) và cấu trúc stack-up.
                         \end{enumerate}
                         
@@ -430,10 +430,10 @@
                             \begin{minipage}{0.55\textwidth}
                                 Đối với đường microstrip single-ended, một công thức gần đúng thường được sử dụng trong giai đoạn ước lượng ban đầu là:
                                 
-                                \[
-                                Z_0 \approx \frac{87}{\sqrt{\varepsilon_r + 1.41}} 
-                                \ln\left(\frac{5.98H}{0.8W + T}\right) \quad (\text{Ohm}),
-                                \]
+                                \begin{equation}
+                                    Z_0 \approx \frac{87}{\sqrt{\varepsilon_r + 1.41}} 
+                                    \ln\left(\frac{5.98H}{0.8W + T}\right) \quad (\text{Ohm})
+                                \end{equation}
                                 
                                 trong đó \(\varepsilon_r\) là hằng số điện môi của vật liệu, \(H\) là độ dày điện môi, \(W\) là chiều rộng trace và \(T\) là độ dày lớp đồng. Công thức này cho phép đánh giá nhanh xu hướng ảnh hưởng của các tham số hình học trước khi tiến hành mô phỏng chi tiết.
                             \end{minipage}
@@ -580,7 +580,7 @@
                 
                 \begin{figure}[H]
                     \centering
-                    \includegraphics[width=0.7\textwidth]{figures/lythuyet_pdn.png}
+                    \includegraphics[width=0.75\textwidth]{figures/lythuyet_pdn.png}
                     \caption{Các phần của PDN được phân tách theo dải tần số mà chúng ảnh hưởng}
                     \label{fig:lythuyet_pdn}  
                 \end{figure}

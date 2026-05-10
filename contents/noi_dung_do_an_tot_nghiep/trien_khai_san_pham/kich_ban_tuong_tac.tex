@@ -49,7 +49,7 @@
     Người quản trị hệ thống giám sát hoạt động của gateway từ xa thông qua Dashboard trên nền tảng Cloud/Web.
 
     \begin{itemize}
-        \item \textbf{Điều kiện bình thường:} Dữ liệu từ các sensor node (thông qua LAN-MCU) được WAN-MCU đưa vào hàng đợi (publish queue) và gửi lên broker/server qua MQTT. Giao diện WAN đang hoạt động (bao gồm trạng thái Internet Monitor) được báo cáo lên Dashboard. Pipeline xử lý này tách biệt luồng "nhận dữ liệu" và "gửi Cloud", giúp tránh nghến cổ chai khi mạng chập chờờng.
+        \item \textbf{Điều kiện bình thường:} Dữ liệu từ các sensor node (thông qua LAN-MCU) được WAN-MCU đưa vào hàng đợi (publish queue) và gửi lên broker/server qua MQTT. Giao diện WAN đang hoạt động (bao gồm trạng thái Internet Monitor) được báo cáo lên Dashboard. Pipeline xử lý này tách biệt luồng "nhận dữ liệu" và "gửi Cloud", giúp tránh nghẽn cổ chai khi mạng chập chờn.
         \item \textbf{Xử lý sự cố kết nối:} Khi mất kết nối WAN, cơ chế Internet Monitor tự động chuyển đổi sang giao diện dự phòng (Auto-failover). Nếu mất kết nối kéo dài, khối Data Storage Handler sẽ chuyển sang lưu trữ dữ liệu tạm thời vào thẻ nhớ microSD, đảm bảo không mất mát dữ liệu (zero data loss) và tự động đồng bộ lại khi kết nối được khôi phục.
     \end{itemize}
 

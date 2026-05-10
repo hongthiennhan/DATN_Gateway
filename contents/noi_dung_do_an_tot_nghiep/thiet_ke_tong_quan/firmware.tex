@@ -3,13 +3,6 @@
 
     Toàn bộ firmware của hệ thống -- cho cả WAN-MCU lẫn LAN-MCU -- được tổ chức theo kiến trúc phân lớp bốn tầng (Layered Architecture). Cách phân tầng này tách biệt hoàn toàn logic ứng dụng khỏi phần phụ thuộc phần cứng, giúp dễ thay thế hoặc mở rộng từng tầng mà không ảnh hưởng các thành phần còn lại.
 
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=0.75\textwidth]{figures/DATN/layered_fw.png}
-        \caption{Kiến trúc phân lớp firmware tổng thể -- WAN-MCU (trái) và LAN-MCU (phải)}
-        \label{fig:layered_fw}
-    \end{figure}
-
     Bảng~\ref{tab:layer_desc} mô tả vai trò của từng tầng và nguyên tắc giao tiếp giữa các tầng.
 
     \begin{longtable}{|p{3cm}|p{2cm}|p{11cm}|}
@@ -33,6 +26,13 @@
         Driver Layer & DRV & Driver/HAL mức thấp của ESP32-S3 và runtime interface của ESP-IDF: GPIO/UART/SPI/I2C/USB/SDIO, WiFi/Ethernet/modem netif, BLE controller/host runtime. \\ \hline
 
     \end{longtable}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figures/DATN/layered_fw.png}
+        \caption{Kiến trúc phân lớp firmware tổng thể -- WAN-MCU (trái) và LAN-MCU (phải)}
+        \label{fig:layered_fw}
+    \end{figure}
 
     \subsection{Kiến trúc Dual-MCU và lý do phân tách}
 

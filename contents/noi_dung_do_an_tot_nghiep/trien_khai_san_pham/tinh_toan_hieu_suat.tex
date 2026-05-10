@@ -245,7 +245,9 @@
         \subsection{Thông lượng dữ liệu và hiệu suất băng thông}
  
         Thông lượng ứng dụng thực tế $R_{app}$ là lượng dữ liệu hữu ích (payload) còn lại sau khi trừ overhead giao thức tại tất cả các lớp. Hiệu suất băng thông được định nghĩa:
-        \[ \eta = \dfrac{R_{app}}{R_{PHY}} \]
+        \begin{equation}
+        \eta = \dfrac{R_{app}}{R_{PHY}}
+        \end{equation}
         
         \textbf{Zigbee (E18-ZG120 / CC2530).} Tốc độ vật lý IEEE 802.15.4 tại băng 2,4~GHz đạt $R_{PHY} = 250\,\text{kbps}$ \cite{ieee802154_2020}. Mỗi frame Zigbee mang tối đa 99 byte payload ứng dụng sau khi trừ 28 byte overhead của các lớp MAC/NWK/APS trên tổng PSDU 127 byte \cite{zigbee_spec_r21}. Một chu kỳ phát--nhận ACK bao gồm: thời gian truyền frame ($127\,\text{B} \times 8 / 250\,\text{kbps} = 4{,}064\,\text{ms}$), khoảng LIFS ($40\,\text{sym} \times 16\,\mu\text{s} = 0{,}640\,\text{ms}$) và frame ACK ($0{,}544\,\text{ms}$), tổng $T_{air} \approx 5{,}25\,\text{ms}$.
         
@@ -285,7 +287,10 @@
         \subsection{Độ trễ End-to-End}
         
         Độ trễ End-to-End $T_{e2e}$ là tổng thời gian từ khi node gửi dữ liệu đến khi bản tin xuất hiện trên MQTT Broker:
-        \[ T_{e2e} = T_{air} + T_{UART} + T_{CI} + T_{batch} + T_{SPI} + T_{network} \]
+        \begin{equation}
+            T_{e2e} = T_{air} + T_{UART} + T_{CI} + T_{batch} + T_{SPI} + T_{network}    
+        \end{equation}
+        
         
         Các thành phần được định lượng như sau:
         

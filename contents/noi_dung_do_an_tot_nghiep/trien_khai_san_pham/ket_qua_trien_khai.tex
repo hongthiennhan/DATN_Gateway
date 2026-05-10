@@ -4,7 +4,7 @@ Dựa trên quá trình triển khai và vận hành thực tế hệ thống, p
 
 \subsection{Kết quả đạt được so với thiết kế}
 
-Quá trình hiện thực hóa nguyên mẫu (prototype) đã bám sát các thiết kế từ \autoref{chap:phan_tich_thiet_ke}, cụ thể:
+Quá trình hiện thực hóa nguyên mẫu (prototype) đã bám sát các thiết kế từ \autoref{chap:hien_thuc}, cụ thể:
 
 \begin{itemize}
     \item \textbf{Về phần cứng (Hardware):} Đã chế tạo thành công bo mạch chính (Baseboard) với cấu trúc PCB 6 lớp, đảm bảo tính toàn vẹn tín hiệu cho các giao tiếp tốc độ cao. Hệ thống Dual-MCU (Master-Slave) sử dụng hai vi điều khiển ESP32-S3 vận hành đúng theo thiết kế. Các khe cắm mở rộng (WAN, LAN1, LAN2) tương thích hoàn toàn với các Module Adapter, cho phép tháo lắp và thay đổi linh hoạt các chuẩn kết nối vật lý.
@@ -17,7 +17,7 @@ Quá trình hiện thực hóa nguyên mẫu (prototype) đã bám sát các thi
 Việc triển khai thực tế đã chứng minh hệ thống đạt được các mục tiêu cốt lõi đề ra:
 
 \begin{itemize}
-    \item \textbf{Tính mô-đun hóa (Modularity):} Hệ thống có khả năng thích ứng cao với nhiều kịch bản ứng dụng khác nhau chỉ bằng cách thay đổi các module adapter mà không cần thiết kế lại phần cứng cốt lõi, giúp giảm thiểu chi phí và thời gian triển khai.
+    \item \textbf{Tính module hóa (Modularity):} Hệ thống có khả năng thích ứng cao với nhiều kịch bản ứng dụng khác nhau chỉ bằng cách thay đổi các module adapter mà không cần thiết kế lại phần cứng cốt lõi, giúp giảm thiểu chi phí và thời gian triển khai.
     \item \textbf{Khả năng cấu hình (Configurability):} Thông qua ứng dụng cấu hình trên máy tính (hỗ trợ tải lên JSON preset cho provisioning hàng loạt) và Web Config Portal (cấu hình qua trình duyệt, không cần cài phần mềm), người dùng có thể dễ dàng thiết lập các thông số vận hành như tài khoản MQTT, cấu hình mạng Wi-Fi/LTE hay chu kỳ lấy mẫu dữ liệu mà không cần can thiệp vào mã nguồn của thiết bị.
     \item \textbf{Độ tin cậy và ổn định:} Hệ thống đã vượt qua các bài kiểm tra vận hành liên tục. Cơ chế Internet Monitor (Auto-failover giữa Wi-Fi, Ethernet và LTE) và lưu trữ dữ liệu tạm thời vào thẻ nhớ microSD khi mất mạng đã đảm bảo tính toàn vẹn của dữ liệu trong quá trình vận hành. Quy trình Safety FOTA với cơ chế Rollback tự động được xác thực — thiết bị phục hồi thành công về firmware cũ khi gói cập nhật bị lỗi giả lập.
 \end{itemize}
