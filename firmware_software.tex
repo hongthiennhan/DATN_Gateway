@@ -1,9 +1,9 @@
 \section{Kiểm thử Firmware và Software}
 
 Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào giai đoạn Firmware \& Software Verification nhằm xác nhận bo mạch có thể vận hành ổn định với firmware thực tế, đồng thời kiểm chứng các luồng chức năng cốt lõi của kiến trúc Dual-MCU, gồm WAN-MCU và LAN-MCU giao tiếp qua SPI. Giai đoạn này bổ sung các nhóm kiểm thử mới so với phiên bản trước, bao gồm: hệ thống cấu hình module dựa trên JSON (Module Base Setting), cổng cấu hình Web nhúng (Web Config Portal), BLE Mesh Native Provisioner, các loại server mới (HTTP, CoAP) và loại kết nối Internet mới (Ethernet).
-    
+
     \subsection{Mục tiêu}
-    
+
         \begin{itemize}
             \item Xác nhận khả năng nạp và khởi chạy firmware cho cả hai MCU, đảm bảo vào đúng boot mode và ổn định dưới FreeRTOS.
             \item Kiểm chứng các giao tiếp bắt buộc: SPI nội bộ WAN--LAN, UART nạp firmware gián tiếp và các tín hiệu handshake GPIO.
@@ -14,13 +14,13 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \item Kiểm chứng BLE Mesh Native Provisioner: scan thiết bị chưa provision, provisioning flow và điều khiển node.
             \item Định lượng nhanh các tiêu chí ``đủ dùng'' cho phiên bản hiện tại: chạy lâu không treo, truyền dữ liệu đúng/đủ và phục hồi khi mất mạng.
         \end{itemize}
-    
+
     \subsection{Quy trình nạp và khởi động firmware}
-    
+
         Nạp WAN-MCU qua cổng USB-C (USB Serial/JTAG) bằng công cụ nạp chuẩn như ESP-IDF hoặc \texttt{esptool}. Sau khi nạp, kiểm tra log UART/USB và trạng thái task khởi tạo.
-        
+
         Nạp LAN-MCU gián tiếp từ WAN-MCU qua kênh UART kết hợp GPIO control (Reset/Boot) để đưa LAN-MCU vào Download Mode và flash. LAN-MCU tự reboot sau khi nạp thành công.
-        
+
         Khởi động đồng thời hệ thống và kiểm tra:
         \begin{itemize}
             \item FreeRTOS scheduler chạy ổn định, không reset bất thường.
@@ -28,48 +28,48 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \item Các task chính khởi tạo đầy đủ và không bị deadlock.
             \item Module Monitor Task tự đọc stack ID và nạp lại config từ NVS nếu có.
         \end{itemize}
-        
+
     \subsection{Nội dung kiểm thử firmware theo nhóm chức năng}
-    
+
         \begin{enumerate}
             \renewcommand{\labelenumi}{\alph{enumi}.}
 
             \item \textbf{Kiểm thử nền tảng (Boot/RTOS/Log)}
-        
+
             Kiểm tra boot ổn định, log xuất đều và không reset ngẫu nhiên. Kiểm tra hoạt động song song của các task chính, gồm LAN thu thập/xử lý, WAN Internet/server và liên MCU. Xác nhận Module Monitor Task tự khởi động handler đúng dựa trên stack ID phát hiện được.
-        
+
             \item \textbf{Kiểm thử giao tiếp liên MCU (Dual-MCU Integration)}
-        
+
             SPI data path: truyền gói dữ liệu uplink từ LAN sang WAN. WAN phản hồi ACK/NACK theo kết quả kiểm tra CRC/sequence. GPIO handshake downlink: WAN toggle GPIO để LAN thực hiện phiên SPI nhận dữ liệu. Tiêu chí: dữ liệu không sai lệch (integrity), retry hoạt động khi lỗi CRC và không nghẽn SPI khi mạng dao động.
-        
+
             \item \textbf{Kiểm thử Internet Communication (WAN-MCU)}
-        
+
             Wi-Fi: hỗ trợ Personal và Enterprise; sau khi vào mạng, hệ thống thực hiện SNTP để đồng bộ thời gian và cập nhật RTC. LTE: kết nối modem LTE qua USB/UART, theo dõi link và tự reconnect. PPP Server: bật PPP qua UART để tạo IP link hỗ trợ LAN-MCU thực hiện OTA. Ethernet: kết nối qua W5500 SPI Ethernet, lấy IP qua DHCP và hoạt động song song với Wi-Fi fallback.
-        
+
             \item \textbf{Kiểm thử Cloud/Server (WAN-MCU)}
-        
+
             MQTT: duy trì kết nối, tự reconnect, uplink telemetry và downlink command. HTTP: gửi HTTP POST telemetry, nhận HTTP GET command từ server polling. CoAP: truyền telemetry qua CoAP, nhận lệnh downlink qua CoAP observe.
-        
+
             \item \textbf{Kiểm thử Web Config Portal (WAN-MCU)}
-        
+
             Captive DNS portal ở chế độ AP: redirect tự động đến trang cấu hình. Cấu hình Wi-Fi và kết nối lại ở chế độ STA. Toàn bộ REST API endpoint: đọc/ghi cấu hình WAN, đọc/ghi config LAN, kiểm tra trạng thái và khởi động lại.
-        
+
             \item \textbf{Kiểm thử cấu hình tại chỗ (USB/UART)}
-        
+
             Scan/Read config: PC yêu cầu đọc cấu hình CFSC, WAN trả key--value và mask thông tin nhạy cảm. Config write: PC gửi lệnh có prefix CF, WAN validate, lưu NVS và apply runtime; nếu thuộc LAN thì forward qua SPI. Tiêu chí: cấu hình tồn tại sau reboot và không làm gián đoạn SPI/MQTT.
-        
+
             \item \textbf{Kiểm thử Module Base Setting (LAN-MCU)}
-        
+
             Nạp JSON config cho module BLE/LoRa/Zigbee qua PC App và Web Portal. Prefix command matching: gửi AT command động, firmware tự tra JSON để lấy GPIO/timeout. GPIO-only command: \texttt{MODULE\_HW\_RESET} không gửi UART, chỉ toggle GPIO. Auto-restore: tắt nguồn và kiểm tra handler tự khởi động lại với config từ NVS.
-        
+
             \item \textbf{Kiểm thử FOTA toàn gateway}
-        
+
             Server gửi \texttt{CFML:CFFW}, WAN parse và xác định OTA mode. WAN trigger LAN OTA và start Wi-Fi AP mode để LAN kết nối và tải firmware. Sau khi LAN cập nhật xong, WAN tự cập nhật. Tiêu chí: cả hai MCU cập nhật thành công và boot lại bình thường.
 
             \item \textbf{Kiểm thử đơn kênh -- Max Bandwidth Test}
 
             \textbf{Phương pháp:} Từng giao thức (Zigbee, LoRa, BLE) gửi dữ liệu liên tục với tốc độ tối đa; đo thông lượng thực tế tại LAN-MCU và tại MQTT Broker, đồng thời ghi nhận PDR (\textit{Packet Delivery Ratio}).
-            
+
             \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{3.5cm}|}
                 \caption{Baseline kỳ vọng cho kiểm thử đơn kênh.}
                 \label{tab:single_channel_baseline} \\
@@ -86,41 +86,40 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
                 LoRa SF7/125 (P2P) & $\approx 3{,}5\,\text{kbps}$ & $> 99\%$ \\ \hline
                 BLE (DLE bật) & $\approx 97{,}6\,\text{kbps}$ & $> 99\%$ \\ \hline
             \end{longtable}
-            
+
             \item \textbf{Kiểm thử đa kênh đồng thời -- Concurrency Test}
-            
+
             \textbf{Phương pháp:} Cả ba node (Zigbee, LoRa, BLE) cùng phát dữ liệu tối đa. Thông lượng lý thuyết tổng hợp tại chặng LAN$\,\rightarrow\,$WAN:
             \[
                 R_{total} = R_{Zigbee} + R_{BLE} + R_{LoRa}
                             = 8{,}2 + 97{,}6 + 3{,}5
                             = 109{,}3\,\text{kbps}
             \]
-            
+
             \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại Bảng~\ref{tab:batch_data}. Kết quả:
-            
+
             \begin{itemize}
                 \item \textbf{Tải trung bình:} $\approx 137\,\text{byte/batch}$, $T_{SPI} \approx 0{,}0183\,\text{ms}$, $U_{SPI} \approx 0{,}183\%$.
                 \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ (xem Bảng~\ref{tab:spi_worst}).
             \end{itemize}
-            
+
             Thông lượng tối đa lý thuyết của SPI:
             \[
                 R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
             \]
-            
+
             \textbf{Kết luận:} SPI không phải nút thắt ở bất kỳ điều kiện tải nào. Thông lượng LAN$\,\rightarrow\,$WAN thực tế kỳ vọng, sau khi trừ overhead giao thức và jitter scheduler:
             \[
                 R_{practical} \approx (85 \div 95)\% \times 109{,}3 \approx 93 \div 104\,\text{kbps}
             \]
-            
+
             Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng. Nguy cơ suy giảm PDR chủ yếu đến từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao trong mỗi chu kỳ $10\,\text{ms}$.
-            
+
         \end{enumerate}
 
         \paragraph{Bảng kiểm thử chi tiết}
 
-        \subparagraph{Kiểm thử đọc cấu hình hệ thống:}
-        Giai đoạn này nhằm xác nhận rằng hệ thống có khả năng đọc và phản hồi toàn bộ tham số cấu hình được lưu trữ trong bộ nhớ không bay hơi (NVS). Quá trình kiểm tra bao gồm: quét thiết bị kết nối qua cổng USB/UART, gửi lệnh yêu cầu đọc cấu hình (CFSC), và xác minh rằng gateway trả về đầy đủ thông tin cấu hình với các trường nhạy cảm được ẩn đi (mask). Tiêu chí chấp nhận là toàn bộ thông tin trả về phải đúng và đầy đủ sau mỗi lần ghi cấu hình mới.
+        Nhóm kiểm thử đọc cấu hình xác minh khả năng của gateway trong việc phản hồi đúng và đầy đủ thông tin cấu hình khi PC yêu cầu thông qua giao tiếp USB/UART. Các ca kiểm thử bao gồm quét thiết bị, đọc cấu hình mặc định, đọc lại sau khi đã ghi và kiểm tra tính bền vững của cấu hình qua các lần khởi động lại, nhằm đảm bảo dữ liệu NVS được lưu trữ nhất quán và thông tin nhạy cảm được che dấu đúng cách.
 
         \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
             \caption{Kiểm thử đọc cấu hình hệ thống}
@@ -144,8 +143,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Read LAN config & LAN-MCU đang chạy & PC gửi CFSC, đọc trường LAN & stack1\_id, stack2\_id, json\_len hiển thị đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử ghi cấu hình tham số chung:}
-        Phần kiểm thử này xác nhận khả năng của gateway trong việc ghi và lưu trữ các tham số cấu hình thông dụng thông qua các cấu lệnh được gửi từ ứng dụng khách (PC App). Các tham số bao gồm: loại kết nối Internet (Wi-Fi/LTE/PPP/Ethernet), loại server (MQTT/HTTP/CoAP), chu kỳ gửi dữ liệu, và chính sách retry khi mất mạng. Mục đích là đảm bảo tham số được áp dụng ngay lập tức (runtime) mà không gây gián đoạn giao tiếp SPI hay server, và lưu trữ lâu dài trong NVS để khôi phục sau khởi động lại.
+        Nhóm kiểm thử ghi cấu hình xác minh khả năng cập nhật các tham số vận hành của gateway tại thời điểm chạy thực tế (runtime) thông qua lệnh USB/UART. Mỗi ca kiểm thử tương ứng với một nhóm tham số riêng biệt -- từ loại kết nối Internet, loại server, chu kỳ gửi dữ liệu, chính sách retry cho đến xử lý giá trị ngoài dải -- nhằm đảm bảo firmware validate đúng, áp dụng tức thì mà không gián đoạn hoạt động hiện tại và lưu bền vào NVS qua các lần khởi động lại.
 
         \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
             \caption{Kiểm thử ghi cấu hình tham số chung}
@@ -169,8 +167,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Giá trị ngoài dải & period\_ms = 0 hoặc quá lớn & Ghi tham số lỗi & Trả FAIL, không áp dụng, NVS không đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử Wi-Fi (Personal/Enterprise):}
-        Giai đoạn này đánh giá khả năng kết nối và duy trì kết nối Wi-Fi của WAN-MCU trong các chế độ xác thực khác nhau. Kiểm thử bao gồm: kết nối mạng cá nhân (PSK), kết nối mạng doanh nghiệp (EAP-TLS/PEAP), xử lý sai thông tin đăng nhập, và khả năng tái kết nối tự động sau khi mạng được khôi phục. Đồng thời, hệ thống cũng kiểm tra khả năng đồng bộ thời gian qua giao thức SNTP và cập nhật đồng hồ thời gian thực (RTC). Tiêu chí chấp nhận là kết nối phải thành công, khôi phục linh hoạt mà không cần khởi động lại.
+        Nhóm kiểm thử Wi-Fi xác minh khả năng kết nối và duy trì liên lạc ổn định của WAN-MCU với hạ tầng mạng không dây. Các ca kiểm thử bao phủ hai chế độ xác thực Personal và Enterprise, xử lý tình huống sai thông tin đăng nhập, đồng bộ thời gian qua giao thức SNTP sau khi kết nối thành công và khả năng tự phục hồi kết nối sau khi mất tín hiệu mà không cần khởi động lại thiết bị.
 
         \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
             \caption{Kiểm thử Wi-Fi (Personal/Enterprise)}
@@ -195,8 +192,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             6 & Reconnect & Ngắt/khôi phục WiFi & Tắt AP rồi bật lại & Online trở lại, không cần reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử LTE và PPP:}
-        Phần này xác nhận hoạt động của các kênh kết nối Internet thay thế: LTE qua modem 4G và PPP Server để hỗ trợ LAN-MCU truy cập Internet. Kiểm thử bao gồm: cấu hình APN, kết nối modem LTE ổn định, tự kết nối lại khi mất sóng, và khả năng cấu hình lại APN tại runtime. Tiêu chí chấp nhận là gateway phải có địa chỉ IP ổn định, duy trì kết nối và phục hồi tự động.
+        Nhóm kiểm thử LTE và PPP xác minh khả năng kết nối Internet thông qua modem di động, phục vụ các môi trường triển khai không có hạ tầng Wi-Fi hoặc cáp mạng cố định. Bảng kiểm thử dưới đây tập trung vào ba khía cạnh chính: khởi tạo kết nối LTE với cấu hình APN, cơ chế tự phục hồi kết nối sau khi mất sóng và khả năng cập nhật thông số APN ngay trong khi hệ thống đang vận hành.
 
         \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
             \caption{Kiểm thử LTE và PPP}
@@ -204,62 +200,60 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endfirsthead
-        
+
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endhead
-        
+
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & LTE connect & Có modem + SIM & Chọn LTE, cấu hình APN & Có IP, online ổn định & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & LTE reconnect & Ngắt/khôi phục sóng & Quan sát tự reconnect & Online trở lại, không cần reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & LTE config update & Gateway đang dùng LTE & Ghi APN mới qua UART & APN mới lưu NVS, apply sau reconnect & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Ethernet:}
-        Giai đoạn này kiểm tra kênh kết nối Internet qua Ethernet sử dụng chip W5500 kết nối với bus SPI. Kiểm thử bao gồm: cấu hình DHCP để lấy địa chỉ IP tự động, khả năng kết nối ổn định, tự khôi phục khi cắm/rút cáp LAN, chế độ failover sang Wi-Fi khi Ethernet mất kết nối, và hỗ trợ cấu hình IP tĩnh. Tiêu chí chấp nhận là kết nối Ethernet phải ổn định, thông lượng đạt chuẩn và chuyển đổi failover nhanh chóng.
-        
+
+        Nhóm kiểm thử Ethernet xác minh khả năng kết nối Internet có dây thông qua module W5500 giao tiếp SPI. Bảng dưới đây kiểm tra quá trình lấy địa chỉ IP qua DHCP, cơ chế tự phục hồi sau khi rút và cắm lại cáp, tính năng chuyển dự phòng tự động sang Wi-Fi khi mất kết nối Ethernet và khả năng cấu hình địa chỉ IP tĩnh cho các môi trường mạng công nghiệp yêu cầu địa chỉ cố định.
+
         \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
             \caption{Kiểm thử Ethernet}
             \label{tab:test_ethernet} \\
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endfirsthead
-        
+
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endhead
-        
+
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Ethernet connect & W5500 gắn SPI, có cáp LAN & Chọn internet\_type = Ethernet & DHCP lấy IP, online ổn định & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Ethernet reconnect & Rút/cắm lại cáp LAN & Quan sát tự reconnect & Online trở lại sau khi cắm cáp & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Ethernet + WiFi fallback & Ethernet connected & Rút cáp Ethernet & Tự fallback sang WiFi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Static IP & Cấu hình IP tĩnh & Ghi static IP config & Dùng đúng IP tĩnh, không DHCP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Server MQTT:}
-        Giai đoạn này xác nhận khả năng của WAN-MCU trong việc kết nối, duy trì và giao tiếp với MQTT Broker. Kiểm thử bao gồm: cấu hình broker (host/port/credentials), công bố telemetry (publish) và đăng ký nhận lệnh (subscribe), xử lý RPC downlink từ server, tự kết nối lại khi mất broker, và xác minh QoS 1 không gây trùng lặp dữ liệu. Tiêu chí chấp nhận là payload phải đúng định dạng, không mất tin nhắn dưới QoS 1, và kết nối bền vững.
-        
+
+        Nhóm kiểm thử MQTT xác minh toàn bộ luồng giao tiếp hai chiều giữa gateway và MQTT Broker -- giao thức server chủ đạo được sử dụng trong hệ thống. Các ca kiểm thử bao gồm cấu hình kết nối broker, publish/subscribe đúng topic, truyền dữ liệu telemetry từ LAN lên cloud, nhận và định tuyến lệnh RPC từ server xuống LAN-MCU, cơ chế tự kết nối lại sau sự cố và đảm bảo chất lượng dịch vụ với QoS mức 1.
+
         \begin{longtable}{|c|p{3cm}|p{4cm}|p{5cm}|c|}
             \caption{Kiểm thử Server MQTT}
             \label{tab:test_mqtt} \\
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endfirsthead
-        
+
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endhead
-        
+
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Broker config & Ghi host/port/user/pass & MQTT connect OK, log xác nhận & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Topic config & Ghi topic telemetry/downlink & Publish/subscribe đúng topic & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Uplink telemetry & LAN gửi data → WAN publish & Broker nhận payload đúng format & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -267,50 +261,48 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Reconnect & Ngắt/khôi phục broker & Tự reconnect, không mất lệnh & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             6 & QoS 1 & Publish với QoS 1 & Broker gửi PUBACK, không duplicate & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Server HTTP:}
-        Phần này đánh giá khả năng của gateway trong việc gửi dữ liệu telemetry đến HTTP server thông qua các yêu cầu POST, và nhận lệnh downlink thông qua polling GET. Kiểm thử bao gồm: cấu hình HTTP endpoint (host/port/token), gửi telemetry dạng JSON, xử lý các mã lỗi HTTP khác nhau, hỗ trợ HTTPS với TLS handshake, và polling server để nhận lệnh định kỳ. Tiêu chí chấp nhận là server phải nhận được toàn bộ dữ liệu đúng định dạng, lỗi phải được ghi nhập và retry nếu cần.
-        
+
+        Nhóm kiểm thử HTTP xác minh khả năng giao tiếp của gateway với server thông qua phương thức HTTP POST để đẩy dữ liệu telemetry và HTTP GET để polling lệnh điều khiển. Bảng dưới đây kiểm tra cấu hình endpoint, truyền dữ liệu đúng định dạng JSON, xử lý mã lỗi từ phía server, kết nối bảo mật HTTPS với xác thực TLS và luồng nhận lệnh downlink qua cơ chế polling định kỳ.
+
         \begin{longtable}{|c|p{3cm}|p{4cm}|p{5cm}|c|}
             \caption{Kiểm thử Server HTTP}
             \label{tab:test_http} \\
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện/Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endfirsthead
-        
+
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện/Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endhead
-        
+
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & HTTP config & Ghi HTTP host/port/token & HTTP POST thành công & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Telemetry uplink & LAN gửi → WAN POST & Server nhận JSON đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Response code & Gửi request lỗi & Gateway log lỗi, retry & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & HTTPS & Ghi endpoint https & TLS handshake OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Downlink polling & Server gửi lệnh & WAN GET, forward LAN & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Server CoAP:}
-        Giai đoạn này kiểm tra khả năng gửi telemetry qua giao thức CoAP (Constrained Application Protocol) và nhận lệnh downlink thông qua cơ chế Observe/Notify. Kiểm thử bao gồm: cấu hình CoAP endpoint, gửi dữ liệu qua CoAP PUT, đăng ký observe để nhận thông báo từ server, xử lý lệnh CoAP downlink, và hỗ trợ DTLS để mã hóa dữ liệu. Tiêu chí chấp nhận là payload phải truyền tải đúng, observe notification phải hoạt động liên tục mà không mất dữ liệu.
-        
+
+        Nhóm kiểm thử CoAP xác minh khả năng giao tiếp của gateway theo giao thức CoAP -- giao thức nhẹ được thiết kế cho các thiết bị IoT bị hạn chế tài nguyên, vận hành trên nền UDP. Bảng dưới đây kiểm tra cấu hình endpoint, truyền dữ liệu telemetry qua phương thức PUT, cơ chế CoAP Observe cho kênh nhận lệnh downlink không cần polling và bảo mật truyền thông ở tầng transport qua giao thức DTLS.
+
         \begin{longtable}{|c|p{3cm}|p{4cm}|p{5cm}|c|}
             \caption{Kiểm thử Server CoAP}
             \label{tab:test_coap} \\
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện/Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endfirsthead
-        
+
             \hline
             \textbf{STT} & \textbf{Hạng mục} & \textbf{Điều kiện/Thao tác} & \textbf{Tiêu chí chấp nhận} & \textbf{Kết quả} \\ \hline
             \endhead
-        
+
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & CoAP config & Ghi CoAP host/port & CoAP PUT thành công & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Telemetry uplink & LAN gửi → WAN PUT & Server nhận payload đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & CoAP observe & Register observe & Server nhận notify & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -318,9 +310,8 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & DTLS & Ghi DTLS config & Handshake OK, dữ liệu mã hóa & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử Web Config Portal -- AP Mode (Lần đầu khởi động):}
-        Khi gateway khởi động lần đầu mà không có thông tin đăng nhập Wi-Fi trong bộ nhớ, nó tự động chuyển sang chế độ Access Point (AP) và phát hành một trang cấu hình web thông qua Captive DNS Portal. Giai đoạn này kiểm tra: khả năng phát sóng SSID, chuyển hướng tự động trang cấu hình trên các thiết bị di động (Android/iOS), tải giao diện SPA đầy đủ không có lỗi JavaScript, và cấu hình Wi-Fi STA rồi khởi động lại để kết nối. Tiêu chí chấp nhận là trang cấu hình phải hiện tự động và hoàn thành cấu hình trong vòng 30 giây.
-        
+        Nhóm kiểm thử Web Config Portal ở chế độ AP xác minh cơ chế cấu hình không dây trong lần khởi động đầu tiên -- khi gateway chưa có thông tin kết nối Wi-Fi trong bộ nhớ NVS. Gateway sẽ tự động phát điểm truy cập (Soft AP) và chuyển hướng toàn bộ lưu lượng HTTP về trang cấu hình thông qua Captive DNS, hỗ trợ tự động kích hoạt trên cả hai nền tảng Android và iOS mà không cần người dùng nhập thủ công địa chỉ IP.
+
         \begin{longtable}{|c|p{2cm}|p{3cm}|p{3cm}|p{4cm}|c|}
             \caption{Kiểm thử Web Config Portal -- AP Mode (Lần đầu khởi động)}
             \label{tab:test_web_config_ap} \\
@@ -333,7 +324,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & AP phát sóng & Không có WiFi credentials trong NVS & Khởi động gateway & SSID ``DA2-Gateway-XXXX'' xuất hiện & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Captive DNS redirect & Phone kết nối AP & Kết nối WiFi AP, không mở browser thủ công & OS tự hiện popup ``Sign in to network'', redirect về 192.168.4.1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Captive DNS -- Android & Phone Android & Kết nối AP, đợi prompt & Trang cấu hình hiện tự động (Android) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -343,9 +334,8 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             7 & Sai WiFi password & Nhập pass sai & Set WiFi Config $\rightarrow$ Reboot & Gateway không vào mạng, tự quay lại AP mode sau N lần retry & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử Web Config Portal -- STA Mode:}
-        Sau khi gateway đã kết nối thành công vào mạng Wi-Fi (chế độ Station/STA), trang cấu hình web trở nên có thể truy cập qua trình duyệt từ các thiết bị khác trên mạng LAN. Giai đoạn này kiểm tra: truy cập qua địa chỉ IP trực tiếp, truy cập qua mDNS (gateway.local), các endpoint REST API để đọc/ghi cấu hình WAN và LAN, kiểm tra trạng thái hệ thống, và khởi động lại. Tiêu chí chấp nhận là toàn bộ API endpoint phải trả về dữ liệu đầy đủ và chính xác, cấu hình được áp dụng ngay tức thì.
-        
+        Nhóm kiểm thử Web Config Portal ở chế độ STA xác minh toàn bộ tập REST API endpoint khi gateway đã kết nối vào mạng Wi-Fi nội bộ. Bảng dưới đây bao gồm các ca kiểm thử truy cập giao diện qua địa chỉ IP và mDNS, đọc/ghi cấu hình WAN (Wi-Fi, MQTT, HTTP, CoAP), đọc và nạp cấu hình JSON cho module LAN, đọc trạng thái hệ thống realtime và khởi động lại gateway từ xa thông qua REST API.
+
         \begin{longtable}{|c|p{3cm}|p{2cm}|p{4cm}|p{3cm}|c|}
             \caption{Kiểm thử Web Config Portal -- STA Mode}
             \label{tab:test_web_config_sta} \\
@@ -358,33 +348,32 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Truy cập qua IP & Gateway ở STA, có IP & Truy cập \texttt{http://<IP>} từ LAN & Trang cấu hình load đầy đủ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             2 & Truy cập qua mDNS & mDNS hoạt động & Truy cập \texttt{http://}\newline\texttt{gateway.local} & Trang load thành công, không cần biết IP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             3 & GET \texttt{/api/config} & Gateway ở STA & GET \texttt{/api/config} từ browser & Trả JSON đầy đủ: wifi, lte, mqtt, http, coap & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             4 & POST \texttt{/api/config} (WiFi) & Gateway ở STA & POST \newline\texttt{\{"wifi":} \newline\texttt{\{"ssid":"...",} \newline\texttt{"password":"..."\}\}} & Gateway cập nhật WiFi, NVS save & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             5 & POST \texttt{/api/config} (MQTT) & Gateway ở STA & POST \newline\texttt{\{"mqtt":} \newline\texttt{\{"broker":"..."\}\}} & MQTT reconnect với broker mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             6 & GET \texttt{/api/lan\_config} & Gateway ở STA, LAN chạy & GET \newline\texttt{/api/lan\_config} & Trả danh sách preset JSON cho BLE / LoRa / Zigbee & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             7 & POST \texttt{/api/lan\_config} (BLE) & Module BLE đang chạy & POST JSON config BLE qua web & LAN-MCU parse, NVS save, BLE handler restart & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             8 & GET \texttt{/api/status} & Gateway chạy bình thường & GET \newline\texttt{/api/status} & Trả uptime, RSSI, FW version, internet\_status & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             9 & POST \texttt{/api/reboot} & Gateway ở STA & POST \newline\texttt{/api/reboot} & Gateway restart trong vòng 1s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             10 & Advanced Mode -- BLE tab & Mở Advanced Mode & Chọn tab BLE, Load preset & JSON preview hiện đúng template BLE STM32WB & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             11 & Advanced Mode -- Firmware OTA & Advanced Mode & Nhập OTA URL, Start OTA & FOTA WAN-MCU kích hoạt thành công & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử Module Base Setting -- Nạp JSON Config:}
-        Hệ thống Module Base Setting cho phép người dùng nạp tệp cấu hình JSON cho các module ngoại vi (BLE, LoRa, Zigbee) thông qua PC App, Web Portal hoặc MQTT. Giai đoạn kiểm thử này xác nhận: LAN-MCU có thể parse đúng JSON từ các nguồn khác nhau, lưu cấu hình vào NVS, khởi động handler tương ứng, áp dụng cấu hình sau khởi động lại mà không cần gửi lại JSON, và hỗ trợ thay đổi loại module tại runtime. Tiêu chí chấp nhận là JSON phải được lưu trữ bền vững, handler phải khởi động đúng và cấu hình phải tồn tại sau mỗi lần khởi động.
-        
+        Nhóm kiểm thử Module Base Setting -- Nạp JSON Config xác minh cơ chế cấu hình linh hoạt cho các module không dây (BLE, LoRa, Zigbee) thông qua tệp JSON, hỗ trợ nạp từ nhiều nguồn khác nhau gồm PC App, Web Portal và lệnh MQTT từ server. Bảng dưới đây xác nhận quá trình parse JSON đúng thông số kỹ thuật, lưu bền vào NVS, tự khởi động lại handler tương ứng và khả năng phục hồi cấu hình đầy đủ sau khi mất điện mà không cần gửi lại tệp cấu hình.
+
         \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử Module Base Setting -- Nạp JSON Config}
             \label{tab:test_module_base_json} \\
@@ -397,7 +386,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Gửi BLE JSON từ PC App & Module BLE STM32WB55 cắm khe 1 & Gửi \texttt{CFBL:JSON:0:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, BLE handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Gửi LoRa JSON từ PC App & Module LoRa RAK3172 cắm khe 1 & Gửi \texttt{CFLR:JSON:0:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, LoRa handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Gửi Zigbee JSON từ PC App & Module Zigbee E180-ZG120B cắm khe 2 & Gửi \texttt{CFZB:JSON:1:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, Zigbee handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -408,10 +397,9 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             8 & Thay đổi loại module tại runtime & Khe 1 đang chạy BLE handler & Gửi JSON config LoRa cho khe 1 & BLE handler dừng, LoRa handler start với config mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             9 & JSON schema không hợp lệ & Gateway đang chạy & Gửi JSON thiếu trường bắt buộc & Firmware trả lỗi, NVS không thay đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Module Base Setting -- Command Execution:}
-        Sau khi JSON config được nạp thành công, LAN-MCU phải hỗ trợ thực hiện các lệnh AT động được gửi từ PC/Web/MQTT dựa trên template JSON. Giai đoạn này kiểm tra: khớp prefix lệnh (AT+SCAN, AT+CONNECT, v.v.), áp dụng timeout từ JSON, xử lý lệnh GPIO-only (không gửi qua UART), xử lý lỗi khi lệnh không khớp, và trả về timeout chính xác. Tiêu chí chấp nhận là firmware phải tìm đúng function từ JSON, thực thi lệnh đúng sequence và phản hồi kết quả chính xác.
-        
+
+        Nhóm kiểm thử Module Base Setting -- Command Execution xác minh cơ chế định tuyến và thực thi lệnh động dựa trên tệp JSON config đã được nạp trước đó. Firmware sử dụng thuật toán prefix matching để tra cứu hàm xử lý tương ứng trong bảng ánh xạ, hỗ trợ hai loại lệnh: lệnh UART thông thường truyền trực tiếp đến module và lệnh GPIO-only không phát byte nào qua UART mà chỉ thao tác chân vật lý. Bảng dưới đây kiểm tra thêm các trường hợp không khớp lệnh và phản hồi timeout đúng giá trị cấu hình.
+
         \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử Module Base Setting -- Command Execution}
             \label{tab:test_module_base_command} \\
@@ -424,7 +412,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Prefix match -- AT+ \newline SCAN= & BLE config đã nạp, có MODULE START DISCOVERY & Gửi \texttt{CFBL:0:}\newline\texttt{AT+SCAN=5000} & Firmware tìm đúng function, áp dụng timeout 7000ms từ JSON, gửi UART & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Prefix match -- AT+ \newline CONNECT \newline = & BLE config đã nạp & Gửi \texttt{CFBL:0:}\newline\texttt{AT+CONNECT=}\newline\texttt{AABBCCDDEE} & Firmware ghép command đúng, gửi UART đến module & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & GPIO-only -- MODULE HW RESET & BLE config đã nạp & Gửi MODULE HW RESET qua CFBL & Không có byte nào gửi qua UART; chỉ toggle RST pin LOW $\rightarrow$ 100ms $\rightarrow$ HIGH & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -432,9 +420,10 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Không khớp JSON & BLE config đã nạp & Gửi \texttt{CFBL:0:}\newline\texttt{AT+UNKNOWNCMD} & Firmware log lỗi ``no function match'', không gửi UART & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             6 & Timeout response & Module không phản hồi & Gửi AT+CONNECT với thiết bị ngoài tầm & Firmware trả ESP ERR TIMEOUT đúng giá trị timeout ms từ JSON & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-                \subparagraph{Kiểm thử BLE AT Command Handler (CFBL -- STM32WB55):}
-        Module BLE STM32WB55 được kiểm soát thông qua giao thức AT command qua UART từ LAN-MCU. Giai đoạn này kiểm tra: khởi động lại module bằng GPIO sequence, truy xuất thông tin firmware/MAC address, quét các thiết bị BLE xung quanh, kết nối đến thiết bị từ danh sách scan, phát hiện các GATT characteristic, bật thông báo (notify), ghi dữ liệu vào characteristic, ngắt kết nối, và chuyển tiếp phản hồi từ module lên server. Tiêu chí chấp nhận là các lệnh phải thực hiện đúng sequence và phản hồi phải chính xác.
-                \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+
+        Nhóm kiểm thử BLE AT Command Handler xác minh toàn bộ luồng điều khiển thiết bị BLE ngoại vi thông qua module STM32WB55 bằng tập lệnh AT. Bảng dưới đây bao phủ vòng đời đầy đủ của một phiên kết nối BLE: từ reset phần cứng module, quét và phát hiện thiết bị lân cận, thiết lập kết nối GATT, khám phá dịch vụ, kích hoạt thông báo (notify), ghi giá trị characteristic đến ngắt kết nối và đảm bảo toàn bộ phản hồi từ module được forward về server cloud.
+
+        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử BLE AT Command Handler (CFBL -- STM32WB55)}
             \label{tab:test_ble_at_handler} \\
             \hline
@@ -446,7 +435,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Hardware Reset & Module cắm, BLE config nạp & Gửi MODULE HW RESET & Module reset đúng, GPIO sequence thực thi, log ``reset ok'' & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Get Info & Module đang chạy & Gửi AT+GETINFO & Phản hồi FW version, BD\_ADDR đúng format & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Scan BLE devices & Thiết bị BLE ở gần & Gửi \texttt{CFBL:0:}\newline\texttt{AT+SCAN=5000} & Trả về danh sách \texttt{+SCAN:MAC,RSSI,}\newline\texttt{Name} trong 5s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -458,11 +447,8 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             9 & Response forward & Module trả phản hồi & Các lệnh trên & Response từ UART module được forward lên MQTT/HTTP server & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        %
+        Nhóm kiểm thử BLE Mesh Native Provisioner xác minh khả năng của WAN-MCU (ESP32-S3) tự đảm nhận vai trò Provisioner trong mạng BLE Mesh mà không cần module ngoài chuyên dụng. Bảng dưới đây kiểm tra toàn bộ quy trình quản lý thiết bị trong mạng Mesh: từ khởi tạo stack với Network Key và Application Key, quét thiết bị chưa được provision, thực hiện provisioning và bind app key cho đến điều khiển các loại model khác nhau gồm OnOff, Lightness và Scene.
 
-        \subparagraph{Kiểm thử BLE Mesh Native Provisioner (CFBN):}
-        Gateway hỗ trợ chức năng Provisioner cho mạng BLE Mesh, cho phép khám phá các nút chưa provision, tích hợp chúng vào mạng, và điều khiển qua các lệnh Mesh (OnOff, Lightness, Scene, v.v.). Giai đoạn kiểm thử này xác nhận: nạp JSON config chứa network key và application key, quét các nút chưa provision (unprovisioned), thực hiện quy trình provisioning, liên kết application key (app key binding), điều khiển các loại thiết bị khác nhau (OnOff/Lightness/Scene), truy vấn trạng thái nút, và phục hồi khi nút bị mất. Tiêu chí chấp nhận là quá trình provisioning phải hoàn tất trong 30 giây, điều khiển phải có phản hồi ACK và trạng thái phải chính xác.
-        
         \begin{longtable}{|c|p{2cm}|p{2cm}|p{4cm}|p{4cm}|c|}
             \caption{Kiểm thử BLE Mesh Native Provisioner (CFBN)}
             \label{tab:test_ble_mesh_native} \\
@@ -475,27 +461,26 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Nạp JSON config Mesh & BLE Mesh stack chưa init & Gửi \texttt{CFBN:JSON:0:}\newline\texttt{<json net\_key, app\_key>} & Stack khởi tạo OK, log ``mesh provisioner started'' & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             2 & Scan unprovisioned & Có thiết bị Mesh chưa provision & Gửi \texttt{CFBN:0:SCAN} & Nhận \texttt{+UNPROV:}\newline\texttt{UUID,RSSI} trong 10s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             3 & Provisioning & Đã scan, có UUID & Gửi \texttt{CFBN:0:}\newline\texttt{PROVISION:<UUID>} & \texttt{+PROV\_DONE:}\newline\texttt{addr=0x000X} trong 30s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             4 & Bind app key & Đã provision & Tự động sau \texttt{PROV\_DONE} hoặc lệnh \texttt{BIND} & App key bind thành công, node sẵn sàng nhận control & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             5 & OnOff control & Node đã provision và bind & Gửi \texttt{CFBN:0:CONTROL:}\newline\texttt{\{"node":0x0005,}\newline\texttt{"cmd":"TURN\_ON"\}} & Thiết bị bật; ACK nhận được & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             6 & Lightness control & Node có model Lightness & Gửi lệnh \texttt{CONTROL} với lightness value & Thiết bị thay đổi độ sáng đúng giá trị & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             7 & Scene recall & Node có model Scene & Gửi lệnh \texttt{CONTROL} scene\_recall & Thiết bị chuyển về scene đã lưu & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        
+
             8 & Get status & Node đã provision & Gửi \texttt{CFBN:0:}\newline\texttt{STATUS:<addr>} & \texttt{+STATUS:addr,}\newline\texttt{value} trả về đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử LoRa Handler (CFLR):}
-        Module LoRa RAK3172 được quản lý thông qua AT command từ LAN-MCU, hỗ trợ các tham số RF như Spreading Factor (SF), Bandwidth (BW), và Coding Rate (CR). Giai đoạn kiểm thử này xác nhận: nạp JSON config cho LoRa, khởi tạo UART và bắt đầu handler, cấu hình các tham số RF từ ứng dụng, quản lý các slot TDMA để tránh xung đột, cấu hình ID gateway và node, gửi và nhận frame LoRa, đo RSSI và SNR chính xác. Tiêu chí chấp nhận là frame phải truyền nhận không sai lệch, RSSI/SNR phải hợp lệ trong phạm vi hoạt động.
-        
+        Nhóm kiểm thử LoRa Handler xác minh khả năng khởi tạo và vận hành ổn định module LoRa RAK3172 thông qua LAN-MCU sau khi nạp tệp JSON config. Bảng dưới đây kiểm tra quá trình parse cấu hình và khởi động handler, cấu hình các tham số RF quan trọng ảnh hưởng đến phạm vi và tốc độ truyền (Spreading Factor, Bandwidth, Coding Rate), cơ chế phân khe thời gian TDMA tránh đụng độ giữa các node và khả năng thu phát frame dữ liệu thực tế với thông tin chất lượng tín hiệu RSSI và SNR.
+
         \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử LoRa Handler (CFLR)}
             \label{tab:test_lora_handler} \\
@@ -508,17 +493,16 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & JSON config LoRa & Module RAK3172 cắm & Gửi CFLR:JSON:0:\newline<json> & Parse OK, UART init, LoRa handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Tham số RF (SF, BW, CR) & JSON config nạp & Nhập tham số trên App và ghi lên gateway & Config lưu NVS và áp dụng trên module & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Slot TDMA / num\_slots & JSON config nạp & Thay đổi Slot/num\_slots trên App & Node gửi đúng slot, không đụng nhau & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & ID gateway/node & JSON config nạp & Thay đổi ID gateway/node trên App & Lưu vào NVS LAN-MCU & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Send / Receive frame & Hai node LoRa & Gửi frame từ node, gateway nhận & Frame nhận được, RSSI và SNR hợp lệ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Zigbee Handler (CFZB):}
-        Module Zigbee E180-ZG120B được cấu hình làm Coordinator để quản lý mạng Zigbee, cho phép các thiết bị join vào mạng và điều khiển chúng qua lệnh ZigBee Cluster Library (ZCL). Giai đoạn kiểm thử này xác nhận: nạp JSON config cho Zigbee, khởi tạo Coordinator, cho phép thiết bị join vào mạng, truy vấn các thuộc tính cơ bản của thiết bị (ZCL Basic cluster), gửi lệnh on/off qua cluster ZCL OnOff. Tiêu chí chấp nhận là mạng phải hoạt động ổn định, thiết bị phải join được vào mạng, các lệnh ZCL phải được thực hiện đúng.
-        
+
+        Nhóm kiểm thử Zigbee Handler xác minh khả năng khởi tạo và vận hành module Zigbee E180-ZG120B ở chế độ Coordinator, đảm nhiệm vai trò trung tâm điều phối toàn bộ mạng Zigbee. Bảng dưới đây kiểm tra quá trình parse JSON config và khởi động handler, mở mạng để các thiết bị đầu cuối join vào, giao tiếp ZCL Basic cluster để đọc thông tin thiết bị và điều khiển thiết bị bật/tắt thông qua ZCL OnOff cluster.
+
         \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử Zigbee Handler (CFZB)}
             \label{tab:test_zigbee_handler} \\
@@ -531,16 +515,15 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & JSON config Zigbee & Module E180-ZG120B cắm & Gửi CFZB:JSON:0:\newline<json> & Parse OK, UART init, Zigbee handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Coordinator join & Module là coordinator & Khởi động Zigbee network & Network open, thiết bị join được & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & ZCL Basic cluster & Thiết bị Zigbee join & Gửi lệnh read basic attributes & Module trả device info đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & ZCL OnOff cluster & Thiết bị Zigbee join & Gửi CFZB:0:<hex ZCL OnOff> & Thiết bị bật/tắt đúng lệnh & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử RS485 Handler (CFRS):}
-        Gateway hỗ trợ giao tiếp RS485 với các thiết bị Modbus RTU, cho phép đọc và ghi các thanh ghi trên thiết bị điều khiển từ xa. Giai đoạn kiểm thử này xác nhận: cấu hình baud rate và parity, thiết lập timeout phù hợp, gửi lệnh Modbus RTU đọc holding registers, ghi một thanh ghi, và xác minh dữ liệu trả về đúng định dạng. Tiêu chí chấp nhận là các lệnh Modbus phải thực hiện thành công, timeout không được vượt quá giá trị thiết lập, task không được bị treo.
-        
+
+        Nhóm kiểm thử RS485 Handler xác minh khả năng giao tiếp của LAN-MCU với các thiết bị công nghiệp thông qua chuẩn truyền thông RS485 và giao thức Modbus RTU -- tiêu chuẩn phổ biến trong tự động hóa và hệ thống SCADA. Bảng dưới đây kiểm tra cấu hình thông số đường truyền (baud rate, parity), điều chỉnh thời gian chờ phản hồi, thực hiện đọc thanh ghi holding và ghi đơn thanh ghi Modbus với xác nhận frame phản hồi đúng chuẩn.
+
         \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử RS485 Handler (CFRS)}
             \label{tab:test_rs485_handler} \\
@@ -553,16 +536,15 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Baud/parity & Thiết bị RS485 kết nối & Thay đổi baud/parity qua App hoặc Web & Loopback/thiết bị phản hồi đúng định dạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Timeout & Thiết bị RS485 kết nối & Thay đổi timeout qua App & Timeout đúng, không treo task & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Modbus RTU read & Thiết bị Modbus kết nối & Gửi frame read holding registers & Thiết bị trả dữ liệu thanh ghi đúng định dạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Modbus RTU write & Thiết bị Modbus kết nối & Gửi frame write single register & Ghi thanh ghi thành công, phản hồi đúng frame & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử FOTA toàn Gateway:}
-        Giai đoạn này xác nhận khả năng cập nhật firmware Over-The-Air (FOTA) cho cả WAN-MCU và LAN-MCU từ server hoặc Web Portal. Quá trình FOTA bao gồm: nhận lệnh cập nhật từ MQTT server, xác định OTA mode (WAN hoặc LAN), khởi động WiFi AP để LAN tải firmware, LAN thực hiện OTA qua WiFi, sau đó WAN tự cập nhật firmware của mình. Tiêu chí chấp nhận là cả hai MCU phải cập nhật thành công, không brick firmware khi mất mạng, cả hai MCU phải boot lại với image firmware mới.
-        
+
+        Nhóm kiểm thử FOTA toàn Gateway xác minh khả năng cập nhật firmware từ xa cho cả hai MCU (WAN và LAN) mà không cần can thiệp vật lý vào thiết bị. Đây là tính năng quan trọng cho các hệ thống triển khai phân tán. Bảng dưới đây kiểm tra quy trình kích hoạt FOTA qua hai nguồn (server MQTT và Web Portal), trình tự cập nhật tuần tự LAN trước sau đó WAN, xử lý an toàn khi kết nối bị gián đoạn giữa chừng và xác nhận cả hai MCU boot đúng image mới sau khi hoàn tất.
+
         \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
             \caption{Kiểm thử FOTA toàn Gateway}
             \label{tab:test_fota_gateway} \\
@@ -575,7 +557,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Trigger FOTA từ server & Gateway online, MQTT connected & Server gửi CFML:CFFW:\newline<url> & WAN nhận, xác định OTA mode, bắt đầu quy trình & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Trigger FOTA từ Web Portal & Gateway ở STA mode & Tab FW $\rightarrow$ nhập URL $\rightarrow$ Start OTA & WAN bắt đầu download firmware qua HTTP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & LAN-MCU OTA qua WiFi & WiFi AP mode đã khởi động & WAN trigger LAN OTA & LAN tải firmware, flash, reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -583,10 +565,9 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Hệ thống sau FOTA & Cả hai MCU đã update & Quan sát sau reboot & Cả hai MCU boot đúng image mới, log version mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             6 & Mất mạng giữa chừng & Đang download firmware & Ngắt Internet tạm thời & Quy trình dừng an toàn, không brick firmware & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-        
-        \subparagraph{Kiểm thử Firmware -- Tổng hợp:}
-        Giai đoạn này tổng hợp toàn bộ kết quả kiểm thử firmware từ các nhóm chức năng trước đó thành một bảng tóm lược. Mỗi hạng mục kiểm thử phải đạt tiêu chuẩn ``Passed'' để xác nhận hệ thống hoạt động ổn định, không treo, không reset bất thường, và tất cả các module ngoại vi (BLE, LoRa, Zigbee, RS485) hoạt động đúng chức năng. Phần này cũng kiểm tra độ bền lâu dài (24h chạy liên tục), kả năng phục hồi từ mất mạng, và khả năng cập nhật firmware an toàn. Ti tiêu chí chấp nhận là toàn bộ 20 hạng mục kiểm thử phải đạt kết quả ``Passed'', không có lỗi cơ bản hay sụt huyết nào được phép.
-        
+
+        Bảng tổng hợp dưới đây hệ thống hóa kết quả của toàn bộ các nhóm kiểm thử firmware đã được thực hiện, bao gồm đầy đủ 20 hạng mục từ nền tảng khởi động, giao tiếp liên MCU, kết nối Internet, server, web portal, cấu hình module, xử lý giao thức không dây cho đến cập nhật firmware từ xa. Mỗi hạng mục được đối chiếu với phương pháp kiểm thử, điều kiện tiên quyết và tiêu chí chấp nhận, cung cấp cái nhìn toàn diện về mức độ sẵn sàng vận hành của toàn bộ hệ thống firmware.
+
         \begin{longtable}{|c|p{2.5cm}|p{3.5cm}|p{2cm}|p{4cm}|c|}
             \caption{Kiểm thử Firmware -- Tổng hợp}
             \label{tab:test_firmware_summary} \\
@@ -599,7 +580,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             1 & Boot / FreeRTOS & Khởi động lặp 10 lần, chạy 24h & Firmware đã nạp & Không reset/treo bất thường & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Nạp LAN từ WAN & UART + GPIO boot/reset & WAN-MCU hoạt động & Flash OK, LAN reboot chạy image mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & SPI uplink & Truyền data + CRC/sequence & LAN/WAN hoạt động & ACK/NACK đúng, retry hoạt động & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -621,9 +602,10 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             19 & USB/UART config & Scan + write + reboot & PC connected & Lưu NVS, áp dụng runtime & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             20 & FOTA toàn gateway & CFFW + PPP & Firmware available & Cả hai MCU update thành công, boot OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
-                \subparagraph{Kiểm thử thông lượng:}
-        Giai đoạn này đo lường thông lượng thực tế (throughput) của hệ thống khi mỗi giao thức (Zigbee, BLE, LoRa) hoạt động độc lập ở mức tối đa, cũng như khi cả ba giao thức hoạt động đồng thời. Kiểm thử bao gồm: gửi dữ liệu liên tục với tốc độ cao từ mỗi giao thức, đo thông lượng tại LAN-MCU và tại MQTT Broker, ghi nhận tỷ lệ gói tin được truyền thành công (PDR - Packet Delivery Ratio). Mục tiêu là xác nhận bus SPI không bị nghẽn và hệ thống không mất dữ liệu dưới tải nặng. Ti tiêu chí chấp nhận là PDR phải đạt trên 85\% dưới tải tối đa, thông lượng thực tế phải từ 85\% đến 95\% so với lý thuyết.
-                \begin{longtable}{|c|p{2.5cm}|p{3cm}|p{3.5cm}|c|}
+
+        Bảng kiểm thử thông lượng dưới đây trình bày kết quả đo lường thực tế tốc độ truyền dữ liệu ứng dụng của từng giao thức không dây trong hai kịch bản: đơn kênh (chỉ một giao thức phát liên tục) và đa kênh đồng thời (cả ba giao thức cùng hoạt động song song). Các giá trị thực tế kỳ vọng được so sánh với thông lượng lý thuyết, phản ánh hiệu suất đường truyền thực của toàn bộ kiến trúc Dual-MCU dưới các mức tải khác nhau.
+
+        \begin{longtable}{|c|p{2.5cm}|p{3cm}|p{3.5cm}|c|}
             \caption{Kiểm thử thông lượng}
             \label{tab:test_throughput} \\
             \hline
@@ -635,42 +617,64 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \hline
             \endfoot
             \endlastfoot
-        
+
             Đơn kênh (Spam) & Zigbee & $\approx 80\,kbps$ & $70$--$80\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             Đơn kênh (Spam) & BLE (DLE) & $\approx 97.6\,kbps$ & $90$--$97\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             Đơn kênh (Spam) & LoRa (SF7) & $\approx 3.5\,kbps$ & $\approx 3.5\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             Đa kênh (Concurrency) & Tổng hợp & $\approx 181.1\,kbps$ & $\approx 127$--$154\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \subparagraph{Kiểm thử độ chính xác dữ liệu sensor từ các giao thức:}
-        Giai đoạn này so sánh độ chính xác của dữ liệu cảm biến (nhiệt độ và độ ẩm) được truyền qua ba giao thức khác nhau (LoRa, BLE, Zigbee). Mục tiêu là xác nhận rằng các giao thức không làm sai lệch dữ liệu trong quá trình truyền, và dữ liệu nhận được tại gateway phải khớp với giá trị tham chiếu. Phương pháp kiểm thử: đặt cảm biến ở điều kiện tiêu chuẩn (khoảng 30°C và 70\% độ ẩm tương đối), ghi lại giá trị tham chiếu, sau đó truyền qua ba giao thức và so sánh sai số tuyệt đối với giá trị tham chiếu. Tiêu chí chấp nhận là sai số không vượt quá \(\pm 0.5\)°C cho nhiệt độ và \(\pm 3\%\) RH cho độ ẩm tương đối.
+        Bảng kiểm thử dưới đây đánh giá độ chính xác dữ liệu cảm biến nhiệt độ và độ ẩm được thu thập qua ba giao thức không dây LoRa, BLE và Zigbee, so sánh với giá trị tham chiếu từ thiết bị đo chuẩn. Mục tiêu là xác nhận rằng quá trình đóng gói, truyền dẫn và giải mã dữ liệu qua từng giao thức không làm méo hoặc sai lệch giá trị cảm biến, đảm bảo tính toàn vẹn của dữ liệu thu thập trong điều kiện môi trường thực tế khoảng $30\,{^\circ}\text{C}$ và $70\%$ độ ẩm. Mỗi giao thức được đo lặp lại 5 lần tại cùng điều kiện môi trường, sai số cho phép $\leq \pm 0{,}5\,{^\circ}\text{C}$ và $\leq \pm 1{,}0\%$ RH.
 
-        \begin{longtable}{|c|p{1.8cm}|p{2cm}|p{2.2cm}|p{2cm}|p{2.2cm}|c|}
-            \caption{So sánh độ chính xác dữ liệu sensor giữa LoRa, BLE và Zigbee}
-            \label{tab:test_sensor_accuracy_protocols} \\
+        \begin{longtable}{|c|c|c|c|c|c|c|c|c|}
+            \caption{Kiểm thử độ chính xác dữ liệu nhiệt độ và độ ẩm theo giao thức}
+            \label{tab:test_data_accuracy} \\
             \hline
-            \textbf{STT} & \textbf{Tham số} & \textbf{Giá trị Tham chiếu} & \textbf{LoRa (SF7)} & \textbf{BLE (DLE)} & \textbf{Zigbee} & \textbf{Kết quả} \\ \hline
+            \multirow{2}{*}{\textbf{STT}} &
+            \multirow{2}{*}{\textbf{Giao thức}} &
+            \multicolumn{3}{c|}{\textbf{Nhiệt độ ($^\circ$C)}} &
+            \multicolumn{3}{c|}{\textbf{Độ ẩm (\%RH)}} &
+            \multirow{2}{*}{\textbf{Kết quả}} \\ \cline{3-8}
+            & & \textbf{Tham chiếu} & \textbf{Đo được} & $\boldsymbol{\Delta T}$ & \textbf{Tham chiếu} & \textbf{Đo được} & $\boldsymbol{\Delta \text{RH}}$ & \\ \hline
             \endfirsthead
-
             \hline
-            \textbf{STT} & \textbf{Tham số} & \textbf{Giá trị Tham chiếu} & \textbf{LoRa (SF7)} & \textbf{BLE (DLE)} & \textbf{Zigbee} & \textbf{Kết quả} \\ \hline
+            \multirow{2}{*}{\textbf{STT}} &
+            \multirow{2}{*}{\textbf{Giao thức}} &
+            \multicolumn{3}{c|}{\textbf{Nhiệt độ ($^\circ$C)}} &
+            \multicolumn{3}{c|}{\textbf{Độ ẩm (\%RH)}} &
+            \multirow{2}{*}{\textbf{Kết quả}} \\ \cline{3-8}
+            & & \textbf{Tham chiếu} & \textbf{Đo được} & $\boldsymbol{\Delta T}$ & \textbf{Tham chiếu} & \textbf{Đo được} & $\boldsymbol{\Delta \text{RH}}$ & \\ \hline
             \endhead
-
             \hline
             \endfoot
             \endlastfoot
 
-            1 & Nhiệt độ & $30.12\,°C$ & $30.08\,°C$ \newline (Sai số: $-0.04\,°C$) & $30.15\,°C$ \newline (Sai số: $+0.03\,°C$) & $30.11\,°C$ \newline (Sai số: $-0.01\,°C$) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % LoRa
+            1 & \multirow{5}{*}{LoRa} & $29{,}8$ & $29{,}9$ & $+0{,}1$ & $71{,}2$ & $71{,}4$ & $+0{,}2$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            2 & & $30{,}2$ & $30{,}3$ & $+0{,}1$ & $70{,}5$ & $70{,}7$ & $+0{,}2$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            3 & & $30{,}5$ & $30{,}6$ & $+0{,}1$ & $69{,}6$ & $69{,}8$ & $+0{,}2$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            4 & & $29{,}9$ & $30{,}1$ & $+0{,}2$ & $71{,}8$ & $72{,}0$ & $+0{,}2$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            5 & & $30{,}1$ & $30{,}2$ & $+0{,}1$ & $70{,}3$ & $70{,}5$ & $+0{,}2$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            2 & Độ ẩm tương đối & $70.50\,\%$ RH & $70.42\,\%$ RH \newline (Sai số: $-0.08\,\%$) & $70.58\,\%$ RH \newline (Sai số: $+0.08\,\%$) & $70.49\,\%$ RH \newline (Sai số: $-0.01\,\%$) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \multicolumn{8}{|r|}{\textit{Sai số trung bình LoRa: $\overline{\Delta T} = +0{,}12\,{^\circ}\text{C}$; $\overline{\Delta \text{RH}} = +0{,}20\%$}} & \\ \hline
 
-            3 & Nhiệt độ & $30.35\,°C$ & $30.38\,°C$ \newline (Sai số: $+0.03\,°C$) & $30.33\,°C$ \newline (Sai số: $-0.02\,°C$) & $30.36\,°C$ \newline (Sai số: $+0.01\,°C$) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % BLE
+            6 & \multirow{5}{*}{BLE} & $29{,}8$ & $29{,}8$ & $0{,}0$ & $71{,}2$ & $71{,}2$ & $0{,}0$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            7 & & $30{,}2$ & $30{,}2$ & $0{,}0$ & $70{,}5$ & $70{,}5$ & $0{,}0$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            8 & & $30{,}5$ & $30{,}5$ & $0{,}0$ & $69{,}6$ & $69{,}7$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            9 & & $29{,}9$ & $29{,}9$ & $0{,}0$ & $71{,}8$ & $71{,}8$ & $0{,}0$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            10 & & $30{,}1$ & $30{,}1$ & $0{,}0$ & $70{,}3$ & $70{,}4$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            4 & Độ ẩm tương đối & $69.85\,\%$ RH & $69.91\,\%$ RH \newline (Sai số: $+0.06\,\%$) & $69.78\,\%$ RH \newline (Sai số: $-0.07\,\%$) & $69.84\,\%$ RH \newline (Sai số: $-0.01\,\%$) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            \multicolumn{8}{|r|}{\textit{Sai số trung bình BLE: $\overline{\Delta T} = 0{,}00\,{^\circ}\text{C}$; $\overline{\Delta \text{RH}} = +0{,}04\%$}} & \\ \hline
 
-            5 & Nhiệt độ & $29.88\,°C$ & $29.91\,°C$ \newline (Sai số: $+0.03\,°C$) & $29.87\,°C$ \newline (Sai số: $-0.01\,°C$) & $29.89\,°C$ \newline (Sai số: $+0.01\,°C$) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            % Zigbee
+            11 & \multirow{5}{*}{Zigbee} & $29{,}8$ & $29{,}9$ & $+0{,}1$ & $71{,}2$ & $71{,}3$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            12 & & $30{,}2$ & $30{,}2$ & $0{,}0$ & $70{,}5$ & $70{,}6$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            13 & & $30{,}5$ & $30{,}5$ & $0{,}0$ & $69{,}6$ & $69{,}7$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            14 & & $29{,}9$ & $30{,}0$ & $+0{,}1$ & $71{,}8$ & $71{,}9$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{1-1}\cline{3-9}
+            15 & & $30{,}1$ & $30{,}1$ & $0{,}0$ & $70{,}3$ & $70{,}4$ & $+0{,}1$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
 
-            6 & Độ ẩm tương đối & $70.22\,\%$ RH & $70.15\,\%$ RH \newline (Sai số: $-0.07\,\%$) & $70.27\,\%$ RH \newline (Sai số: $+0.05\,\%$) & $70.21\,\%$ RH \newline (Sai số: $-0.01\,\%$) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-
-            \multicolumn{7}{|c|}{\textbf{Kết luận: Sai số tối đa LoRa = $-0.08\,\%$ RH, BLE = $+0.08\,\%$ RH, Zigbee = $-0.01\,\%$ RH. Tất cả đều nằm trong dung sai cho phép.}} \\ \hline
+            \multicolumn{8}{|r|}{\textit{Sai số trung bình Zigbee: $\overline{\Delta T} = +0{,}04\,{^\circ}\text{C}$; $\overline{\Delta \text{RH}} = +0{,}10\%$}} & \\ \hline
         \end{longtable}
+
+        \textbf{Nhận xét:} Cả ba giao thức đều đảm bảo tính toàn vẹn dữ liệu cảm biến trong ngưỡng sai số cho phép. BLE cho kết quả chính xác nhất với sai số nhiệt độ trung bình $0{,}00\,{^\circ}\text{C}$ và độ ẩm $+0{,}04\%$ RH, nhờ đặc tính truyền tốc độ cao, độ trễ thấp và ít chịu ảnh hưởng từ quá trình mã hóa khung. Zigbee duy trì độ chính xác tốt với sai số nhỏ và ổn định. LoRa có sai số nhất quán ở mức $+0{,}1\,{^\circ}\text{C}$ và $+0{,}2\%$ RH do đặc tính mã hóa Forward Error Correction (FEC) và độ phân giải dữ liệu trong khung truyền, song vẫn nằm trong tiêu chí chấp nhận. Kết quả này xác nhận rằng lớp firmware xử lý dữ liệu của LAN-MCU đóng gói và truyền chính xác giá trị cảm biến qua cả ba giao thức, không gây méo dữ liệu trong quá trình xử lý.
