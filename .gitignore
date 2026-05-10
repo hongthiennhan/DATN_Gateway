@@ -33,4 +33,5 @@
 
 # Ignore output files
 # *.pdf
+main.pdf
 main.synctex(busy)
