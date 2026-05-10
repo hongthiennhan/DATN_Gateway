@@ -1,1 +1,20 @@
 \section{Cấu trúc đồ án}
+    Đồ án được tổ chức thành 07 chương chính và phần phụ lục, trình bày theo mạch lập luận từ việc nhận diện thách thức thực tế đến đề xuất kiến trúc, hiện thực hóa và kiểm chứng thực nghiệm sản phẩm:
+
+    \begin{itemize}
+        \item \textbf{Chương 1: Giới thiệu.} Tập trung phân tích ý tưởng dựa trên các giải pháp mạng máy tính thành công, chỉ rõ những hạn chế của các nền tảng IoT hiện nay về chi phí và tính linh hoạt, từ đó đề xuất giải pháp Gateway IoT dạng mô-đun.
+        
+        \item \textbf{Chương 2: Nền tảng kỹ thuật.} Trình bày các vấn đề kỹ thuật then chốt cần giải quyết, hệ thống hóa cơ sở lý thuyết về IoT Gateway và các tiêu chuẩn thiết kế phần cứng nâng cao như toàn vẹn tín hiệu (SI), toàn vẹn nguồn (PI).
+        
+        \item \textbf{Chương 3: Thiết kế tổng quan.} Đặc tả các yêu cầu sản phẩm và luận giải lựa chọn kiến trúc Dual-MCU ESP32-S3 nhằm tối ưu hóa hiệu năng đa giao thức đồng thời với chi phí thấp.
+        
+        \item \textbf{Chương 4: Hiện thực.} Mô tả chi tiết quy trình thiết kế mạch nguyên lý, layout PCB và hiện thực hệ thống phần mềm phân lớp, trọng tâm là cơ chế "Software-Defined Module" dựa trên tệp mô tả JSON.
+        
+        \item \textbf{Chương 5: Kiểm thử.} Trình bày quy trình kiểm chứng nghiêm ngặt từ mức vật lý bo mạch (Bring-up), đo đạc chất lượng nguồn điện thực tế đến việc kiểm thử chức năng firmware và các chỉ số hiệu suất như thông lượng, độ trễ.
+        
+        \item \textbf{Chương 6: Triển khai sản phẩm.} Đánh giá kết quả hiện thực hóa sản phẩm thực tế, phân tích hiệu năng vận hành so với lý thuyết và thực hiện đối chiếu chi phí, tính ổn định với các giải pháp thương mại tham chiếu.
+        
+        \item \textbf{Chương 7: Kết luận.} Tổng kết các mục tiêu đã đạt được, nhận diện các thách thức kỹ thuật trong quá trình thực hiện và đề xuất hướng phát triển sản phẩm tiệm cận các tiêu chuẩn công nghiệp.
+        
+        \item \textbf{Phụ lục.} Cung cấp toàn bộ mã nguồn, sơ đồ thiết kế chi tiết, kết quả mô phỏng chuyên sâu và mô tả các cải tiến kỹ thuật quan trọng trong phiên bản 1.0.0.
+    \end{itemize}
