@@ -1,1 +1,203 @@
-\section{Hiện thực phần cứng}
+\section{Hiện thực Phần cứng}
+
+    \subsection{Sơ đồ khối Hệ thống}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.75\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
+            \caption{Sơ đồ khối Hệ thống}
+        \end{figure}
+
+        Hệ thống được thiết kế theo mô hình Dual-MCU Master-Slave, chia thành 3 miền chức năng chính: Application Domain (Ứng dụng), Network Domain (Mạng lưới xử lý), và Sensing Domain (Cảm biến).
+
+        \paragraph{Baseboard:}\par
+            Là board chính của hệ thống, chịu trách nhiệm cung cấp nguồn điện ổn định, giao tiếp giữa các thành phần, kết nối với Module Adapter, và chứa các vi điều khiển chính.
+
+        \paragraph{Khối Xử lý trung tâm:}\par
+            Hệ thống sử dụng kiến trúc xử lý song song với hai vi điều khiển chuyên biệt nhằm tối ưu hóa hiệu năng và tài nguyên phần cứng:
+            \begin{itemize}
+                \item \textbf{MASTER WAN-MCU}
+                \begin{itemize}
+                    \item Vai trò: Là vi điều khiển chính, chịu trách nhiệm xử lý các tác vụ thuộc Lớp ứng dụng (Application Layer) và điều phối hoạt động cả hệ thống.
+                    \item Chức năng: Xử lý các tác vụ Lớp ứng dụng thông qua WAN Module Adapter, quản lý giao diện người dùng và kết nối đám mây, điều phối luồng dữ liệu chính, và điều phối hoạt động của SLAVE LAN-MCU. MASTER WAN-MCU chịu trách nhiệm cập nhật firmware từ thiết bị cấu hình (Configuration Tools) và từ đám mây (FOTA) cho cả hệ thống.
+                \end{itemize}
+                \item \textbf{SLAVE LAN-MCU}
+                \begin{itemize}
+                    \item Vai trò: Tương tác trực tiếp với lớp Cảm biến (Sensing Domain), quản lý các kết nối mạng nội bộ thông qua LAN Module Adapter, và lưu trữ dữ liệu.
+                    \item Chức năng: Quản lý các giao thức truyền thông nội bộ và mạng cảm biến, thu thập dữ liệu thô, thực hiện tiền xử lý và lưu trữ cục bộ (Micro SD Card) trước khi gửi lên MASTER WAN-MCU.
+                \end{itemize}
+            \end{itemize}
+
+        \paragraph{Giao tiếp giữa hai Vi xử lý:}\par
+            Để đảm bảo đồng bộ dữ liệu giữa MASTER WAN-MCU và SLAVE LAN-MCU, hệ thống sử dụng ba đường giao tiếp riêng biệt:
+            \begin{itemize}
+                \item \textbf{SPI (Request/Data)}: Kênh truyền dữ liệu tốc độ cao, dùng để Slave gửi dữ liệu cảm biến lên Master và Master gửi yêu cầu xuống Slave.
+                \item \textbf{UART (Firmware Flow)}: Kênh chuyên biệt dùng để nạp firmware cho SLAVE LAN-MCU thông qua MASTER WAN-MCU.
+                \item \textbf{GPIO (Control)}: Các đường tín hiệu điều khiển (Boot, Reset, Interrupt) để đảm bảo đồng bộ trạng thái hoạt động.
+            \end{itemize}
+
+        \paragraph{Khối Module Adapter:}\par
+            Khối Module Adapter được thiết kế với mục tiêu cho phép người dùng dễ dàng thay thế, nâng cấp hoặc mở rộng các chức năng kết nối của gateway mà không cần thay đổi toàn bộ hệ thống. Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các module, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
+            \begin{itemize}
+                \item \textbf{WAN Module Adapter}
+                \begin{itemize}
+                    \item Kết nối với MASTER WAN-MCU.
+                    \item Hỗ trợ các module giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
+                \end{itemize}
+                \item \textbf{LAN1 Module Adapter}
+                \begin{itemize}
+                    \item Kết nối với SLAVE LAN-MCU.
+                    \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
+                \end{itemize}
+                \item \textbf{LAN2 Module Adapter}
+                \begin{itemize}
+                    \item Kết nối với SLAVE LAN-MCU.
+                    \item Hỗ trợ kết nối các module kết nối có dây như RS-485, CAN, \dots
+                \end{itemize}
+            \end{itemize}
+            Đối với các module sẵn có trên thị trường, giao diện kết nối thường không tuân theo một tiêu chuẩn thống nhất, kể cả với các module sử dụng chuẩn cơ khí như Mini PCIe hay M.2. Vì vậy, việc thiết kế các module adapter là cần thiết để chuẩn hóa kết nối giữa module và baseboard. Trong thiết kế này, cổng chuẩn vật lý PCI Express x1 (36-pin Card Edge Connector) được lựa chọn làm giao diện kết nối giữa module adapter và baseboard. Tuy nhiên, sơ đồ chân trên cổng được định nghĩa lại để phù hợp với kiến trúc phần cứng của hệ thống. Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa theo bảng pinout sau:
+            \begin{longtable}{|l|l|p{6.5cm}|p{4.5cm}|}
+                \caption{Pinout Module Adapter}
+                \label{tab:new_module_adapter_pinout} \\
+                \hline
+                \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\ \hline
+                \endfirsthead
+
+                \hline
+                \textbf{Group} & \textbf{Pin Name} & \textbf{Pin Number} & \textbf{Description} \\ \hline
+                \endhead
+
+                \hline
+                \endfoot
+
+                \hline
+                \endlastfoot
+
+                \multirow{2}{*}{\textbf{USB}}
+                    & D+   & B2 & USB Data Positive \\ \cline{2-4}
+                    & D-   & B3 & USB Data Negative \\ \hline
+
+                \multirow{4}{*}{\textbf{UART}}
+                    & TXD  & A2 & UART Transmit Data \\ \cline{2-4}
+                    & RXD  & A3 & UART Receive Data \\ \cline{2-4}
+                    & RTS  & A4 & UART Request to Send \\ \cline{2-4}
+                    & CTS  & A5 & UART Clear to Send \\ \hline
+
+                \multirow{4}{*}{\textbf{SPI}}
+                    & CSN  & A7  & SPI Chip Select \\ \cline{2-4}
+                    & MOSI & A8  & SPI Master Out Slave In \\ \cline{2-4}
+                    & CLK  & A9  & SPI Serial Clock \\ \cline{2-4}
+                    & MISO & A10 & SPI Master In Slave Out \\ \hline
+
+                \multirow{2}{*}{\textbf{I2C}}
+                    & SCL  & B9  & I2C Serial Clock \\ \cline{2-4}
+                    & SDA  & B10 & I2C Serial Data \\ \hline
+
+                \multirow{3}{*}{\textbf{GPIO}}
+                    & SLOTDET & B5 & Slot Detection Signal \\ \cline{2-4}
+                    & GPIO0   & B6 & General Purpose I/O 0 \\ \cline{2-4}
+                    & GPIO1   & B7 & General Purpose I/O 1 \\ \hline
+
+                \multirow{3}{*}{\textbf{Power}}
+                    & +3V3 & A12, A13, A14, A15, A16, A17, A18 & Power supply +3.3V \\ \cline{2-4}
+                    & GND  & A1, A6, A11, B1, B4, B8, B11, B12, B13, B14, B15, B16, B17, B18 & Ground \\ \hline
+
+            \end{longtable}
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.75\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
+                \caption{Sơ đồ chân Module Adapter}
+            \end{figure}
+
+        \paragraph{Thiết bị giao diện người dùng (User Interface Devices):}\par
+            Các thiết bị đầu cuối giúp người quản trị tương tác với hệ thống thông qua các giao thức mạng không dây như Wi-Fi hay có dây như Ethernet.
+
+        \paragraph{Cloud Service:}\par
+            Nền tảng đám mây cung cấp dịch vụ lưu trữ, phân tích dữ liệu và quản lý tập trung cho hệ thống IoT.
+
+        \paragraph{Configuration Tools:}\par
+            Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các module được kết nối.
+
+        \paragraph{Luồng dữ liệu:}\par
+            \begin{itemize}
+                \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua MASTER WAN-MCU, sau đó được chuyển tiếp đến SLAVE LAN-MCU qua kênh UART chuyên biệt.
+                \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua MASTER WAN-MCU đến SLAVE LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại SLAVE LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua MASTER WAN-MCU lên Cloud Service. Các request và dữ liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
+                \item \textbf{Control Flow:} Luồng tín điều khiển từ MASTER WAN-MCU để điều khiển trạng thái hoạt động của SLAVE LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
+            \end{itemize}
+
+    
+    \subsection{Thiết kế phần cứng PCB (PCB Hardware Design)}
+        Sơ đồ khối phần cứng của hệ thống được xây dựng nhằm mô tả tổng thể kiến trúc và mối liên hệ giữa các khối chức năng chính, bao gồm khối xử lý trung tâm, các khối ngoại vi và hệ thống cấp nguồn. Mục tiêu của thiết kế sơ đồ khối là đảm bảo tính rõ ràng, dễ hiểu và khả năng mở rộng trong tương lai.
+
+        \paragraph{Sơ đồ khối hệ thống phần cứng Baseboard:}\par
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.95\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
+                \caption{Sơ đồ khối phần cứng Baseboard}
+                \label{fig:blockdiagram_system}
+            \end{figure}
+            Kiến trúc Dual-MCU Master-Slave phân tách miền WAN-LAN giúp tối ưu tải xử lý, đảm bảo hệ thống vận hành ổn định. Việc sử dụng SoC ESP32-S3 là để đáp ứng tốt năng lực xử lý tại biên và cho phép cấu hình linh hoạt, phù hợp với các yêu cầu mở rộng thực tế. Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
+            \begin{itemize}
+                \item \textbf{Hệ thống nguồn:} Mạng phân phối nguồn tích hợp TPS2121RUXR và BQ25892RTWR cho phép điều phối linh hoạt ba nguồn cấp đầu vào (12V, 5V, LiPo). Cơ chế power-path này đảm bảo ưu tiên nguồn ngoài, giúp bảo vệ tuổi thọ pin và tối ưu hóa hiệu suất cung cấp điện cho các tầng DC-DC kế tiếp.
+                \item \textbf{Quản lý tiêu thụ điện năng:} Việc tích hợp IC INA230AIRGTR (giao tiếp I2C) giúp chủ động giám sát công suất và phát hiện sớm các trạng thái bất thường như quá dòng. Giải pháp này không chỉ tối ưu hiệu quả năng lượng mà còn trực tiếp đảm bảo độ tin cậy vận hành bền bỉ cho toàn hệ thống.
+                \item \textbf{Quản lý pin LiPo:} Việc lựa chọn IC BQ27441DRZR-G1B cùng thuật toán Impedance Track\texttrademark\ giúp hệ thống dự báo chính xác dung lượng pin. Khả năng tự động bù trừ sai số do lão hóa và nhiệt độ là yếu tố then chốt để đảm bảo tính ổn định và an toàn năng lượng lâu dài cho thiết bị.
+                \item \textbf{Cổng USB và USB-to-UART Bridge:} Việc tích hợp IC CP2102-GMR thiết lập cổng COM ảo thực hiện quy trình nạp firmware và cấu hình thiết bị, hỗ trợ gỡ lỗi và giám sát vận hành tin cậy thông qua hệ thống log dữ liệu tập trung.
+                \item \textbf{Quản lý thời gian thực (RTC):} IC RTC PCF8563T dùng pin CR2032 đảm bảo tính liên tục của dữ liệu thời gian, hỗ trợ hiệu quả việc đồng bộ hóa mạng và thực thi các tác vụ theo lịch trình.
+                \item \textbf{Mở rộng GPIO:} Hệ thống sử dụng IC TCA6416ARTWR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
+                \item \textbf{Cổng PCIe mở rộng WAN/LAN:} Thiết kế modular với ba khe PCIe (01 WAN, 02 LAN) cho phép tích hợp linh hoạt các chuẩn truyền thông, tối ưu khả năng mở rộng hệ thống cho đa dạng ứng dụng IoT.
+                \item \textbf{Mở rộng I2C:} TCA9803DGKR được tích hợp nhằm giảm ảnh hưởng điện dung trên đường truyền dài, bảo toàn tính toàn vẹn tín hiệu và duy trì sự ổn định cho bus I2C.
+                \item \textbf{Hiển thị trạng thái:} Giao diện HMI TFT cảm ứng hỗ trợ giám sát và cấu hình trực tiếp, giúp vận hành và bảo trì hệ thống tại chỗ.
+                \item \textbf{Nút nhấn:} Ba nút nhấn (Power, Reset, Boot) để điều khiển nguồn và cấu hình thiết bị.
+                \item \textbf{Lưu trữ cục bộ:} Giao tiếp SDIO 4-bit với thẻ microSD giúp bảo toàn dữ liệu qua cơ chế lưu đệm và gửi bù tự động, đảm bảo tính liên tục ngay cả khi mạng gián đoạn.
+                \item \textbf{Các chức năng khác:} Đèn LED RGB và điều khiển quạt DC tản nhiệt hỗ trợ giám sát trực quan và chủ động quản lý nhiệt, đảm bảo hệ thống vận hành ổn định.
+            \end{itemize}
+
+        \paragraph{Sơ đồ khối nguồn Baseboard:}\par
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.95\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
+                \caption{Sơ đồ hệ thống nguồn}
+                \label{fig:blockdiagram_power}
+            \end{figure}
+            Việc sử dụng TPS2121RUXR cho phép điều phối linh hoạt nguồn 12V và 5V USB, đồng thời đảm bảo an toàn hệ thống thông qua các cơ chế bảo vệ tích hợp sau:
+            \begin{itemize}
+                \item \textbf{Giới hạn dòng (ILM):} Chủ động kiểm soát dòng tải không vượt quá ngưỡng cài đặt (điều chỉnh thông qua điện trở ngoài).
+                \item \textbf{Bảo vệ ngắn mạch:} Ngắt tải trong thời gian rất ngắn (khoảng 1\,$\mu$s) khi phát hiện dòng tăng đột biến vượt 2.4 lần giới hạn.
+                \item \textbf{Bảo vệ quá nhiệt (TSD):} Tự động ngắt khi nhiệt độ vượt 160$^\circ$C hoặc tăng nhanh bất thường, và khôi phục khi điều kiện nhiệt ổn định.
+                \item \textbf{Bảo vệ quá áp (OVx):} Ngắt kênh nguồn đầu vào khi điện áp vượt ngưỡng an toàn.
+                \item \textbf{Khóa điện áp thấp (UVLO):} Ngăn cấp nguồn khi điện áp giảm xuống dưới mức tối thiểu (khoảng 2.55V).
+                \item \textbf{Chặn dòng ngược (RCB):} Ngăn dòng điện hồi ngược từ đầu ra về đầu vào với thời gian đáp ứng khoảng 10\,$\mu$s.
+            \end{itemize}
+            IC BQ25892RTWR cho phép điều phối giữa nguồn ngoài và pin, ưu tiên nguồn ngoài để duy trì điện áp hệ thống 4.2V ổn định. Với khả năng cấu hình qua I2C và các cơ chế bảo vệ tự động (chống quá tải, xả sâu), giải pháp này đảm bảo tính linh hoạt và an toàn tối đa cho mạng phân phối nguồn. Các tính năng bảo vệ và điều khiển bổ sung bao gồm:
+            \begin{itemize}
+                \item Giám sát nhiệt độ và tự động ngắt khi xảy ra quá nhiệt (Thermal shutdown).
+                \item Tự động giảm dòng sạc (Thermal regulation) khi nhiệt độ hệ thống vượt ngưỡng.
+                \item Theo dõi nhiệt độ pin thông qua điện trở nhiệt (NTC) trong cả chế độ sạc và chế độ Boost, tuân thủ tiêu chuẩn JEITA.
+                \item Tích hợp bộ đếm thời gian an toàn trong quá trình sạc (Charging safety timer) nhằm ngăn chặn tình trạng sạc kéo dài bất thường.
+                \item Điều khiển BATFET, hỗ trợ chế độ lưu kho (Ship Mode), đánh thức thiết bị và thiết lập lại toàn hệ thống (Full system reset).
+                \item Bảo vệ quá áp và quá dòng.
+                \item Hỗ trợ chế độ sạc tự động, có hoặc không có sự điều khiển từ bộ xử lý trung tâm (SoC).
+                \item Bảo vệ quá áp tại đầu vào và trên toàn hệ thống.
+            \end{itemize}
+            Cơ chế cấu hình VSYS (3.5V--4.2V) qua I2C cho phép tối ưu theo đặc tính pin LiPo. Nguồn VSYS được phân phối đến các tầng DC-DC toàn hệ thống:
+            \begin{itemize}
+                \item \textbf{+3V3:} Được chuyển đổi trực tiếp từ rail +4V2\_VSYS. Đây là nguồn mặc định luôn được duy trì khi có nguồn đầu vào, cấp cho các khối quan trọng như MCU master, IO expander, RTC, power monitor và các ngoại vi cần thiết trong chế độ ngủ sâu (deep sleep).
+                \item \textbf{+3V3\_CTRL:} Là nhánh nguồn từ +3V3 thông qua IC power switch TPS22965DSGR, cho phép điều khiển đóng/ngắt bởi IO expander của MCU master. Rail này cấp cho các khối không cần hoạt động trong chế độ tiết kiệm năng lượng.
+                \item \textbf{+5V\_CTRL:} Được tạo từ +4V2\_VSYS thông qua bộ chuyển đổi DC-DC và có khả năng điều khiển thông qua IO expander, phục vụ các ngoại vi yêu cầu mức điện áp 5V.
+            \end{itemize}
+            Đối với các module mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng module, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết. Cách thiết kế này mang lại các ưu điểm sau:
+            \begin{itemize}
+                \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
+                \item Hỗ trợ cô lập nhanh và ngắt nguồn khi phát hiện sự cố từ các thiết bị ngoại vi.
+                \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động tiết kiệm năng lượng.
+                \item Đơn giản hóa thiết kế phần cứng của baseboard bằng cách chuyển các thành phần đặc thù lên adapter, qua đó tối ưu chi phí.
+            \end{itemize}
+
+        \paragraph{Sơ đồ khối phần cứng Mạch adapter:}\par
+            Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các module mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện module, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.95\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
+                \caption{Sơ đồ khối mạch adapter}
+                \label{fig:blockdiagram_adapter}
+            \end{figure}
