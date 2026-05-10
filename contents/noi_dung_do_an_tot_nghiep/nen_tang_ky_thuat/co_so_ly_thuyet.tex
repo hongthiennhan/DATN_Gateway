@@ -342,9 +342,9 @@
                         \paragraph{Hiện tượng phản xạ tín hiệu}
                         
                         Khi tín hiệu lan truyền trên đường truyền có trở kháng đặc trưng \(Z_0\) và gặp một điểm có trở kháng tải \(Z_L\), một phần năng lượng bị phản xạ ngược về nguồn, gây méo dạng sóng và có thể tạo rung. Hệ số phản xạ được cho bởi:
-                        \[
-                        \Gamma = \frac{Z_L - Z_0}{Z_L + Z_0}
-                        \]
+                        \begin{equation}
+                            \Gamma = \frac{Z_L - Z_0}{Z_L + Z_0}    
+                        \end{equation}
                         
                         Giá trị \(\Gamma\) càng xa 0, biên độ sóng phản xạ càng lớn. Điều này là lý do cốt lõi phải kiểm soát và thực hiện phối hợp trở kháng trong thiết kế high-speed.
                         
@@ -402,9 +402,9 @@
                             \item Độ dày lớp đồng \(T\): Ảnh hưởng ở mức thứ yếu so với \(W\) và \(H\), thường có quan hệ tỷ lệ nghịch nhẹ với \(Z_0\). Trong thực tế, độ dày đồng phổ biến là 1~oz (khoảng 35~\(\mu\)m) hoặc 0.5~oz (khoảng 17~\(\mu\)m).
                             \item Cấu hình mặt phẳng tham chiếu: Microstrip có ưu điểm dễ chế tạo và dễ định tuyến nhưng chịu ảnh hưởng nhiều hơn từ môi trường bên ngoài và lớp solder mask; stripline được che chắn tốt hơn bởi các plane xung quanh, cho trở kháng ổn định và EMI thấp hơn, nhưng việc định tuyến và kiểm soát stack-up phức tạp hơn.
                             \item Đối với cặp tín hiệu vi sai: Ngoài các yếu tố hình học của từng trace, khoảng cách giữa hai trace \(S\) đóng vai trò quyết định đến mức độ ghép điện dung và điện cảm giữa chúng. Trở kháng vi sai \(Z_{\text{diff}}\) thường được biểu diễn gần đúng theo quan hệ
-                            \[
-                                Z_{\text{diff}} \approx 2 Z_0 (1 - k),
-                            \]
+                            \begin{equation}
+                                Z_{\text{diff}} \approx 2 Z_0 (1 - k)
+                            \end{equation}
                             trong đó \(k\) là hệ số ghép, phụ thuộc vào khoảng cách \(S\) và cấu trúc stack-up.
                         \end{enumerate}
                         
@@ -430,10 +430,10 @@
                             \begin{minipage}{0.55\textwidth}
                                 Đối với đường microstrip single-ended, một công thức gần đúng thường được sử dụng trong giai đoạn ước lượng ban đầu là:
                                 
-                                \[
-                                Z_0 \approx \frac{87}{\sqrt{\varepsilon_r + 1.41}} 
-                                \ln\left(\frac{5.98H}{0.8W + T}\right) \quad (\text{Ohm}),
-                                \]
+                                \begin{equation}
+                                    Z_0 \approx \frac{87}{\sqrt{\varepsilon_r + 1.41}} 
+                                    \ln\left(\frac{5.98H}{0.8W + T}\right) \quad (\text{Ohm})
+                                \end{equation}
                                 
                                 trong đó \(\varepsilon_r\) là hằng số điện môi của vật liệu, \(H\) là độ dày điện môi, \(W\) là chiều rộng trace và \(T\) là độ dày lớp đồng. Công thức này cho phép đánh giá nhanh xu hướng ảnh hưởng của các tham số hình học trước khi tiến hành mô phỏng chi tiết.
                             \end{minipage}
