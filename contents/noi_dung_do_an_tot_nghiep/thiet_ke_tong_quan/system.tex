@@ -1,2 +1,71 @@
 \section{Tổng quan hệ thống}
+    \begin{tikzpicture}[
+    font=\sffamily\small,
+    >=Stealth,
+    node distance=1.8cm and 2.5cm,
+    % Đổi tên các style để tránh trùng với tên shape gốc
+    mcu_node/.style={rectangle, draw, fill=blue!10, text width=2.8cm, align=center, minimum height=1.5cm, line width=1pt, rounded corners},
+    mod_node/.style={rectangle, draw, fill=green!10, text width=2.2cm, align=center, minimum height=1cm, dashed},
+    cloud_node/.style={cloud, draw, fill=gray!5, minimum width=2.5cm, minimum height=1.5cm, aspect=2},
+    sensor_node/.style={circle, draw, fill=orange!10, inner sep=2pt, minimum size=1.2cm, align=center},
+    config_node/.style={rectangle, draw, fill=yellow!10, text width=2cm, align=center, rounded corners},
+    boundary_box/.style={draw, gray!40, dashed, inner sep=15pt, rounded corners=10pt, line width=0.5pt}
+]
+
+    % --- GATEWAY INTERNAL (KIẾN TRÚC DUAL-MCU) ---
+    % Master MCU - Quản lý WAN [4, 5]
+    \node (master) [mcu_node] {\textbf{MASTER WAN-MCU}\\(Control/Cloud)\\{ESP32-S3}};
     
+    % Slave MCU - Quản lý LAN [4, 6]
+    \node (slave) [mcu_node, below=2.5cm of master] {\textbf{SLAVE LAN-MCU}\\(Sensing/Data)\\{ESP32-S3}};
+    
+    % Inter-MCU Link [7, 8]
+    \draw [<->, line width=1.5pt, blue!70] (master) -- (slave) 
+        node [midway, right, align=left, font=\scriptsize] {Quad SPI (60MHz) \\ GPIO Handshake};
+
+    % --- MIỀN WAN (UPLINK) ---
+    \node (cloud) [cloud_node, above=2.5cm of master] {Cloud Services \\ (MQTT/HTTP/CoAP)};
+    
+    % WAN Module chuẩn PCIe x1 [9, 10]
+    \node (wan_slot) [mod_node, left=1.5cm of master] {WAN Slot \\ (PCIe x1 Interface)};
+    \node (lte) [mod_node, above=0.5cm of wan_slot, fill=green!5] {LTE / Ethernet \\ Module};
+    
+    \draw [<->, thick] (master) -- (wan_slot);
+    \draw [->, thick] (lte) -- (wan_slot);
+    \draw [<->, line width=1.2pt] (master) -- (cloud) node [midway, right] {Wi-Fi / 4G};
+
+    % --- MIỀN LAN (SENSING DOMAIN) [9, 10] ---
+    \node (lan_slots) [mod_node, left=1.5cm of slave] {2x LAN Slots \\ (PCIe x1 Interface)};
+    
+    \node (zigbee) [sensor_node, below left=1.5cm and 0.2cm of lan_slots] {Zigbee \\ Node};
+    \node (lora) [sensor_node, left=1.5cm of lan_slots] {LoRa \\ Node};
+    \node (rs485) [sensor_node, below=1.5cm of lan_slots] {RS-485 \\ Device};
+
+    \draw [<->, thick] (slave) -- (lan_slots);
+    \draw [dashed, ->] (lan_slots) -- (zigbee);
+    \draw [dashed, ->] (lan_slots) -- (lora);
+    \draw [->] (lan_slots) -- (rs485);
+
+    % --- LƯU TRỮ & CẤU HÌNH [11, 12] ---
+    \node (sd) [mod_node, right=1.5cm of slave, text width=1.5cm] {microSD \\ (SDIO 4-bit)};
+    \draw [<->, thick] (slave) -- (sd);
+    
+    \node (pc) [config_node, right=1.5cm of master] {PC Config Tool \\ (USB-C)};
+    \draw [->, thick, orange] (pc) -- (master) node [midway, above, font=\scriptsize] {JSON Config};
+
+    % --- BAO KHUNG GATEWAY (TÍNH MODULE HÓA) ---
+    \begin{scope}[on background layer]
+        \node (gw_box) [boundary_box, fit=(master) (slave) (wan_slot) (lan_slots) (sd)] {};
+        \node [below right, gray] at (gw_box.north west) {\textbf{MODULAR IOT GATEWAY}};
+    \end{scope}
+
+    % Chú thích cho Software-Defined Module [12, 13]
+    \node [right=0.2cm of pc, text width=3.5cm, font=\scriptsize\itshape, blue!80] {
+        \textbf{Software-Defined}:\\ 
+        Nạp file JSON để cấu hình \\ 
+        chân GPIO và tập lệnh AT \\ 
+        cho module mới mà không \\ 
+        cần biên dịch lại Firmware.
+    };
+
+\end{tikzpicture}
