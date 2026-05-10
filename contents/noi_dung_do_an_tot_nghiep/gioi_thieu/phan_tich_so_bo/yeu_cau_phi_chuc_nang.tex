@@ -1,1 +1,33 @@
 \subsection{Yêu cầu phi chức năng}
+    IoT Gateway phải thỏa mãn các tiêu chuẩn vận hành để đáp ứng điều kiện triển khai thực tế:
+    \begin{itemize}
+        \item \textbf{Độ tin cậy và tính ổn định:}
+        \begin{itemize}
+            \item Đảm bảo khả năng vận hành liên tục 24/7 trong thời gian dài.
+            \item Tích hợp cơ chế giám sát phần cứng và phần mềm (Watchdog Timer) để tự động phục hồi khi xảy ra hiện tượng treo hệ thống hoặc xung đột tiến trình.
+            \item Chủ động phát hiện và xử lý có kiểm soát các lỗi ngoại vi (mất Internet, lỗi cảm biến, lỗi mô-đun giao tiếp) thông qua hệ thống bản ghi (Log) và chuyển đổi về trạng thái an toàn.
+            \item Duy trì tính toàn vẹn của dữ liệu bằng bộ đệm nội bộ, hỗ trợ lưu trữ và gửi bù dữ liệu ngay khi kết nối mạng được khôi phục (trong khoảng 200 đến 300 ms kể từ khi có kết nối lại với server).
+            \item Hỗ trợ cập nhật phần mềm từ xa (FOTA) an toàn cho nhân xử lý với cơ chế kiểm tra tính toàn vẹn, đảm bảo không ghi đè lên Firmware hiện tại khi chưa xác thực thành công bản cập nhật.
+            \item Thiết kế phần cứng có khả năng chống chịu tác động môi trường: bảo vệ chống tĩnh điện (ESD), lọc nhiễu điện từ (EMI).
+        \end{itemize}
+        
+        \item \textbf{Nguồn điện và năng lượng:}
+        \begin{itemize}
+            \item Hệ thống nguồn yêu cầu độ ổn định cao, tích hợp các mạch bảo vệ quá áp (OVP), bảo vệ ngắn mạch (SCP) và chống ngược cực.
+            \item Tối ưu hóa mức tiêu thụ năng lượng thông qua các chế độ tiết kiệm điện (Sleep mode) của vi điều khiển, phù hợp cho các ứng dụng vận hành bằng pin hoặc năng lượng tái tạo.
+        \end{itemize}
+        
+        \item \textbf{Hiệu năng:}
+        \begin{itemize}
+            \item Năng lực xử lý trung tâm đảm bảo độ trễ thấp (dưới 1 ms) trong việc thu thập và chuyển giao dữ liệu từ tất cả các mô-đun kết nối đồng thời.
+            \item Tốc độ phản hồi giao diện cấu hình và thời gian khởi động hệ thống tối ưu (khoảng 15 giây cho WiFi và 40 giây cho LTE), đảm bảo không gây tắc nghẽn hàng đợi dữ liệu khi mật độ thiết bị đầu cuối tăng cao (có thể kết nối từ 30--40 thiết bị).
+            \item Thiết kế có thể xử lý tối đa kết nối với khoảng 30--40 thiết bị, tuy nhiên còn phụ thuộc vào module sử dụng cho giao thức.
+        \end{itemize}
+        
+        \item \textbf{Tính khả dụng và dễ sử dụng:}
+        \begin{itemize}
+            \item Thiết kế cơ khí hỗ trợ tháo lắp mô-đun nhanh chóng, giảm thiểu yêu cầu về công cụ chuyên dụng.
+            \item Giao diện phần mềm thân thiện, lược bỏ các thao tác lập trình phức tạp, cho phép người dùng cấu hình thông qua các tùy chọn có sẵn.
+            \item Hệ thống chỉ thị trực quan qua đèn LED (trạng thái nguồn, kết nối LAN/WAN, trạng thái Server, lỗi hệ thống). Duy trì nhật ký sự kiện chi tiết và cung cấp bộ tài liệu hướng dẫn vận hành, xử lý sự cố (Troubleshooting) toàn diện.
+        \end{itemize}
+    \end{itemize}

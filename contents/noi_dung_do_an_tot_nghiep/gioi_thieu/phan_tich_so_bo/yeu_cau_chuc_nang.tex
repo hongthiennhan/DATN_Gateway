@@ -1,1 +1,29 @@
 \subsection{Yêu cầu chức năng}
+    Hệ thống Gateway IoT cần đáp ứng các nhóm chức năng chính sau đây nhằm đảm bảo tính linh hoạt và khả năng xử lý dữ liệu tin cậy:
+
+    \begin{itemize}
+        \item \textbf{Tính mô-đun hóa phần cứng:}
+        \begin{itemize}
+            \item Thiết kế theo kiến trúc mô-đun, hỗ trợ kết nối linh hoạt và tương thích với đa dạng các loại mô-đun.
+            \item Cung cấp cơ chế thay thế, nâng cấp mô-đun tùy theo mục đích ứng dụng mà không yêu cầu tái thiết kế bo mạch chủ (Baseboard).
+            \item Hỗ trợ các chuẩn giao tiếp ngoại vi phổ thông: UART, SPI, I2C, USB, \dots
+        \end{itemize}
+        
+        \item \textbf{Khả năng thu thập và xử lý dữ liệu:}
+        \begin{itemize}
+            \item Hỗ trợ đa giao tiếp và đa nền tảng: Gateway phải có khả năng tiếp nhận dữ liệu đồng thời từ nhiều nhóm thiết bị đầu cuối hoạt động trên các chuẩn giao tiếp khác nhau như Zigbee, LoRa, Bluetooth, và các giao thức công nghiệp (RS-485/\ldots).
+            \item Xử lý song song và biệt lập: Hệ thống phải triển khai các tiến trình xử lý độc lập cho từng giao thức truyền thông, đảm bảo việc thu thập dữ liệu từ một luồng không gây tắc nghẽn hoặc ảnh hưởng đến các luồng dữ liệu khác.
+            \item Tiền xử lý và Chuẩn hóa dữ liệu tại biên: Thực hiện kiểm chứng định dạng, kiểm tra tính toàn vẹn (Checksum/CRC) và loại bỏ các khung tin lỗi ngay tại tầng LAN.
+            \item Cơ chế đệm và đảm bảo an toàn dữ liệu: Sử dụng hàng đợi (Queue) và bộ nhớ đệm để lưu trữ dữ liệu tạm thời, đảm bảo không mất mát thông tin trong trường hợp kết nối mạng diện rộng (WAN) bị gián đoạn.
+            \item Chuyển giao dữ liệu linh hoạt: Hỗ trợ đóng gói và chuyển phát dữ liệu lên các máy chủ quản lý thông qua các giao thức ứng dụng phổ biến như MQTT, HTTP hoặc CoAP tùy theo yêu cầu hệ thống.
+        \end{itemize}
+        
+        \item \textbf{Khả năng khả cấu hình:}
+        \begin{itemize}
+            \item Cấu hình không xâm lấn (Non-intrusive Configuration): Cho phép tinh chỉnh toàn bộ tham số vận hành, mạng và giao thức mà không cần can thiệp vào mã nguồn hoặc biên dịch lại Firmware.
+            \item Định nghĩa Module bằng phần mềm (Software-Defined Module): Hỗ trợ cơ chế cấu hình động dựa trên tệp mô tả (JSON) để đặc tả chi tiết thông số vật lý (Baudrate, Parity), tập lệnh điều khiển (Command Template), trình tự điều khiển chân logic (GPIO Sequence) và các tham số thời gian (Timeout) của module.
+            \item Đa dạng phương thức tương tác: Cung cấp giao diện cấu hình trực quan qua ứng dụng máy tính (PC Tools) và giao diện Web (Web Config Portal) nhúng trực tiếp trên thiết bị.
+            \item Quản lý cấu hình thông minh: Hệ thống phải tự động lưu trữ cấu hình vào bộ nhớ không khả biến (NVS) và có khả năng tự phục hồi trạng thái vận hành sau khi khởi động lại.
+            \item Linh hoạt trong triển khai thực địa: Hỗ trợ chế độ điểm truy cập (AP Mode) với Captive Portal để cấu hình mạng ban đầu và chế độ trạm (STA Mode) để vận hành trong mạng nội bộ.
+        \end{itemize}
+    \end{itemize}
