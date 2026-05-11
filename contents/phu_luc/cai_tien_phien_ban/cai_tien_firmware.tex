@@ -1,16 +1,16 @@
-\section{Cải tiến về Firmware}
-    Phiên bản 1.0.0 có sự cải tiến về kiến trúc hệ thống so với phiên bản nguyên mẫu, chuyển đổi từ một mẫu thử nghiệm chức năng cơ bản sang một Gateway IoT hoàn chỉnh và ổn định. Về phần cứng và kết nối, hệ thống bổ sung giao tiếp Ethernet qua driver W5500 và cơ chế Internet Monitor giúp tự động chuyển đổi dự phòng giữa Wi-Fi/LTE/Ethernet. Kiến trúc firmware được thiết kế phân lớp mạch lạc, mở rộng bộ đệm cấu hình tại WAN MCU để xử lý dữ liệu JSON phức tạp, đồng thời chuẩn hóa giao tiếp server thông qua đa giao thức (MQTT, HTTP/HTTPS, CoAP). Đặc biệt, cơ chế FOTA được cải tiến sang phương thức Wi-Fi NAT thay thế cho PPP qua UART, giúp tối ưu băng thông. Tại LAN MCU, khả năng quản lý module được nâng cấp mạnh mẽ với việc hỗ trợ đa dạng chủng loại (Zigbee, BLE Native/GATT, LoRa, RS485), cho phép lưu trữ cấu hình vào NVS và tự động nhận diện thay đổi phần cứng, tạo tiền đề cho một hệ thống có khả năng mở rộng linh hoạt.
+﻿\section{Cải tiến về Firmware}
+    Phiên bản Đồ án Tốt nghiệp có sự cải tiến về kiến trúc hệ thống so với phiên bản Đồ án 2, chuyển đổi từ một mẫu thử nghiệm chức năng cơ bản sang một Gateway IoT hoàn chỉnh và ổn định. Về phần cứng và kết nối, hệ thống bổ sung giao tiếp Ethernet qua driver W5500 và cơ chế Internet Monitor giúp tự động chuyển đổi dự phòng giữa Wi-Fi/LTE/Ethernet. Kiến trúc firmware được thiết kế phân lớp mạch lạc, mở rộng bộ đệm cấu hình tại WAN MCU để xử lý dữ liệu JSON phức tạp, đồng thời chuẩn hóa giao tiếp server thông qua đa giao thức (MQTT, HTTP/HTTPS, CoAP). Đặc biệt, cơ chế FOTA được cải tiến sang phương thức Wi-Fi NAT thay thế cho PPP qua UART, giúp tối ưu băng thông. Tại LAN MCU, khả năng quản lý module được nâng cấp mạnh mẽ với việc hỗ trợ đa dạng chủng loại (Zigbee, BLE Native/GATT, LoRa, RS485), cho phép lưu trữ cấu hình vào NVS và tự động nhận diện thay đổi phần cứng, tạo tiền đề cho một hệ thống có khả năng mở rộng linh hoạt.
 
     \begin{longtable}{|p{2.5cm}|p{6cm}|p{7.5cm}|}
-        \caption{Bảng so sánh đặc tính kỹ thuật giữa phiên bản nguyên mẫu và 1.0.0} \label{tab:so_sanh_fw} \\
+        \caption{Bảng so sánh đặc tính kỹ thuật giữa phiên bản Đồ án 2 và Đồ án Tốt nghiệp} \label{tab:so_sanh_fw} \\
         \hline
-        \textbf{Đặc tính} & \textbf{Phiên bản nguyên mẫu} & \textbf{Phiên bản 1.0.0} \\ \hline
+        \textbf{Đặc tính} & \textbf{Phiên bản Đồ án 2} & \textbf{Phiên bản Đồ án Tốt nghiệp} \\ \hline
         \endfirsthead
 
         \multicolumn{3}{c}%
         {{\bfseries \tablename\ \thetable{} -- Tiếp theo từ trang trước}} \\
         \hline
-        \textbf{Đặc tính} & \textbf{Phiên bản nguyên mẫu} & \textbf{Phiên bản 1.0.0} \\ \hline
+        \textbf{Đặc tính} & \textbf{Phiên bản Đồ án 2} & \textbf{Phiên bản Đồ án Tốt nghiệp} \\ \hline
         \endhead
 
         \hline \multicolumn{3}{|r|}{{Tiếp theo ở trang sau}} \\ \hline

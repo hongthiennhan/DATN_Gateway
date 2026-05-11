@@ -1,5 +1,5 @@
-\section{Cải tiến về Hardware}
-    Trong thiết kế phần cứng, phiên bản 1.0.0 mở rộng các chức năng, đặc biệt là mạng phân phối nguồn và quản lý nguồn, các cơ chế đọc tín hiệu, cải tiến layout và thiết kế cơ khí, vỏ hộp.
+﻿\section{Cải tiến về Hardware}
+    Trong thiết kế phần cứng, phiên bản Đồ án Tốt nghiệp mở rộng các chức năng, đặc biệt là mạng phân phối nguồn và quản lý nguồn, các cơ chế đọc tín hiệu, cải tiến layout và thiết kế cơ khí, vỏ hộp.
 
     \subsection{Những thay đổi về thiết kế PCB}
         \subsubsection{Thay đổi về Mức độ tích hợp linh kiện}\label{sec:thay_doi_muc_do_tich_hop_linh_kien}
@@ -8,60 +8,60 @@
                 \begin{subfigure}[b]{0.4\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/iot_gateway_ver_prototype.png}
-                    \caption{Phiên bản nguyên mẫu sử dụng module rời}
+                    \caption{Phiên bản Đồ án 2 sử dụng module rời}
                 \end{subfigure}
                 % \hfill
                 \hspace{1cm}
                 \begin{subfigure}[b]{0.35\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/iot_gateway_ver_1_0_0.png}
-                    \caption{Phiên bản 1.0.0 tích hợp linh kiện}
+                    \caption{Phiên bản Đồ án Tốt nghiệp tích hợp linh kiện}
                 \end{subfigure}
-                \caption{So sánh thiết kế giữa phiên bản nguyên mẫu và phiên bản 1.0.0}
+                \caption{So sánh thiết kế giữa phiên bản Đồ án 2 và phiên bản Đồ án Tốt nghiệp}
             \end{figure}
-            Trong phiên bản nguyên mẫu, nhằm giảm chi phí và thời gian phát triển, một số linh kiện được sử dụng ở dạng module rời. Tuy nhiên, trong phiên bản 1.0.0, đã có sự chuyển đổi sang việc tích hợp toàn bộ linh kiện trực tiếp trên PCB, giúp giảm kích thước tổng thể của gateway và cải thiện độ tin cậy của kết nối giữa các linh kiện.\par
-            Có thể thấy rằng, ở phiên bản nguyên mẫu, các module rời làm tăng đáng kể kích thước của board, làm hạn chế khả năng quy hoạch bố trí linh kiện, trong khi đó, ở phiên bản 1.0.0, việc tích hợp linh kiện đã giúp giảm đáng kể kích thước của board, tăng mật độ linh kiện, bố trí linh kiện tối ưu hơn, đồng thời cải thiện hiệu suất và độ tin cậy của hệ thống.
+            Trong phiên bản Đồ án 2, nhằm giảm chi phí và thời gian phát triển, một số linh kiện được sử dụng ở dạng module rời. Tuy nhiên, trong phiên bản Đồ án Tốt nghiệp, đã có sự chuyển đổi sang việc tích hợp toàn bộ linh kiện trực tiếp trên PCB, giúp giảm kích thước tổng thể của gateway và cải thiện độ tin cậy của kết nối giữa các linh kiện.\par
+            Có thể thấy rằng, ở phiên bản Đồ án 2, các module rời làm tăng đáng kể kích thước của board, làm hạn chế khả năng quy hoạch bố trí linh kiện, trong khi đó, ở phiên bản Đồ án Tốt nghiệp, việc tích hợp linh kiện đã giúp giảm đáng kể kích thước của board, tăng mật độ linh kiện, bố trí linh kiện tối ưu hơn, đồng thời cải thiện hiệu suất và độ tin cậy của hệ thống.
 
         \subsubsection{Thay đổi về Mạng phân phối nguồn}
-            Mạng phân phối nguồn của phiên bản nguyên mẫu sử dụng nhiều mức nguồn khác nhau gồm 5.0V, 3.3V, 1.8V để cung cấp cho các thành phần của mạch, trong khi đó ở phiên bản 1.0.0, mạng nguồn chỉ sử dụng nguồn 3.3V làm nguồn chính, riêng nguồn 5.0V chỉ được sử dụng như nguồn phụ cho các ngoại vi khác như màn hình và quạt tản nhiệt.
+            Mạng phân phối nguồn của phiên bản Đồ án 2 sử dụng nhiều mức nguồn khác nhau gồm 5.0V, 3.3V, 1.8V để cung cấp cho các thành phần của mạch, trong khi đó ở phiên bản Đồ án Tốt nghiệp, mạng nguồn chỉ sử dụng nguồn 3.3V làm nguồn chính, riêng nguồn 5.0V chỉ được sử dụng như nguồn phụ cho các ngoại vi khác như màn hình và quạt tản nhiệt.
             \begin{figure}[h]
                 \centering
                 \begin{subfigure}[b]{0.4\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/power_network_ver_prototype.png}
-                    \caption{Mạng phân phối nguồn của phiên bản nguyên mẫu}
+                    \caption{Mạng phân phối nguồn của phiên bản Đồ án 2}
                 \end{subfigure}
                 % \hfill
                 \hspace{1cm}
                 \begin{subfigure}[b]{0.4\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/power_network_ver_1_0_0.png}
-                    \caption{Mạng phân phối nguồn của phiên bản 1.0.0}
+                    \caption{Mạng phân phối nguồn của phiên bản Đồ án Tốt nghiệp}
                 \end{subfigure}
-                \caption{So sánh mạng phân phối nguồn giữa phiên bản nguyên mẫu và phiên bản 1.0.0}
+                \caption{So sánh mạng phân phối nguồn giữa phiên bản Đồ án 2 và phiên bản Đồ án Tốt nghiệp}
             \end{figure}
 
             \begin{figure}[h]
                 \begin{minipage}{0.4\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/power_network_layout_ver_prototype.png}
-                    \caption{Layout của phiên bản nguyên mẫu}
+                    \caption{Layout của phiên bản Đồ án 2}
                 \end{minipage}
                 \hfill
                 \begin{minipage}{0.55\textwidth}
-                Việc sử dụng một mạng nguồn nhiều mức trong phiên bản nguyên mẫu, cùng với sự hạn chế về khả năng quy hoạch bố trí linh kiện như đã được đề cập trong \autoref{sec:thay_doi_muc_do_tich_hop_linh_kien}, dẫn đến việc layout rất phức tạp. Có thể thấy rằng các đường nguồn được kết nối đan nhau chằng chịt trên nhiều layer.
+                Việc sử dụng một mạng nguồn nhiều mức trong phiên bản Đồ án 2, cùng với sự hạn chế về khả năng quy hoạch bố trí linh kiện như đã được đề cập trong \autoref{sec:thay_doi_muc_do_tich_hop_linh_kien}, dẫn đến việc layout rất phức tạp. Có thể thấy rằng các đường nguồn được kết nối đan nhau chằng chịt trên nhiều layer.
                 \end{minipage}
             \end{figure}
             \newpage
             \begin{figure}[h]
                 \begin{minipage}{0.55\textwidth}
-                Trong khi đó, ở phiên bản 1.0.0, việc sử dụng một mạng nguồn đơn giản hơn đã giúp giảm đáng kể sự phức tạp của layout. Đối với các module adapter sử dụng mức nguồn khác như 5.0V hoặc 1.8V thì sẽ được chuyển đổi từ nguồn 3.3V được tích hợp riêng trên mỗi module adapter, giúp giảm đáng kể sự phức tạp của mạng phân phối nguồn, tăng khả năng mở rộng các module adapter, đồng thời cải thiện hiệu suất và độ tin cậy của hệ thống.
+                Trong khi đó, ở phiên bản Đồ án Tốt nghiệp, việc sử dụng một mạng nguồn đơn giản hơn đã giúp giảm đáng kể sự phức tạp của layout. Đối với các module adapter sử dụng mức nguồn khác như 5.0V hoặc 1.8V thì sẽ được chuyển đổi từ nguồn 3.3V được tích hợp riêng trên mỗi module adapter, giúp giảm đáng kể sự phức tạp của mạng phân phối nguồn, tăng khả năng mở rộng các module adapter, đồng thời cải thiện hiệu suất và độ tin cậy của hệ thống.
                 \end{minipage}
                 \hfill
                 \begin{minipage}{0.4\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/power_network_layout_ver_1_0_0.png}
-                    \caption{Layout của phiên bản 1.0.0}
+                    \caption{Layout của phiên bản Đồ án Tốt nghiệp}
                 \end{minipage}
             \end{figure}
 
@@ -69,7 +69,7 @@
                 \begin{minipage}{0.45\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/power_management_ver_1_0_0.png}
-                    \caption{Mạng quản lý nguồn của phiên bản 1.0.0}
+                    \caption{Mạng quản lý nguồn của phiên bản Đồ án Tốt nghiệp}
                 \end{minipage}
                 \hfill
                 \begin{minipage}{0.45\textwidth}
@@ -79,29 +79,29 @@
 
 
         \subsubsection{Thay đổi về Cơ chế định danh module adapter}
-            Trong phiên bản nguyên mẫu, các module adapter được định danh thủ công trên phần mềm cấu hình, ở phiên bản 1.0.0, đã có sự cải tiến bằng cách tích hợp một cơ chế định danh tự động cho các module adapter thông qua địa chỉ phần cứng được cấu hình sẵn trên mỗi module adapter. Cơ chế này được đề cập trong Phần Thiết kế Mạch Module Adapter, \autoref{par:sche_wanlan_adapter}.
+            Trong phiên bản Đồ án 2, các module adapter được định danh thủ công trên phần mềm cấu hình, ở phiên bản Đồ án Tốt nghiệp, đã có sự cải tiến bằng cách tích hợp một cơ chế định danh tự động cho các module adapter thông qua địa chỉ phần cứng được cấu hình sẵn trên mỗi module adapter. Cơ chế này được đề cập trong Phần Thiết kế Mạch Module Adapter, \autoref{par:sche_wanlan_adapter}.
         
         % \subsubsection{Thay đổi về Layout PCB}\label{sec:layout_pcb}
 
     \subsection{Những thay đổi về thiết kế cơ khí}
         \subsubsection{Thay đổi về Cơ chế kết nối module adapter}
-            Trong phiên bản nguyên mẫu, các module adapter được thiết kế ở dạng cắm header nằm ngang, khiến cho thao tác tháo lắp rất khó khăn, chiếm diện tích không gian lớn, đồng thời khả năng kết nối tín hiệu kém, do đó trong phiên bản 1.0.0, các module adapter được thiết kế dạng module PCIe, giúp cải thiện đáng kể khả năng kết nối tín hiệu, đồng thời giảm diện tích không gian chiếm dụng, tăng tính tiện lợi trong thao tác tháo lắp.
+            Trong phiên bản Đồ án 2, các module adapter được thiết kế ở dạng cắm header nằm ngang, khiến cho thao tác tháo lắp rất khó khăn, chiếm diện tích không gian lớn, đồng thời khả năng kết nối tín hiệu kém, do đó trong phiên bản Đồ án Tốt nghiệp, các module adapter được thiết kế dạng module PCIe, giúp cải thiện đáng kể khả năng kết nối tín hiệu, đồng thời giảm diện tích không gian chiếm dụng, tăng tính tiện lợi trong thao tác tháo lắp.
             \newpage
             \begin{figure}
                 \centering
                 \begin{subfigure}{0.48\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/module_adapter_connection_ver_prototype.png}
-                    \caption{Cơ chế kết nối module adapter của phiên bản nguyên mẫu}
+                    \caption{Cơ chế kết nối module adapter của phiên bản Đồ án 2}
                 \end{subfigure}
                 % \hspace{1cm}
                 % \hfill
                 \begin{subfigure}{0.48\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/module_adapter_connection_ver_1_0_0.png}
-                    \caption{Cơ chế kết nối module adapter của phiên bản 1.0.0}
+                    \caption{Cơ chế kết nối module adapter của phiên bản Đồ án Tốt nghiệp}
                 \end{subfigure}
-                \caption{So sánh cơ chế kết nối module adapter giữa phiên bản nguyên mẫu và phiên bản 1.0.0}
+                \caption{So sánh cơ chế kết nối module adapter giữa phiên bản Đồ án 2 và phiên bản Đồ án Tốt nghiệp}
             \end{figure}
 
         \subsubsection{Thay đổi về Thiết kế vỏ hộp}
@@ -110,7 +110,7 @@
                 \begin{minipage}{0.45\textwidth}
                     \centering
                     \includegraphics[width=\textwidth]{figures/modular_iot_gateway_with_case.png}
-                    \caption{Thiết kế vỏ hộp của phiên bản 1.0.0}
+                    \caption{Thiết kế vỏ hộp của phiên bản Đồ án Tốt nghiệp}
                 \end{minipage}
                 \hfill
                 \begin{minipage}{0.45\textwidth}
