@@ -9,118 +9,7 @@
             \label{fig:sche_iotgateway}
         \end{figure}
 
-        \subsection{Thiết kế Mạch xử lý trung tâm}
-            Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
-
-            % Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
-
-            \begin{figure}[h]
-                \centering
-                \begin{subfigure}[t]{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
-                    \caption{Sơ đồ nguyên lý ESP32 Master}
-                    \label{fig:sche_esp32master}
-                \end{subfigure}
-                \begin{subfigure}[t]{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
-                    \caption{Sơ đồ nguyên lý ESP32 Slave}
-                    \label{fig:sche_esp32slave}
-                \end{subfigure}
-                \caption{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
-                \label{fig:sche_esp32_master_slave}
-            \end{figure}
-
-            % Trong hệ thống, hai SoC ESP32-S3-WROOM-1U-N16R8 đóng vai trò là trung tâm điều khiển, được phân tách chức năng rõ ràng theo mô hình master--slave. Để đảm bảo quá trình trao đổi và đồng bộ dữ liệu diễn ra ổn định và toàn vẹn, hai SoC được kết nối thông qua giao diện Quad SPI tốc độ cao, với tần số xung clock lên tới 80\,MHz ở phía master và 60\,MHz ở phía slave.
-
-            % Bên cạnh đó, SoC master còn quản lý các tín hiệu điều khiển quan trọng của slave như reset, boot và UART0, phục vụ cho quá trình nạp firmware và cập nhật từ xa (FOTA). Trong cấu trúc này, master đóng vai trò điều phối và quản lý tập trung firmware của slave, đồng thời thực hiện cơ chế nạp gián tiếp thông qua các giao diện điều khiển đã được tích hợp. Ngoài kênh truyền dữ liệu chính, một đường tín hiệu ngắt từ slave tới master được sử dụng nhằm thông báo các sự kiện hoặc cờ ngắt phát sinh trong quá trình vận hành, giúp nâng cao khả năng phản hồi và phối hợp giữa hai SoC.
-            Kiến trúc Dual-MCU Master-Slave kết nối qua Quad SPI (60MHz) đảm bảo tính toàn vẹn khi đồng bộ dữ liệu giữa hai SoC ESP32-S3. Việc Master quản lý trực tiếp các tín hiệu Reset, Boot và UART0 cho phép điều phối tập trung và thực thi FOTA gián tiếp cho Slave. Cơ chế này, kết hợp cùng tín hiệu ngắt phản hồi, tối ưu hóa tốc độ tương tác và duy trì sự ổn định vận hành của hệ thống.
-
-            Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu\cite{Esp32S3HardwareDesignGuidelines}.
-
-            % \begin{figure}[h]
-            %     \centering
-            %     \includegraphics[width=0.7\textwidth]{figures/DATN/sche_esp32slave.png}
-            %     \caption{Sơ đồ nguyên lý ESP32 Slave}
-            %     \label{fig:sche_esp32slave}
-            % \end{figure}
-
-            Tại chân reset của hai SoC ESP32-S3, một mạch RC delay được sử dụng nhằm đáp ứng yêu cầu về timing nguồn theo khuyến nghị trong datasheet. Cụ thể, nguồn 3.3V cần được ổn định tối thiểu 50\,$\mu$s trước khi tín hiệu tại chân reset (CHIP\_PU) đạt mức logic cao để kích hoạt SoC.\cite{Esp32S3WroomDatasheet}
-
-            \begin{figure}[H]
-                \centering
-                \includegraphics[width=0.5\textwidth]{figures/DATN/datasheet_esp32timmingreq.png}
-                \caption{Yêu cầu timing nguồn và reset của ESP32-S3}
-                \label{fig:datasheet_esp32timmingreq}
-            \end{figure}
-
-            Dựa trên yêu cầu này, mạch RC được thiết kế với $R = 10\,k\Omega$ và $C = 1\,\mu F$. Thời gian để điện áp trên tụ đạt đến ngưỡng kích hoạt (xấp xỉ $0.75V_{CC} \approx 2.5V$) được xác định theo biểu thức:
-
-            \begin{minipage}{0.45\textwidth}
-                \centering
-                \begin{equation}
-                    t = -\tau \ln \left(1 - \dfrac{V_C}{V_S}\right)
-                \end{equation}
-            \end{minipage}
-            \hfill
-            \begin{minipage}{0.45\textwidth}
-                Trong đó:
-                \begin{itemize}
-                    \item $t$: thời gian trễ (s),
-                    \item $\tau = RC$: hằng số thời gian của mạch RC (s),
-                    \item $V_C$: điện áp trên tụ tại thời điểm $t$ (V),
-                    \item $V_S$: điện áp nguồn cấp (V).
-                \end{itemize}
-            \end{minipage}
-
-            Thay các giá trị tương ứng vào công thức, thời gian trễ thu được là $t \approx 13.86\,ms$, lớn hơn đáng kể so với yêu cầu tối thiểu 50\,$\mu$s, do đó đảm bảo điều kiện khởi động theo datasheet.
-
-            Tương tự, trong quá trình đưa tín hiệu reset về mức thấp, điện áp tại chân reset (CHIP\_PU) cần một khoảng thời gian xấp xỉ 13.86\,ms để giảm từ 3.3V xuống mức logic thấp (khoảng $0.25V_{CC} \approx 0.8V$). Điều này giúp đảm bảo tín hiệu reset có đủ thời gian chuyển trạng thái một cách ổn định và đáng tin cậy.
-
-            Giá trị điện trở kéo lên của bus I\textsuperscript{2}C được xác định dựa trên đặc tính điện của đường truyền và các yêu cầu về thời gian đáp ứng của giao thức. Miền giá trị hợp lệ của điện trở kéo lên \(R_{PU}\) được xác định bởi hai công thức sau:\cite{I2CBusPullupResistorCalculation}
-            
-            \begin{minipage}{0.35\textwidth}
-                \centering
-                \begin{equation}
-                R_{PU,\max} = \frac{t_r}{0.8473 \cdot C_b}
-                \end{equation}
-                
-                \begin{equation}
-                R_{PU,\min} = \frac{V_{CC} - V_{OL(\max)}}{I_{OL}}
-                \end{equation}
-            \end{minipage}
-            \hfill
-            \begin{minipage}{0.55\textwidth}
-                Trong đó:
-                \begin{itemize}
-                    \item \(R_{PU}\): điện trở kéo lên của I\textsuperscript{2}C (đơn vị \(\Omega\)).
-                    \item \(C_b\): điện dung tổng của bus I\textsuperscript{2}C\footnote{Bao gồm điện dung ký sinh của đường mạch và điện dung ngõ vào của các thiết bị trên bus.} (F).
-                    \item \(t_r\): thời gian cạnh lên của tín hiệu I\textsuperscript{2}C (s) \footnote{Đối với chế độ Fast Mode (400\,kHz), \(t_r\) được giới hạn ở mức 300\,ns\cite{I2CBusPullupResistorCalculation}.}
-                    \item \(V_{CC}\): điện áp cấp cho bus I\textsuperscript{2}C (V).
-                    \item \(V_{OL(\max)}\): mức điện áp logic thấp tối đa cho phép khi thiết bị nhận mức 0 (V)\footnote{Lấy theo datasheet của ESP32, xấp xỉ \(0.2\,V_{CC}\)\cite{Esp32S3WroomDatasheet}.}
-                    \item \(I_{OL}\): dòng kéo xuống cực đại của thiết bị khi xuất mức logic thấp (A).
-                \end{itemize}
-            \end{minipage}
-
-            Từ hai ràng buộc trên, điện trở kéo lên được lựa chọn sao cho thỏa mãn điều kiện:
-            \begin{equation}
-            R_{PU,\min} \leq R_{PU} \leq R_{PU,\max}
-            \end{equation}
-            
-            
-
-            Với các tham số thiết kế: $V_{CC} = 3.3V$, $V_{OL(max)} = 0.2V_{CC}$, $I_{OL} = 3\,mA$, thời gian cạnh lên $t_r$ (Fast-mode) = 300\,ns, cùng điện dung ký sinh ước lượng $C_{b\_master} \approx 75\,pF$ và $C_{b\_slave} \approx 30\,pF$, có thể xác định được khoảng giá trị điện trở kéo lên phù hợp cho bus I\textsuperscript{2}C.
-
-            Kết quả tính toán:
-            \[
-            880\,\Omega \leq R_{PU\_master} \leq 4720.88\,\Omega
-            \]
-            \[
-            880\,\Omega \leq R_{PU\_slave} \leq 11802.2\,\Omega
-            \]
-
-            Dựa trên các khoảng giá trị này, điện trở kéo lên được lựa chọn là $3.3\,k\Omega$ cho bus phía master và $10\,k\Omega$ cho phía slave.
+        % Nội dung mục này đã được chuyển lên Chương 4, mục 4.3.1 (Thiết kế Mạch xử lý trung tâm).
 
         \subsection{Thiết kế Mạch nguồn}
 
@@ -359,87 +248,7 @@
             
             Tại đầu vào nguồn của quạt DC, một diode được mắc song song nhằm bảo vệ mạch cấp nguồn. Khi nguồn bị ngắt hoặc xuất hiện các xung điện áp trên đường cấp, diode tạo đường dẫn cho dòng điện quá độ lưu thông, giúp hạn chế điện áp đột biến và giảm ảnh hưởng đến các linh kiện điều khiển.
             
-        \subsection{Thiết kế Mạch Module Adapter}\label{par:sche_wanlan_adapter}
-            Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard.
-
-            \begin{figure}[h]
-                \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_wan-lan_conn.png}
-                \caption{Sơ đồ nguyên lý mạch WAN/LAN Connector} 
-                \label{fig:sche_wan-lan_conn}
-            \end{figure}
-
-            Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet được phát triển dựa trên IC Ethernet PHY W5500. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
-            
-            Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
-
-            Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu.\cite{Sim7600SeriesPcieHardwareDesign}
-            % \href{https://docs.wiznet.io/pdf-viewer?file=%2Fassets%2Ffiles%2Fw5500_sch_v110_use_mag_-dfff8bbb103d13be4f25cd2b2f8b950d.pdf}{W5500 Reference Schematic (RJ45)} của Wiznet.
-
-            \begin{figure}[H]
-                \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_wanlte.png}
-                \caption{Sơ đồ nguyên lý mạch WAN Adapter LTE} 
-                \label{fig:sche_wanlte}
-            \end{figure}
-
-            \begin{figure}[H]
-                \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_wanephy.png}
-                \caption{Sơ đồ nguyên lý mạch WAN Adapter Ethernet} 
-                \label{fig:sche_wanlte}
-            \end{figure}
-
-            Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
-
-            Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại module mạng khác nhau, bao gồm:
-
-            \begin{itemize}
-                \item Module Zigbee E180-ZG120B (dựa trên SoC Silicon Labs EFR32MG1B) của EBYTE, sử dụng nguồn cấp 3.3V và giao tiếp UART;
-                \item Module LoRaWAN Wio-E5-LE mini (mã 113991156, dựa trên SoC STM32WLE5JC, hỗ trợ băng tần 868\,MHz và 915\,MHz) của Seeed Studio, sử dụng nguồn cấp 3.3V và giao tiếp UART;
-                \item Mạch chuyển đổi RS485 sang TTL, hoạt động với nguồn 3.3V và giao tiếp UART.
-            \end{itemize}
-
-            \begin{figure}[H]
-                \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_lan.png}
-                \caption{Sơ đồ nguyên lý mạch LAN Adapter} 
-                \label{fig:sche_lan} 
-            \end{figure}
-
-            Trên mỗi adapter tích hợp một IC IO Expander, được sử dụng để điều khiển các tín hiệu IO của module, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (device ID) trên adapter. Mỗi module được thiết kế với một adapter riêng biệt và được gán một mã thiết bị tương ứng nhằm phục vụ quá trình nhận diện tự động bởi MCU.
-
-            Bảng mã nhận dạng thiết bị được quy định như sau:
-            
-            \begin{longtable}{|c|c|c|}
-                \caption{Device ID của các module WAN/LAN} \\
-                \hline
-                \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
-                \hline
-                \endfirsthead
-                
-                \hline
-                \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
-                \hline
-                \endhead
-                
-                \hline
-                \endfoot
-                
-                \hline
-                \endlastfoot
-                
-                WAN & LTE SIM7600G-H-PCIE & 0000 \\
-                \hline                    
-                WAN & Ethernet W5500 & 1111 \\
-                \hline
-                LAN & Zigbee E180-ZG120B & 0000 \\
-                \hline
-                LAN & LoRaWAN 113991156 & 1111 \\
-                \hline
-                LAN & RS485 to TTL & 1001 \\
-                \hline
-            \end{longtable}
+        % Nội dung mục này đã được chuyển lên Chương 4, mục 4.3.2 (Thiết kế Mạch Module Adapter).
 
     \section{Thiết kế PCB Layout (PCB Layout Design)}
         \subsection{Thiết kế PCB Stack-up và Kiểm soát trở kháng (Impedance Control)}
@@ -468,34 +277,14 @@
                         \textbf{L6} & Bottom Signal \& Power & Định tuyến tín hiệu tốc độ cao, linh kiện mặt dưới và đường nguồn phụ trợ. \\\hline
                     \end{longtable}
 
-                    \item \textbf{Phân tích hiệu quả thiết kế:} 
-                    Cấu trúc stack-up này cung cấp sự cân bằng tối ưu giữa hiệu năng và chi phí sản xuất:
-                    \begin{itemize}
-                        \item \textbf{Toàn vẹn nguồn (PI):} Việc bố trí mặt phẳng đất (L2) và mặt phẳng nguồn (L3) liền kề nhau với khoảng cách điện môi mỏng tạo ra một tụ điện phẳng ký sinh (Inter-plane capacitance). Tụ điện này đóng vai trò quan trọng trong việc lọc nhiễu tần số cao và giảm trở kháng của mạng phân phối nguồn (PDN) một cách tự nhiên.
-                        \item \textbf{Chống nhiễu xuyên âm (Crosstalk):} Các lớp tín hiệu tốc độ cao (L1 và L6) đều có mặt phẳng tham chiếu đất liền kề (L2 và L5). Cấu trúc đường truyền Microstrip này giúp khép kín trường điện từ, hạn chế bức xạ nhiễu và giảm thiểu xuyên nhiễu (Crosstalk) giữa các đường tín hiệu và đường nguồn switching có tần số đóng cắt lớn.
-                    \end{itemize}
-                    
                     \begin{figure}[h]
                         \centering
                         \includegraphics[width=0.75\textwidth]{figures/PCB_design_stackup.png}
                         \caption{Layer Stack-up Management}
                     \end{figure}
-
-                    \item \textbf{So sánh với định tuyến Stripline lớp trong (Inner Layer Routing):} 
-                    Một số thiết kế tham khảo ưu tiên định tuyến tín hiệu tốc độ cao ở các lớp trong (ví dụ Layer 4) để tận dụng cấu trúc Stripline (được bao bọc bởi hai mặt phẳng tham chiếu), giúp tín hiệu lan truyền trong môi trường điện môi đồng nhất và chống nhiễu EMI tốt hơn so với Microstrip (tiếp xúc với không khí). 
-                    Tuy nhiên, việc áp dụng Stripline trong thiết kế này đòi hỏi Layer 3 phải chuyển thành Ground Plane để làm tham chiếu, dẫn đến thiếu hụt không gian cho mặt phẳng nguồn (Power Plane).
-                    Xét thấy các giao tiếp trong hệ thống (như SPI, SDIO, USB) có tần số hoạt động và chiều dài đường dây nằm trong phạm vi mà cấu trúc Microstrip (trên L1/L6) hoàn toàn có thể đáp ứng tốt các yêu cầu về băng thông và trở kháng nếu tuân thủ chặt chẽ quy tắc layout. Do đó, phương án hiện tại giúp tối ưu hóa không gian layout mà vẫn đảm bảo hiệu năng kỹ thuật.
                 \end{itemize}
 
                 \item \textbf{Kiểm soát trở kháng (Impedance Control):}
-                \begin{itemize}
-                    \item Để đảm bảo chất lượng tín hiệu và giảm thiểu hiện tượng phản xạ (reflection) trên đường truyền, việc phối hợp trở kháng là bắt buộc đối với các đường tín hiệu tốc độ cao. Các tiêu chuẩn trở kháng đặc tính (Characteristic Impedance) áp dụng trong thiết kế bao gồm:
-                    \begin{itemize}
-                        \item \textbf{Tín hiệu đơn cực (Single-ended):} Mục tiêu $50\Omega \pm 10\%$. Áp dụng cho các giao tiếp SDIO, SPI, I2C. Cấu trúc sử dụng là Coplanar Waveguide with Ground (CPWG).
-                        \item \textbf{Tín hiệu vi sai (Differential pair):} Mục tiêu $90\Omega \pm 10\%$. Áp dụng cho cặp dây dữ liệu USB (D+/D-). Cấu trúc sử dụng là Coplarar Differential-pair.
-                    \end{itemize}
-                    
-                    \item Các thông số hình học của đường mạch (bề rộng, khoảng cách cách ly) được tính toán dựa trên độ dày lớp đồng, hằng số điện môi ($\epsilon_r$) và chiều cao lớp cách điện (Prepreg/Core) của nhà sản xuất PCB (JLCPCB). Chi tiết kích thước và cấu trúc stack-up được thể hiện trong các hình dưới đây:
 
                     \begin{figure}[h]
                         \centering
@@ -514,8 +303,6 @@
                         \includegraphics[width=0.75\textwidth]{figures/jlcpcb_stackup.png}
                         \caption{Cấu trúc Stack-up và thông số vật liệu tiêu chuẩn của JLCPCB}
                     \end{figure}
-                        
-                \end{itemize}
             \end{enumerate}
         \subsection{Quy hoạch và Bố trí linh kiện (Component Placement \& Floor-planning)}
             Việc bố trí linh kiện (Floor-planning) là bước quyết định đến hiệu năng chống nhiễu (EMC) và tính ổn định của hệ thống. Dựa trên sơ đồ nguyên lý và các ràng buộc cơ khí, chiến lược quy hoạch được thực hiện theo các nguyên tắc sau:

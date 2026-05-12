@@ -1,8 +1,76 @@
+\section{Đặc tả Kỹ thuật và Yêu cầu Thiết kế}
+
+    Thiết kế phần cứng của IoT Gateway tập trung vào ba yêu cầu cốt lõi:
+    \begin{itemize}
+        \item \textbf{Tính module hóa (Modularity):} Kiến trúc plugin cho phép thay thế linh hoạt các module WAN/LAN thông qua khe cắm PCIe x1 chuẩn hóa, mà không cần can thiệp vào baseboard. Cơ chế nhận diện Device ID 4-bit tự động cấu hình tập lệnh phần mềm tương ứng, rút ngắn đáng kể chu trình tích hợp phần cứng mới.
+        \item \textbf{Kiến trúc Dual-MCU ESP32-S3:} Phân tách miền WAN và LAN thành hai SoC chuyên biệt giúp tối ưu hóa tải xử lý, cho phép cập nhật firmware độc lập cho từng MCU qua cơ chế FOTA gián tiếp (Master nạp cho Slave qua UART), và tăng khả năng chịu lỗi khi một miền gặp sự cố.
+        \item \textbf{Độ ổn định mạng phân phối nguồn (PDN):} Mạng nguồn đa tầng Power MUX $\rightarrow$ Charger $\rightarrow$ DC-DC kết hợp kiểm soát trở kháng PCB đảm bảo độ sụt áp IR Drop dưới 5\% trên tất cả các rail quan trọng, xác minh qua mô phỏng PDN.
+    \end{itemize}
+
+    \begin{longtable}{|p{4.5cm}|p{3.5cm}|p{6cm}|}
+        \caption{Đặc tả kỹ thuật phần cứng IoT Gateway} \label{tab:hw_spec} \\
+        \hline
+        \textbf{Thông số} & \textbf{Giá trị} & \textbf{Ghi chú} \\ \hline
+        \endfirsthead
+        \hline
+        \textbf{Thông số} & \textbf{Giá trị} & \textbf{Ghi chú} \\ \hline
+        \endhead
+        \hline
+        \endfoot
+        \hline
+        \endlastfoot
+
+        \multicolumn{3}{|l|}{\textbf{Khối xử lý trung tâm}} \\ \hline
+        Vi điều khiển & ESP32-S3-WROOM-1U-N16R8 $\times 2$ & Master (WAN-MCU) + Slave (LAN-MCU) \\ \hline
+        Lõi xử lý & Xtensa dual-core LX7 @ 240\,MHz & Tối đa 600\,DMIPS/lõi \\ \hline
+        Flash / PSRAM & 16\,MB / 8\,MB & Octal SPI tích hợp trong module \\ \hline
+        Kết nối không dây & Wi-Fi 802.11 b/g/n + BLE 5.0 & Anten ngoài qua kết nối U.FL \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{Nguồn cấp đầu vào}} \\ \hline
+        DC Jack & 12\,V / 2\,A & Nguồn chính \\ \hline
+        USB-C & 5\,V / 1\,A & Nguồn dự phòng hoặc cấu hình \\ \hline
+        Pin LiPo & 3.7\,V, 2000\,mAh & Nguồn dự phòng UPS \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{Rail điện áp nội bộ}} \\ \hline
+        +4V2\_VSYS & 4.2\,V / 5\,A & Rail trung gian từ BQ25892RTWR \\ \hline
+        +3V3 & 3.3\,V / 3\,A & Rail chính, luôn bật khi có nguồn \\ \hline
+        +3V3\_CTRL & 3.3\,V / 1\,A & Điều khiển bật/tắt qua GPIO Expander \\ \hline
+        +5V0\_CTRL & 5.0\,V / 0.5\,A & Boost từ VSYS, điều khiển qua GPIO \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{Khe cắm module mở rộng}} \\ \hline
+        Số khe & 3 (1 WAN + 2 LAN) & PCIe x1 36-pin Card Edge Connector \\ \hline
+        Giao tiếp & UART, SPI, I\textsuperscript{2}C, USB, GPIO & Chuẩn hóa trên connector theo \autoref{tab:new_module_adapter_pinout} \\ \hline
+        Nhận dạng module & Device ID 4-bit & Đọc qua IO Expander I\textsuperscript{2}C trên adapter \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{Giao tiếp liên MCU}} \\ \hline
+        Kênh dữ liệu & Quad SPI @ 60\,MHz & Đồng bộ dữ liệu cảm biến Master-Slave \\ \hline
+        Kênh firmware & UART0 + Boot/Reset GPIO & FOTA từ Master sang Slave \\ \hline
+        Kênh điều khiển & GPIO (Boot, Reset, Interrupt) & Đồng bộ trạng thái hoạt động \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{Ngoại vi tích hợp}} \\ \hline
+        Lưu trữ cục bộ & MicroSD SDIO 4-bit @ 80\,MHz & Bộ đệm dữ liệu khi mất kết nối mạng \\ \hline
+        RTC & PCF8563T + pin CR2032 & Giữ thời gian khi mất nguồn chính \\ \hline
+        HMI & TFT 2.4'' cảm ứng điện trở & Giám sát và cấu hình trực tiếp \\ \hline
+        USB Bridge & CP2102-GMR & UART qua USB-C cho debug và nạp firmware \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{IC bảo vệ và quản lý nguồn}} \\ \hline
+        Power MUX & TPS2121RUXR & Chọn ưu tiên nguồn 12V hoặc 5V USB \\ \hline
+        Bộ sạc pin & BQ25892RTWR & Sạc LiPo + power-path quản lý VSYS \\ \hline
+        Giám sát công suất & INA230AIRGTR & Đo dòng/áp thời gian thực qua I\textsuperscript{2}C \\ \hline
+        Quản lý pin & BQ27441DRZR-G1B & Fuel gauge, thuật toán Impedance Track\texttrademark \\ \hline
+
+        \multicolumn{3}{|l|}{\textbf{Thiết kế PCB}} \\ \hline
+        Số lớp & 6 lớp & L1/L6: Tín hiệu cao tốc, L2/L5: GND, L3: Power, L4: Thấp tốc \\ \hline
+        Kiểm soát trở kháng & $50\,\Omega \pm 10\%$ / $90\,\Omega \pm 10\%$ & Đơn cực (SPI/SDIO/I\textsuperscript{2}C) / Vi sai (USB) \\ \hline
+        Kích thước board & $100 \times 100\,\mathrm{mm}$ & Form factor compact \\ \hline
+
+    \end{longtable}
+
 \section{Sơ đồ khối Hệ thống}
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.85\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
+            \includegraphics[width=\textwidth]{figures/Protype_SystemBlockDiagram_Draft-System Block Diagram.drawio.png}
             \caption{Sơ đồ khối Hệ thống}
         \end{figure}
 
@@ -103,7 +171,7 @@
             \end{longtable}
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
+                \includegraphics[width=\textwidth]{figures/DATN/Adapter_Board_Definition.drawio.jpg}
                 \caption{Sơ đồ chân Module Adapter}
             \end{figure}
 
@@ -130,7 +198,7 @@
         \paragraph{Sơ đồ khối hệ thống phần cứng Baseboard:}\par
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
+                \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-System Diagram.jpg}
                 \caption{Sơ đồ khối phần cứng Baseboard}
                 \label{fig:blockdiagram_system}
             \end{figure}
@@ -153,7 +221,7 @@
         \paragraph{Sơ đồ khối nguồn Baseboard:}\par
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
+                \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Power Diagram.jpg}
                 \caption{Sơ đồ hệ thống nguồn}
                 \label{fig:blockdiagram_power}
             \end{figure}
@@ -192,10 +260,482 @@
             \end{itemize}
 
         \paragraph{Sơ đồ khối phần cứng Mạch adapter:}\par
-            Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các module mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện module, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
+            Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các module mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I\textsuperscript{2}C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện module, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
+                \includegraphics[width=\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}
                 \caption{Sơ đồ khối mạch adapter}
                 \label{fig:blockdiagram_adapter}
             \end{figure}
+
+\section{Thiết kế Chi tiết Mạch Nguyên Lý}
+
+    Phần này trình bày chi tiết các chuẩn giao tiếp và thiết kế mạch nguyên lý cho các khối chức năng quan trọng trong hệ thống. Hai khối được phân tích chuyên sâu là khối xử lý trung tâm (Dual-MCU) và mạch module adapter (WAN/LAN), vì đây là nơi tập trung toàn bộ cơ chế giao tiếp chuẩn hóa của thiết kế.
+
+    \subsection{Thiết kế Mạch xử lý trung tâm}
+
+        Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
+
+        \begin{figure}[H]
+            \centering
+            \begin{subfigure}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
+                \caption{Sơ đồ nguyên lý ESP32 Master}
+                \label{fig:sche_esp32master}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
+                \caption{Sơ đồ nguyên lý ESP32 Slave}
+                \label{fig:sche_esp32slave}
+            \end{subfigure}
+            \caption{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
+            \label{fig:sche_esp32_master_slave}
+        \end{figure}
+
+        Kiến trúc Dual-MCU Master-Slave kết nối qua Quad SPI (60\,MHz) đảm bảo tính toàn vẹn khi đồng bộ dữ liệu giữa hai SoC ESP32-S3. Việc Master quản lý trực tiếp các tín hiệu Reset, Boot và UART0 cho phép điều phối tập trung và thực thi FOTA gián tiếp cho Slave. Cơ chế này, kết hợp cùng tín hiệu ngắt phản hồi từ Slave, tối ưu hóa tốc độ tương tác và duy trì sự ổn định vận hành của hệ thống.
+
+        Đối với các đường tín hiệu clock của bus Quad SPI, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu theo khuyến nghị trong tài liệu thiết kế phần cứng ESP32-S3\cite{Esp32S3HardwareDesignGuidelines}.
+
+        \paragraph{Chuẩn giao tiếp Quad SPI giữa hai MCU:}\par
+            Bus Quad SPI (4-bit data, 80\,MHz phía Master -- 60\,MHz phía Slave) là kênh truyền dữ liệu chính giữa MASTER WAN-MCU và SLAVE LAN-MCU. Bên cạnh Quad SPI, hệ thống còn sử dụng:
+            \begin{itemize}
+                \item \textbf{UART (Firmware Flow):} Kênh chuyên biệt để Master nạp firmware cho Slave thông qua các chân UART0 và tín hiệu Boot/Reset điều khiển trực tiếp.
+                \item \textbf{GPIO (Control):} Các đường tín hiệu điều khiển trạng thái (Boot, Reset, Interrupt) đảm bảo đồng bộ hoạt động giữa hai SoC.
+            \end{itemize}
+
+        \paragraph{Mạch RC delay khởi động reset:}\par
+            Tại chân reset của hai SoC ESP32-S3, một mạch RC delay được sử dụng nhằm đáp ứng yêu cầu về timing nguồn theo khuyến nghị trong datasheet. Cụ thể, nguồn 3.3\,V cần được ổn định tối thiểu 50\,$\mu$s trước khi tín hiệu tại chân reset (CHIP\_PU) đạt mức logic cao để kích hoạt SoC\cite{Esp32S3WroomDatasheet}.
+
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.6\textwidth]{figures/DATN/datasheet_esp32timmingreq.png}
+                \caption{Yêu cầu timing nguồn và reset của ESP32-S3}
+                \label{fig:datasheet_esp32timmingreq}
+            \end{figure}
+
+            Mạch RC được thiết kế với $R = 10\,k\Omega$ và $C = 1\,\mu F$. Thời gian để điện áp trên tụ đạt đến ngưỡng kích hoạt (xấp xỉ $0.75\,V_{CC} \approx 2.5\,\text{V}$) được xác định:
+
+            \begin{minipage}{0.42\textwidth}
+                \centering
+                \begin{equation}
+                    t = -\tau \ln \left(1 - \dfrac{V_C}{V_S}\right)
+                \end{equation}
+            \end{minipage}
+            \hfill
+            \begin{minipage}{0.52\textwidth}
+                Trong đó:
+                \begin{itemize}
+                    \item $\tau = RC$: hằng số thời gian mạch RC (s),
+                    \item $V_C$: điện áp trên tụ tại thời điểm $t$ (V),
+                    \item $V_S$: điện áp nguồn cấp (V).
+                \end{itemize}
+            \end{minipage}
+
+            \vspace{0.5em}
+            Thay $R = 10\,k\Omega$, $C = 1\,\mu F$, $V_C = 2.5\,\text{V}$, $V_S = 3.3\,\text{V}$ vào công thức, thời gian trễ thu được là $t \approx 13.86\,\text{ms}$, lớn hơn đáng kể so với yêu cầu tối thiểu 50\,$\mu$s, đảm bảo điều kiện khởi động an toàn theo datasheet.
+
+        \paragraph{Tính toán điện trở kéo lên bus I\textsuperscript{2}C:}\par
+            Giá trị điện trở kéo lên của bus I\textsuperscript{2}C được xác định dựa trên đặc tính điện của đường truyền và các yêu cầu thời gian đáp ứng của giao thức\cite{I2CBusPullupResistorCalculation}:
+
+            \begin{minipage}{0.35\textwidth}
+                \centering
+                \begin{equation}
+                R_{PU,\max} = \frac{t_r}{0.8473 \cdot C_b}
+                \end{equation}
+                \begin{equation}
+                R_{PU,\min} = \frac{V_{CC} - V_{OL(\max)}}{I_{OL}}
+                \end{equation}
+            \end{minipage}
+            \hfill
+            \begin{minipage}{0.58\textwidth}
+                Trong đó:
+                \begin{itemize}
+                    \item \(C_b\): điện dung tổng của bus I\textsuperscript{2}C (F).
+                    \item \(t_r\): thời gian cạnh lên -- giới hạn 300\,ns ở Fast Mode (400\,kHz).
+                    \item \(V_{OL(\max)}\): điện áp logic thấp tối đa $\approx 0.2\,V_{CC}$ theo datasheet ESP32\cite{Esp32S3WroomDatasheet}.
+                    \item \(I_{OL} = 3\,\text{mA}\): dòng kéo xuống cực đại.
+                \end{itemize}
+            \end{minipage}
+
+            \vspace{0.5em}
+            Với $V_{CC} = 3.3\,\text{V}$, $C_{b\_master} \approx 75\,\text{pF}$, $C_{b\_slave} \approx 30\,\text{pF}$, kết quả tính toán là:
+            \[
+            880\,\Omega \leq R_{PU\_master} \leq 4720\,\Omega \quad \Rightarrow \quad \text{chọn } 3.3\,k\Omega
+            \]
+            \[
+            880\,\Omega \leq R_{PU\_slave} \leq 11802\,\Omega \quad \Rightarrow \quad \text{chọn } 10\,k\Omega
+            \]
+
+    \subsection{Thiết kế Mạch Module Adapter}\label{par:sche_wanlan_adapter}
+
+        Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua module adapter trung gian. Module adapter chuẩn hóa giao diện kết nối theo các giao thức phổ biến: UART, I\textsuperscript{2}C, SPI, USB và các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\textwidth]{figures/DATN/sche_wan-lan_conn.png}
+            \caption{Sơ đồ nguyên lý mạch WAN/LAN Connector}
+            \label{fig:sche_wan-lan_conn}
+        \end{figure}
+
+        Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt -- adapter WAN LTE (cho module SIM7600G-H-PCIE) và adapter WAN Ethernet (dựa trên IC Ethernet PHY W5500). Mỗi adapter tích hợp đầy đủ khối cấp và điều khiển nguồn, bộ mở rộng IO Expander, cùng các bus giao tiếp phần cứng tương ứng.
+
+        \paragraph{Chuẩn giao tiếp trên WAN Adapter LTE:}\par
+            Adapter sử dụng giao thức UART để giao tiếp với module SIM7600G-H-PCIE. Các đường tín hiệu SIM được bảo vệ bằng diode TVS (chống ESD), kết hợp điện trở nối tiếp 22\,\(\Omega\) (giảm chấn) và tụ 18\,pF (lọc nhiễu)\cite{Sim7600SeriesPcieHardwareDesign}.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\textwidth]{figures/DATN/sche_wanlte.png}
+            \caption{Sơ đồ nguyên lý mạch WAN Adapter LTE}
+            \label{fig:sche_wanlte}
+        \end{figure}
+
+        \paragraph{Chuẩn giao tiếp trên WAN Adapter Ethernet:}\par
+            Adapter Ethernet sử dụng giao thức SPI để giao tiếp với IC W5500. Trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY được bố trí điện trở nối tiếp 33\,\(\Omega\) để giảm chấn tín hiệu\cite{Sim7600SeriesPcieHardwareDesign}.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\textwidth]{figures/DATN/sche_wanephy.png}
+            \caption{Sơ đồ nguyên lý mạch WAN Adapter Ethernet}
+            \label{fig:sche_wanephy}
+        \end{figure}
+
+        Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, nâng cao tính linh hoạt và khả năng mở rộng của hệ thống.
+
+        \paragraph{Chuẩn giao tiếp trên LAN Adapter:}\par
+            Đối với khối LAN, mạch adapter được triển khai thành ba adapter riêng biệt, mỗi adapter hỗ trợ một loại module mạng:
+
+        \begin{itemize}
+            \item Module Zigbee E180-ZG120B (SoC Silicon Labs EFR32MG1B, EBYTE) -- nguồn 3.3\,V, giao tiếp UART;
+            \item Module LoRaWAN Wio-E5-LE mini (SoC STM32WLE5JC, 868/915\,MHz, Seeed Studio) -- nguồn 3.3\,V, giao tiếp UART;
+            \item Mạch chuyển đổi RS-485 sang TTL -- nguồn 3.3\,V, giao tiếp UART.
+        \end{itemize}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\textwidth]{figures/DATN/sche_lan.png}
+            \caption{Sơ đồ nguyên lý mạch LAN Adapter}
+            \label{fig:sche_lan}
+        \end{figure}
+
+        Trên mỗi adapter tích hợp một IC IO Expander (giao tiếp I\textsuperscript{2}C) để điều khiển tín hiệu IO của module, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (Device ID) 4-bit. Cơ chế này cho phép MCU tự động nhận diện module đang được cắm vào và tự cấu hình tập lệnh tương ứng.
+
+        \begin{longtable}{|c|c|c|}
+            \caption{Device ID của các module WAN/LAN} \\
+            \hline
+            \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
+            \hline
+            \endfirsthead
+            \hline
+            \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
+            \hline
+            \endhead
+            \hline
+            \endfoot
+            \hline
+            \endlastfoot
+            WAN & LTE SIM7600G-H-PCIE & 0000 \\
+            \hline
+            WAN & Ethernet W5500 & 1111 \\
+            \hline
+            LAN & Zigbee E180-ZG120B & 0000 \\
+            \hline
+            LAN & LoRaWAN 113991156 & 1111 \\
+            \hline
+            LAN & RS485 to TTL & 1001 \\
+            \hline
+        \end{longtable}
+
+    \subsection{Thiết kế Hệ thống Nguồn}
+
+        Hệ thống nguồn của baseboard được thiết kế theo kiến trúc đa tầng nhằm đảm bảo tính linh hoạt, an toàn và hiệu quả năng lượng trong mọi kịch bản vận hành của IoT Gateway.
+
+        \paragraph{Khối điều phối nguồn đầu vào -- TPS2121RUXR:}\par
+
+            IC TPS2121RUXR là Power MUX 2 kênh đầu vào (IN1: 12\,V qua bộ hạ áp, IN2: 5\,V USB), tự động ưu tiên nguồn có điện áp cao hơn mà không cần tín hiệu điều khiển từ MCU. Dòng tải tối đa 5\,A trên mỗi kênh đáp ứng đủ nhu cầu của toàn hệ thống kể cả khi cắm đầy đủ ba module adapter.
+
+            Các tính năng bảo vệ tích hợp bao gồm: giới hạn dòng (ILM) điều chỉnh qua điện trở ngoài; ngắt ngắn mạch trong vòng 1\,$\mu$s; bảo vệ quá nhiệt (TSD) tự động phục hồi; bảo vệ quá áp (OVP) ngắt kênh nguồn khi điện áp vượt ngưỡng an toàn; khóa điện áp thấp (UVLO, $\approx$2.55\,V); và chặn dòng ngược (RCB) trong vòng 10\,$\mu$s ngăn dòng hồi từ đầu ra về đầu vào.
+
+        \paragraph{Khối quản lý sạc và power-path -- BQ25892RTWR:}\par
+
+            IC BQ25892RTWR là bộ sạc LiPo I\textsuperscript{2}C với cơ chế power-path tích hợp. Khi có nguồn ngoài (VBUS $>$ VSYS), IC ưu tiên cấp cho tải đồng thời sạc pin, duy trì VSYS ổn định trong khoảng 3.5--4.2\,V (cấu hình qua I\textsuperscript{2}C). Khi mất nguồn ngoài, pin LiPo được kết nối trực tiếp qua BATFET để cấp điện liên tục, đảm bảo chức năng UPS cho hệ thống.
+
+            Cuộn cảm bên ngoài của bộ chuyển đổi DC-DC tích hợp trong BQ25892 được chọn dựa trên hai điều kiện dòng bão hòa:
+
+            \begin{minipage}{0.45\textwidth}
+                \centering
+                \begin{equation}
+                    I_{SAT} \geq I_{CHG} + \frac{1}{2} \cdot I_{RIPPLE}
+                \end{equation}
+                \begin{equation}
+                    I_{RIPPLE} = \frac{V_{BUS} \cdot D \cdot (1-D)}{f_s \cdot L}
+                \end{equation}
+            \end{minipage}
+            \hfill
+            \begin{minipage}{0.50\textwidth}
+                Trong đó:
+                \begin{itemize}
+                    \item $I_{CHG} = 3\,\text{A}$: dòng sạc cài đặt tối đa,
+                    \item $D = 1 - V_{BAT}/V_{BUS}$: duty cycle của bộ Buck,
+                    \item $f_s = 1.5\,\text{MHz}$: tần số chuyển mạch,
+                    \item $L$: điện cảm cuộn dây đầu ra.
+                \end{itemize}
+            \end{minipage}
+
+            \vspace{0.5em}
+            Với $V_{BUS} = 5\,\text{V}$, $V_{BAT} = 3.7\,\text{V}$, $D \approx 0.26$, $L = 1\,\mu\text{H}$, tính được $I_{RIPPLE} \approx 0.64\,\text{A}$ và yêu cầu $I_{SAT,\min} \approx 3.32\,\text{A}$. Cuộn cảm MDA5030-1R0M ($L = 1\,\mu\text{H}$, $I_{SAT} = 8.5\,\text{A}$) được chọn với hệ số dự phòng dòng bão hòa hơn 2.5 lần, đảm bảo hoạt động ổn định ngay cả ở dòng đỉnh trong điều kiện sạc nhanh.
+
+        \paragraph{Các bộ chuyển đổi DC-DC nội bộ:}\par
+            Nguồn VSYS từ BQ25892 được phân phối đến các tầng chuyển đổi chuyên biệt:
+            \begin{itemize}
+                \item \textbf{+3V3 (TPS566231RQFR, Buck):} Chuyển đổi trực tiếp từ +4V2\_VSYS, luôn bật khi có nguồn đầu vào, cấp cho MCU master, IO Expander, RTC, Power Monitor và các ngoại vi cần duy trì trong chế độ ngủ sâu (deep sleep).
+                \item \textbf{+3V3\_CTRL (TPS22965DSGR, Power Switch):} Nhánh nguồn từ +3V3 có thể bật/tắt qua tín hiệu GPIO từ IO Expander, cấp cho các khối không cần hoạt động trong chế độ tiết kiệm năng lượng.
+                \item \textbf{+5V0\_CTRL (TPS613222ADBVR, Boost):} Tăng áp từ +4V2\_VSYS lên 5\,V, điều khiển bật/tắt qua IO Expander, cấp cho màn hình TFT, quạt tản nhiệt và các ngoại vi yêu cầu mức điện áp 5\,V.
+            \end{itemize}
+
+    \subsection{Thiết kế Bảo vệ Tín hiệu và Bộ đệm I\textsuperscript{2}C}
+
+        \paragraph{Bộ đệm I\textsuperscript{2}C -- TCA9803DGKR:}\par
+
+            Bus I\textsuperscript{2}C trên baseboard kết nối nhiều thiết bị ngoại vi (IO Expander, RTC, Power Monitor, các module adapter), khiến tổng điện dung ký sinh trên đường truyền có nguy cơ vượt quá giới hạn 400\,pF của chuẩn I\textsuperscript{2}C, làm giảm tốc độ truyền tối đa. IC TCA9803DGKR là bộ đệm I\textsuperscript{2}C tự động hai chiều, phân tách bus thành hai phân đoạn:
+            \begin{itemize}
+                \item \textbf{Bus chính (Main Bus):} Kết nối trực tiếp với MCU, điện dung được giảm xuống còn khoảng 10\,pF nhờ bộ đệm cách ly, đảm bảo thời gian cạnh lên đáp ứng chuẩn Fast-mode 400\,kHz.
+                \item \textbf{Bus phụ (Secondary Bus):} Kết nối với các ngoại vi phân tán và module adapter, dung lượng điện dung tổng có thể lên đến 400\,pF mà không ảnh hưởng đến bus chính.
+            \end{itemize}
+
+            Bộ đệm phát hiện tự động chiều truyền dữ liệu và khuếch đại tín hiệu theo đúng chiều đó mà không cần tín hiệu điều khiển từ MCU. Nhờ đó, toàn bộ bus I\textsuperscript{2}C duy trì tốc độ Fast-mode 400\,kHz mà không cần tăng điện trở kéo lên hoặc giảm tần số hoạt động theo khuyến nghị trong tài liệu thiết kế phần cứng ESP32-S3\cite{Esp32S3HardwareDesignGuidelines}.
+
+        \paragraph{Bảo vệ ESD cổng USB -- H5VUD5BB:}\par
+
+            Cổng USB-C trên baseboard chịu rủi ro ESD cao do người dùng cắm/rút thường xuyên. IC TVS H5VUD5BB được bố trí ngay tại điểm đầu vào của cặp vi sai D+/D--, trước bộ lọc RC, với các đặc tính kỹ thuật phù hợp cho tín hiệu USB 2.0 High-Speed:
+            \begin{itemize}
+                \item Điện dung ký sinh cực thấp: 0.3\,pF @ 1\,MHz -- không gây suy hao hoặc biến dạng tín hiệu USB 2.0 High-Speed (480\,Mbps).
+                \item Khả năng chịu ESD theo IEC 61000-4-2 Level 4: $\pm$8\,kV tiếp xúc, $\pm$15\,kV phóng điện không khí.
+                \item Kết hợp với điện trở nối tiếp $22\,\Omega$ trên đường D+/D-- để giảm chấn phản xạ tín hiệu do bất phối hợp trở kháng.
+            \end{itemize}
+
+        \paragraph{Bảo vệ ESD cổng MicroSD -- EMIF06-MSD02N16:}\par
+
+            IC EMIF06-MSD02N16 là giải pháp tích hợp dành riêng cho giao diện MicroSD, kết hợp trong một gói linh kiện duy nhất:
+            \begin{itemize}
+                \item Tụ lọc nhiễu và điện trở giảm chấn (damping filter) trên tất cả các đường tín hiệu SDIO;
+                \item Điện trở kéo lên (pull-up) tích hợp cho các đường CMD và DAT0--DAT3 theo yêu cầu chuẩn SDIO;
+                \item Diode TVS ESD bảo vệ chống tĩnh điện theo IEC 61000-4-2.
+            \end{itemize}
+
+            Giải pháp này giảm đáng kể số lượng linh kiện rời, tối ưu diện tích layout và đảm bảo toàn vẹn tín hiệu SDIO 4-bit tốc độ cao (80\,MHz) theo khuyến nghị trong tài liệu thiết kế thẻ SD\cite{SdAssociationDesignGuidelines}.
+
+\section{Thiết kế Vật lý PCB}
+
+    Thiết kế vật lý PCB đóng vai trò then chốt trong việc hiện thực hóa các tính năng điện tử đã được xác định ở giai đoạn mạch nguyên lý. Chất lượng layout PCB ảnh hưởng trực tiếp đến toàn vẹn tín hiệu (Signal Integrity -- SI), toàn vẹn nguồn (Power Integrity -- PI) và khả năng tương thích điện từ (EMC) của toàn hệ thống.
+
+    \subsection{Cấu trúc Stack-up 6 lớp}
+
+        Thiết kế sử dụng PCB 6 lớp nhằm đáp ứng đồng thời các yêu cầu về tín hiệu tốc độ cao, phân phối nguồn và kiểm soát EMI. Cấu trúc stack-up được trình bày trong \autoref{tab:pcb_stackup}.
+
+        \begin{longtable}{|c|l|l|p{5cm}|}
+            \caption{Cấu trúc PCB 6 lớp} \label{tab:pcb_stackup} \\
+            \hline
+            \textbf{Lớp} & \textbf{Tên} & \textbf{Chức năng} & \textbf{Mô tả} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{Lớp} & \textbf{Tên} & \textbf{Chức năng} & \textbf{Mô tả} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \hline
+            \endlastfoot
+            L1 & Top Signal    & Tín hiệu cao tốc & SPI/SDIO/USB -- đường kiểm soát trở kháng \\ \hline
+            L2 & Ground        & Mặt phẳng GND    & Mặt phẳng tham chiếu liên tục cho L1 \\ \hline
+            L3 & Power         & Phân phối nguồn  & Rail +4V2\_VSYS, +3V3, +5V0\_CTRL \\ \hline
+            L4 & Low-speed     & Tín hiệu thấp tốc & UART, I\textsuperscript{2}C, GPIO, đường điều khiển \\ \hline
+            L5 & Ground        & Mặt phẳng GND    & Mặt phẳng tham chiếu liên tục cho L6 \\ \hline
+            L6 & Bottom Signal & Tín hiệu cao tốc & Quad SPI liên MCU, SPI Slave \\ \hline
+        \end{longtable}
+
+        Cặp lớp L1-L2 và L5-L6 tạo thành cấu trúc Microstrip đối xứng, đảm bảo mặt phẳng tham chiếu GND liên tục cho các đường tín hiệu tốc độ cao và giảm thiểu nhiễu xuyên âm (crosstalk). Lớp L3 (Power) nằm giữa hai mặt phẳng GND (L2 và L5) tạo thành tụ điện phân tán tần số cao, cải thiện hiệu quả lọc nhiễu của hệ thống PDN.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.85\textwidth]{figures/PCB_design_stackup.png}
+            \caption{Cấu trúc stack-up PCB 6 lớp}
+            \label{fig:pcb_stackup}
+        \end{figure}
+
+    \subsection{Kiểm soát Trở kháng}
+
+        Hệ thống sử dụng hai loại kiểm soát trở kháng tùy theo loại tín hiệu, đều áp dụng cấu trúc Coplanar Waveguide with Ground (CPWG) với hàng via GND stitching hai bên đường tín hiệu để tạo đường hồi dòng liên tục:
+
+        \paragraph{Trở kháng đơn cực 50 ohm (Single-ended CPWG):}\par
+            Áp dụng cho các đường tín hiệu SPI, SDIO 4-bit và I\textsuperscript{2}C trên lớp L1 và L6. Khoảng cách via GND stitching hai bên đường tín hiệu không vượt quá $3 \times h$ (với $h$ là chiều dày điện môi giữa lớp tín hiệu và lớp GND tham chiếu) để đảm bảo trở kháng đặc tính $Z_0 = 50\,\Omega \pm 10\%$. Kết quả mô phỏng SI xác nhận $Z_0$ đạt $47$--$48\,\Omega$ (nằm trong dải dung sai).
+
+        \paragraph{Trở kháng vi sai 90 ohm (Differential CPWG):}\par
+            Áp dụng cho cặp tín hiệu USB D+/D-- trên lớp L1. Hai đường dẫn song song với chiều rộng và khoảng cách được tính toán theo mô hình CPWG để đạt trở kháng vi sai $Z_{diff} = 90\,\Omega \pm 10\%$. Độ lệch chiều dài giữa D+ và D-- được khống chế dưới 50\,mil để đảm bảo phase matching theo yêu cầu USB 2.0.
+
+        \begin{figure}[H]
+            \centering
+            \begin{subfigure}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/impedance_50R.png}
+                \caption{Thông số CPWG đơn cực $50\,\Omega$}
+                \label{fig:impedance_50R}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/impedance_90R.png}
+                \caption{Thông số CPWG vi sai $90\,\Omega$}
+                \label{fig:impedance_90R}
+            \end{subfigure}
+            \caption{Thông số kích thước kiểm soát trở kháng CPWG trên PCB (đơn vị: mm)}
+            \label{fig:pcb_impedance}
+        \end{figure}
+
+    \subsection{Floor-Planning và Phân vùng chức năng}
+
+        Mặt bằng PCB ($100 \times 100\,\mathrm{mm}$) được phân chia thành 4 vùng chức năng rõ ràng, nhằm giảm thiểu nhiễu tương hỗ giữa các khối và tối ưu đường đi dòng điện lớn:
+
+        \begin{itemize}
+            \item \textbf{Vùng nguồn (Power Zone):} Tập trung các IC nguồn (TPS2121, BQ25892, TPS566231, TPS613222), tụ bypass và cuộn cảm. Bố trí gần cổng nguồn đầu vào, rút ngắn đường đi của dòng lớn để giảm sụt áp và nhiễu cảm ứng trên đường nguồn.
+            \item \textbf{Vùng xử lý (MCU Zone):} Hai module ESP32-S3 được đặt ở trung tâm board, tối ưu khoảng cách đến tất cả các khối ngoại vi xung quanh. Tụ decoupling (100\,nF + 10\,$\mu$F) được đặt sát chân nguồn mỗi module theo khuyến nghị của Espressif\cite{Esp32S3HardwareDesignGuidelines}.
+            \item \textbf{Vùng module (Adapter Zone):} Ba khe PCIe card-edge connector được bố trí song song tại một cạnh board, giúp người dùng tháo lắp module dễ dàng. Vùng này có đường tín hiệu ngắn nhất đến MCU tương ứng để giảm thiểu độ trễ lan truyền.
+            \item \textbf{Vùng ngoại vi (Peripheral Zone):} Cổng USB-C, khe MicroSD, RTC, HMI connector và LED chỉ thị được bố trí xung quanh rìa board, thuận tiện tiếp cận từ mặt ngoài hộp casing.
+        \end{itemize}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.85\textwidth]{figures/DATN/floor_planing_3d.png}
+            \caption{Floor-plan phân vùng chức năng PCB}
+            \label{fig:pcb_floorplan_ch4}
+        \end{figure}
+
+    \subsection{Kỹ thuật EMI và Routing Tín hiệu Tốc độ cao}
+
+        \paragraph{Via stitching và quản lý đường hồi dòng:}\par
+            Hàng via GND stitching được bố trí dọc theo biên các vùng chức năng để ngăn chặn nhiễu lan truyền giữa các khối. Mỗi via có đường kính 0.3\,mm với khoảng cách $\leq 3\lambda/20$ tại tần số 500\,MHz. Tất cả các via chuyển lớp tín hiệu tốc độ cao đều có via tham chiếu GND đi kèm ngay cạnh để duy trì đường hồi dòng (return path) liên tục, tránh tạo vòng lặp kháng cao gây nhiễu bức xạ.
+
+        \paragraph{Routing USB -- Phase matching vi sai:}\par
+            Cặp vi sai USB D+/D-- được routing song song với khoảng cách tối thiểu 3W (ba lần chiều rộng đường dẫn) đến các tín hiệu lân cận để đảm bảo cách ly điện từ. Độ lệch chiều dài giữa D+ và D-- nhỏ hơn 50\,mil ($\approx$1.27\,mm), tương đương độ lệch trễ lan truyền dưới 10\,ps -- đáp ứng yêu cầu phase matching của USB 2.0 High-Speed (480\,Mbps).
+
+        \paragraph{Routing SPI/SDIO -- Length matching:}\par
+            Các đường tín hiệu SPI (MOSI, MISO, CLK, CS) và SDIO (DAT0--DAT3, CLK, CMD) được routing với độ lệch chiều dài tối đa $\pm$50\,mil trong cùng nhóm tín hiệu. Tụ decoupling 100\,nF được đặt tại điểm cuối của đường CLK phía source để giảm thiểu jitter do phản xạ tín hiệu. Kết quả mô phỏng SI xác nhận độ trễ lan truyền dao động trong biên độ hẹp 156--159\,ps, cho thấy length matching được thực hiện hiệu quả.
+
+        \begin{figure}[H]
+            \centering
+            \begin{subfigure}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/DATN/crysal_shielding_2D.png}
+                \caption{Guard ring và via stitching quanh thạch anh}
+                \label{fig:pcb_crystal_shield}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}[t]{0.48\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figures/DATN/USB_shielding_2D.png}
+                \caption{Via stitching dọc đường USB vi sai}
+                \label{fig:pcb_usb_shield}
+            \end{subfigure}
+            \caption{Kỹ thuật via stitching EMI trên PCB}
+            \label{fig:pcb_emi_stitching}
+        \end{figure}
+
+\section{Kiểm chứng Mô phỏng SI/PI}
+
+    Sau khi hoàn thiện layout PCB, mô phỏng Signal Integrity (SI) và Power Integrity (PI) được thực hiện để xác minh rằng các quyết định thiết kế đã đáp ứng các yêu cầu kỹ thuật đề ra trong \autoref{tab:hw_spec}.
+
+    \subsection{Kết quả Mô phỏng Toàn vẹn Tín hiệu (SI)}
+
+        \paragraph{Tín hiệu đơn cực -- SPI/SDIO:}\par
+            Mô phỏng trở kháng và độ trễ lan truyền trên các đường SPI/SDIO cho kết quả:
+
+            \begin{figure}[H]
+                \centering
+                \begin{subfigure}[t]{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sdio_sim_impedance.png}
+                    \caption{Biểu đồ phân bố trở kháng đường SPI/SDIO}
+                    \label{fig:sdio_impedance_ch4}
+                \end{subfigure}
+                \hfill
+                \begin{subfigure}[t]{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/sdio_sim_delay.png}
+                    \caption{Biểu đồ phân bố độ trễ lan truyền đường SPI/SDIO}
+                    \label{fig:sdio_delay_ch4}
+                \end{subfigure}
+                \caption{Kết quả mô phỏng SI tín hiệu đơn cực SPI/SDIO}
+                \label{fig:si_single_ended_ch4}
+            \end{figure}
+
+            \begin{itemize}
+                \item Trở kháng đặc tính trung bình: $Z_0 = 47$--$48\,\Omega$ -- nằm trong dải dung sai $50\,\Omega \pm 10\%$.
+                \item Độ trễ lan truyền: 156--159\,ps -- biên độ dao động hẹp, xác nhận length matching hiệu quả.
+                \item Tổn hao phản xạ (Return Loss): $\approx -21\,\text{dB}$ -- năng lượng phản xạ tại tải không đáng kể.
+                \item Tổn hao chèn (Insertion Loss): $\approx 0\,\text{dB}$ -- tín hiệu truyền đến đích với tổn hao cực thấp.
+            \end{itemize}
+
+        \paragraph{Tín hiệu vi sai -- USB D+/D--:}\par
+            Mô phỏng trở kháng vi sai và độ trễ trên cặp USB D+/D-- cho kết quả:
+
+            \begin{figure}[H]
+                \centering
+                \begin{subfigure}[t]{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/usb_sim_impedance.png}
+                    \caption{Biểu đồ phân bố trở kháng vi sai USB}
+                    \label{fig:usb_impedance_ch4}
+                \end{subfigure}
+                \hfill
+                \begin{subfigure}[t]{0.48\textwidth}
+                    \centering
+                    \includegraphics[width=\textwidth]{figures/DATN/usb_sim_delay.png}
+                    \caption{Biểu đồ phân bố độ trễ lan truyền USB}
+                    \label{fig:usb_delay_ch4}
+                \end{subfigure}
+                \caption{Kết quả mô phỏng SI tín hiệu vi sai USB D+/D--}
+                \label{fig:si_differential_ch4}
+            \end{figure}
+
+            \begin{itemize}
+                \item Trở kháng vi sai: $Z_{diff} = 84\,\Omega$ -- nằm trong dải dung sai $90\,\Omega \pm 10\%$.
+                \item Độ trễ lan truyền: 125\,ps -- sự đồng nhất màu sắc trên hai nhánh D+/D-- xác nhận phase matching tốt.
+                \item Tổn hao phản xạ: $\approx -15\,\text{dB}$ -- đảm bảo toàn vẹn tín hiệu USB 2.0 High-Speed.
+                \item Tổn hao chèn: $\approx 0\,\text{dB}$ -- không có tổn hao năng lượng đáng kể trên đường truyền.
+            \end{itemize}
+
+    \subsection{Kết quả Mô phỏng Toàn vẹn Nguồn (PI)}
+
+        Mô phỏng PDN được thực hiện ở trạng thái tải ước tính 20\% công suất lý thuyết trên 5 rail nguồn chính. Tiêu chí chấp nhận: độ sụt áp IR Drop không vượt quá 5\% so với điện áp danh định.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.45\textwidth]{figures/4v2_vsys_sim_current_density_outer.png}
+            \includegraphics[width=0.45\textwidth]{figures/4v2_vsys_sim_voltage_drop.png}
+            \caption{Biểu đồ mật độ dòng và phân bố điện áp rail +4V2\_VSYS (rail có tải cao nhất)}
+            \label{fig:pi_4v2_vsys_ch4}
+        \end{figure}
+
+        Kết quả mô phỏng trên tất cả 5 rail được tổng hợp trong \autoref{tab:pi_summary}:
+
+        \begin{longtable}{|l|c|c|c|c|}
+            \caption{Tổng hợp kết quả mô phỏng IR Drop các rail nguồn} \label{tab:pi_summary} \\
+            \hline
+            \textbf{Rail nguồn} & \textbf{V\textsubscript{danh định}} & \textbf{V\textsubscript{tải min}} & \textbf{\%\,IR Drop} & \textbf{Đánh giá} \\ \hline
+            \endfirsthead
+            \hline
+            \textbf{Rail nguồn} & \textbf{V\textsubscript{danh định}} & \textbf{V\textsubscript{tải min}} & \textbf{\%\,IR Drop} & \textbf{Đánh giá} \\ \hline
+            \endhead
+            \hline
+            \endfoot
+            \hline
+            \endlastfoot
+            +4V2\_VSYS  & 4.2\,V & 4.152\,V & 0.63\% & \textbf{Đạt} (< 5\%) \\ \hline
+            +5V0\_CTRL  & 5.0\,V & 4.913\,V & 0.16\% & \textbf{Đạt} (< 5\%) \\ \hline
+            +3V3        & 3.3\,V & 3.278\,V & 0.21\% & \textbf{Đạt} (< 5\%) \\ \hline
+            +3V3\_CTRL  & 3.3\,V & 3.265\,V & 0.33\% & \textbf{Đạt} (< 5\%) \\ \hline
+            +3V7\_VBAT  & 3.7\,V & 3.666\,V & 0.47\% & \textbf{Đạt} (< 5\%) \\ \hline
+        \end{longtable}
+
+        Tất cả 5 rail nguồn có độ sụt áp dưới 1\%, thấp hơn đáng kể so với ngưỡng cho phép 5\%. Kết quả này xác nhận rằng thiết kế PDN đa tầng kết hợp với stack-up 6 lớp và kỹ thuật routing tối ưu hóa đường hồi dòng đã đạt được mục tiêu thiết kế về toàn vẹn nguồn cho toàn hệ thống IoT Gateway.
