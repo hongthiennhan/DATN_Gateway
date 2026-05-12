@@ -19,7 +19,7 @@
 
     \subsection{Thiết lập kết nối WAN và đồng bộ thời gian}
 
-    Dựa trên cấu hình đã tải, gateway tiến hành thiết lập kết nối Internet theo thứ tự ưu tiên được định sẵn. Phiên bản 1.0.0 hỗ trợ ba giao diện WAN:
+    Dựa trên cấu hình đã tải, gateway tiến hành thiết lập kết nối Internet theo thứ tự ưu tiên được định sẵn. Phiên bản Đồ án Tốt nghiệp hỗ trợ ba giao diện WAN:
 
     \begin{itemize}
         \item \textbf{Wi-Fi:} Hỗ trợ cả hai chế độ bảo mật Personal và Enterprise.
@@ -52,4 +52,4 @@
 
     \subsection{Cập nhật Firmware (FOTA)}
 
-    Gateway hỗ trợ quy trình cập nhật firmware an toàn (Safety FOTA) nhằm giảm thiểu rủi ro hỏng thiết bị (brick). Trong phiên bản 1.0.0, LAN-MCU được cập nhật thông qua cơ chế \textbf{Wi-Fi NAT}: WAN-MCU khởi tạo một điểm truy cập Wi-Fi (NAT mode), LAN-MCU kết nối vào đó và tải gói firmware trực tiếp — cải thiện đáng kể băng thông so với phương thức PPP qua UART của phiên bản nguyên mẫu. Quy trình bao gồm kiểm tra tính toàn vẹn (checksum/signature), cập nhật tuần tự từng MCU và cơ chế khôi phục (rollback) nếu quá trình gặp lỗi.
+    Gateway hỗ trợ quy trình cập nhật firmware an toàn (Safety FOTA) nhằm giảm thiểu rủi ro hỏng thiết bị (brick). Trong phiên bản Đồ án Tốt nghiệp, LAN-MCU được cập nhật thông qua cơ chế \textbf{Wi-Fi NAT}: WAN-MCU khởi tạo một điểm truy cập Wi-Fi (NAT mode), LAN-MCU kết nối vào đó và tải gói firmware trực tiếp — cải thiện đáng kể băng thông so với phương thức PPP qua UART của phiên bản nguyên mẫu. Quy trình bao gồm kiểm tra tính toàn vẹn (checksum/signature), cập nhật tuần tự từng MCU và cơ chế khôi phục (rollback) nếu quá trình gặp lỗi.

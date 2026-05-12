@@ -1,4 +1,4 @@
-\section{Kịch bản Tương tác Người dùng}
+\section{Kịch bản tương tác người dùng}
     % Tính tiện lợi của sản phẩm được thể hiện qua khả năng tương tác không dây và giao diện quản trị trực quan.
 
     % \begin{enumerate}
@@ -16,7 +16,7 @@
 
     Tính tiện dụng của sản phẩm được thể hiện qua khả năng tương tác linh hoạt với các module/giao thức và giao diện quản trị trực quan. Người dùng (kỹ thuật viên hoặc quản trị viên) tương tác với hệ thống thông qua các kịch bản chính sau:
 
-    \subsection{Cấu hình ban đầu bằng Ứng dụng PC}
+    \subsection{Cấu hình ban đầu bằng ứng dụng PC}
     Đây là kịch bản dành cho kỹ thuật viên triển khai tại hiện trường, sử dụng App cấu hình trên PC kết nối với gateway qua cổng USB-C. Ứng dụng hỗ trợ đa giao thức (UART/USB CDC) và cung cấp giao diện đồ họa. Quy trình thác tác tiêu chuẩn gồm:
 
     \begin{itemize}
@@ -45,7 +45,7 @@
     %     \label{fig:app_config}
     % \end{figure}
 
-    \subsection{Giám sát vận hành qua Giao diện Web (Dashboard/Status)}
+    \subsection{Giám sát vận hành qua giao diện Web (Dashboard/Status)}
     Người quản trị hệ thống giám sát hoạt động của gateway từ xa thông qua Dashboard trên nền tảng Cloud/Web.
 
     \begin{itemize}
@@ -53,11 +53,11 @@
         \item \textbf{Xử lý sự cố kết nối:} Khi mất kết nối WAN, cơ chế Internet Monitor tự động chuyển đổi sang giao diện dự phòng (Auto-failover). Nếu mất kết nối kéo dài, khối Data Storage Handler sẽ chuyển sang lưu trữ dữ liệu tạm thời vào thẻ nhớ microSD, đảm bảo không mất mát dữ liệu (zero data loss) và tự động đồng bộ lại khi kết nối được khôi phục.
     \end{itemize}
 
-    \subsection{Bảo trì và Cập nhật từ xa (OTA)}
+    \subsection{Bảo trì và cập nhật từ xa (OTA)}
     Trong giai đoạn vận hành và bảo trì, người dùng có thể nâng cấp tính năng hoặc vá lỗi cho cả hai vi điều khiển (Master và Slave) thông qua tính năng OTA trực tiếp từ giao diện Web quản trị.
 
     \begin{itemize}
         \item Quy trình này giúp tiết kiệm đáng kể thời gian và chi phí đi lại so với việc nạp code thủ công tại hiện trường.
-        \item Trong phiên bản 1.0.0, LAN-MCU được cập nhật qua cơ chế \textbf{Wi-Fi NAT}: WAN-MCU khởi tạo điểm truy cập Wi-Fi (NAT mode), LAN-MCU kết nối vào đó và tải gói firmware trực tiếp — cải thiện đáng kể băng thông so với phương thức PPP qua UART của phiên bản nguyên mẫu.
+        \item Trong phiên bản Đồ án Tốt nghiệp, LAN-MCU được cập nhật qua cơ chế \textbf{Wi-Fi NAT}: WAN-MCU khởi tạo điểm truy cập Wi-Fi (NAT mode), LAN-MCU kết nối vào đó và tải gói firmware trực tiếp — cải thiện đáng kể băng thông so với phương thức PPP qua UART của phiên bản nguyên mẫu.
         \item Cơ chế cập nhật được thiết kế ưu tiên tính an toàn: kiểm tra toàn vẹn dữ liệu (checksum/signature), cập nhật tuần tự từng MCU và có cơ chế khôi phục (rollback) nếu quá trình cập nhật gặp lỗi, đảm bảo hệ thống luôn trong trạng thái có thể khởi động được.
     \end{itemize}

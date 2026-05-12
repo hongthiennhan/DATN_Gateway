@@ -36,7 +36,7 @@ Giao tiếp với thẻ nhớ Micro SD hỗ trợ chuẩn SDIO 4-bit, tần số
     \item \textbf{Hiệu suất thực tế:} Thực nghiệm ghi nhận tốc độ ghi đạt chuẩn Class 10 (tối thiểu $10 \, \text{MB/s} \approx 80 \, \text{Mbps}$). Tốc độ này nhanh hơn gấp 8 lần thông lượng dữ liệu thực tế từ các module LAN, đảm bảo hệ thống không bị nghẽn khi thực hiện lưu đệm (Store-and-forward) lúc mất mạng WAN.
 \end{itemize}
 \subsubsection{Thông lượng kết nối WAN}
-Phiên bản 1.0.0 hỗ trợ ba giao diện WAN với thông lượng lý thuyết khác nhau:
+Phiên bản Đồ án Tốt nghiệp hỗ trợ ba giao diện WAN với thông lượng lý thuyết khác nhau:
 \begin{itemize}
     \item \textbf{Wi-Fi (802.11n, 2.4\,GHz):} Thông lượng lý thuyết tối đa $150 \, \text{Mbps}$. Trong môi trường thực tế (nhiễu RF, khoảng cách), thông lượng hiệu dụng thường đạt $20\text{--}50 \, \text{Mbps}$.
     \item \textbf{Ethernet (W5500, SPI):} Chuẩn 10/100BASE-T với thông lượng tối đa $100 \, \text{Mbps}$. Đây là giao diện ổn định nhất, phù hợp với môi trường công nghiệp yêu cầu độ trễ thấp và ổn định cao.
@@ -51,7 +51,7 @@ Với lưu lượng dữ liệu telemetry điển hình từ các module cảm b
     \item \textbf{Trễ mạng diện rộng (WAN):} Phụ thuộc vào chất lượng kết nối Wi-Fi/Ethernet/LTE và độ phản hồi của MQTT Broker. Hệ thống sử dụng hàng đợi (Publish Queue) trong 8MB PSRAM để cách ly trễ mạng với trễ xử lý nội bộ.
 \end{itemize}
 
-\subsection{Khả năng chịu tải và Giới hạn kết nối}
+\subsection{Khả năng chịu tải và giới hạn kết nối}
 Dựa trên tài nguyên phần cứng ESP32-S3 (16MB Flash, 8MB PSRAM), hệ thống đáp ứng:
 \begin{itemize}
     \item \textbf{Giới hạn miền Sensing:} Hỗ trợ thu thập đồng thời từ 02 khe cắm LAN với đa dạng giao thức: Zigbee (IEEE 802.15.4), BLE Native/GATT, LoRa TDMA, RS485/Modbus, 1-Wire, I2C, SPI. Hệ thống tự động phát hiện (auto module detection) và nạp driver phù hợp từ NVS khi khởi động.
