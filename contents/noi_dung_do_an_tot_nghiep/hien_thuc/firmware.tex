@@ -256,7 +256,7 @@
         
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.65\textwidth]{figures/DATN/WAN-MCU_architecture_fw.png}
+                \includegraphics[width=\textwidth,height=0.92\textheight,keepaspectratio]{figures/DATN/WAN-MCU_architecture_fw.png}
                 \caption{Sơ đồ kiến trúc phân lớp firmware WAN-MCU (DA2\_esp)}
                 \label{fig:wan_mcu_arch}
             \end{figure}
@@ -305,7 +305,7 @@
 
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.65\textwidth]{figures/DATN/LAN-MCU_architecture_fw.png}
+                \includegraphics[width=\textwidth,height=0.92\textheight,keepaspectratio]{figures/DATN/LAN-MCU_architecture_fw.png}
                 \caption{ Sơ đồ kiến trúc phân lớp firmware LAN-MCU (DA2\_esp\_LAN)}
                 \label{fig:lan_mcu_arch}
             \end{figure}
@@ -412,19 +412,14 @@
             %         \label{fig:design_DCH-CT}
             %     \end{figure}
 
+            \paragraph{Data Communication Handler (UART)}
+                Đây là luồng cấu hình dùng PC App. WAN-MCU đóng vai trò cổng trung gian: nhận gói lệnh từ UART, chuyển thành cấu trúc nội bộ, kiểm tra hợp lệ, lưu vào NVS và phản hồi trạng thái cho ứng dụng PC.
+
             \begin{figure}[H]
                 \centering
-                \begin{minipage}{0.55\textwidth}
-                    \paragraph{Data Communication Handler (UART)}
-                    Đây là luồng cấu hình dùng PC App. WAN-MCU đóng vai trò cổng trung gian: nhận gói lệnh từ UART, chuyển thành cấu trúc nội bộ, kiểm tra hợp lệ, lưu vào NVS và phản hồi trạng thái cho ứng dụng PC.
-                \end{minipage}
-                \hfill
-                \begin{minipage}{0.4\textwidth}
-                    \centering
-                    \includegraphics[width=\linewidth]{figures/DATN/design_DCH-CT.png}
-                    \caption{Lưu đồ giải thuật Data Communication Handler -- giao tiếp cấu hình qua UART}
-                    \label{fig:design_DCH-CT}
-                \end{minipage}
+                \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/design_DCH-CT.png}
+                \caption{Lưu đồ giải thuật Data Communication Handler -- giao tiếp cấu hình qua UART}
+                \label{fig:design_DCH-CT}
             \end{figure}
                 
             % \paragraph{Web Config Portal}
@@ -438,19 +433,14 @@
             %         \label{fig:design_wcp}
             %     \end{figure}
 
+            \paragraph{Web Config Portal}
+                Web Config Portal cho phép người dùng cấu hình gateway ngay trên trình duyệt mà không cần phần mềm PC. WAN-MCU vận hành ở chế độ AP/STA, phục vụ trang web cấu hình, nhận HTTP request và lưu cấu hình tương tự luồng UART.
+
             \begin{figure}[H]
                 \centering
-                \begin{minipage}{0.55\textwidth}
-                    \paragraph{Web Config Portal}
-                    Web Config Portal cho phép người dùng cấu hình gateway ngay trên trình duyệt mà không cần phần mềm PC. WAN-MCU vận hành ở chế độ AP/STA, phục vụ trang web cấu hình, nhận HTTP request và lưu cấu hình tương tự luồng UART.
-                \end{minipage}
-                \hfill
-                \begin{minipage}{0.4\textwidth}
-                    \centering
-                    \includegraphics[width=\linewidth]{figures/DATN/design_wcp.png}
-                    \caption{Lưu đồ giải thuật Config qua Web Config Portal}
-                    \label{fig:design_wcp}
-                \end{minipage}
+                \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/design_wcp.png}
+                \caption{Lưu đồ giải thuật Config qua Web Config Portal}
+                \label{fig:design_wcp}
             \end{figure}
             
             % \paragraph{Cơ chế Internet Fallback (WAN-MCU)}
@@ -466,12 +456,12 @@
 
             \begin{figure}[H]
                 \centering
-                \begin{minipage}{0.55\textwidth}
+                \begin{minipage}{0.50\textwidth}
                     \paragraph{Cơ chế Internet Fallback (WAN-MCU)}
                     Internet Monitor không áp đặt một kênh Internet ``chính'' cố định theo thứ tự toàn cục. Kênh primary và fallback được quyết định bởi cấu hình \texttt{IN} tại runtime. Task monitor kiểm tra kết nối định kỳ, đếm số lần lỗi liên tiếp trên primary để chuyển sang fallback; khi fallback ổn định đủ ngưỡng thì thử khôi phục primary. Monitor sử dụng cơ chế probe TCP định kỳ; khi đang ở trạng thái fallback và đạt đủ số lần ổn định liên tiếp, hệ thống sẽ tự động thử khôi phục kênh primary.
                 \end{minipage}
                 \hfill
-                \begin{minipage}{0.4\textwidth}
+                \begin{minipage}{0.45\textwidth}
                     \centering
                     \includegraphics[width=\linewidth]{figures/DATN/flowchart_internet_monitor.png}
                     \caption{Lưu đồ giải thuật Internet Monitor Task}
@@ -555,19 +545,14 @@
             %     \label{fig:design_FOTA}
             % \end{figure}
 
+            \paragraph{Cơ chế FOTA cho Dual-MCU Gateway}
+                Quá trình cập nhật firmware từ xa được thiết kế theo thứ tự nghiêm ngặt: \textbf{LAN-MCU cập nhật trước, WAN-MCU cập nhật sau}. Thứ tự này đảm bảo WAN-MCU luôn có thể điều phối, xử lý lỗi và giữ kết nối với Server trong suốt quá trình.
+
             \begin{figure}[H]
                 \centering
-                \begin{minipage}{0.55\textwidth}
-                    \paragraph{Cơ chế FOTA cho Dual-MCU Gateway}
-                    Quá trình cập nhật firmware từ xa được thiết kế theo thứ tự nghiêm ngặt: \textbf{LAN-MCU cập nhật trước, WAN-MCU cập nhật sau}. Thứ tự này đảm bảo WAN-MCU luôn có thể điều phối, xử lý lỗi và giữ kết nối với Server trong suốt quá trình.
-                \end{minipage}
-                \hfill
-                \begin{minipage}{0.4\textwidth}
-                    \centering
-                    \includegraphics[width=\linewidth]{figures/DATN/design_FOTA.png}
-                    \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
-                    \label{fig:design_FOTA}
-                \end{minipage}
+                \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/design_FOTA.png}
+                \caption{Lưu đồ giải thuật FOTA cho Dual-MCU Gateway}
+                \label{fig:design_FOTA}
             \end{figure}
 
             \paragraph{Phân tích rủi ro và cơ chế rollback FOTA}
@@ -650,7 +635,7 @@
         
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.6\textwidth]{figures/DATN/design_mbs.png}
+            \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/design_mbs.png}
             \caption{Luồng hoạt động của Module Base Setting}
             \label{fig:design_mbs}
         \end{figure}
@@ -679,7 +664,7 @@
         
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.7\textwidth]{figures/DATN/design_server-to-bulb.png}
+            \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/design_server-to-bulb.png}
             \caption{Luồng điều khiển end-to-end từ ThingsBoard đến bóng đèn ESP32 qua GW DA2}
             \label{fig:design_server-to-bulb}
         \end{figure}
@@ -692,7 +677,7 @@
             
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.6\textwidth]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
+                \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/sequence_diagram_end-to-end_uplink.png}
                 \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end uplink}
             \end{figure}
         
@@ -702,7 +687,7 @@
             
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=0.6\textwidth]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
+                \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/DATN/sequence_diagram_end-to-end_downlink.png}
                 \caption{Sequence diagram: luồng xử lý dữ liệu end-to-end downlink}
             \end{figure}
         

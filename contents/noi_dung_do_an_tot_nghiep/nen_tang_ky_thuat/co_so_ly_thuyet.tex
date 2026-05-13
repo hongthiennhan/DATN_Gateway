@@ -16,66 +16,66 @@
             %     \label{fig:iot_overview}
             % \end{figure}
 
-        \subsubsection{Vị trí và vai trò của IoT gateway}
-            IoT gateway đóng vai trò như một cầu nối quan trọng giữa các thiết bị IoT và các nền tảng đám mây, hoạt động như một trung tâm điều phối chính, cho phép truyền thông và luồng dữ liệu trong hạ tầng Internet vạn vật. Gateway là thành phần then chốt giữa lớp cảm nhận (perception layer), gồm các cảm biến và thiết bị và lớp mạng (network layer) kết nối đến các dịch vụ đám mây.
+        \subsubsection{Vị trí và vai trò của IoT Gateway}
+            IoT Gateway đóng vai trò như một cầu nối quan trọng giữa các thiết bị IoT và các nền tảng đám mây, hoạt động như một trung tâm điều phối chính, cho phép truyền thông và luồng dữ liệu trong hạ tầng Internet vạn vật. Gateway là thành phần then chốt giữa lớp cảm nhận (perception layer), gồm các cảm biến và thiết bị và lớp mạng (network layer) kết nối đến các dịch vụ đám mây.
 
             Theo tiêu chuẩn công nghiệp, một gateway IoT được định nghĩa là một thiết bị phần cứng hoặc ứng dụng phần mềm đóng vai trò là điểm kết nối giữa máy chủ ứng dụng IoT và các thiết bị đầu cuối. Tiêu chuẩn ITU-T Y.4418 định nghĩa gateway là "một đơn vị trong Internet vạn vật có chức năng kết nối các thiết bị với mạng truyền thông, thực hiện việc chuyển đổi cần thiết giữa các giao thức được sử dụng trong mạng truyền thông và các giao thức mà thiết bị sử dụng."
 
-            IoT gateway hoạt động như những trung tâm thông minh, liên kết các thiết bị IoT và đám mây với nhau, đảm nhiệm việc chuyển đổi giao tiếp giữa các thiết bị IoT cũng như lọc và xử lý dữ liệu thành thông tin hữu ích. Chúng tạo ra cầu nối giữa các cảm biến và cơ cấu chấp hành (actuators) ở một phía, và các nền tảng hậu kỳ (quản lý dữ liệu, thiết bị và người dùng) ở phía còn lại.
+            IoT Gateway hoạt động như những trung tâm thông minh, liên kết các thiết bị IoT và đám mây với nhau, đảm nhiệm việc chuyển đổi giao tiếp giữa các thiết bị IoT cũng như lọc và xử lý dữ liệu thành thông tin hữu ích. Chúng tạo ra cầu nối giữa các cảm biến và cơ cấu chấp hành (actuators) ở một phía, và các nền tảng hậu kỳ (quản lý dữ liệu, thiết bị và người dùng) ở phía còn lại.
     \subsection{Cơ sở lý thuyết về IoT Gateway}
-        \subsubsection{Khái niệm IoT gateway}
-            IoT gateway trong lĩnh vực Internet of Things đóng vai trò là nút trung gian giữa các mạng cảm biến và nền tảng đám mây hoặc trung tâm dữ liệu được kết nối thông qua Internet. Mục tiêu chính của gateway là xử lý tính không đồng nhất do các thiết bị và giao thức khác nhau tạo ra, thu thập lượng lớn dữ liệu ở nhiều định dạng khác nhau và chuyển tiếp dữ liệu đã xử lý lên các hệ thống mức cao hơn.
+        \subsubsection{Khái niệm IoT Gateway}
+            IoT Gateway trong lĩnh vực Internet of Things đóng vai trò là nút trung gian giữa các mạng cảm biến và nền tảng đám mây hoặc trung tâm dữ liệu được kết nối thông qua Internet. Mục tiêu chính của gateway là xử lý tính không đồng nhất do các thiết bị và giao thức khác nhau tạo ra, thu thập lượng lớn dữ liệu ở nhiều định dạng khác nhau và chuyển tiếp dữ liệu đã xử lý lên các hệ thống mức cao hơn.
 
-            Để hệ thống IoT vận hành và được quản lý đúng cách, dữ liệu thu thập từ thiết bị biên cần được làm sạch, tiền xử lý và lọc trước khi gửi đến trung tâm dữ liệu, tuỳ theo yêu cầu của từng ứng dụng. IoT gateway được thiết kế để đảm nhiệm những chức năng này một cách hiệu quả tại biên mạng.
+            Để hệ thống IoT vận hành và được quản lý đúng cách, dữ liệu thu thập từ thiết bị biên cần được làm sạch, tiền xử lý và lọc trước khi gửi đến trung tâm dữ liệu, tuỳ theo yêu cầu của từng ứng dụng. IoT Gateway được thiết kế để đảm nhiệm những chức năng này một cách hiệu quả tại biên mạng.
 
-            Về mặt chức năng, IoT gateway có thể được hiểu thông qua ba năng lực cốt lõi:
+            Về mặt chức năng, IoT Gateway có thể được hiểu thông qua ba năng lực cốt lõi:
             \begin{enumerate}
                 \item \textbf{Chuyển tiếp thông điệp (Message Forwarding):} khả năng truyền tải dữ liệu giữa các thiết bị và hệ thống xử lý tập trung một cách đáng tin cậy, bảo toàn ngữ nghĩa và chất lượng dịch vụ (QoS) mong muốn.
                 \item \textbf{Xử lý cục bộ (Local Processing):} thực hiện các tác vụ điện toán biên (edge computing) để xử lý, tổng hợp hoặc ra quyết định tại chỗ, giúp giảm độ trễ, tiết kiệm băng thông và giảm phụ thuộc vào kết nối liên tục với cloud.
                 \item \textbf{Khả năng mở rộng tài nguyên (Resource Openness):} cung cấp các giao diện và dịch vụ chung cho nhiều ứng dụng IoT, cho phép quản lý thiết bị, phát hiện và truy cập các tài nguyên (sensors, actuators, dữ liệu, \dots) một cách thống nhất.
             \end{enumerate}
 
-            Nhờ ba năng lực trên, IoT gateway không chỉ đóng vai trò là điểm trung chuyển dữ liệu mà còn là một nút điện toán biên thông minh, giúp giảm độ trễ, tối ưu băng thông và hỗ trợ ra quyết định gần thời gian thực ngay tại biên mạng.
+            Nhờ ba năng lực trên, IoT Gateway không chỉ đóng vai trò là điểm trung chuyển dữ liệu mà còn là một nút điện toán biên thông minh, giúp giảm độ trễ, tối ưu băng thông và hỗ trợ ra quyết định gần thời gian thực ngay tại biên mạng.
 
-        \subsubsection{Vị trí của IoT gateway trong kiến trúc IoT}
-            IoT gateway chiếm vị trí chiến lược trong kiến trúc nhiều lớp của hệ thống IoT. Theo tiêu chuẩn của IEEE, trong ba lớp của Internet vạn vật (gồm lớp cảm nhận, lớp mạng và lớp ứng dụng), gateway là thành phần thiết yếu vì lớp cảm nhận và lớp mạng thuộc về các mạng dị thể (heterogeneous networks) vốn không thể giao tiếp trực tiếp với nhau.
+        \subsubsection{Vị trí của IoT Gateway trong kiến trúc IoT}
+            IoT Gateway chiếm vị trí chiến lược trong kiến trúc nhiều lớp của hệ thống IoT. Theo tiêu chuẩn của IEEE, trong ba lớp của Internet vạn vật (gồm lớp cảm nhận, lớp mạng và lớp ứng dụng), gateway là thành phần thiết yếu vì lớp cảm nhận và lớp mạng thuộc về các mạng dị thể (heterogeneous networks) vốn không thể giao tiếp trực tiếp với nhau.
 
-            Các IoT gateway đóng vai trò là liên kết trung gian, cho phép thông tin thu thập từ các cảm biến IoT được chuyển đổi và đóng gói thành các gói dữ liệu mạng để truyền đến các máy chủ backend hoặc nền tảng đám mây. Nhờ đó, IoT gateway trở thành điểm then chốt trong việc đảm bảo luồng dữ liệu ổn định và tin cậy trong toàn bộ hạ tầng IoT.
+            Các IoT Gateway đóng vai trò là liên kết trung gian, cho phép thông tin thu thập từ các cảm biến IoT được chuyển đổi và đóng gói thành các gói dữ liệu mạng để truyền đến các máy chủ backend hoặc nền tảng đám mây. Nhờ đó, IoT Gateway trở thành điểm then chốt trong việc đảm bảo luồng dữ liệu ổn định và tin cậy trong toàn bộ hạ tầng IoT.
 
-            Trong bối cảnh phân cấp mạng IoT, các IoT gateway hoạt động như các điểm hội tụ dữ liệu (aggregation points), nơi nhiều thiết bị IoT hợp nhất luồng dữ liệu của chúng trước khi truyền lên các hệ thống cấp cao hơn. Vị trí chiến lược này cho phép IoT gateway quản lý và tối ưu hóa luồng dữ liệu từ nhiều thiết bị đầu cuối, đảm bảo sử dụng băng thông hiệu quả và giảm tải xử lý cho hạ tầng đám mây.
+            Trong bối cảnh phân cấp mạng IoT, các IoT Gateway hoạt động như các điểm hội tụ dữ liệu (aggregation points), nơi nhiều thiết bị IoT hợp nhất luồng dữ liệu của chúng trước khi truyền lên các hệ thống cấp cao hơn. Vị trí chiến lược này cho phép IoT Gateway quản lý và tối ưu hóa luồng dữ liệu từ nhiều thiết bị đầu cuối, đảm bảo sử dụng băng thông hiệu quả và giảm tải xử lý cho hạ tầng đám mây.
             \begin{figure}[h]
                 \centering
                 \includegraphics[width=0.7\textwidth]{figures/Gateway_in_IoT_architecture.jpg}
                 \vspace{1em}
-                \caption{Vị trí của IoT gateway trong kiến trúc IoT}
+                \caption{Vị trí của IoT Gateway trong kiến trúc IoT}
                 \label{fig:iot_gateway_position}
             \end{figure}
-        \subsubsection{Các vai trò chính của IoT gateway}
-            IoT Gateway không chỉ là một điểm kết nối đơn thuần mà là một hệ thống đa chức năng: tổng hợp dữ liệu từ nhiều thiết bị đầu cuối, chuyển đổi giao thức không đồng nhất, thực thi bảo mật, và xử lý dữ liệu tại biên. Các vai trò này phối hợp chặt chẽ để giúp IoT gateway trở thành thành phần trọng tâm của bất kỳ kiến trúc IoT hiệu quả.
-                \paragraph{Tổng hợp và quản lý dữ liệu (data aggregation and management)}
-                    IoT gateway thu thập dữ liệu từ nhiều thiết bị và cảm biến IoT, hợp nhất các luồng thông tin trước khi chuyển tiếp đến các nền tảng đám mây hoặc trung tâm dữ liệu. Chức năng tổng hợp này giúp giảm lưu lượng mạng và cho phép xử lý dữ liệu hiệu quả hơn. Gateway có thể thực hiện các hoạt động như lọc dữ liệu trùng lặp, phân loại theo loại hoặc nguồn, và tính toán các chỉ số tổng hợp.
+        \subsubsection{Các vai trò chính của IoT Gateway}
+            IoT Gateway không chỉ là một điểm kết nối đơn thuần mà là một hệ thống đa chức năng: tổng hợp dữ liệu từ nhiều thiết bị đầu cuối, chuyển đổi giao thức không đồng nhất, thực thi bảo mật, và xử lý dữ liệu tại biên. Các vai trò này phối hợp chặt chẽ để giúp IoT Gateway trở thành thành phần trọng tâm của bất kỳ kiến trúc IoT hiệu quả.
+                \paragraph{Tổng hợp và quản lý dữ liệu (data aggregation and management):}
+                    IoT Gateway thu thập dữ liệu từ nhiều thiết bị và cảm biến IoT, hợp nhất các luồng thông tin trước khi chuyển tiếp đến các nền tảng đám mây hoặc trung tâm dữ liệu. Chức năng tổng hợp này giúp giảm lưu lượng mạng và cho phép xử lý dữ liệu hiệu quả hơn. Gateway có thể thực hiện các hoạt động như lọc dữ liệu trùng lặp, phân loại theo loại hoặc nguồn, và tính toán các chỉ số tổng hợp.
 
-                \paragraph{Chuyển đổi giao thức (protocol translation)}
-                    Một trong những chức năng quan trọng nhất của IoT gateway là khả năng chuyển đổi hai chiều giữa các giao thức truyền thông khác nhau. Thiết bị có thể chuyển dữ liệu từ các giao thức công nghiệp cũ như Modbus sang các giao thức IoT hiện đại như MQTT hoặc HTTP, giúp tích hợp liền mạch giữa hạ tầng hiện có và hệ thống IoT mới. Khả năng này rất cần thiết để xây dựng một kiến trúc truyền thông thống nhất trong môi trường thiết bị không đồng nhất.
+                \paragraph{Chuyển đổi giao thức (protocol translation):}
+                    Một trong những chức năng quan trọng nhất của IoT Gateway là khả năng chuyển đổi hai chiều giữa các giao thức truyền thông khác nhau. Thiết bị có thể chuyển dữ liệu từ các giao thức công nghiệp cũ như Modbus sang các giao thức IoT hiện đại như MQTT hoặc HTTP, giúp tích hợp liền mạch giữa hạ tầng hiện có và hệ thống IoT mới. Khả năng này rất cần thiết để xây dựng một kiến trúc truyền thông thống nhất trong môi trường thiết bị không đồng nhất.
 
-                \paragraph{Khả năng điện toán biên (edge computing capabilities)}
-                    Các IoT gateway hiện đại ngày càng tích hợp chức năng điện toán biên, cho phép xử lý và phân tích dữ liệu tại chỗ mà không cần phụ thuộc hoàn toàn vào kết nối đám mây. Cách tiếp cận xử lý phân tán này giúp phản hồi theo thời gian thực đối với các sự kiện quan trọng, giảm tải, giảm độ trễ cho các hệ thống xử lý trung tâm và tiết kiệm băng thông. Điểm toán biên cho phép thực hiện các tác vụ như phát hiện bất thường, cảnh báo ngưỡng vượt, hoặc ra quyết định tác động nhanh chóng.
+                \paragraph{Khả năng điện toán biên (edge computing capabilities):}
+                    Các IoT Gateway hiện đại ngày càng tích hợp chức năng điện toán biên, cho phép xử lý và phân tích dữ liệu tại chỗ mà không cần phụ thuộc hoàn toàn vào kết nối đám mây. Cách tiếp cận xử lý phân tán này giúp phản hồi theo thời gian thực đối với các sự kiện quan trọng, giảm tải, giảm độ trễ cho các hệ thống xử lý trung tâm và tiết kiệm băng thông. Điện toán biên cho phép thực hiện các tác vụ như phát hiện bất thường, cảnh báo ngưỡng vượt, hoặc ra quyết định tác động nhanh chóng.
 
-                \paragraph{Thực thi bảo mật (security enforcement)}
-                    IoT gateway thường được xem như lớp phòng tuyến bảo mật đầu tiên của hạ tầng IoT. Thông qua gateway, các cơ chế như kiểm soát truy cập, xác thực và phân quyền thiết bị/người dùng, mã hóa dữ liệu (ví dụ: TLS/DTLS, VPN) và lọc gói (firewall, ACL) được triển khai tập trung ở một điểm. Gateway đóng vai trò điểm thực thi chính sách bảo mật (policy enforcement point), kiểm tra và áp dụng các quy tắc đối với cả lưu lượng từ thiết bị lên cloud (uplink) lẫn từ cloud về thiết bị (downlink). Bên cạnh đó, gateway có thể tích hợp các chức năng phát hiện bất thường, ghi nhật ký truy vết (audit log) và quản lý chứng chỉ số, giúp phục vụ công tác giám sát, phân tích sự cố và đảm bảo tuân thủ các yêu cầu an toàn thông tin của hệ thống.
+                \paragraph{Thực thi bảo mật (security enforcement):}
+                    IoT Gateway thường được xem như lớp phòng tuyến bảo mật đầu tiên của hạ tầng IoT. Thông qua gateway, các cơ chế như kiểm soát truy cập, xác thực và phân quyền thiết bị/người dùng, mã hóa dữ liệu (ví dụ: TLS/DTLS, VPN) và lọc gói (firewall, ACL) được triển khai tập trung ở một điểm. Gateway đóng vai trò điểm thực thi chính sách bảo mật (policy enforcement point), kiểm tra và áp dụng các quy tắc đối với cả lưu lượng từ thiết bị lên cloud (uplink) lẫn từ cloud về thiết bị (downlink). Bên cạnh đó, gateway có thể tích hợp các chức năng phát hiện bất thường, ghi nhật ký truy vết (audit log) và quản lý chứng chỉ số, giúp phục vụ công tác giám sát, phân tích sự cố và đảm bảo tuân thủ các yêu cầu an toàn thông tin của hệ thống.
 
-                \paragraph{Quản lý kết nối và thiết bị (connectivity and device management)}
-                    IoT gateway không chỉ duy trì kết nối mạng cho các thiết bị đầu cuối mà còn đóng vai trò nền tảng quản lý thiết bị tập trung. Thông qua gateway, hệ thống có thể giám sát trạng thái kết nối, chất lượng liên kết, cấu hình tham số hoạt động và điều khiển thiết bị từ xa. Gateway thường hỗ trợ các chức năng như tự động phát hiện (device discovery), đăng ký/huỷ đăng ký thiết bị, cập nhật firmware qua mạng (FOTA) và chẩn đoán lỗi từ xa. Việc tập trung các chức năng này tại gateway giúp đơn giản hóa công tác vận hành, giảm tải cho nền tảng cloud và cho phép quản trị viên quản lý toàn bộ hệ sinh thái IoT một cách thống nhất, hiệu quả.
+                \paragraph{Quản lý kết nối và thiết bị (connectivity and device management):}
+                    IoT Gateway không chỉ duy trì kết nối mạng cho các thiết bị đầu cuối mà còn đóng vai trò nền tảng quản lý thiết bị tập trung. Thông qua gateway, hệ thống có thể giám sát trạng thái kết nối, chất lượng liên kết, cấu hình tham số hoạt động và điều khiển thiết bị từ xa. Gateway thường hỗ trợ các chức năng như tự động phát hiện (device discovery), đăng ký/huỷ đăng ký thiết bị, cập nhật firmware qua mạng (FOTA) và chẩn đoán lỗi từ xa. Việc tập trung các chức năng này tại gateway giúp đơn giản hóa công tác vận hành, giảm tải cho nền tảng cloud và cho phép quản trị viên quản lý toàn bộ hệ sinh thái IoT một cách thống nhất, hiệu quả.
 
-                \paragraph{Lưu trữ cục bộ và bộ nhớ đệm (local storage and caching)}
-                    Nhiều IoT gateway cung cấp khả năng lưu trữ tạm thời, cho phép lưu đệm dữ liệu trong trường hợp mất kết nối và đồng bộ lại khi kết nối được khôi phục. Tính năng này giúp đảm bảo tính liên tục và toàn vẹn của dữ liệu trong các môi trường có kết nối mạng không ổn định. Bộ nhớ đệm cho phép gateway tiếp tục hoạt động độc lập trong một khoảng thời gian nhất định ngay cả khi kết nối với cloud bị ngắt.
-        \subsubsection{Cấu trúc của IoT gateway}
+                \paragraph{Lưu trữ cục bộ và bộ nhớ đệm (local storage and caching):}
+                    Nhiều IoT Gateway cung cấp khả năng lưu trữ tạm thời, cho phép lưu đệm dữ liệu trong trường hợp mất kết nối và đồng bộ lại khi kết nối được khôi phục. Tính năng này giúp đảm bảo tính liên tục và toàn vẹn của dữ liệu trong các môi trường có kết nối mạng không ổn định. Bộ nhớ đệm cho phép gateway tiếp tục hoạt động độc lập trong một khoảng thời gian nhất định ngay cả khi kết nối với cloud bị ngắt.
+        \subsubsection{Cấu trúc của IoT Gateway}
             Một IoT Gateway hiện đại được thiết kế theo kiến trúc nhiều lớp (layered architecture), trong đó mỗi lớp đảm nhận một nhóm chức năng cụ thể và phối hợp chặt chẽ với các lớp khác. Cấu trúc này không chỉ tạo ra sự tách biệt rõ ràng giữa phần cứng và phần mềm, mà còn cho phép gateway hoạt động như một nền tảng tính toán linh hoạt, có thể mở rộng và dễ bảo trì. Về tổng thể, kiến trúc của gateway có thể chia thành hai khối chính: khối phần cứng (hardware layer) đảm nhiệm việc thu nhận và truyền dẫn tín hiệu vật lý, và khối phần mềm nhiều lớp (multi-layer software stack) thực hiện các chức năng xử lý, quản lý và giao tiếp cấp cao.
             \begin{figure}[h]
                 \centering
                 \includegraphics[width=0.7\textwidth]{figures/iot_gateway_architecture.png}
                 \vspace{1em}
-                \caption{Cấu trúc của IoT gateway}
+                \caption{Cấu trúc của IoT Gateway}
                 \label{fig:iot_gateway_structure}
             \end{figure}
                 \paragraph{Kiến trúc phần cứng}

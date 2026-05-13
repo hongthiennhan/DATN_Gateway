@@ -12,9 +12,9 @@
 Các hãng sản xuất thiết bị mạng đã giải quyết triệt để rào cản kỹ thuật bằng cách trang bị cho thiết bị của họ các Cổng cấu hình Web (Web Configuration Portal) hoặc các phần mềm hỗ trợ thiết lập cực kỳ trực quan (Plug-and-Play). Một người dùng phổ thông, hoàn toàn không có kiến thức sâu về mạng máy tính hay lập trình, vẫn có thể dễ dàng cắm điện, kết nối vào thiết bị và thực hiện các thiết lập phức tạp (như cài đặt bảo mật, đổi mật khẩu, thiết lập dải IP, quản lý băng thông) thông qua vài cú nhấp chuột trên một giao diện đồ họa thân thiện.
 
     \subsection{Hạn chế của nền tảng IoT và thách thức thị trường}\label{sec:han_che_iot}
-        Dù các sản phẩm IoT gateway trên thị trường đã hỗ trợ rất tốt các yêu cầu cơ bản, tuy nhiên các giải pháp hiện nay vẫn tồn tại những hạn chế về kiến trúc phần cứng và phương thức vận hành, cụ thể:
+        Dù các sản phẩm IoT Gateway trên thị trường đã hỗ trợ rất tốt các yêu cầu cơ bản, tuy nhiên các giải pháp hiện nay vẫn tồn tại những hạn chế về kiến trúc phần cứng và phương thức vận hành, cụ thể:
         \begin{itemize}
-            \item \textbf{Sự đánh đổi giữa hiệu suất và chi phí đầu tư:} Các dòng Gateway sử dụng SoC chạy Linux (như Raspberry Pi) tuy mạnh mẽ nhưng có chi phí BOM cao và tiêu thụ năng lượng lớn. Ngược lại, các kiến trúc Single-MCU giá rẻ thường gặp tình trạng nghẽn cổ chai (blocking) khi phải xử lý đồng thời nhiều tác vụ mạng (LAN và WAN), dẫn đến thiếu ổn định.
+            \item \textbf{Bài toán cân bằng giữa hiệu suất và chi phí đầu tư:} Các dòng Gateway sử dụng SoC chạy Linux (như Raspberry Pi) tuy mạnh mẽ nhưng có chi phí BOM cao và tiêu thụ năng lượng lớn. Ngược lại, các kiến trúc Single-MCU giá rẻ thường gặp tình trạng nghẽn cổ chai (blocking) khi phải xử lý đồng thời nhiều tác vụ mạng (LAN và WAN), dẫn đến thiếu ổn định.
             \item \textbf{Thiếu khả năng linh hoạt và thay thế giao thức:} Đa số thiết bị hiện nay tích hợp cố định các module truyền thông (Zigbee, LoRa...) lên board mạch chính. Khi nhu cầu thực tế thay đổi, việc không thể thay thế linh hoạt các loại giao thức buộc người dùng phải thay mới toàn bộ thiết bị, gây lãng phí và khó khăn trong việc mở rộng hệ thống.
             \item \textbf{Yêu cầu trình độ chuyên môn cao trong cấu hình và triển khai:} Mặc dù một số nền tảng như M5Stack cho phép thay thế module vật lý, nhưng việc vận hành vẫn đòi hỏi người dùng phải can thiệp trực tiếp vào mã nguồn (re-code) và nạp lại firmware mỗi khi thay đổi tham số. Điều này tạo ra rào cản lớn đối với những người dùng không có nền tảng chuyên môn sâu về kỹ thuật.
             \item \textbf{Sự thiếu hụt về giải pháp cấu hình thân thiện:} Hiện tại, thị trường vẫn thiếu các sản phẩm có phần mềm và firmware được thiết kế theo hướng "tự cấu hình". Việc phụ thuộc hoàn toàn vào kỹ sư firmware để thay đổi cấu hình khiến quá trình bảo trì tại hiện trường trở nên chậm chạp và tốn kém.
@@ -22,7 +22,7 @@ Các hãng sản xuất thiết bị mạng đã giải quyết triệt để r�
 
     \subsection{Sản phẩm đề xuất}
         Sản phẩm tập trung vào hai vấn đề cốt lõi nhằm giải quyết các hạn chế đã nêu trong \autoref{sec:han_che_iot}, đó là \textbf{Tính module hóa} và \textbf{Tính dễ cấu hình}.
-        Nhằm khắc phục các rào cản về chi phí, sự phức tạp trong vận hành và tính thiếu linh hoạt của các giải pháp hiện nay, đồ án đề xuất phát triển một hệ thống IoT gateway với các đặc điểm sau:
+        Nhằm khắc phục các rào cản về chi phí, sự phức tạp trong vận hành và tính thiếu linh hoạt của các giải pháp hiện nay, đồ án đề xuất phát triển một hệ thống IoT Gateway với các đặc điểm sau:
         \begin{itemize}
             \item \textbf{Tính module hóa toàn diện:}
             \begin{itemize}

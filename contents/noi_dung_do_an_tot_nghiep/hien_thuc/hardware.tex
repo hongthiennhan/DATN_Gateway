@@ -1,4 +1,4 @@
-\section{Đặc tả Kỹ thuật và Yêu cầu Thiết kế}
+\section{Đặc tả kỹ thuật và yêu cầu thiết kế}
 
     Thiết kế phần cứng của IoT Gateway tập trung vào ba yêu cầu cốt lõi:
     \begin{itemize}
@@ -54,7 +54,7 @@
         USB Bridge & CP2102-GMR & UART qua USB-C cho debug và nạp firmware \\ \hline
 
         \multicolumn{3}{|l|}{\textbf{IC bảo vệ và quản lý nguồn}} \\ \hline
-        Power MUX & TPS2121RUXR & Chọn ưu tiên nguồn 12V hoặc 5V USB \\ \hline
+        Power MUX & TPS2121RUXR & Chọn nguồn 12V hoặc 5V USB \\ \hline
         Bộ sạc pin & BQ25892RTWR & Sạc LiPo + power-path quản lý VSYS \\ \hline
         Giám sát công suất & INA230AIRGTR & Đo dòng/áp thời gian thực qua I\textsuperscript{2}C \\ \hline
         Quản lý pin & BQ27441DRZR-G1B & Fuel gauge, thuật toán Impedance Track\texttrademark \\ \hline
@@ -276,31 +276,30 @@
 
         Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
 
-        \begin{figure}[H]
+        \clearpage
+        \begin{figure}[p]
             \centering
-            \begin{subfigure}[t]{0.48\textwidth}
-                \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_esp32master.png}
-                \caption{Sơ đồ nguyên lý ESP32 Master}
-                \label{fig:sche_esp32master}
-            \end{subfigure}
-            \hfill
-            \begin{subfigure}[t]{0.48\textwidth}
-                \centering
-                \includegraphics[width=\textwidth]{figures/DATN/sche_esp32slave.png}
-                \caption{Sơ đồ nguyên lý ESP32 Slave}
-                \label{fig:sche_esp32slave}
-            \end{subfigure}
+            \includegraphics[width=\textwidth,height=0.86\textheight,keepaspectratio]{figures/DATN/sche_esp32master.png}
+            \caption*{(a) Sơ đồ nguyên lý ESP32 Master}
             \caption{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
             \label{fig:sche_esp32_master_slave}
         \end{figure}
+
+        \clearpage
+        \begin{figure}[p]\ContinuedFloat
+            \centering
+            \includegraphics[width=\textwidth,height=0.86\textheight,keepaspectratio]{figures/DATN/sche_esp32slave.png}
+            \caption*{(b) Sơ đồ nguyên lý ESP32 Slave}
+            \caption[]{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
+        \end{figure}
+        \clearpage
 
         Kiến trúc Dual-MCU Master-Slave kết nối qua Quad SPI (60\,MHz) đảm bảo tính toàn vẹn khi đồng bộ dữ liệu giữa hai SoC ESP32-S3. Việc Master quản lý trực tiếp các tín hiệu Reset, Boot và UART0 cho phép điều phối tập trung và thực thi FOTA gián tiếp cho Slave. Cơ chế này, kết hợp cùng tín hiệu ngắt phản hồi từ Slave, tối ưu hóa tốc độ tương tác và duy trì sự ổn định vận hành của hệ thống.
 
         Đối với các đường tín hiệu clock của bus Quad SPI, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu theo khuyến nghị trong tài liệu thiết kế phần cứng ESP32-S3\cite{Esp32S3HardwareDesignGuidelines}.
 
         \paragraph{Chuẩn giao tiếp Quad SPI giữa hai MCU:}\par
-            Bus Quad SPI (4-bit data, 80\,MHz phía Master -- 60\,MHz phía Slave) là kênh truyền dữ liệu chính giữa MASTER WAN-MCU và SLAVE LAN-MCU. Bên cạnh Quad SPI, hệ thống còn sử dụng:
+            Bus Quad SPI (4-bit data, 60\,MHz phía Master -- 60\,MHz phía Slave) là kênh truyền dữ liệu chính giữa MASTER WAN-MCU và SLAVE LAN-MCU. Bên cạnh Quad SPI, hệ thống còn sử dụng:
             \begin{itemize}
                 \item \textbf{UART (Firmware Flow):} Kênh chuyên biệt để Master nạp firmware cho Slave thông qua các chân UART0 và tín hiệu Boot/Reset điều khiển trực tiếp.
                 \item \textbf{GPIO (Control):} Các đường tín hiệu điều khiển trạng thái (Boot, Reset, Interrupt) đảm bảo đồng bộ hoạt động giữa hai SoC.
@@ -375,7 +374,7 @@
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=\textwidth]{figures/DATN/sche_wan-lan_conn.png}
+            \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,height=0.72\textheight,keepaspectratio]{figures/DATN/sche_wan-lan_conn.png}}
             \caption{Sơ đồ nguyên lý mạch WAN/LAN Connector}
             \label{fig:sche_wan-lan_conn}
         \end{figure}
@@ -397,7 +396,7 @@
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=\textwidth]{figures/DATN/sche_wanephy.png}
+            \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,height=0.74\textheight,keepaspectratio]{figures/DATN/sche_wanephy.png}}
             \caption{Sơ đồ nguyên lý mạch WAN Adapter Ethernet}
             \label{fig:sche_wanephy}
         \end{figure}
@@ -415,7 +414,7 @@
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=\textwidth]{figures/DATN/sche_lan.png}
+            \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,height=0.74\textheight,keepaspectratio]{figures/DATN/sche_lan.png}}
             \caption{Sơ đồ nguyên lý mạch LAN Adapter}
             \label{fig:sche_lan}
         \end{figure}
@@ -576,14 +575,16 @@
 
         \begin{figure}[H]
             \centering
-            \begin{subfigure}[t]{0.48\textwidth}
+            \begin{subfigure}[t]{0.95\textwidth}
                 \centering
                 \includegraphics[width=\textwidth]{figures/impedance_50R.png}
                 \caption{Thông số CPWG đơn cực $50\,\Omega$}
                 \label{fig:impedance_50R}
             \end{subfigure}
-            \hfill
-            \begin{subfigure}[t]{0.48\textwidth}
+
+            \vspace{1em}
+
+            \begin{subfigure}[t]{0.95\textwidth}
                 \centering
                 \includegraphics[width=\textwidth]{figures/impedance_90R.png}
                 \caption{Thông số CPWG vi sai $90\,\Omega$}
@@ -641,101 +642,7 @@
             \label{fig:pcb_emi_stitching}
         \end{figure}
 
-\section{Kiểm chứng Mô phỏng SI/PI}
-
-    Sau khi hoàn thiện layout PCB, mô phỏng Signal Integrity (SI) và Power Integrity (PI) được thực hiện để xác minh rằng các quyết định thiết kế đã đáp ứng các yêu cầu kỹ thuật đề ra trong \autoref{tab:hw_spec}.
-
-    \subsection{Kết quả Mô phỏng Toàn vẹn Tín hiệu (SI)}
-
-        \paragraph{Tín hiệu đơn cực -- SPI/SDIO:}\par
-            Mô phỏng trở kháng và độ trễ lan truyền trên các đường SPI/SDIO cho kết quả:
-
-            \begin{figure}[H]
-                \centering
-                \begin{subfigure}[t]{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sdio_sim_impedance.png}
-                    \caption{Biểu đồ phân bố trở kháng đường SPI/SDIO}
-                    \label{fig:sdio_impedance_ch4}
-                \end{subfigure}
-                \hfill
-                \begin{subfigure}[t]{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/sdio_sim_delay.png}
-                    \caption{Biểu đồ phân bố độ trễ lan truyền đường SPI/SDIO}
-                    \label{fig:sdio_delay_ch4}
-                \end{subfigure}
-                \caption{Kết quả mô phỏng SI tín hiệu đơn cực SPI/SDIO}
-                \label{fig:si_single_ended_ch4}
-            \end{figure}
-
-            \begin{itemize}
-                \item Trở kháng đặc tính trung bình: $Z_0 = 47$--$48\,\Omega$ -- nằm trong dải dung sai $50\,\Omega \pm 10\%$.
-                \item Độ trễ lan truyền: 156--159\,ps -- biên độ dao động hẹp, xác nhận length matching hiệu quả.
-                \item Tổn hao phản xạ (Return Loss): $\approx -21\,\text{dB}$ -- năng lượng phản xạ tại tải không đáng kể.
-                \item Tổn hao chèn (Insertion Loss): $\approx 0\,\text{dB}$ -- tín hiệu truyền đến đích với tổn hao cực thấp.
-            \end{itemize}
-
-        \paragraph{Tín hiệu vi sai -- USB D+/D--:}\par
-            Mô phỏng trở kháng vi sai và độ trễ trên cặp USB D+/D-- cho kết quả:
-
-            \begin{figure}[H]
-                \centering
-                \begin{subfigure}[t]{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/usb_sim_impedance.png}
-                    \caption{Biểu đồ phân bố trở kháng vi sai USB}
-                    \label{fig:usb_impedance_ch4}
-                \end{subfigure}
-                \hfill
-                \begin{subfigure}[t]{0.48\textwidth}
-                    \centering
-                    \includegraphics[width=\textwidth]{figures/DATN/usb_sim_delay.png}
-                    \caption{Biểu đồ phân bố độ trễ lan truyền USB}
-                    \label{fig:usb_delay_ch4}
-                \end{subfigure}
-                \caption{Kết quả mô phỏng SI tín hiệu vi sai USB D+/D--}
-                \label{fig:si_differential_ch4}
-            \end{figure}
-
-            \begin{itemize}
-                \item Trở kháng vi sai: $Z_{diff} = 84\,\Omega$ -- nằm trong dải dung sai $90\,\Omega \pm 10\%$.
-                \item Độ trễ lan truyền: 125\,ps -- sự đồng nhất màu sắc trên hai nhánh D+/D-- xác nhận phase matching tốt.
-                \item Tổn hao phản xạ: $\approx -15\,\text{dB}$ -- đảm bảo toàn vẹn tín hiệu USB 2.0 High-Speed.
-                \item Tổn hao chèn: $\approx 0\,\text{dB}$ -- không có tổn hao năng lượng đáng kể trên đường truyền.
-            \end{itemize}
-
-    \subsection{Kết quả Mô phỏng Toàn vẹn Nguồn (PI)}
-
-        Mô phỏng PDN được thực hiện ở trạng thái tải ước tính 20\% công suất lý thuyết trên 5 rail nguồn chính. Tiêu chí chấp nhận: độ sụt áp IR Drop không vượt quá 5\% so với điện áp danh định.
-
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.45\textwidth]{figures/4v2_vsys_sim_current_density_outer.png}
-            \includegraphics[width=0.45\textwidth]{figures/4v2_vsys_sim_voltage_drop.png}
-            \caption{Biểu đồ mật độ dòng và phân bố điện áp rail +4V2\_VSYS (rail có tải cao nhất)}
-            \label{fig:pi_4v2_vsys_ch4}
-        \end{figure}
-
-        Kết quả mô phỏng trên tất cả 5 rail được tổng hợp trong \autoref{tab:pi_summary}:
-
-        \begin{longtable}{|l|c|c|c|c|}
-            \caption{Tổng hợp kết quả mô phỏng IR Drop các rail nguồn} \label{tab:pi_summary} \\
-            \hline
-            \textbf{Rail nguồn} & \textbf{V\textsubscript{danh định}} & \textbf{V\textsubscript{tải min}} & \textbf{\%\,IR Drop} & \textbf{Đánh giá} \\ \hline
-            \endfirsthead
-            \hline
-            \textbf{Rail nguồn} & \textbf{V\textsubscript{danh định}} & \textbf{V\textsubscript{tải min}} & \textbf{\%\,IR Drop} & \textbf{Đánh giá} \\ \hline
-            \endhead
-            \hline
-            \endfoot
-            \hline
-            \endlastfoot
-            +4V2\_VSYS  & 4.2\,V & 4.152\,V & 0.63\% & \textbf{Đạt} (< 5\%) \\ \hline
-            +5V0\_CTRL  & 5.0\,V & 4.913\,V & 0.16\% & \textbf{Đạt} (< 5\%) \\ \hline
-            +3V3        & 3.3\,V & 3.278\,V & 0.21\% & \textbf{Đạt} (< 5\%) \\ \hline
-            +3V3\_CTRL  & 3.3\,V & 3.265\,V & 0.33\% & \textbf{Đạt} (< 5\%) \\ \hline
-            +3V7\_VBAT  & 3.7\,V & 3.666\,V & 0.47\% & \textbf{Đạt} (< 5\%) \\ \hline
-        \end{longtable}
+    \paragraph{Phụ lục mô phỏng SI/PI:}\par
+        Phần kiểm chứng chi tiết về Signal Integrity (SI) và Power Integrity (PI) được chuyển về Phụ lục ``Phân tích và Mô phỏng toàn vẹn tín hiệu và nguồn'' để ưu tiên không gian hiển thị cho các sơ đồ nguyên lý và layout PCB trong chương này.
 
         Tất cả 5 rail nguồn có độ sụt áp dưới 1\%, thấp hơn đáng kể so với ngưỡng cho phép 5\%. Kết quả này xác nhận rằng thiết kế PDN đa tầng kết hợp với stack-up 6 lớp và kỹ thuật routing tối ưu hóa đường hồi dòng đã đạt được mục tiêu thiết kế về toàn vẹn nguồn cho toàn hệ thống IoT Gateway.
