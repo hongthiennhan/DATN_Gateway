@@ -275,8 +275,6 @@
     \subsection{Thiết kế Mạch xử lý trung tâm}
 
         Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
-
-        \clearpage
         \begin{figure}[p]
             \centering
             \makebox[\textwidth][c]{%
@@ -302,7 +300,6 @@
             \caption{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
             \label{fig:sche_esp32_master_slave}
         \end{figure}
-        \clearpage
 
         Kiến trúc Dual-MCU Master-Slave kết nối qua Quad SPI (60\,MHz) đảm bảo tính toàn vẹn khi đồng bộ dữ liệu giữa hai SoC ESP32-S3. Việc Master quản lý trực tiếp các tín hiệu Reset, Boot và UART0 cho phép điều phối tập trung và thực thi FOTA gián tiếp cho Slave. Cơ chế này, kết hợp cùng tín hiệu ngắt phản hồi từ Slave, tối ưu hóa tốc độ tương tác và duy trì sự ổn định vận hành của hệ thống.
 
@@ -402,15 +399,14 @@
         \end{figure}
 
         \paragraph{Chuẩn giao tiếp trên WAN Adapter Ethernet:}\par
-            Adapter Ethernet sử dụng giao thức SPI để giao tiếp với IC W5500. Trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY được bố trí điện trở nối tiếp 33\,\(\Omega\) để giảm chấn tín hiệu\cite{Sim7600SeriesPcieHardwareDesign}.
+            Adapter Ethernet sử dụng giao thức SPI để giao tiếp với IC W5500. Trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY được bố trí điện trở nối tiếp 33\,\(\Omega\) để giảm chấn tín hiệu.
 
         \begin{figure}[H]
             \centering
-            \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,height=0.74\textheight,keepaspectratio]{figures/DATN/sche_wanephy.png}}
+            \makebox[\textwidth][c]{\includegraphics[width=1.00\textwidth,height=0.74\textheight,keepaspectratio]{figures/DATN/sche_wanephy.png}}
             \caption{Sơ đồ nguyên lý mạch WAN Adapter Ethernet}
             \label{fig:sche_wanephy}
         \end{figure}
-
         Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, nâng cao tính linh hoạt và khả năng mở rộng của hệ thống.
 
         \paragraph{Chuẩn giao tiếp trên LAN Adapter:}\par
@@ -424,7 +420,7 @@
 
         \begin{figure}[H]
             \centering
-            \makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth,height=0.74\textheight,keepaspectratio]{figures/DATN/sche_lan.png}}
+            \makebox[\textwidth][c]{\includegraphics[width=1.0\textwidth,height=0.74\textheight,keepaspectratio]{figures/DATN/sche_lan.png}}
             \caption{Sơ đồ nguyên lý mạch LAN Adapter}
             \label{fig:sche_lan}
         \end{figure}
@@ -588,7 +584,7 @@
             \makebox[\textwidth][c]{%
                 \begin{minipage}{1.35\textwidth}
                     \centering
-                    \begin{subfigure}[t]{0.98\textwidth}
+                    \begin{subfigure}[t]{0.75\textwidth}
                         \centering
                         \includegraphics[width=\textwidth]{figures/impedance_50R.png}
                         \caption{Thông số CPWG đơn cực $50\,\Omega$}
@@ -597,7 +593,7 @@
 
                     \vspace{1em}
 
-                    \begin{subfigure}[t]{0.98\textwidth}
+                    \begin{subfigure}[t]{0.75\textwidth}
                         \centering
                         \includegraphics[width=\textwidth]{figures/impedance_90R.png}
                         \caption{Thông số CPWG vi sai $90\,\Omega$}
