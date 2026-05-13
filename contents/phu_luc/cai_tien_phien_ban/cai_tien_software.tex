@@ -1,4 +1,5 @@
-﻿\section{Cải tiến về Software}
+﻿\clearpage
+\section{Cải tiến về Software}
     So với phiên bản Đồ án 2 vốn chỉ tập trung vào PC App hỗ trợ cấu hình WAN và các giao tiếp LAN cơ bản (LoRa, CAN, RS485), phần mềm cấu hình phiên bản Đồ án Tốt nghiệp (DATN\_config\_app) đã được module hóa mạnh mẽ để đồng bộ với kiến trúc firmware mới. Bên cạnh việc duy trì hai chế độ Basic và Advanced, phiên bản Đồ án Tốt nghiệp mở rộng thêm các nhánh cấu hình chuyên sâu cho BLE, BLE Native, Zigbee và chuẩn hóa toàn bộ quy trình qua cơ chế dữ liệu JSON. Sự chuyển đổi này giúp thay thế các lệnh rời rạc bằng một hệ thống quản lý module thống nhất, nâng cao khả năng can thiệp và mở rộng linh hoạt cho hệ thống Gateway.
     % \newpage
     \begin{figure}[p]
@@ -48,8 +49,9 @@
         \caption{So sánh logic cấu hình giữa phiên bản Đồ án 2 và phiên bản Đồ án Tốt nghiệp}
     \end{figure}
 
-    Phần cấu hình server ở phiên bản Đồ án Tốt nghiệp đã được chuẩn hóa cho đa giao thức (MQTT, HTTP/HTTPS, CoAP) thay vì chỉ tập trung vào MQTT như phiên bản Đồ án 2, cho phép tùy chỉnh trực tiếp các tham số chuyên sâu như TLS, token và cơ chế truyền lại ngay trên giao diện. Đặc biệt, hệ thống bổ sung Web Config Portal chạy trực tiếp trên gateway, hỗ trợ mDNS và captive portal, đánh dấu bước chuyển quan trọng từ việc phụ thuộc vào kết nối máy tính qua cổng COM sang mô hình cấu hình không dây qua trình duyệt. Sự kết hợp giữa phần mềm desktop hoàn thiện và giao diện web trực tiếp giúp gateway đạt được sự tiện lợi và linh hoạt tối đa trong việc vận hành và giám sát trạng thái hệ thống.
-    % \newpage
+    Bên cạnh các cải tiến giao diện và logic cấu hình, phần cấu hình server của PC App phiên bản Đồ án Tốt nghiệp cũng được nâng cấp để hỗ trợ đa giao thức (MQTT, HTTP/HTTPS, CoAP) thay vì chỉ tập trung vào MQTT như trước. Người dùng có thể tùy chỉnh trực tiếp các tham số chuyên sâu như TLS, token và cơ chế truyền lại ngay trên giao diện, mà không cần can thiệp vào cấu hình cứng trong mã nguồn.
+
+    Điểm cải tiến nổi bật nhất là việc bổ sung Web Config Portal chạy trực tiếp trên gateway, hỗ trợ mDNS và captive portal. Đây là bước chuyển từ mô hình phụ thuộc hoàn toàn vào kết nối máy tính qua cổng COM sang cấu hình không dây qua trình duyệt, giúp vận hành và giám sát hệ thống linh hoạt hơn đáng kể.
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.9\textwidth]{figures/web_config_portal_ver_1_0_0.png}
