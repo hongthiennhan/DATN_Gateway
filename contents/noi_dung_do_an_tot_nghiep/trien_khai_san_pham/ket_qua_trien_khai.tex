@@ -12,6 +12,25 @@ Quá trình hiện thực hóa nguyên mẫu (prototype) đã bám sát các thi
     \item \textbf{Khả năng kết nối:} Sản phẩm đã thực hiện kết nối thành công với hạ tầng đám mây thông qua Wi-Fi, Ethernet (W5500) và LTE. Cơ chế Internet Monitor hoạt động đúng, tự động thay thế giao diện khi phát hiện mất kết nối. Đồng thời, hệ thống đã đọc và xử lý chính xác dữ liệu từ các cảm biến/thiết bị đầu cuối sử dụng giao thức LoRa, Zigbee, BLE Native/GATT, CAN và RS-485 thông qua các module chuyển đổi tương ứng. Hệ thống tự động phát hiện module (auto module detection) từ NVS khi khởi động.
 \end{itemize}
 
+\subsection{Giao diện giám sát và quản lý thiết bị đầu cuối}
+
+Trong quá trình thử nghiệm tích hợp, hệ thống gateway vận hành đồng thời với 7 thiết bị đầu cuối thuộc ba giao thức BLE, Zigbee và LoRa P2P. Dữ liệu telemetry từ tất cả thiết bị được tổng hợp tại Gateway, đóng gói theo định dạng JSON và đẩy liên tục lên MQTT Broker (Mosquitto trên Raspberry Pi), sau đó hiển thị trên dashboard ThingsBoard.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/giao_dien.png}
+    \caption{Dashboard giám sát thiết bị -- quản lý đồng thời 7 node (BLE/Zigbee/LoRa P2P) với dữ liệu nhiệt độ, độ ẩm và trạng thái LED theo thời gian thực.}
+    \label{fig:monitor_dashboard}
+\end{figure}
+
+Giao diện giám sát cung cấp các chức năng cốt lõi:
+\begin{itemize}
+    \item \textbf{Quét và kết nối thiết bị:} Danh sách \textit{Available Devices} hiển thị 20 thiết bị BLE khả dụng trong vùng phủ sóng. Người dùng có thể nhấn \textit{Connect/Disconnect} để quản lý từng kết nối độc lập.
+    \item \textbf{Giám sát trạng thái:} Panel \textit{Connected Devices} hiển thị trạng thái tất cả node đang kết nối (Online/Stale), cùng địa chỉ MAC, thời điểm cập nhật cuối và giá trị thuộc tính mới nhất (nhiệt độ 27.7--28.6$^\circ$C, độ ẩm 51--57\%).
+    \item \textbf{Điều khiển thiết bị từ xa (Downlink):} Với node LED GATT, người dùng có thể chọn màu sắc (đỏ, xanh lá, xanh dương, vàng, trắng) và gửi lệnh ON/OFF trực tiếp từ dashboard. Lệnh được WAN-MCU nhận qua MQTT Subscribe, chuyển tiếp xuống LAN-MCU qua Quad SPI, sau đó LAN-MCU phát BLE GATT Write đến thiết bị.
+    \item \textbf{Monitor Console:} Hiển thị log telemetry thời gian thực bao gồm dữ liệu BLE EVT, ZigBee report và LoRa Frame với timestamp, RSSI và SNR. Dòng log \texttt{[Telemetry] ZIG12/...EVT:55} và \texttt{CFLR0:EVT+TEST} xác nhận gateway xử lý đồng thời đa giao thức mà không có xung đột.
+\end{itemize}
+
 \subsection{Mục tiêu đã đạt được}
 
 Việc triển khai thực tế đã chứng minh hệ thống đạt được các mục tiêu cốt lõi đề ra:

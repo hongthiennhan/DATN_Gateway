@@ -50,6 +50,26 @@
         \item \textbf{Web Config Portal:} Gateway khởi tạo điểm truy cập Wi-Fi (AP mode) với hỗ trợ mDNS và captive portal, cho phép người dùng truy cập giao diện cấu hình trực tiếp qua trình duyệt mà không cần cài đặt phần mềm bổ sung.
     \end{itemize}
 
+    \paragraph{Giao diện Web Config Portal:}\par
+        Web Config Portal cho phép người dùng cấu hình gateway ngay trên trình duyệt thông qua địa chỉ \texttt{gateway.local} (mDNS). Giao diện được tổ chức theo tab chức năng: \textbf{WiFi} (SSID, mật khẩu, chế độ xác thực Personal/Enterprise), \textbf{LTE} (APN, SIM PIN), \textbf{Server} (loại giao thức MQTT/HTTP, địa chỉ broker, token xác thực), và \textbf{Interfaces} (cấu hình giao diện LAN/WAN). Người dùng có thể bật tùy chọn \textit{Enable LTE/Ethernet fallback when WiFi fails} để kích hoạt cơ chế tự động chuyển đổi dự phòng mà không cần chỉnh sửa firmware.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.85\textwidth]{figures/hinh_web_final.png}
+        \caption{Giao diện Web Config Portal -- cấu hình WiFi và kết nối dự phòng qua trình duyệt tại \texttt{gateway.local}.}
+        \label{fig:web_config_portal}
+    \end{figure}
+
+    \paragraph{Ứng dụng cấu hình PC:}\par
+        Ứng dụng desktop (\texttt{ESP32 Gateway Configuration Tool}) giao tiếp trực tiếp với gateway qua cổng COM (USB-C, CP2102-GMR) ở tốc độ 115200 baud. Sau khi kết nối, giao diện hiển thị trạng thái \textit{Config success: CFZB:JSON:OK} khi cấu hình được áp dụng thành công. Giao diện chia thành ba tab: \textbf{Internet} (WiFi/LTE), \textbf{Server} (cài đặt MQTT Broker và Device Token để kết nối ThingsBoard/AWS IoT/Azure IoT), và \textbf{Interfaces} (kích hoạt các giao thức LAN). Ứng dụng hỗ trợ lưu và tải file cấu hình JSON (\textit{Save File / Load File}) để provisioning hàng loạt thiết bị.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.85\textwidth]{figures/hinh_app_final.png}
+        \caption{Ứng dụng cấu hình PC -- thiết lập MQTT Broker và Server Config qua cổng USB-C (COM44, 115200 baud).}
+        \label{fig:pc_config_app}
+    \end{figure}
+
     \subsection{Cập nhật Firmware (FOTA)}
 
     Gateway hỗ trợ quy trình cập nhật firmware an toàn (Safety FOTA) nhằm giảm thiểu rủi ro hỏng thiết bị (brick). Trong phiên bản Đồ án Tốt nghiệp, LAN-MCU được cập nhật thông qua cơ chế \textbf{Wi-Fi NAT}: WAN-MCU khởi tạo một điểm truy cập Wi-Fi (NAT mode), LAN-MCU kết nối vào đó và tải gói firmware trực tiếp — cải thiện đáng kể băng thông so với phương thức PPP qua UART của phiên bản nguyên mẫu. Quy trình bao gồm kiểm tra tính toàn vẹn (checksum/signature), cập nhật tuần tự từng MCU và cơ chế khôi phục (rollback) nếu quá trình gặp lỗi.
