@@ -279,18 +279,28 @@
         \clearpage
         \begin{figure}[p]
             \centering
-            \includegraphics[width=\textwidth,height=0.86\textheight,keepaspectratio]{figures/DATN/sche_esp32master.png}
-            \caption*{(a) Sơ đồ nguyên lý ESP32 Master}
+            \makebox[\textwidth][c]{%
+                \begin{minipage}{1.1\textwidth}
+                    \centering
+                    \begin{subfigure}[t]{\textwidth}
+                        \centering
+                        \includegraphics[width=\textwidth,height=0.44\textheight,keepaspectratio]{figures/DATN/sche_esp32master.png}
+                        \caption{Sơ đồ nguyên lý ESP32 Master}
+                        \label{fig:sche_esp32master}
+                    \end{subfigure}
+
+                    \vspace{0.5em}
+
+                    \begin{subfigure}[t]{\textwidth}
+                        \centering
+                        \includegraphics[width=\textwidth,height=0.44\textheight,keepaspectratio]{figures/DATN/sche_esp32slave.png}
+                        \caption{Sơ đồ nguyên lý ESP32 Slave}
+                        \label{fig:sche_esp32slave}
+                    \end{subfigure}
+                \end{minipage}%
+            }
             \caption{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
             \label{fig:sche_esp32_master_slave}
-        \end{figure}
-
-        \clearpage
-        \begin{figure}[p]\ContinuedFloat
-            \centering
-            \includegraphics[width=\textwidth,height=0.86\textheight,keepaspectratio]{figures/DATN/sche_esp32slave.png}
-            \caption*{(b) Sơ đồ nguyên lý ESP32 Slave}
-            \caption[]{Sơ đồ nguyên lý hai SoC ESP32-S3 trong kiến trúc Dual-MCU}
         \end{figure}
         \clearpage
 
@@ -575,21 +585,26 @@
 
         \begin{figure}[H]
             \centering
-            \begin{subfigure}[t]{0.95\textwidth}
-                \centering
-                \includegraphics[width=\textwidth]{figures/impedance_50R.png}
-                \caption{Thông số CPWG đơn cực $50\,\Omega$}
-                \label{fig:impedance_50R}
-            \end{subfigure}
+            \makebox[\textwidth][c]{%
+                \begin{minipage}{1.35\textwidth}
+                    \centering
+                    \begin{subfigure}[t]{0.98\textwidth}
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/impedance_50R.png}
+                        \caption{Thông số CPWG đơn cực $50\,\Omega$}
+                        \label{fig:impedance_50R}
+                    \end{subfigure}
 
-            \vspace{1em}
+                    \vspace{1em}
 
-            \begin{subfigure}[t]{0.95\textwidth}
-                \centering
-                \includegraphics[width=\textwidth]{figures/impedance_90R.png}
-                \caption{Thông số CPWG vi sai $90\,\Omega$}
-                \label{fig:impedance_90R}
-            \end{subfigure}
+                    \begin{subfigure}[t]{0.98\textwidth}
+                        \centering
+                        \includegraphics[width=\textwidth]{figures/impedance_90R.png}
+                        \caption{Thông số CPWG vi sai $90\,\Omega$}
+                        \label{fig:impedance_90R}
+                    \end{subfigure}
+                \end{minipage}%
+            }
             \caption{Thông số kích thước kiểm soát trở kháng CPWG trên PCB (đơn vị: mm)}
             \label{fig:pcb_impedance}
         \end{figure}
