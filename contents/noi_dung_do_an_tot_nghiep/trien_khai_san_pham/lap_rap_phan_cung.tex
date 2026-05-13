@@ -52,22 +52,3 @@ Sản phẩm được xây dựng dựa trên triết lý thiết kế "Module h
     \caption{Các Module Adapter đang hỗ trợ.}
 \end{figure}
 
-\subsection{Kết quả kết nối thiết bị đầu cuối}
-
-Để kiểm chứng khả năng tích hợp đa giao thức, hệ thống IoT Gateway được triển khai thử nghiệm thực tế cùng với nhiều thiết bị đầu cuối hoạt động đồng thời. Cụ thể, các thiết bị kết nối vào hệ thống bao gồm:
-
-\begin{itemize}
-    \item \textbf{BLE (Bluetooth Low Energy):} Các node cảm biến nhiệt độ--độ ẩm (DA2\_SENSOR) và thiết bị LED GATT (DA2\_LED\_GATT) giao tiếp trực tiếp qua BLE Native với LAN-MCU.
-    \item \textbf{Zigbee:} Node cảm biến Zigbee (E180-ZG120B, EBYTE) kết nối qua LAN Adapter, dữ liệu được chuyển tiếp lên LAN-MCU qua UART.
-    \item \textbf{LoRa P2P:} Node đầu cuối (Wio-E5-LE mini) truyền dữ liệu theo giao thức LoRa Point-to-Point, thu thập qua LAN Adapter.
-    \item \textbf{MQTT Broker cục bộ:} Raspberry Pi đóng vai trò server MQTT (Mosquitto), nhận dữ liệu telemetry từ Gateway và cung cấp dashboard giám sát qua ThingsBoard.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/DATN/trien_khai_ket_noi.png}
-    \caption{Prototype IoT Gateway kết nối đồng thời với các thiết bị đầu cuối BLE, Zigbee và LoRa P2P trong môi trường thử nghiệm.}
-    \label{fig:trien_khai_ket_noi}
-\end{figure}
-
-Kết quả cho thấy gateway nhận diện tự động tất cả module adapter đang cắm (dựa trên Device ID 4-bit từ IO Expander), khởi tải driver tương ứng từ NVS và thiết lập kênh truyền dữ liệu liên tục lên cloud mà không cần can thiệp thủ công vào firmware.
