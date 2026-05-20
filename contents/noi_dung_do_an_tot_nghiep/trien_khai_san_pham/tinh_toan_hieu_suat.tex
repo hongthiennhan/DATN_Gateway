@@ -386,37 +386,7 @@
         \end{itemize}
         
         \textbf{Kết luận:} Bus SPI hoàn toàn không phải nút thắt -- hệ số sử dụng trung bình chỉ đạt $0{,}183\%$, worst-case $6{,}93\%$ (khi toàn bộ 29 node gửi frame tối đa đồng thời). Nguy cơ suy giảm PDR xuất phát từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao (mỗi $10\,\text{ms}$); đây là điểm cần tối ưu để đạt mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng.
-        
-        \subsection{So sánh hiệu năng với Gateway tham chiếu M5Stack CoreS3}
-        \label{subsec:perf_compare}
-        
-        Để đánh giá kiến trúc Dual-MCU, mục này đối chiếu sản phẩm đồ án với một giải pháp thương mại tiêu biểu là \textbf{M5Stack CoreS3} -- một nền tảng Single-MCU sử dụng một ESP32-S3 duy nhất xử lý đồng thời toàn bộ tác vụ LAN (Zigbee, BLE, LoRa) và WAN (Wi-Fi, MQTT, TLS). Cấu hình so sánh giữ nguyên kịch bản tải đã sử dụng ở các mục trước: 20 node Zigbee, 8 node BLE và 1 node LoRa. Hai chỉ số phân biệt cốt lõi giữa hai kiến trúc là độ trễ End-to-End dưới tải và khả năng chịu burst đồng thời; thông lượng peak gần như không khác biệt do hai kiến trúc cùng bị giới hạn bởi UART 115200\,bps tới module Zigbee ($T_{UART} \approx 12{,}67\,\text{ms/frame}$), LoRa ($T_{UART} \approx 16{,}1\,\text{ms/frame}$) và Connection Interval của BLE.
-        
-        \textbf{Tương đồng về thông lượng peak.} Cả hai kiến trúc đều đạt $R_{peak,Zigbee} \approx 62\,\text{kbps}$, $R_{peak,BLE} \approx 781\,\text{kbps}$ (8 thiết bị) và $R_{peak,LoRa} \approx 3{,}52\,\text{kbps}$ vì các bottleneck nằm ở giao thức và bus tới module ngoài, không phải ở MCU. Ưu thế thực sự của Dual-MCU không thể hiện ở thông lượng đỉnh mà ở tính ổn định khi tải tăng.
-        
-        \textbf{Khác biệt về độ trễ End-to-End theo mức tải.} Các giá trị trong Bảng~\ref{tab:e2e_compare} đều được tính theo điều kiện trung bình ($T_{batch,avg} = 5\,\text{ms}$, $T_{CI,avg} = 10\,\text{ms}$ cho BLE). Ở tải nhẹ, Dual-MCU và CoreS3 cho độ trễ gần như tương đương ($\Delta \approx 0{,}3\,\text{ms}$) vì cả hai cùng chia sẻ các thành phần $T_{air}$, $T_{UART}$ và $T_{network}$ giống nhau, sự khác biệt duy nhất là $T_{internal}$: Dual cố định $\approx 5{,}3\,\text{ms}$ (batch 5 ms + SPI 0,273 ms + JSON 0,38 ms), CoreS3 nhẹ $\approx 5\,\text{ms}$. Tuy nhiên, dưới tải nặng (tất cả node phát đồng thời), CoreS3 phải chia sẻ một CPU duy nhất giữa nhận UART, BLE controller, cJSON, mbedTLS, Wi-Fi và MQTT, đồng thời chịu hiện tượng coexist Wi-Fi/BLE TDM ở băng 2,4\,GHz; hệ quả là $T_{internal}$ tăng từ $\approx 5\,\text{ms}$ lên $20$--$40\,\text{ms}$. Kiến trúc Dual-MCU tách biệt hoàn toàn LAN/WAN nên $T_{internal}$ giữ giá trị cố định $\approx 5{,}3\,\text{ms}$ không phụ thuộc tải. Khoảng chênh lệch giữa CoreS3 tải nặng so với Dual-MCU là $\approx 24{,}7\,\text{ms}$ cho mọi giao thức, phản ánh đúng mức tăng $T_{internal}$ từ $5\,\text{ms}$ lên $30\,\text{ms}$ khi tải nặng.
-        
-        \begin{longtable}{|p{4.2cm}|p{2.7cm}|p{3cm}|p{3cm}|}
-            \caption{So sánh độ trễ End-to-End giữa Dual-MCU và M5Stack CoreS3.} \label{tab:e2e_compare} \\
-            \hline
-            \textbf{Kịch bản} & \textbf{Dual-MCU} & \textbf{CoreS3 (tải nhẹ)} & \textbf{CoreS3 (tải nặng)} \\ \hline
-            \endfirsthead
-            \hline
-            \textbf{Kịch bản} & \textbf{Dual-MCU} & \textbf{CoreS3 (tải nhẹ)} & \textbf{CoreS3 (tải nặng)} \\ \hline
-            \endhead
-            \hline
-            \endfoot
-            \endlastfoot
-            Zigbee $\rightarrow$ MQTT & $\approx 53{,}6\,\text{ms}$ & $\approx 53{,}3\,\text{ms}$ & $\approx 78{,}3\,\text{ms}$ \\ \hline
-            BLE $\rightarrow$ MQTT & $\approx 47{,}9\,\text{ms}$ & $\approx 47{,}6\,\text{ms}$ & $\approx 72{,}6\,\text{ms}$ \\ \hline
-            LoRa $\rightarrow$ MQTT & $\approx 149{,}3\,\text{ms}$ & $\approx 149{,}0\,\text{ms}$ & $\approx 174{,}0\,\text{ms}$ \\ \hline
-            Jitter $\sigma$ tổng & $\pm 5$--$10\,\text{ms}$ & $\pm 20$--$40\,\text{ms}$ & $\pm 20$--$40\,\text{ms}$ \\ \hline
-        \end{longtable}
-        
-        \textbf{Khả năng chịu burst đồng thời.} Trong kịch bản worst-case 29 frame phát cùng lúc trong cửa sổ 100\,ms, Dual-MCU cần $\approx 232\,\text{ms}$ để phục vụ hết hàng đợi nhờ LAN-MCU và WAN-MCU làm việc song song (LAN gom UART/SPI, WAN publish MQTT độc lập). Cùng kịch bản, CoreS3 phải xử lý tuần tự trên một CPU và mất $\approx 338\,\text{ms}$, tức chậm hơn $\approx 46\%$, đồng thời rủi ro queue overflow và heap fragmentation tăng cao do mbedTLS và cJSON tranh chấp tài nguyên với BLE controller.
-        
-        \textbf{Ưu thế của kiến trúc Dual-MCU.} Việc tách LAN-MCU và WAN-MCU thành hai miền xử lý độc lập mang lại ba lợi ích then chốt: (i) loại bỏ hoàn toàn coexist Wi-Fi/BLE 2,4\,GHz trên cùng một chip, (ii) cố định thời gian xử lý nội bộ ở mức deterministic $\approx 5{,}3\,\text{ms}$ thông qua chu kỳ batch SPI, và (iii) cho phép xử lý song song giữa nhận dữ liệu LAN và publish MQTT WAN. Overhead so với CoreS3 tải nhẹ chỉ là $\approx 0{,}3\,\text{ms}$ -- thực tế không đáng kể -- trong khi ở tải nặng Dual-MCU nhanh hơn $\approx 24{,}7\,\text{ms}$ và jitter thấp hơn $2$--$4\times$. Đánh đổi duy nhất là độ phức tạp firmware cao hơn, chấp nhận được trong các ứng dụng gateway IoT thực tế nơi tính ổn định và khả năng chịu tải quan trọng hơn độ trễ tối thiểu lúc nhàn rỗi.
-        
+
         \subsection{So sánh chi phí phần cứng}
         \label{subsec:cost_compare}
         

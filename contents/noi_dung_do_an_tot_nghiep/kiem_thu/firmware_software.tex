@@ -618,10 +618,32 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endfoot
             \endlastfoot
 
-            Đơn kênh (Spam) & Zigbee & $\approx 80\,kbps$ & $70$--$80\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            Đơn kênh (Spam) & BLE (DLE) & $\approx 97.6\,kbps$ & $90$--$97\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            Đơn kênh (Spam) & Zigbee & $\approx 8.2\,kbps$ & $\approx 8.2\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            Đơn kênh (Spam) & BLE (DLE) & $\approx 97.6\,kbps$ & $\approx 97\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             Đơn kênh (Spam) & LoRa (SF7) & $\approx 3.5\,kbps$ & $\approx 3.5\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            Đa kênh (Concurrency) & Tổng hợp & $\approx 181.1\,kbps$ & $\approx 127$--$154\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            Đa kênh (Concurrency) & Tổng hợp & $\approx 181.1\,kbps$ & $\approx 154\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+        \end{longtable}
+
+        Bảng kiểm thử dưới đây nhằm xác minh khả năng duy trì kết nối và truyền nhận dữ liệu ở khoảng cách tối đa của ba chuẩn không dây cốt lõi trong kiến trúc LAN-MCU bao gồm BLE, Zigbee và LoRa P2P. Việc đo đạc được đối chiếu giữa thông số lý thuyết (môi trường lý tưởng không vật cản - Line of Sight) và thông số thực tế trong điều kiện có vật cản (văn phòng/khu vực đô thị) nhằm đánh giá tính khả thi khi triển khai tại thực địa.
+
+        \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{4.5cm}|c|}
+            \caption{Kiểm thử khoảng cách truyền dẫn tối đa giữa các chuẩn không dây}
+            \label{tab:test_transmission_distance} \\
+            \hline
+            \textbf{Loại giao thức} & \textbf{Khoảng cách lý thuyết} & \textbf{Khoảng cách thực tế đo được (Có vật cản)} \\ \hline
+            \endfirsthead
+
+            \hline
+            \textbf{Loại giao thức} & \textbf{Khoảng cách lý thuyết} & \textbf{Khoảng cách thực tế đo được (Có vật cản)} \\ \hline
+            \endhead
+
+            \hline
+            \endfoot
+            \endlastfoot
+
+            BLE (ESP32-S3 GATT) & $\approx 50 - 100\,\text{m}$ & $\approx 20 - 30\,\text{m}$ \\ \hline
+            Zigbee (E180-ZG120B) & $\approx 1000 - 1300\,\text{m}$ & $20 - 30\,\text{m}$ \\ \hline
+            LoRa P2P (Wio-E5 mini) & $\approx 2 - 10\,\text{km}$ & $3 - 5\,\text{km}$ \\ \hline
         \end{longtable}
 
             Bảng kiểm thử dưới đây thực hiện đánh giá đồng thời (Concurrency Test) độ chính xác dữ liệu nhiệt độ và độ ẩm trên cả ba giao thức LoRa, BLE và Zigbee. Thay vì đo trình tự, hệ thống thực hiện thu thập và phân phối cùng một bộ dữ liệu tham chiếu từ ứng dụng tại LAN-MCU đến các stack truyền dẫn khác nhau trong cùng một chu kỳ xử lý $10\,\text{ms}$. Phương pháp này nhằm xác thực tính toàn vẹn của payload khi đi qua bus SPI nội bộ và khả năng điều phối đa tác vụ của firmware FreeRTOS, đảm bảo sai số duy trì trong ngưỡng cho phép $\leq \pm 0{,}5\,{^\circ}\text{C}$ và $\leq \pm 1{,}0\%$ RH dưới điều kiện tải thực tế (môi trường thử nghiệm $30\,{^\circ}\text{C}$, $70\%$ RH).       \begin{longtable}{|c|c|c|c|c|c|}
