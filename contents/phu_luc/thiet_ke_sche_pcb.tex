@@ -125,7 +125,7 @@
         \subsection{Thiết kế Mạch nguồn}
 
             % IC Power MUX TPS2121RUXR tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Tại mỗi đầu vào, hệ thống tích hợp một diode TVS với điện áp Reverse Standoff tương ứng với mức điện áp danh định của từng nguồn. Linh kiện này có chức năng hấp thụ và triệt tiêu năng lượng của các xung điện áp ngắn hạn (ESD), qua đó bảo vệ khối nguồn và các thành phần phía sau khỏi ảnh hưởng của hiện tượng phóng tĩnh điện hoặc nhiễu xung điện áp cao từ môi trường.
-            IC Power MUX TPS2121RUXR tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Mạch tích hợp diode TVS tại các ngõ vào +12V và +5V của IC TPS2121RUXR giúp bảo vệ hệ thống trước các rủi ro tĩnh điện. Giải pháp này triệt tiêu xung ESD tức thời, bảo đảm tính toàn vẹn cho khối nguồn và các linh kiện nhạy cảm nguồn trước nhiễu điện áp cao từ môi trường.
+            IC Power MUX tiếp nhận hai nguồn đầu vào chính, bao gồm +12V (từ adapter) và +5V (từ cổng USB). Mạch tích hợp diode TVS tại các ngõ vào +12V và +5V của IC giúp bảo vệ hệ thống trước các rủi ro tĩnh điện. Giải pháp này triệt tiêu xung ESD tức thời, bảo đảm tính toàn vẹn cho khối nguồn và các linh kiện nhạy cảm nguồn trước nhiễu điện áp cao từ môi trường.
 
             \begin{figure}[h]
                 \centering
@@ -134,7 +134,7 @@
                 \label{fig:sche_powermux}
             \end{figure}
 
-            Các thông số thiết kế cho IC Power MUX TPS2121RUXR được lựa chọn như sau:
+            Các thông số thiết kế cho IC Power MUX được lựa chọn như sau:
 
             \begin{itemize}
                 \item Điện áp bảo vệ quá áp (overvoltage) đối với nguồn +5V (USB): 5.6V;
@@ -145,7 +145,7 @@
             \end{itemize}
             Các tham số trên được lựa chọn nhằm đảm bảo quá trình chuyển mạch nguồn diễn ra ổn định, hạn chế dòng xung khởi động, đồng thời tăng cường khả năng bảo vệ và độ tin cậy cho toàn bộ hệ thống.
 
-            Nguồn sau Power MUX cùng với nguồn dự phòng từ pin LiPo được đưa vào và quản lý bởi IC sạc BQ25892RTWR. Dòng đầu vào của IC được giới hạn ở mức 2.96A thông qua điện trở cấu hình tại chân ILIM. Các giá trị tụ điện ở đầu vào và đầu ra được lựa chọn theo khuyến nghị nhằm đảm bảo ổn định điện áp và giảm nhiễu trong quá trình vận hành.\cite{FastChargerBq2589x}
+            Nguồn sau Power MUX cùng với nguồn dự phòng từ pin LiPo được đưa vào và quản lý bởi IC sạc. Dòng đầu vào của IC được giới hạn ở mức 2.96A thông qua điện trở cấu hình tại chân ILIM. Các giá trị tụ điện ở đầu vào và đầu ra được lựa chọn theo khuyến nghị nhằm đảm bảo ổn định điện áp và giảm nhiễu trong quá trình vận hành.\cite{FastChargerBq2589x}
 
             \begin{figure}[h]
                 \centering
@@ -194,7 +194,7 @@
                 \end{itemize}
             \end{itemize}
 
-            Việc tích hợp IC INA230AIRGTR tại đầu ra VSYS cho phép giám sát công suất toàn hệ thống theo thời gian thực với sai số thấp (tối đa 0.3\%). Lựa chọn này đảm bảo dữ liệu năng lượng tin cậy mà không gây hao tổn đáng kể nhờ dòng tiêu thụ thấp (tối đa 420 $\mu$A). Song song đó, IC BQ27441DRZR-G1B được sử dụng để quản lý trạng thái pin LiPo, hoàn thiện giải pháp giám sát năng lượng đồng bộ cho thiết bị.
+            Việc tích hợp IC Power Monitor tại đầu ra VSYS cho phép giám sát công suất toàn hệ thống theo thời gian thực với sai số thấp (tối đa 0.3\%). Lựa chọn này đảm bảo dữ liệu năng lượng tin cậy mà không gây hao tổn đáng kể nhờ dòng tiêu thụ thấp (tối đa 420 $\mu$A). Song song đó, IC Battery Fuel Gauge được sử dụng để quản lý trạng thái pin LiPo, hoàn thiện giải pháp giám sát năng lượng đồng bộ cho thiết bị.
 
             \begin{figure}[h]
                 \centering
@@ -205,11 +205,11 @@
 
             Các tụ điện đầu vào được lựa chọn theo khuyến nghị của nhà sản xuất, với điện áp định mức tối thiểu lớn hơn hai lần điện áp làm việc nhằm đảm bảo độ tin cậy. Cuộn cảm được chọn với khả năng chịu dòng DC cao hơn khoảng 30--50\% so với giá trị tính toán, giúp duy trì hoạt động ổn định trong điều kiện tải biến thiên.
 
-            Các cấu hình thiết kế chi tiết trên nền tảng WEBENCH TI như sau:
-            \begin{itemize}
-                \item \textbf{PWR\_3V3:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=A65948A5E7EE6E50}{TPS566231RQFR -- 3.5V--4.2V to 3.30V @ 5A};
-                \item \textbf{PWR\_5V\_CTRL:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=07E521FCC698EE21}{TPS613222ADBVR -- 3.5V--4.2V to 5.00V @ 0.5A}.
-            \end{itemize}
+            % Các cấu hình thiết kế chi tiết trên nền tảng WEBENCH TI như sau:
+            % \begin{itemize}
+            %     \item \textbf{PWR\_3V3:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=A65948A5E7EE6E50}{TPS566231RQFR -- 3.5V--4.2V to 3.30V @ 5A};
+            %     \item \textbf{PWR\_5V\_CTRL:} \href{https://webench.ti.com/appinfo/webench/scripts/SDP.cgi?ID=07E521FCC698EE21}{TPS613222ADBVR -- 3.5V--4.2V to 5.00V @ 0.5A}.
+            % \end{itemize}
 
             Các khối nguồn điều khiển PWR\_3V3\_CTRL và PWR\_5V\_CTRL được thiết kế với đầu vào đi qua IC power switch TPS22965DSGR. Mặc định, các kênh nguồn này ở trạng thái bật (ON) và có thể được điều khiển đóng/ngắt thông qua IO Expander do MCU master quản lý.
 
@@ -235,7 +235,7 @@
                 \item Giảm phát xạ EMI (Electromagnetic Interference)
             \end{itemize}
             
-            Thiết bị sử dụng IC USB-to-UART Bridge CP2102-GMR để thực hiện chuyển đổi giao tiếp từ USB sang UART, kết nối trực tiếp với UART0 của ESP32-S3 Master. Khối này phục vụ cho việc nạp firmware, cấu hình thiết bị trong quá trình phát triển và vận hành.
+            Thiết bị sử dụng IC USB-to-UART Bridge để thực hiện chuyển đổi giao tiếp từ USB sang UART, kết nối trực tiếp với UART0 của ESP32-S3 Master. Khối này phục vụ cho việc nạp firmware, cấu hình thiết bị trong quá trình phát triển và vận hành.
 
             \begin{figure}[H]
                 \centering
@@ -247,7 +247,7 @@
             Các tín hiệu điều khiển DTR và RTS từ IC được khai thác và tích hợp vào mạch auto-programming thông qua hai transistor BJT NPN. Mạch này cho phép tự động điều khiển các tín hiệu Reset và Boot của ESP32-S3 Master, hỗ trợ quá trình nạp firmware mà không cần thao tác thủ công thông qua các nút nhấn Reset và Boot.
 
         \subsection{Thiết kế Mạch IO Expanders}
-            Mạch tích hợp IC TCA6416ARTWR qua I2C giúp mở rộng 16 chân GPIO, đảm bảo hệ thống đáp ứng đầy đủ nhu cầu kết nối ngoại vi phức tạp. Lựa chọn này hỗ trợ tính linh hoạt trong thiết kế khi cho phép cấu hình tùy biến ngõ vào/ra cho từng kịch bản vận hành.
+            Mạch tích hợp IC IO Expanders qua I2C giúp mở rộng 16 chân GPIO, đảm bảo hệ thống đáp ứng đầy đủ nhu cầu kết nối ngoại vi phức tạp. Lựa chọn này hỗ trợ tính linh hoạt trong thiết kế khi cho phép cấu hình tùy biến ngõ vào/ra cho từng kịch bản vận hành.
 
             \begin{figure}[h]
                 \centering
@@ -261,7 +261,7 @@
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.5\textwidth]{figures/DATN/datasheet_ioxpowerrecomendation.png}
-                \caption{Khuyến nghị cấp nguồn cho IC TCA6416ARTWR từ datasheet} 
+                \caption{Khuyến nghị cấp nguồn cho IC IO Expanders từ datasheet} 
                 \label{fig:sche_ioxpowerrecomendation}
             \end{figure}
 
@@ -285,7 +285,7 @@
             \end{figure}
 
         \subsection{Thiết kế Mạch RTC}
-            Hệ thống tích hợp IC PCF8563 (I2C) cùng mạch Power OR-ing dùng diode Schottky nhằm đảm bảo dữ liệu thời gian thực được duy trì thông suốt trong mọi tình huống chuyển đổi nguồn. Việc bố trí diode TVS tại đường pin dự phòng là giải pháp cần thiết để triệt tiêu xung ESD, bảo vệ mạch khỏi rủi ro hỏng hóc khi thay pin. Việc sử dụng thạch anh 32.768kHz có ESR < 100\,k$\Omega$ và điện dung 12.5pF là sự tuân thủ yêu cầu của IC, giúp hệ thống đạt độ chính xác cao nhất và tối ưu hóa năng lượng vận hành.
+            Hệ thống tích hợp IC RTC cùng mạch Power OR-ing dùng diode Schottky nhằm đảm bảo dữ liệu thời gian thực được duy trì thông suốt trong mọi tình huống chuyển đổi nguồn. Việc bố trí diode TVS tại đường pin dự phòng là giải pháp cần thiết để triệt tiêu xung ESD, bảo vệ mạch khỏi rủi ro hỏng hóc khi thay pin. Việc sử dụng thạch anh 32.768kHz có ESR < 100\,k$\Omega$ và điện dung 12.5pF là sự tuân thủ yêu cầu của IC, giúp hệ thống đạt độ chính xác cao nhất và tối ưu hóa năng lượng vận hành.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/sche_rtc.png}
@@ -294,8 +294,7 @@
             \end{figure}
 
         \subsection{Thiết kế Mạch Micro SD Card}
-            Giao tiếp thẻ MicroSD được thực hiện qua chuẩn SDIO 4-bit (80MHz) nhằm đảm bảo thông lượng lưu trữ dữ liệu tối ưu cho hệ thống. Để triệt tiêu hiện tượng ringing và overshoot phát sinh ở tần số cao, thiết kế tuân thủ nghiêm ngặt khuyến nghị của Espressif bằng cách tích hợp IC EMIF06-MSD02N16 ngay tại ngõ vào. Việc sử dụng linh kiện chuyên dụng này không chỉ giúp tối ưu hóa diện tích bo mạch mà còn là giải pháp kỹ thuật đồng bộ, cung cấp đồng thời trở giảm chấn (36-54\,$\Omega$), điện trở kéo lên (80-100k\,$\Omega$) và tầng bảo vệ ESD, giúp duy trì tính toàn vẹn tín hiệu vượt trội so với việc sử dụng các linh kiện rời rạc.
-
+            Giao tiếp thẻ MicroSD được thực hiện qua chuẩn SDIO 4-bit (80MHz) nhằm đảm bảo thông lượng lưu trữ dữ liệu tối ưu cho hệ thống. Để triệt tiêu hiện tượng ringing và overshoot phát sinh ở tần số cao, thiết kế tuân thủ nghiêm ngặt khuyến nghị của Espressif bằng cách tích hợp IC bảo vệ ESD ngay tại ngõ vào. Việc sử dụng linh kiện chuyên dụng này không chỉ giúp tối ưu hóa diện tích bo mạch mà còn là giải pháp kỹ thuật đồng bộ, cung cấp đồng thời trở giảm chấn (36-54\,$\Omega$), điện trở kéo lên (80-100k\,$\Omega$) và tầng bảo vệ ESD, giúp duy trì tính toàn vẹn tín hiệu vượt trội so với việc sử dụng các linh kiện rời rạc.
 
             \begin{figure}[h]
                 \centering
@@ -305,7 +304,7 @@
             \end{figure}
 
         \subsection{Thiết kế Mạch USB/UART Switch}
-            Nhằm khắc phục giới hạn duy nhất một giao diện USB vật lý trên ESP32-S3, thiết kế tích hợp IC FSUSB42UMX-TP làm giải pháp điều phối tín hiệu chủ động. Việc sử dụng switch analog này cho phép hệ thống chuyển mạch linh hoạt giữa các đầu nối LAN hoặc giao tiếp UART, đảm bảo Gateway vận hành đa nhiệm mà không cần tăng số lượng nhân xử lý. Lựa chọn linh kiện chuyên dụng này giúp duy trì tính toàn vẹn tín hiệu USB Host, đồng thời đáp ứng yêu cầu về một kiến trúc phần cứng tinh gọn nhưng vẫn có khả năng mở rộng cao theo nhu cầu thực tế.
+            Nhằm khắc phục giới hạn duy nhất một giao diện USB vật lý trên ESP32-S3, thiết kế tích hợp IC Analog Switch làm giải pháp điều phối tín hiệu chủ động. Việc sử dụng IC này cho phép hệ thống chuyển mạch linh hoạt giữa các đầu nối LAN hoặc giao tiếp UART, đảm bảo Gateway vận hành đa nhiệm mà không cần tăng số lượng nhân xử lý. Lựa chọn linh kiện chuyên dụng này giúp duy trì tính toàn vẹn tín hiệu USB Host, đồng thời đáp ứng yêu cầu về một kiến trúc phần cứng tinh gọn nhưng vẫn có khả năng mở rộng cao theo nhu cầu thực tế.
 
             \begin{figure}[h]
                 \centering
@@ -314,7 +313,7 @@
                 \label{fig:sche_usb-uart_switch}
             \end{figure}
 
-            Kiến trúc hệ thống tối ưu hóa cổng UART2 cho cả nhiệm vụ nạp firmware Slave và giao tiếp HMI, giúp tiết kiệm tối đa tài nguyên phần cứng. Nhằm xử lý triệt để sự chênh lệch điện áp logic giữa MCU (3.3V) và màn hình (5V), thiết kế sử dụng IC TXS0102DQER làm giải pháp chuyển mức hai chiều chuyên dụng. Đây là lựa chọn kỹ thuật cần thiết để bảo vệ chủ động các chân I/O khỏi rủi ro quá áp, đồng thời đảm bảo tính chính xác và độ tin cậy của tín hiệu điều khiển trong suốt quá trình vận hành.
+            Kiến trúc hệ thống tối ưu hóa cổng UART2 cho cả nhiệm vụ nạp firmware Slave và giao tiếp HMI, giúp tiết kiệm tối đa tài nguyên phần cứng. Nhằm xử lý triệt để sự chênh lệch điện áp logic giữa MCU (3.3V) và màn hình (5V), thiết kế sử dụng IC Voltage Translator làm giải pháp chuyển mức hai chiều chuyên dụng. Đây là lựa chọn kỹ thuật cần thiết để bảo vệ chủ động các chân I/O khỏi rủi ro quá áp, đồng thời đảm bảo tính chính xác và độ tin cậy của tín hiệu điều khiển trong suốt quá trình vận hành.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/sche_lcd.png}
@@ -323,7 +322,7 @@
             \end{figure}
         
         \subsection{Thiết kế Mạch I\textsuperscript{2}C Buffer}   
-            Để bảo đảm tính toàn vẹn dữ liệu khi giao tiếp với nhiều thiết bị ngoại vi qua dây dẫn dài, thiết kế tích hợp IC đệm TCA9803DGKR làm giải pháp phân tách bus chủ động. Lựa chọn này là kỹ thuật cần thiết để hệ thống vận hành ổn định ở chế độ Fast-mode (400kHz) mà không bị ảnh hưởng bởi giới hạn điện dung ký sinh 400pF. Việc sử dụng IC đệm giúp cô lập tải chỉ còn 10pF cho bus chính, đồng thời duy trì khả năng truyền dẫn tin cậy cho các nhánh mở rộng, giảm thiểu rủi ro lỗi bit do nhiễu và suy hao tín hiệu.
+            Để bảo đảm tính toàn vẹn dữ liệu khi giao tiếp với nhiều thiết bị ngoại vi qua dây dẫn dài, thiết kế tích hợp IC đệm làm giải pháp phân tách bus chủ động. Lựa chọn này là kỹ thuật cần thiết để hệ thống vận hành ổn định ở chế độ Fast-mode (400kHz) mà không bị ảnh hưởng bởi giới hạn điện dung ký sinh 400pF. Việc sử dụng IC đệm giúp cô lập tải chỉ còn 10pF cho bus chính, đồng thời duy trì khả năng truyền dẫn tin cậy cho các nhánh mở rộng, giảm thiểu rủi ro lỗi bit do nhiễu và suy hao tín hiệu.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/sche_i2cbuffer.png}
@@ -369,11 +368,11 @@
                 \label{fig:sche_wan-lan_conn}
             \end{figure}
 
-            Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet được phát triển dựa trên IC Ethernet PHY W5500. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
+            Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
             
             Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
 
-            Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu.\cite{Sim7600SeriesPcieHardwareDesign}
+            Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu.
             % \href{https://docs.wiznet.io/pdf-viewer?file=%2Fassets%2Ffiles%2Fw5500_sch_v110_use_mag_-dfff8bbb103d13be4f25cd2b2f8b950d.pdf}{W5500 Reference Schematic (RJ45)} của Wiznet.
 
             \begin{figure}[H]
