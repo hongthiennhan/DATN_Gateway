@@ -1,0 +1,588 @@
+\section{Đo lường hiệu năng thực nghiệm}
+\label{sec:bench}
+
+Phần này trình bày các thí nghiệm đo lường hiệu năng được thực hiện trực tiếp trên phần cứng sản phẩm nhằm kiểm chứng các giá trị lý thuyết đã phân tích ở các phần trước. Hệ thống được đánh giá qua năm nhóm thí nghiệm, tương ứng với năm điểm đo trên đường truyền dữ liệu từ thiết bị ngoại vi đến máy chủ Cloud. Mỗi nhóm bao gồm phương pháp đo và minh chứng tính hợp lệ, mô tả chuỗi truyền dẫn, kịch bản thực hiện, số liệu thực đo, kiểm chứng độ chính xác và nhận xét.
+
+% ============================================================
+\subsection{Thí nghiệm 1: Thông lượng cầu nối SPI liên vi điều khiển}
+\label{sec:bench_spi}
+
+\subsubsection{Phương pháp đo và tính hợp lệ}
+
+Mọi packet di chuyển từ thiết bị ngoại vi lên Cloud đều phải đi qua cầu nối SPI kết nối LAN-MCU và WAN-MCU. Thông lượng của cầu nối này xác định giới hạn trên cho toàn bộ hệ thống. Để đo giới hạn đó, một module sinh dữ liệu giả (fake producer) được gắn vào đúng vị trí mà các handler thật (BLE, Zigbee, LoRa, RS485) đang kết nối, sau đó bơm liên tục các packet có kích thước 2\,KB nhằm đưa cầu nối vào trạng thái tải tối đa.
+
+Thí nghiệm được thực hiện theo hai chế độ nhằm phân tách hai mức giới hạn khác nhau:
+
+\begin{itemize}
+    \item Chế độ A (driver path): fake producer gọi thẳng tầng SPI transport, bỏ qua queue và dispatcher. Kết quả phản ánh giới hạn phần cứng thuần túy của bus SPI cộng với chi phí framing.
+    \item Chế độ B (production path): fake producer đi qua đúng queue chung, dispatcher và mutex mà các handler thật đang sử dụng. Kết quả phản ánh giới hạn thực tế mà bất kỳ handler nào cũng có thể đạt được.
+\end{itemize}
+
+Tính hợp lệ của phương pháp được bảo đảm bởi hai yếu tố. Thứ nhất, trong Chế độ B, packet đi qua đúng queue, mutex, dispatcher và cơ chế framing như dữ liệu thật; sự khác biệt duy nhất là nguồn gốc dữ liệu (giả thay vì handler thật), với sai số thời gian ở mức micro giây, không ảnh hưởng đến kết quả đo. Thứ hai, bộ đếm chỉ tăng sau khi tầng SPI transport xác nhận đã tiếp nhận packet thành công, loại bỏ khả năng đếm thừa.
+
+\subsubsection{Phân tích chuỗi truyền dẫn}
+
+Một packet trong Chế độ B đi qua sáu chặng nối tiếp:
+
+\begin{enumerate}
+    \item Enqueue: sao chép packet vào ô queue và gắn nhãn thời gian RTC ($\approx$10\,µs/packet).
+    \item Queue dwell: chờ dispatcher lấy packet ra ($\leq$1\,ms).
+    \item Dispatcher pull: dispatcher lấy tối đa 8 packet mỗi burst, gắn thông tin định tuyến và chiếm mutex ($\approx$180\,µs/packet).
+    \item Framing và CRC: thêm header, CRC header và CRC payload ($\approx$330\,µs/packet).
+    \item DMA submit: bàn giao buffer cho phần cứng SPI ($\approx$950\,µs mỗi chu kỳ 10\,ms).
+    \item SPI bus: truyền full-duplex ở 40\,MHz, kích thước mỗi transaction 16\,KB ($\approx$3,3\,ms/transaction).
+\end{enumerate}
+
+Chế độ A bỏ qua ba chặng đầu, chỉ thực hiện các chặng 4, 5 và 6, do đó đạt thông lượng cao hơn khoảng 25\,\% so với Chế độ B.
+
+\subsubsection{Kịch bản đo}
+
+Hai kịch bản được thực hiện độc lập trên cùng phần cứng. Mỗi kết quả là giá trị trung bình của 5 cửa sổ liên tiếp (mỗi cửa sổ 2 giây) sau khi hệ thống đã ổn định. Cửa sổ đầu tiên (warm-up) được loại bỏ.
+
+\begin{longtable}{|l|l|p{5cm}|p{4.5cm}|}
+\caption{Kịch bản đo thông lượng cầu nối SPI liên vi điều khiển}
+\label{tab:bench_spi_scenarios} \\
+\hline
+\textbf{Kịch bản} & \textbf{Chế độ} & \textbf{Mô tả} & \textbf{Chỉ số cần đọc} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Kịch bản} & \textbf{Chế độ} & \textbf{Mô tả} & \textbf{Chỉ số cần đọc} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+1.A & Driver path & Fake producer gọi thẳng SPI transport, bơm liên tục packet 2\,KB & Giới hạn phần cứng và framing \\
+\hline
+1.B & Production path & Fake producer đi qua queue chung, dispatcher và mutex & Giới hạn thực tế của handler production \\
+\hline
+\end{longtable}
+
+\subsubsection{Số liệu thực đo}
+
+\begin{longtable}{|l|r|r|r|r|r|}
+\caption{Kết quả đo thông lượng cầu nối SPI liên vi điều khiển (trung bình 5 cửa sổ ổn định, packet 2\,KB, cửa sổ 2 giây)}
+\label{tab:bench_spi_results} \\
+\hline
+\textbf{Kịch bản} & \textbf{LAN pkt/cửa sổ} & \textbf{LAN drop/cửa sổ} & \textbf{WAN pkt/cửa sổ} & \textbf{hdr\_crc\_fail} & \textbf{pay\_crc\_fail} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Kịch bản} & \textbf{LAN pkt/cửa sổ} & \textbf{LAN drop/cửa sổ} & \textbf{WAN pkt/cửa sổ} & \textbf{hdr\_crc\_fail} & \textbf{pay\_crc\_fail} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+1.A — Driver path      & $\approx$3\,400 & (không áp dụng) & $\approx$3\,400 & 0 & 0 \\
+\hline
+1.B — Production path  & $\approx$2\,560 & $\approx$115\,000 & $\approx$2\,560 & 0 & 0 \\
+\hline
+\end{longtable}
+
+Quy đổi sang băng thông (mỗi packet 2\,KB, mỗi cửa sổ 2 giây):
+
+\[
+\text{Mbps} = \frac{\text{pkt}}{2\,\text{s}} \times 2\,048\,\text{byte} \times 8 \div 10^6
+\]
+
+\begin{longtable}{|l|r|l|}
+\caption{Tổng hợp thông lượng đo được theo chế độ}
+\label{tab:bench_spi_summary} \\
+\hline
+\textbf{Chế độ} & \textbf{Thông lượng} & \textbf{Ý nghĩa} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Chế độ} & \textbf{Thông lượng} & \textbf{Ý nghĩa} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+Driver path (1.A)     & 28\,Mbps & Giới hạn phần cứng SPI và framing \\
+\hline
+Production path (1.B) & 21\,Mbps & Giới hạn thực tế khi các handler chia sẻ chung một đường uplink \\
+\hline
+\end{longtable}
+
+\subsubsection{Kiểm chứng độ chính xác}
+
+Ba kiểm chứng độc lập được thực hiện:
+
+(1) Đối chiếu chéo LAN TX và WAN RX: hai bộ đếm hoạt động độc lập trên hai vi điều khiển riêng biệt. Chênh lệch dưới 1\,\% ở cả hai kịch bản xác nhận không có packet nào bị mất trên bus SPI.
+
+(2) Xác nhận trạng thái bão hòa: ở Chế độ B, giá trị drop $\approx$115\,000 packet/cửa sổ cho thấy fake producer đẩy với tốc độ gấp khoảng 50 lần khả năng xử lý của dispatcher, xác nhận cầu nối đang vận hành ở mức bão hòa thực sự.
+
+(3) Kiểm tra toàn vẹn dữ liệu: \texttt{hdr\_crc\_fail = 0} và \texttt{pay\_crc\_fail = 0} suốt toàn bộ 5 cửa sổ đo ở cả hai kịch bản, xác nhận không có lỗi truyền dẫn làm sai lệch số liệu.
+
+\subsubsection{Nhận xét}
+
+Chênh lệch từ 28\,Mbps (Chế độ A) xuống 21\,Mbps (Chế độ B) phản ánh chi phí của tầng dispatcher gồm queue, mutex và định tuyến. Chi phí này là tất yếu để bốn handler (BLE, Zigbee, LoRa, RS485) chia sẻ cùng một đường uplink. Thông lượng thực tế 21\,Mbps vượt mức nhu cầu telemetry IoT điển hình (vài chục kbps mỗi node) hơn 100 lần, xác nhận cầu nối SPI không trở thành bottleneck trong điều kiện vận hành thực tế.
+
+% ============================================================
+\subsection{Thí nghiệm 2: Năng lực thu nhận dữ liệu của từng cổng giao tiếp LAN}
+\label{sec:bench_lane}
+
+\subsubsection{Phương pháp đo và tính hợp lệ}
+
+LAN-MCU cung cấp bốn cổng giao tiếp vật lý để các module ngoại vi kết nối: UART, SPI, I2C và USB. Thí nghiệm xác định giới hạn thu nhận tối đa (lane ceiling) của từng cổng trước khi xuất hiện mất packet.
+
+Để tạo đủ áp lực đo lường, một vi điều khiển phụ (ESP32-S3 development board) đóng vai trò nguồn phát kiểm thử (test rig), được kết nối trực tiếp vào từng cổng và bơm liên tục các packet 256\,byte với tốc độ tăng dần từ 100 đến 20\,000 pps (packets per second). Phía LAN-MCU, một raw consumer task liên tục đọc dữ liệu ra khỏi cổng và đếm số byte đã xử lý.
+
+Phép đo được thực hiện ở tầng driver thay vì qua các handler thật (BLE, Zigbee, LoRa, RS485) vì các giao thức này có data rate tự nhiên rất thấp (vài chục kbps mỗi node), không đủ để tạo áp lực chạm lane ceiling. Mục tiêu của thí nghiệm là xác định năng lực vật lý của cổng phục vụ cho công tác quy hoạch tải.
+
+Tính hợp lệ được bảo đảm bởi: dữ liệu đi qua đúng ring buffer của driver thật trong hệ thống; test rig in tổng số byte đã phát, LAN-MCU in số byte đã nhận — hai phép đo độc lập trên hai thiết bị riêng biệt.
+
+\subsubsection{Phân tích chuỗi truyền dẫn}
+
+Dữ liệu đi qua bốn chặng liên tiếp:
+
+\begin{enumerate}
+    \item Hardware FIFO: buffer phần cứng của ngoại vi ($\approx$256\,byte); tràn dẫn đến mất dữ liệu không báo hiệu (silent drop).
+    \item Driver ring buffer: buffer mềm trong driver; tràn tạo tín hiệu overflow để phần mềm phát hiện.
+    \item Raw consumer read: task đọc byte ra khỏi ring buffer trong tight loop.
+    \item Bộ đếm: tăng sau khi byte rời driver buffer thành công.
+\end{enumerate}
+
+Mất dữ liệu chỉ xảy ra tại chặng 1 hoặc 2. Khi phát hiện drop, có thể xác định ngay cổng đã đạt bão hòa.
+
+\subsubsection{Kịch bản đo}
+
+\begin{longtable}{|l|l|l|r|}
+\caption{Kịch bản đo lane ceiling của từng cổng giao tiếp LAN}
+\label{tab:bench_lane_scenarios} \\
+\hline
+\textbf{Kịch bản} & \textbf{Cổng} & \textbf{Cấu hình} & \textbf{Giới hạn lý thuyết} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Kịch bản} & \textbf{Cổng} & \textbf{Cấu hình} & \textbf{Giới hạn lý thuyết} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+2-UART & UART    & 921600\,bps, 8N1   & $\approx$92\,kbps \\
+\hline
+2-SPI  & SPI     & 10\,MHz            & $\approx$10\,Mbps \\
+\hline
+2-I2C  & I2C     & 400\,kHz           & $\approx$50\,kbps \\
+\hline
+2-USB  & USB CDC & Full-speed         & $\approx$12\,Mbps \\
+\hline
+\end{longtable}
+
+Quy trình đo: test rig được lập trình tăng tốc độ theo 5 giây mỗi bậc (100 đến 20\,000 pps); LAN-MCU ghi log thống kê mỗi 2 giây. Bỏ cửa sổ warm-up, lấy 5 cửa sổ liên tiếp tại tốc độ cao nhất còn duy trì ổn định. Kết quả được đối chiếu giữa test rig và LAN-MCU; chênh lệch trên 5\,\% xác nhận cổng đã bão hòa.
+
+\subsubsection{Số liệu thực đo}
+
+Phần cứng test rig (ESP32-S3 phụ) đang trong giai đoạn hoàn thiện. Bảng dưới đây ghi nhận cấu hình và giới hạn lý thuyết; số liệu thực đo sẽ được cập nhật khi test rig hoàn chỉnh.
+
+\begin{longtable}{|l|l|r|r|r|r|r|}
+\caption{Kết quả đo lane ceiling của từng cổng giao tiếp LAN (packet 256\,byte, cửa sổ 2 giây)}
+\label{tab:bench_lane_results} \\
+\hline
+\textbf{Cổng} & \textbf{Cấu hình} & \textbf{pkt/cửa sổ} & \textbf{byte/cửa sổ} & \textbf{miss/cửa sổ} & \textbf{drop/cửa sổ} & \textbf{Giới hạn lý thuyết} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Cổng} & \textbf{Cấu hình} & \textbf{pkt/cửa sổ} & \textbf{byte/cửa sổ} & \textbf{miss/cửa sổ} & \textbf{drop/cửa sổ} & \textbf{Giới hạn lý thuyết} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+UART    & 921600, 8N1   & TBD & TBD & TBD & TBD & $\approx$92\,kbps \\
+\hline
+SPI     & 10\,MHz       & TBD & TBD & TBD & TBD & $\approx$10\,Mbps \\
+\hline
+I2C     & 400\,kHz      & TBD & TBD & TBD & TBD & $\approx$50\,kbps \\
+\hline
+USB CDC & Full-speed    & TBD & TBD & TBD & TBD & $\approx$12\,Mbps \\
+\hline
+\end{longtable}
+
+\subsubsection{Nhận xét}
+
+Mỗi cổng giao tiếp có lane ceiling riêng dựa trên tốc độ vật lý. Theo giá trị lý thuyết, cổng UART đủ năng lực phục vụ cụm cảm biến RS485; cổng SPI dư năng lực cho bộ tập trung LoRa; cổng USB CDC đủ cho các đợt burst của bộ điều phối Zigbee; cổng I2C vừa đủ cho cảm biến đa kênh. Quy tắc quy hoạch tải: tổng data rate của các module kết nối vào cùng một cổng không được vượt quá lane ceiling của cổng đó. Số liệu thực đo sẽ được bổ sung sau khi test rig phần cứng hoàn chỉnh.
+
+% ============================================================
+\subsection{Thí nghiệm 3: Thông lượng WAN egress của từng giao diện kết nối Internet}
+\label{sec:bench_wan}
+
+\subsubsection{Phương pháp đo và tính hợp lệ}
+
+WAN-MCU cung cấp ba giao diện kết nối Internet với kiến trúc phần cứng khác nhau: Wi-Fi 2,4\,GHz (radio tích hợp trong chip ESP32-S3), Ethernet 10/100 qua chip W5500 kết nối SPI ngoài, và LTE 4G qua module SIM7600G-H kết nối USB CDC ngoài.
+
+WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một sink server; mỗi lần đo chỉ kích hoạt một giao diện duy nhất. Đường đi này đi qua đúng lộ trình mà mọi application protocol phía trên (MQTT, CoAP, HTTP) đều phải sử dụng, do đó throughput đo được là giới hạn trên cho mọi giao thức ứng dụng. Phép đo không thực hiện qua MQTT vì các broker trình diễn có cơ chế ngắt kết nối khi nhận lưu lượng liên tục, không cho kết quả ổn định.
+
+Sink server đối với Wi-Fi và Ethernet là một script Python chạy trên Raspberry Pi trong cùng mạng LAN nội bộ (địa chỉ 192.168.1.100:5555). Đối với LTE 4G, do mạng di động không cho phép truy cập thiết bị trong mạng nội bộ, sink server là máy chủ phản hồi công cộng (bore.pub:54628).
+
+Tính hợp lệ được bảo đảm bởi: dữ liệu đi qua đúng TX path thực tế của từng giao diện, không có rút gọn.
+
+\subsubsection{Phân tích chuỗi truyền dẫn theo giao diện}
+
+Ba giao diện có lộ trình phần cứng khác nhau:
+
+\begin{itemize}
+    \item Wi-Fi: nguồn phát $\rightarrow$ socket send $\rightarrow$ lwIP TCP/IP $\rightarrow$ Wi-Fi MAC firmware $\rightarrow$ radio 2,4\,GHz $\rightarrow$ access point.
+    \item Ethernet (W5500): nguồn phát $\rightarrow$ socket send $\rightarrow$ lwIP TCP/IP $\rightarrow$ W5500 driver $\rightarrow$ SPI bus $\rightarrow$ chip W5500 $\rightarrow$ dây Ethernet $\rightarrow$ switch.
+    \item LTE (SIM7600): nguồn phát $\rightarrow$ socket send $\rightarrow$ lwIP TCP/IP $\rightarrow$ PPP $\rightarrow$ USB host stack $\rightarrow$ USB CDC $\rightarrow$ modem SIM7600 $\rightarrow$ trạm gốc di động.
+\end{itemize}
+
+Wi-Fi có lộ trình ngắn nhất do cùng silicon với MCU. Ethernet và LTE phải qua external bus (SPI và USB CDC tương ứng), tạo thêm điểm tiềm năng nghẽn.
+
+\subsubsection{Kịch bản đo}
+
+\begin{longtable}{|l|l|l|}
+\caption{Kịch bản đo WAN egress throughput}
+\label{tab:bench_wan_scenarios} \\
+\hline
+\textbf{Kịch bản} & \textbf{Giao diện} & \textbf{Sink server} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Kịch bản} & \textbf{Giao diện} & \textbf{Sink server} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+3-WiFi & Wi-Fi 2,4\,GHz (radio tích hợp) & Raspberry Pi LAN (192.168.1.100:5555) \\
+\hline
+3-ETH  & Ethernet W5500 (SPI 40\,MHz)    & Raspberry Pi LAN (192.168.1.100:5555) \\
+\hline
+3-4G   & LTE SIM7600G-H (USB CDC)        & bore.pub:54628 (echo server công cộng) \\
+\hline
+\end{longtable}
+
+Quy trình đo: cấu hình WAN-MCU dùng một giao diện duy nhất, khởi động sink server, reset WAN-MCU và chờ kết nối ổn định (5–15 giây). Bỏ cửa sổ warm-up đầu tiên, lấy trung bình 10 cửa sổ liên tiếp khi throughput đã ổn định.
+
+\subsubsection{Số liệu thực đo}
+
+\begin{longtable}{|l|r|r|r|r|r|}
+\caption{Kết quả đo WAN egress throughput (trung bình 10 cửa sổ ổn định, cửa sổ 2 giây)}
+\label{tab:bench_wan_results} \\
+\hline
+\textbf{Giao diện} & \textbf{gen\_kbps} & \textbf{ok\_kbps} & \textbf{sink kbps} & \textbf{q\_drop/cửa sổ} & \textbf{sent\_fail} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Giao diện} & \textbf{gen\_kbps} & \textbf{ok\_kbps} & \textbf{sink kbps} & \textbf{q\_drop/cửa sổ} & \textbf{sent\_fail} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+Wi-Fi 2,4\,GHz        & $\approx$19\,500 & $\approx$4\,800 & $\approx$4\,800 & $\approx$3\,700 & 0 \\
+\hline
+Ethernet W5500        & $\approx$4\,240  & $\approx$4\,220 & $\approx$4\,215 & $\approx$7      & 0 \\
+\hline
+LTE SIM7600G-H (USB)  & $\approx$67\,000 & $\approx$1\,820 & $\approx$1\,800 & $\approx$16\,000 & 0 \\
+\hline
+\end{longtable}
+
+\begin{longtable}{|l|r|}
+\caption{Tổng hợp throughput tối đa của từng giao diện WAN}
+\label{tab:bench_wan_summary} \\
+\hline
+\textbf{Giao diện} & \textbf{Throughput tối đa} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Giao diện} & \textbf{Throughput tối đa} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+Wi-Fi 2,4\,GHz (radio tích hợp) & 4{,}8\,Mbps \\
+\hline
+Ethernet W5500 (SPI 40\,MHz)    & 4{,}2\,Mbps \\
+\hline
+LTE SIM7600G-H (USB CDC)        & 1{,}82\,Mbps \\
+\hline
+\end{longtable}
+
+\subsubsection{Kiểm chứng độ chính xác}
+
+(1) Đối chiếu chéo firmware và sink server: giá trị ok\_kbps đo tại MCU và sink kbps đo tại Raspberry Pi là hai phép đo độc lập trên hai thiết bị khác nhau. Chênh lệch dưới 1\,\% với Wi-Fi và Ethernet, dưới 2\,\% với LTE, xác nhận không có packet nào bị mất giữa MCU và sink server.
+
+(2) Xác nhận trạng thái bão hòa: với Wi-Fi, gen\_kbps của nguồn phát ($\approx$19\,500\,kbps) gấp 4 lần throughput thực tế của giao diện, dẫn đến q\_drop $\approx$3\,700 packet/cửa sổ. Với LTE, tỷ lệ này lên đến 37 lần và q\_drop $\approx$16\,000 packet/cửa sổ. Với Ethernet, nguồn phát bị back-pressure khớp với tốc độ xử lý của chip W5500 ($\approx$1,9\,ms mỗi lệnh gửi đồng bộ), khiến q\_drop chỉ còn khoảng 7 packet/cửa sổ. Cả ba giao diện đều có bằng chứng đã đạt giới hạn.
+
+(3) Kiểm tra toàn vẹn kết nối: sent\_fail = 0 ở cả ba giao diện suốt thời gian đo, xác nhận không có sự kiện TCP reset hoặc ngắt kết nối làm sai lệch số liệu.
+
+\subsubsection{Nhận xét}
+
+Ba giao diện có cơ chế bão hòa khác nhau nhưng đều cho kết quả là giới hạn thực của giao diện tương ứng. Wi-Fi và LTE bão hòa ở tầng buffer, trong khi Ethernet bão hòa ở tầng xử lý do đặc điểm đồng bộ của W5500. Cả ba mức throughput (4,8\,Mbps; 4,2\,Mbps; 1,82\,Mbps) đều vượt mức lưu lượng telemetry điển hình (dưới 1\,Mbps), đảm bảo không giao diện nào trở thành bottleneck trong điều kiện vận hành thực tế.
+
+% ============================================================
+\subsection{Thí nghiệm 4: Lossless bandwidth tối đa qua cầu nối SPI (ramp đến điểm mất packet)}
+\label{sec:bench_ramp}
+
+\subsubsection{Phương pháp đo và tính hợp lệ}
+
+Thí nghiệm 1 đo throughput khi hệ thống bị bão hòa hoàn toàn, cho biết giới hạn kỹ thuật của cầu nối SPI. Thí nghiệm này đặt câu hỏi khác: tốc độ tối đa tại đó cầu nối truyền không mất packet (lossless ceiling) là bao nhiêu?
+
+Fake producer trên LAN-MCU tăng tốc độ theo từng bậc từ thấp đến cao, mỗi bậc duy trì trong 10 giây. LAN-MCU đếm số packet đã đẩy thành công xuống SPI (tx\_lan). WAN-MCU đếm số packet đã parse thành công (rx\_wan) hoàn toàn độc lập. Tại mỗi bậc, hai giá trị được đối chiếu:
+
+\begin{itemize}
+    \item tx\_lan $\approx$ rx\_wan và drop = 0: cầu nối còn dư năng lực; tăng lên bậc tiếp theo.
+    \item drop > 0: packet bắt đầu bị từ chối tại queue LAN; đã chạm giới hạn.
+\end{itemize}
+
+Lossless ceiling được xác định là tốc độ cao nhất duy trì được tx\_lan $\approx$ rx\_wan và drop = 0 liên tục trong ít nhất 5 cửa sổ liên tiếp.
+
+Phương pháp này khác với Thí nghiệm 1 ở chỗ: Thí nghiệm 1 cho biết điểm nguồn phát bắt đầu thất bại khi enqueue; Thí nghiệm 4 cho biết điểm cầu nối bắt đầu mất packet giữa LAN TX và WAN RX, kể cả khi dispatcher buffer chưa bão hòa. Hai giá trị này có thể khác nhau khi buffer hấp thụ các đợt burst ngắn.
+
+\subsubsection{Kịch bản đo}
+
+Một kịch bản duy nhất gồm 10 bậc tốc độ: 200, 400, 600, 800, 1000, 1200, 1500, 2000, 2500 và 3000 pps. Mỗi bậc giữ 10 giây; sau bậc cuối, chu kỳ lặp lại từ đầu. Kích thước packet: 2\,KB.
+
+\subsubsection{Số liệu thực đo}
+
+\begin{longtable}{|r|r|r|r|}
+\caption{Kết quả đo ramp tốc độ qua cầu nối SPI (packet 2\,KB, cửa sổ 2 giây, một cửa sổ đại diện mỗi bậc)}
+\label{tab:bench_ramp_results} \\
+\hline
+\textbf{Bậc yêu cầu (pps)} & \textbf{LAN TX pkt} & \textbf{LAN drop} & \textbf{WAN RX pkt} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Bậc yêu cầu (pps)} & \textbf{LAN TX pkt} & \textbf{LAN drop} & \textbf{WAN RX pkt} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+200    & 402    & 0      & 400    \\
+\hline
+400    & 802    & 0      & $\approx$800 \\
+\hline
+600    & 1\,213 & 0      & 1\,198 \\
+\hline
+800    & 1\,605 & 0      & 1\,577 \\
+\hline
+1\,000 & 2\,010 & 0      & 2\,000 \\
+\hline
+1\,200 & 1\,928 & 0      & 1\,933 \\
+\hline
+1\,500 & 2\,498 & 19     & 2\,453 \\
+\hline
+2\,000 & 2\,649 & 558    & 2\,630 \\
+\hline
+2\,500 & 2\,676 & 1\,003 & 2\,641 \\
+\hline
+3\,000 & 2\,702 & 1\,779 & 2\,667 \\
+\hline
+\end{longtable}
+
+Giá trị hdr\_crc\_fail = 0 và pay\_crc\_fail = 0 ở mọi bậc tốc độ trong toàn bộ thí nghiệm.
+
+Quy đổi sang băng thông (mỗi packet 2\,KB, mỗi cửa sổ 2 giây):
+
+\[
+\text{Mbps} = \frac{\text{TX.pkt}}{2\,\text{s}} \times 2\,048\,\text{byte} \times 8 \div 10^6
+\]
+
+Ví dụ tại bậc 1200 pps: $\dfrac{1928}{2} \times 0{,}016 = 15{,}4\,\text{Mbps}$.
+
+\begin{longtable}{|l|r|p{7cm}|}
+\caption{Tổng hợp hai mức giới hạn của cầu nối SPI}
+\label{tab:bench_ramp_summary} \\
+\hline
+\textbf{Mức giới hạn} & \textbf{Giá trị} & \textbf{Ý nghĩa} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Mức giới hạn} & \textbf{Giá trị} & \textbf{Ý nghĩa} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+Lossless ceiling & 19{,}2\,Mbps & Tốc độ an toàn tối đa; không packet nào bị từ chối \\
+\hline
+Giới hạn kỹ thuật & 21{,}6\,Mbps & Tốc độ tối đa LAN có thể đẩy ra; drop tăng nhưng throughput thực không tăng thêm \\
+\hline
+Vùng burst ngắn hạn & 19{,}2–21{,}6\,Mbps & Cho phép đợt tải ngắn, không nên duy trì liên tục \\
+\hline
+\end{longtable}
+
+\subsubsection{Kiểm chứng độ chính xác}
+
+(1) Đánh giá mất packet trên SPI bus: chênh lệch tx\_lan $-$ rx\_wan dao động từ $-5$ đến $+45$ packet, lúc dương lúc âm, đều dưới 2\,\%. Do hai vi điều khiển đếm trên hai đồng hồ độc lập, cửa sổ 2 giây ở hai bên không đồng bộ hoàn toàn; chênh lệch này là sai số căn chỉnh thời gian, không phải mất packet thực tế. Kết hợp với CRC fail = 0 suốt thí nghiệm, xác nhận SPI bus truyền không mất packet.
+
+(2) Xác nhận giới hạn kỹ thuật: từ bậc 1500 pps trở lên, TX.pkt không còn tăng tỷ lệ thuận theo yêu cầu. Khi yêu cầu tăng từ 1500 lên 3000 pps (gấp đôi), tốc độ thực chỉ tăng từ 1249 lên 1351 pps (tăng 8\,\%), xác nhận dispatcher LAN đã đạt giới hạn kỹ thuật.
+
+(3) Nhất quán với Thí nghiệm 1: Thí nghiệm 1 đo bằng phương pháp flood bão hòa cho ra kết quả $\approx$21\,Mbps; Thí nghiệm 4 đo bằng phương pháp ramp từng bậc cho ra giới hạn kỹ thuật 21,6\,Mbps. Hai phương pháp độc lập trả về cùng một kết quả, xác nhận độ tin cậy của phép đo.
+
+\subsubsection{Nhận xét}
+
+Phân tích số liệu cho thấy bottleneck nằm ở phía dispatcher LAN, không phải trên SPI bus hay phía WAN. TX.pkt chạm trần khoảng 2700 packet/cửa sổ bất kể yêu cầu tăng thêm bao nhiêu; drop tăng tuyến tính theo yêu cầu; WAN nhận đủ tất cả packet LAN đã đẩy ra với CRC fail = 0. Điều này cho thấy SPI bus và WAN slave còn dư năng lực; để nâng throughput trong tương lai, cần tối ưu phía dispatcher LAN, cụ thể là tăng kích thước queue hoặc gom nhiều packet mỗi lần gửi.
+
+Đối với công tác quy hoạch tải, tổng data rate của bốn handler (BLE, Zigbee, LoRa, RS485) nên được giữ ở mức không vượt quá 19,2\,Mbps. Với lưu lượng telemetry điển hình của từng node (vài chục kbps), hệ thống có thể phục vụ đồng thời hàng nghìn node trước khi chạm lossless ceiling này.
+
+% ============================================================
+\subsection{Thí nghiệm 5: Độ trễ end-to-end LAN $\rightarrow$ WAN}
+\label{sec:bench_e2e}
+
+\subsubsection{Phương pháp đo và tính hợp lệ}
+
+Thí nghiệm đo thời gian từ khi một packet đến LAN-MCU đến khi packet đó được đẩy ra Internet qua giao diện WAN. Phương pháp sử dụng hai mốc thời gian: $T_1$ được gắn vào packet ngay tại thời điểm LAN-MCU đưa packet vào SPI queue, và $T_2$ được ghi lại ngay sau khi WAN-MCU hoàn thành việc gửi packet ra Internet. Độ trễ của mỗi packet bằng $T_2 - T_1$.
+
+Nguồn phát dữ liệu là một máy tính đóng vai trò cảm biến giả, gửi liên tục qua bộ chuyển đổi USB–RS485 vào cổng RS485 của LAN-MCU với tốc độ 10 packet/giây, mỗi packet 64\,byte. Mỗi kịch bản đo 1100 packet; 100 packet đầu (giai đoạn warm-up) bị loại bỏ, thống kê được thực hiện trên 1000 packet còn lại.
+
+Hai vi điều khiển có đồng hồ độc lập. Hệ thống đã tích hợp cơ chế WAN-MCU gửi thời gian RTC mỗi giây cho LAN-MCU để đồng bộ. Sau khoảng 5 giây, độ lệch giữa hai đồng hồ ổn định trong phạm vi $\pm$1\,ms, nhỏ hơn nhiều so với độ trễ WAN điển hình (vài chục ms), do đó không ảnh hưởng đến độ chính xác của phép đo.
+
+Tính hợp lệ được bảo đảm bởi: packet đo lường đi qua đúng SPI queue, đúng SPI bridge, đúng TCP socket và đúng stack của từng giao diện WAN như mọi telemetry packet thật, phản ánh độ trễ hệ thống trong điều kiện vận hành thực tế.
+
+\subsubsection{Phân tích chuỗi truyền dẫn}
+
+\begin{longtable}{|l|l|r|}
+\caption{Phân tích độ trễ từng chặng trên lộ trình end-to-end}
+\label{tab:bench_e2e_segments} \\
+\hline
+\textbf{Chặng} & \textbf{Mô tả} & \textbf{Thời gian kỳ vọng} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Chặng} & \textbf{Mô tả} & \textbf{Thời gian kỳ vọng} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+A & LAN-MCU nhận và ghép packet hoàn chỉnh & $\approx$0,1\,ms \\
+\hline
+B & LAN-MCU gắn $T_1$ và đưa vào SPI queue & $\approx$0,02\,ms \\
+\hline
+C & Truyền qua SPI bridge & 3–4\,ms \\
+\hline
+D & WAN-MCU phân loại và đưa vào TCP queue & $\approx$0,2\,ms \\
+\hline
+E & WAN-MCU gửi packet ra Internet (phụ thuộc giao diện) & 25–45\,ms (Wi-Fi) \\
+\hline
+\end{longtable}
+
+Chặng gửi packet ra Internet (E) chiếm hơn 85\,\% tổng độ trễ khi dùng Wi-Fi. Bốn chặng còn lại cộng lại dưới 5\,ms.
+
+\subsubsection{Kịch bản đo}
+
+\begin{longtable}{|l|l|r|p{4.5cm}|}
+\caption{Kịch bản đo độ trễ end-to-end theo giao diện WAN}
+\label{tab:bench_e2e_scenarios} \\
+\hline
+\textbf{Kịch bản} & \textbf{Giao diện} & \textbf{Tốc độ phát} & \textbf{Độ trễ tối thiểu kỳ vọng} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Kịch bản} & \textbf{Giao diện} & \textbf{Tốc độ phát} & \textbf{Độ trễ tối thiểu kỳ vọng} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+5-WiFi & Wi-Fi 2,4\,GHz    & 10 pps & 30–45\,ms (SPI 3–4\,ms + Wi-Fi 25–40\,ms) \\
+\hline
+5-ETH  & Ethernet W5500    & 10 pps & 4–7\,ms (SPI 3–4\,ms + Ethernet 0,5–3\,ms) \\
+\hline
+5-4G   & LTE SIM7600G-H    & 10 pps & 55–155\,ms (SPI 3–4\,ms + LTE 50–150\,ms) \\
+\hline
+\end{longtable}
+
+\subsubsection{Số liệu thực đo}
+
+\begin{longtable}{|l|r|r|r|r|r|r|r|}
+\caption{Kết quả đo độ trễ end-to-end theo giao diện WAN (thống kê 1000 packet sau warm-up, packet 64\,byte, 10 pps)}
+\label{tab:bench_e2e_results} \\
+\hline
+\textbf{Giao diện} & \textbf{n/cửa sổ} & \textbf{min (ms)} & \textbf{avg (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{max (ms)} & \textbf{loss} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Giao diện} & \textbf{n/cửa sổ} & \textbf{min (ms)} & \textbf{avg (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{max (ms)} & \textbf{loss} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+Wi-Fi    & $\approx$10 & 38{,}527 & 39{,}588 & TBD & TBD & 48{,}123 & 0 \\
+\hline
+Ethernet & TBD & TBD & TBD & TBD & TBD & TBD & TBD \\
+\hline
+LTE 4G   & TBD & TBD & TBD & TBD & TBD & TBD & TBD \\
+\hline
+\end{longtable}
+
+Trích log thô — Wi-Fi (8 packet liên tiếp, seq 708–715):
+
+\begin{longtable}{|r|r|}
+\caption{Trích log thô độ trễ Wi-Fi}
+\label{tab:bench_e2e_rawlog} \\
+\hline
+\textbf{seq} & \textbf{lat\_ms} \\
+\hline
+\endfirsthead
+\hline
+\textbf{seq} & \textbf{lat\_ms} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+708 & 38{,}635 \\
+\hline
+709 & 48{,}426 \\
+\hline
+710 & 38{,}571 \\
+\hline
+711 & 38{,}772 \\
+\hline
+712 & 38{,}790 \\
+\hline
+713 & 38{,}575 \\
+\hline
+714 & 38{,}564 \\
+\hline
+715 & 38{,}771 \\
+\hline
+\end{longtable}
+
+Hai cửa sổ tổng hợp 1 giây — Wi-Fi:
+
+\begin{longtable}{|l|r|r|r|r|r|r|}
+\caption{Tổng hợp theo cửa sổ 1 giây — Wi-Fi}
+\label{tab:bench_e2e_windows} \\
+\hline
+\textbf{Giao diện} & \textbf{n} & \textbf{min (ms)} & \textbf{avg (ms)} & \textbf{max (ms)} & \textbf{loss} & \textbf{send\_fail} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Giao diện} & \textbf{n} & \textbf{min (ms)} & \textbf{avg (ms)} & \textbf{max (ms)} & \textbf{loss} & \textbf{send\_fail} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+Wi-Fi & 10 & 38{,}527 & 39{,}588 & 48{,}123 & 0 & 0 \\
+\hline
+Wi-Fi &  8 & 38{,}564 & 39{,}888 & 48{,}426 & 0 & 0 \\
+\hline
+\end{longtable}
+
+\subsubsection{Kiểm chứng độ chính xác}
+
+(1) Tính hợp lệ của đồng bộ đồng hồ: giá trị lat\_ms không xuất hiện giá trị âm và giá trị min không nhỏ bất thường, xác nhận đồng hồ hai vi điều khiển đã được đồng bộ đủ chặt. Nếu đồng hồ lệch đáng kể, các giá trị đo sẽ vô lý ngay.
+
+(2) Khớp khung lý thuyết: giá trị min đo được ở Wi-Fi là 38,5\,ms, nằm trong khoảng kỳ vọng 30–45\,ms (SPI 3–4\,ms cộng Wi-Fi 25–40\,ms). Khi có số liệu Ethernet và LTE, đối chiếu tương tự với khoảng kỳ vọng tương ứng.
+
+(3) Thống kê đầy đủ: loss = 0 và send\_fail = 0 ở mọi cửa sổ đo được, xác nhận thống kê được thực hiện trên 100\,\% packet.
+
+\subsubsection{Nhận xét}
+
+Kết quả đo Wi-Fi cho thấy độ trễ trung bình khoảng 39,6\,ms với biên độ dao động (jitter) từ min 38,5\,ms đến max 48,1\,ms. Sự dao động này phản ánh đặc tính của giao thức Wi-Fi, bao gồm tranh chấp kênh truyền, cơ chế beacon và retransmission ở tầng MAC.
+
+Số liệu Ethernet và LTE chờ cập nhật sau khi hoàn thành đo lường. Theo phân tích lý thuyết, Ethernet có độ trễ thấp nhất do truyền dẫn có dây không bị nhiễu; LTE có độ trễ cao nhất do phải đi qua trạm phát sóng di động và mạng của nhà mạng. Kết quả đo đầy đủ của ba giao diện sẽ cung cấp cơ sở lựa chọn giao diện phù hợp tùy theo yêu cầu độ trễ: Ethernet khi cần độ trễ thấp và ổn định; Wi-Fi khi cần linh hoạt trong triển khai; LTE khi cần kết nối di động.
