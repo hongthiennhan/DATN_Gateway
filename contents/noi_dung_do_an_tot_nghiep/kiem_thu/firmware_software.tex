@@ -622,7 +622,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             Đơn kênh (Spam) & BLE (DLE) & $\approx 97.6\,kbps$ & $\approx 97\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             Đơn kênh (Spam) & LoRa (SF7) & $\approx 3.5\,kbps$ & $\approx 3.5\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             Đa kênh (Concurrency) & Tổng hợp & $\approx 181.1\,kbps$ & $\approx 154\,kbps$ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-        \end{longtable}
+        \end{longtable} 
 
         Bảng kiểm thử dưới đây nhằm xác minh khả năng duy trì kết nối và truyền nhận dữ liệu ở khoảng cách tối đa của ba chuẩn không dây cốt lõi trong kiến trúc LAN-MCU bao gồm BLE, Zigbee và LoRa P2P. Việc đo đạc được đối chiếu giữa thông số lý thuyết (môi trường lý tưởng không vật cản - Line of Sight) và thông số thực tế trong điều kiện có vật cản (văn phòng/khu vực đô thị) nhằm đánh giá tính khả thi khi triển khai tại thực địa.
 
@@ -648,18 +648,13 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
 
             Bảng kiểm thử dưới đây thực hiện đánh giá đồng thời (Concurrency Test) độ chính xác dữ liệu nhiệt độ và độ ẩm trên cả ba giao thức LoRa, BLE và Zigbee. Thay vì đo trình tự, hệ thống thực hiện thu thập và phân phối cùng một bộ dữ liệu tham chiếu từ ứng dụng tại LAN-MCU đến các stack truyền dẫn khác nhau trong cùng một chu kỳ xử lý $10\,\text{ms}$. Phương pháp này nhằm xác thực tính toàn vẹn của payload khi đi qua bus SPI nội bộ và khả năng điều phối đa tác vụ của firmware FreeRTOS, đảm bảo sai số duy trì trong ngưỡng cho phép $\leq \pm 0{,}5\,{^\circ}\text{C}$ và $\leq \pm 1{,}0\%$ RH dưới điều kiện tải thực tế (môi trường thử nghiệm $30\,{^\circ}\text{C}$, $70\%$ RH).
 
-            \begin{longtable}{|c|c|c|c|c|c|}
+            \begin{table}[H]
+            \centering
             \caption{Kiểm thử so sánh độ chính xác dữ liệu đồng thời giữa các giao thức}
-            \label{tab:concurrency_data_accuracy} \\
+            \label{tab:concurrency_data_accuracy}
+            \begin{tabular}{|c|c|c|c|c|c|}
             \hline
             \textbf{Lần} & \textbf{Tham số} & \textbf{LoRa (SF7)} & \textbf{BLE (DLE)} & \textbf{Zigbee (ZCL)} & \textbf{Kết quả} \\ \hline
-            \endfirsthead
-            \hline
-            \textbf{Lần} & \textbf{Tham số} & \textbf{LoRa (SF7)} & \textbf{BLE (DLE)} & \textbf{Zigbee (ZCL)} & \textbf{Kết quả} \\ \hline
-            \endhead
-            \hline
-            \endfoot
-            \endlastfoot
 
             % Lần 1
             \multirow{2}{*}{1} & Temp ($^\circ$C) & $30{,}2$ & $30{,}1$ & $30{,}2$ & \multirow{2}{*}{\textcolor{modern_blue}{\textbf{Passed}}} \\ \cline{2-5}
@@ -680,4 +675,5 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             % Lần 5
             \multirow{2}{*}{5} & Temp ($^\circ$C) & $30{,}1$ & $30{,}0$ & $30{,}0$ & \multirow{2}{*}{\textcolor{modern_blue}{\textbf{Passed}}} \\ \cline{2-5}
             & Humid (\%) & $70{,}5$ & $70{,}4$ & $70{,}4$ & \\ \hline
-        \end{longtable}
+            \end{tabular}
+            \end{table}
