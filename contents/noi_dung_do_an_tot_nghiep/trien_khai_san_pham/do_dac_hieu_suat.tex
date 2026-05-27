@@ -49,7 +49,7 @@ Chế độ A chỉ đi qua các chặng D, E, F -- bỏ qua ba chặng phần m
 
 Hai kịch bản được thực hiện trên cùng một phần cứng. Sau khi flash đồng thời hai MCU và đợi handshake hoàn tất (khoảng 5 giây), hệ thống tự khởi động bench. Bỏ cửa sổ đầu tiên (warm-up), lấy trung bình 5 cửa sổ liên tiếp ở trạng thái ổn định.
 
-\begin{longtable}{|p{1.25cm}|p{3.25cm}|p{3.25cm}|p{3.25cm}|p{1.75cm}|p{1.75cm}|}
+\begin{longtable}{|p{1.25cm}|p{3cm}|p{3cm}|p{3cm}|p{1.75cm}|p{1.75cm}|}
     \caption{Kết quả đo throughput SPI inter-MCU theo hai chế độ.}
     \label{tab:spi_results} \\
     \hline
@@ -232,13 +232,14 @@ Trong kịch bản này, một gói tin đi qua bốn chặng. Chặng đầu, L
     \endfoot
     \endlastfoot
     200\,pps & 402 & 0 & 400 \\ \hline
-    400\,pps & 802 & 0 & $\approx 800$ \\ \hline
+    400\,pps & 802 & 0 & 800 \\ \hline
     600\,pps & 1\,213 & 0 & 1\,198 \\ \hline
     800\,pps & 1\,605 & 0 & 1\,577 \\ \hline
     1000\,pps & 2\,010 & 0 & 2\,000 \\ \hline
     1200\,pps & 1\,928 & 0 & 1\,933 \\ \hline
     1500\,pps & 2\,498 & 19 & 2\,453 \\ \hline
     2000\,pps & 2\,649 & 558 & 2\,630 \\ \hline
+    \newpage
     2500\,pps & 2\,676 & 1\,003 & 2\,641 \\ \hline
     3000\,pps & 2\,702 & 1\,779 & 2\,667 \\ \hline
 \end{longtable}
@@ -294,7 +295,7 @@ Nguồn phát tín hiệu là máy tính đóng vai cảm biến, gửi 1100 gó
 
 \subsubsection{Phân tích từng chặng truyền dẫn}
 
-\begin{longtable}{|p{4cm}|p{7cm}|p{4.5cm}|}
+\begin{longtable}{|p{3cm}|p{6.5cm}|p{4.5cm}|}
     \caption{Các chặng truyền dẫn trong phép đo độ trễ end-to-end.}
     \label{tab:e2e_stages} \\
     \hline
