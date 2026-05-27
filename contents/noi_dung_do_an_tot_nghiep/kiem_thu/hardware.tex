@@ -46,50 +46,50 @@
             
                 % NHÓM 1: LINH KIỆN CHUNG
                 \multirow{15}{*}{2} & \multirow{15}{3cm}{\textbf{Nhóm Linh kiện} \newline (General Components)}
-                    & \textbf{SoC:} U1, U2 \newline (ESP32-S3-WROOM-1U-N16R8)
+                    & \textbf{SoC:} U1, U2 
                     & \multirow{15}{4cm}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{USB to UART Bridge IC:} U13 \newline (CP2102-GMR)
+                    & & \textbf{USB to UART Bridge IC:} U13 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Power MUX IC:} U17 \newline (TPS2121RUXR)
+                    & & \textbf{Power MUX IC:} U17 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Battery Charger IC:} U15 \newline (BQ25892RTWR)
+                    & & \textbf{Battery Charger IC:} U15 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Power Monitor IC:} U14 \newline (INA230AIRGTR)
+                    & & \textbf{Power Monitor IC:} U14 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Battery Fuel Gauge IC:} U16 \newline (BQ27441DRZR-G1B)
+                    & & \textbf{Battery Fuel Gauge IC:} U16 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Buck 3V3 IC:} U3 \newline (TPS566231RQFR)
+                    & & \textbf{Buck 3V3 IC:} U3 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Power Switch IC:} U4, U6 \newline (TPS22965DSGR)
+                    & & \textbf{Power Switch IC:} U4, U6 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Boost 5V IC:} U5 \newline (TPS613222ADBVR)
+                    & & \textbf{Boost 5V IC:} U5 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{RTC:} U8 \newline (PCF8563T/5,518)
+                    & & \textbf{RTC:} U8 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{IO Expanders:} U10 \newline (TCA6416ARTWR)
+                    & & \textbf{IO Expanders:} U10 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{I2C Buffer:} U18 \newline (TCA9803DGKR)
+                    & & \textbf{I2C Buffer:} U18 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Analog Switches IC:} U11, U19 \newline (FSUSB42UMX-TP)
+                    & & \textbf{Analog Switches IC:} U11, U19 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{Level Shifters IC:} U7 \newline (TXS0102DQER)
+                    & & \textbf{Level Shifters IC:} U7 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
-                    & & \textbf{EMI/RFI Filters (MSD):} U12 \newline (EMIF06-MSD02N16)
+                    & & \textbf{EMI/RFI Filters (MSD):} U12 
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             
                 % NHÓM 2: LINH KIỆN PHÂN CỰC
@@ -329,9 +329,9 @@
                     % Rail +3V3
                     7 & \multirow{3}{*}{\textbf{+3V3}} & Source          & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
                     8 &                                & ESP32-S3 Master & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
-                    9 &                                & WAN Connector   & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ %\hline
+                    9 &                                & WAN Connector   & $3.32$ & $3.32$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \hline
         
-                    \pagebreak
+                    % \pagebreak
         
                     % Rail +3V3_CTRL
                     10 & \multirow{4}{*}{\textbf{+3V3\_CTRL}} & Source         & $3.32$ & $3.31$ & $3.31$ & \textcolor{modern_green}{\textbf{Checked}} \\ \cline{1-1} \cline{3-7}
@@ -349,7 +349,7 @@
             \subsubsection{Kiểm tra Chức năng Phần cứng (Functional Verification)}
                 Từng khối chức năng ngoại vi được kiểm tra độc lập thông qua các firmware driver cơ bản. Mục đích là xác nhận sự toàn vẹn của các đường dẫn tín hiệu và khả năng giao tiếp vật lý giữa MCU và các linh kiện ngoại vi.
         
-                \begin{longtable}{|c|p{3.5cm}|p{5cm}|p{3.5cm}|c|}
+                \begin{longtable}{|c|p{3cm}|p{5cm}|p{4cm}|c|}
                     \caption{Kết quả kiểm tra chức năng.}
                     \label{tab:detailed_functional_verification_final} \\
                     \hline
@@ -374,32 +374,32 @@
                     % 2. KHỐI MASTER PERIPHERALS
                     \multicolumn{5}{|l|}{\textbf{B. NGOẠI VI CỦA MASTER}} \\ \hline
         
-                    4 & \textbf{Đồng hồ thời gian thực} \newline (RTC - PCF8563) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x51}. Ghi thời gian hiện tại và đọc lại sau 1 phút. & Thời gian đọc về tăng đúng 60 giây so với lúc ghi. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    4 & \textbf{Đồng hồ thời gian thực} & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x51}. Ghi thời gian hiện tại và đọc lại sau 1 phút. & Thời gian đọc về tăng đúng 60 giây so với lúc ghi. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    5 & \textbf{Mở rộng IO} \newline (IO Expander - TCA6416) & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x20}. Điều khiển bật/tắt các chân Output P0/P1. & Các tín hiệu điều khiển nguồn (EN\_3V3C, EN\_5VC) thay đổi mức logic đúng theo lệnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    5 & \textbf{Mở rộng IO} & \textbf{Giao thức I2C0 (Master):} \newline Quét địa chỉ \texttt{0x20}. Điều khiển bật/tắt các chân Output P0/P1. & Các tín hiệu điều khiển nguồn (EN\_3V3C, EN\_5VC) thay đổi mức logic đúng theo lệnh. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    6 & \textbf{Cổng kết nối WAN} \newline (Cho Module LTE/Ethernet) & \textbf{Multi-protocol Check:} \newline - UART1 (IO15/18). \newline - SPI3 (IO4--7). & - UART nhận lại đúng chuỗi đã gửi. \newline - SPI phát hiện thiết bị ngoại vi giả lập. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    6 & \textbf{Cổng kết nối WAN} & \textbf{Multi-protocol Check:} \newline - UART1 (IO15/18). \newline - SPI3 (IO4--7). & - UART nhận lại đúng chuỗi đã gửi. \newline - SPI phát hiện thiết bị ngoại vi giả lập. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    7 & \textbf{I2C Buffer} \newline (TCA9803DGKR) & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với thiết bị I2C bên ngoài thông qua cổng CON11. & Quét được thiết bị I2C bên ngoài qua cổng CON11; dữ liệu đọc/ghi ổn định. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    7 & \textbf{I2C Buffer} & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với thiết bị I2C bên ngoài thông qua cổng CON11. & Quét được thiết bị I2C bên ngoài qua cổng CON11; dữ liệu đọc/ghi ổn định. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    8 & \textbf{UART Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Master điều khiển chân \texttt{UART\_SEL}. & Khi Low: UART2 của Master kết nối UART0 của Slave. Khi High: Kết nối LCD. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    8 & \textbf{UART Switch} & \textbf{Logic Control (GPIO):} \newline Master điều khiển chân \texttt{UART\_SEL}. & Khi Low: UART2 của Master kết nối UART0 của Slave. Khi High: Kết nối LCD. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    9 & \textbf{Màn hình hiển thị} \newline (LCD Module) & \textbf{Giao thức UART2 (Master):} \newline Gửi chuỗi lệnh/khung dữ liệu kiểm tra hiển thị qua UART2. & Màn hình sáng đều, không có điểm chết, hiển thị đúng nội dung test. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    9 & \textbf{Màn hình hiển thị} & \textbf{Giao thức UART2 (Master):} \newline Gửi chuỗi lệnh/khung dữ liệu kiểm tra hiển thị qua UART2. & Màn hình sáng đều, không có điểm chết, hiển thị đúng nội dung test. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    10 & \textbf{DC FAN và RGB LEDs} \newline (IO Expander - TCA6416) & \textbf{Logic Control (GPIO):} \newline Master điều khiển IO Expander để điều khiển DC FAN và RGB LEDs. & DC FAN bật khi chân P15 kéo mức logic cao. RGB LEDs sáng màu trắng khi các chân P1[2:4] kéo mức logic thấp. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    10 & \textbf{DC FAN và RGB LEDs} & \textbf{Logic Control (GPIO):} \newline Master điều khiển IO Expander để điều khiển DC FAN và RGB LEDs. & DC FAN bật khi chân P15 kéo mức logic cao. RGB LEDs sáng màu trắng khi các chân P1[2:4] kéo mức logic thấp. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    11 & \textbf{Khối sạc và đo năng lượng tiêu thụ} \newline (Battery Charger và Power Monitor) & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với khối sạc và khối đo năng lượng tiêu thụ của thiết bị qua I2C. & Quét được địa chỉ \texttt{0x6B}, \texttt{0x40}, \texttt{0x55}. Đo được dòng tiêu thụ của thiết bị và dòng sạc/xả của pin LiPo. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    11 & \textbf{Khối sạc và đo năng lượng tiêu thụ} & \textbf{Giao thức I2C0 (Master):} \newline Master giao tiếp với khối sạc và khối đo năng lượng tiêu thụ của thiết bị qua I2C. & Quét được địa chỉ \texttt{0x6B}, \texttt{0x40}, \texttt{0x55}. Đo được dòng tiêu thụ của thiết bị và dòng sạc/xả của pin LiPo. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
                     % 3. KHỐI SLAVE PERIPHERALS
                     \multicolumn{5}{|l|}{\textbf{C. NGOẠI VI CỦA SLAVE}} \\ \hline
         
-                    12 & \textbf{Thẻ nhớ MicroSD} \newline (Storage) & \textbf{Giao thức SDIO 4-bit:} \newline U2 thực hiện Mount File System (FAT32) và ghi file log mẫu 1MB. & Tốc độ ghi đạt chuẩn Class 10. File đọc lại không bị lỗi (Check MD5). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    12 & \textbf{Thẻ nhớ MicroSD} & \textbf{Giao thức SDIO 4-bit:} \newline U2 thực hiện Mount File System (FAT32) và ghi file log mẫu 1MB. & Tốc độ ghi đạt chuẩn Class 10. File đọc lại không bị lỗi (Check MD5). & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    13 & \textbf{Cổng kết nối LAN1} \newline (Cho Zigbee/LoRaWAN) & \textbf{Multi-protocol Check:} \newline - UART1 (IO17/18). \newline - SPI3 (CS0). & Giao tiếp ổn định với Module Test LAN1. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    13 & \textbf{Cổng kết nối LAN1} & \textbf{Multi-protocol Check:} \newline - UART1 (IO17/18). \newline - SPI3 (CS0). & Giao tiếp ổn định với Module Test LAN1. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    14 & \textbf{Cổng kết nối LAN2} \newline (Cho RS485) & \textbf{Multi-protocol Check:} \newline - UART2 (IO8/21). \newline - SPI3 (CS1). & Giao tiếp ổn định với Module Test LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    14 & \textbf{Cổng kết nối LAN2} & \textbf{Multi-protocol Check:} \newline - UART2 (IO8/21). \newline - SPI3 (CS1). & Giao tiếp ổn định với Module Test LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-                    15 & \textbf{USB Switch} \newline (FSUSB42UMX) & \textbf{Logic Control (GPIO):} \newline Slave điều khiển chân \texttt{USB\_SEL}. & Khi Low: USB kết nối LAN1. Khi High: USB kết nối LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+                    15 & \textbf{USB Switch} & \textbf{Logic Control (GPIO):} \newline Slave điều khiển chân \texttt{USB\_SEL}. & Khi Low: USB kết nối LAN1. Khi High: USB kết nối LAN2. & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
                     % 4. GIAO DIỆN NGƯỜI DÙNG & HỆ THỐNG
                     \multicolumn{5}{|l|}{\textbf{D. GIAO DIỆN HỆ THỐNG (SYSTEM INTERFACE)}} \\ \hline

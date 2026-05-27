@@ -204,14 +204,14 @@
             \end{figure}
             Kiến trúc Dual-MCU Master-Slave phân tách miền WAN-LAN giúp tối ưu tải xử lý, đảm bảo hệ thống vận hành ổn định. Việc sử dụng SoC ESP32-S3 là để đáp ứng tốt năng lực xử lý tại biên và cho phép cấu hình linh hoạt, phù hợp với các yêu cầu mở rộng thực tế. Bên cạnh khối xử lý trung tâm, hệ thống còn tích hợp nhiều khối chức năng nhằm tăng cường khả năng quản lý, giám sát và mở rộng phần cứng, bao gồm:
             \begin{itemize}
-                \item \textbf{Hệ thống nguồn:} Mạng phân phối nguồn tích hợp TPS2121RUXR và BQ25892RTWR cho phép điều phối linh hoạt ba nguồn cấp đầu vào (12V, 5V, LiPo). Cơ chế power-path này đảm bảo ưu tiên nguồn ngoài, giúp bảo vệ tuổi thọ pin và tối ưu hóa hiệu suất cung cấp điện cho các tầng DC-DC kế tiếp.
-                \item \textbf{Quản lý tiêu thụ điện năng:} Việc tích hợp IC INA230AIRGTR (giao tiếp I2C) giúp chủ động giám sát công suất và phát hiện sớm các trạng thái bất thường như quá dòng. Giải pháp này không chỉ tối ưu hiệu quả năng lượng mà còn trực tiếp đảm bảo độ tin cậy vận hành bền bỉ cho toàn hệ thống.
-                \item \textbf{Quản lý pin LiPo:} Việc lựa chọn IC BQ27441DRZR-G1B cùng thuật toán Impedance Track\texttrademark\ giúp hệ thống dự báo chính xác dung lượng pin. Khả năng tự động bù trừ sai số do lão hóa và nhiệt độ là yếu tố then chốt để đảm bảo tính ổn định và an toàn năng lượng lâu dài cho thiết bị.
-                \item \textbf{Cổng USB và USB-to-UART Bridge:} Việc tích hợp IC CP2102-GMR thiết lập cổng COM ảo thực hiện quy trình nạp firmware và cấu hình thiết bị, hỗ trợ gỡ lỗi và giám sát vận hành tin cậy thông qua hệ thống log dữ liệu tập trung.
-                \item \textbf{Quản lý thời gian thực (RTC):} IC RTC PCF8563T dùng pin CR2032 đảm bảo tính liên tục của dữ liệu thời gian, hỗ trợ hiệu quả việc đồng bộ hóa mạng và thực thi các tác vụ theo lịch trình.
-                \item \textbf{Mở rộng GPIO:} Hệ thống sử dụng IC TCA6416ARTWR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
+                \item \textbf{Hệ thống nguồn:} Mạng phân phối nguồn tích hợp IC Power MUX và Battery Charger cho phép điều phối linh hoạt ba nguồn cấp đầu vào (12V, 5V, LiPo). Cơ chế power-path này đảm bảo ưu tiên nguồn ngoài, giúp bảo vệ tuổi thọ pin và tối ưu hóa hiệu suất cung cấp điện cho các tầng DC-DC kế tiếp.
+                \item \textbf{Quản lý tiêu thụ điện năng:} Việc tích hợp IC Power Monitor (giao tiếp I2C) giúp chủ động giám sát công suất và phát hiện sớm các trạng thái bất thường như quá dòng. Giải pháp này không chỉ tối ưu hiệu quả năng lượng mà còn trực tiếp đảm bảo độ tin cậy vận hành bền bỉ cho toàn hệ thống.
+                \item \textbf{Quản lý pin LiPo:} Việc lựa chọn IC Battery Fuel Gauge cùng thuật toán Impedance Track\texttrademark\ giúp hệ thống dự báo chính xác dung lượng pin. Khả năng tự động bù trừ sai số do lão hóa và nhiệt độ là yếu tố then chốt để đảm bảo tính ổn định và an toàn năng lượng lâu dài cho thiết bị.
+                \item \textbf{Cổng USB và USB-to-UART Bridge:} Việc tích hợp IC USB to UART Bridge thiết lập cổng COM ảo thực hiện quy trình nạp firmware và cấu hình thiết bị, hỗ trợ gỡ lỗi và giám sát vận hành tin cậy thông qua hệ thống log dữ liệu tập trung.
+                \item \textbf{Quản lý thời gian thực (RTC):} IC RTC dùng pin CR2032 đảm bảo tính liên tục của dữ liệu thời gian, hỗ trợ hiệu quả việc đồng bộ hóa mạng và thực thi các tác vụ theo lịch trình.
+                \item \textbf{Mở rộng GPIO:} Hệ thống sử dụng IC IO Expanders để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
                 \item \textbf{Cổng PCIe mở rộng WAN/LAN:} Thiết kế modular với ba khe PCIe (01 WAN, 02 LAN) cho phép tích hợp linh hoạt các chuẩn truyền thông, tối ưu khả năng mở rộng hệ thống cho đa dạng ứng dụng IoT.
-                \item \textbf{Mở rộng I2C:} TCA9803DGKR được tích hợp nhằm giảm ảnh hưởng điện dung trên đường truyền dài, bảo toàn tính toàn vẹn tín hiệu và duy trì sự ổn định cho bus I2C.
+                \item \textbf{Mở rộng I2C:} IC đệm I2C được tích hợp nhằm giảm ảnh hưởng điện dung trên đường truyền dài, bảo toàn tính toàn vẹn tín hiệu và duy trì sự ổn định cho bus I2C.
                 \item \textbf{Hiển thị trạng thái:} Giao diện HMI TFT cảm ứng hỗ trợ giám sát và cấu hình trực tiếp, giúp vận hành và bảo trì hệ thống tại chỗ.
                 \item \textbf{Nút nhấn:} Ba nút nhấn (Power, Reset, Boot) để điều khiển nguồn và cấu hình thiết bị.
                 \item \textbf{Lưu trữ cục bộ:} Giao tiếp SDIO 4-bit với thẻ microSD giúp bảo toàn dữ liệu qua cơ chế lưu đệm và gửi bù tự động, đảm bảo tính liên tục ngay cả khi mạng gián đoạn.
@@ -225,7 +225,7 @@
                 \caption{Sơ đồ hệ thống nguồn}
                 \label{fig:blockdiagram_power}
             \end{figure}
-            Việc sử dụng TPS2121RUXR cho phép điều phối linh hoạt nguồn 12V và 5V USB, đồng thời đảm bảo an toàn hệ thống thông qua các cơ chế bảo vệ tích hợp sau:
+            Việc sử dụng Power MUX cho phép điều phối linh hoạt nguồn 12V và 5V USB, đồng thời đảm bảo an toàn hệ thống thông qua các cơ chế bảo vệ tích hợp sau:
             \begin{itemize}
                 \item \textbf{Giới hạn dòng (ILM):} Chủ động kiểm soát dòng tải không vượt quá ngưỡng cài đặt (điều chỉnh thông qua điện trở ngoài).
                 \item \textbf{Bảo vệ ngắn mạch:} Ngắt tải trong thời gian rất ngắn (khoảng 1\,$\mu$s) khi phát hiện dòng tăng đột biến vượt 2.4 lần giới hạn.
@@ -234,7 +234,7 @@
                 \item \textbf{Khóa điện áp thấp (UVLO):} Ngăn cấp nguồn khi điện áp giảm xuống dưới mức tối thiểu (khoảng 2.55V).
                 \item \textbf{Chặn dòng ngược (RCB):} Ngăn dòng điện hồi ngược từ đầu ra về đầu vào với thời gian đáp ứng khoảng 10\,$\mu$s.
             \end{itemize}
-            IC BQ25892RTWR cho phép điều phối giữa nguồn ngoài và pin, ưu tiên nguồn ngoài để duy trì điện áp hệ thống 4.2V ổn định. Với khả năng cấu hình qua I2C và các cơ chế bảo vệ tự động (chống quá tải, xả sâu), giải pháp này đảm bảo tính linh hoạt và an toàn tối đa cho mạng phân phối nguồn. Các tính năng bảo vệ và điều khiển bổ sung bao gồm:
+            IC Battery Charger cho phép điều phối giữa nguồn ngoài và pin, ưu tiên nguồn ngoài để duy trì điện áp hệ thống 4.2V ổn định. Với khả năng cấu hình qua I2C và các cơ chế bảo vệ tự động (chống quá tải, xả sâu), giải pháp này đảm bảo tính linh hoạt và an toàn tối đa cho mạng phân phối nguồn. Các tính năng bảo vệ và điều khiển bổ sung bao gồm:
             \begin{itemize}
                 \item Giám sát nhiệt độ và tự động ngắt khi xảy ra quá nhiệt (Thermal shutdown).
                 \item Tự động giảm dòng sạc (Thermal regulation) khi nhiệt độ hệ thống vượt ngưỡng.
@@ -248,7 +248,7 @@
             Cơ chế cấu hình VSYS (3.5V--4.2V) qua I2C cho phép tối ưu theo đặc tính pin LiPo. Nguồn VSYS được phân phối đến các tầng DC-DC toàn hệ thống:
             \begin{itemize}
                 \item \textbf{+3V3:} Được chuyển đổi trực tiếp từ rail +4V2\_VSYS. Đây là nguồn mặc định luôn được duy trì khi có nguồn đầu vào, cấp cho các khối quan trọng như MCU master, IO expander, RTC, power monitor và các ngoại vi cần thiết trong chế độ ngủ sâu (deep sleep).
-                \item \textbf{+3V3\_CTRL:} Là nhánh nguồn từ +3V3 thông qua IC power switch TPS22965DSGR, cho phép điều khiển đóng/ngắt bởi IO expander của MCU master. Rail này cấp cho các khối không cần hoạt động trong chế độ tiết kiệm năng lượng.
+                \item \textbf{+3V3\_CTRL:} Là nhánh nguồn từ +3V3 thông qua IC power switch, cho phép điều khiển đóng/ngắt bởi IO expander của MCU master. Rail này cấp cho các khối không cần hoạt động trong chế độ tiết kiệm năng lượng.
                 \item \textbf{+5V\_CTRL:} Được tạo từ +4V2\_VSYS thông qua bộ chuyển đổi DC-DC và có khả năng điều khiển thông qua IO expander, phục vụ các ngoại vi yêu cầu mức điện áp 5V.
             \end{itemize}
             Đối với các module mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng module, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết. Cách thiết kế này mang lại các ưu điểm sau:
