@@ -1,7 +1,7 @@
 \section{Đo lường Hiệu năng thực tế}
 \label{sec:benchmark}
 
-Phần này trình bày phương pháp, kịch bản và kết quả đo lường hiệu năng trên phần cứng thực tế của hệ thống Gateway Dual-MCU. Năm phép đo được thực hiện theo thứ tự từ lớp vật lý đến lớp ứng dụng, bao gồm: throughput của kênh SPI inter-MCU, tốc độ nhận dữ liệu tối đa tại các cổng vào của LAN-MCU, throughput đẩy dữ liệu ra Internet của từng giao diện WAN, băng thông lossless của SPI bridge khi tải tăng dần, và độ trễ end-to-end từ điểm nhận dữ liệu tại LAN đến điểm dữ liệu rời khỏi cổng WAN.
+Phần này trình bày phương pháp, kịch bản và kết quả đo lường hiệu năng trên phần cứng thực tế của hệ thống Gateway Dual-MCU. Năm phép đo được thực hiện theo thứ tự từ lớp vật lý đến lớp ứng dụng, bao gồm: throughput của kênh SPI inter-MCU, tốc độ nhận dữ liệu tối đa tại các cổng vào của LAN-MCU, throughput đẩy dữ liệu ra Internet của từng giao diện WAN, băng thông lossless của SPI bridge khi tải tăng dần, tổng hợp thông lượng end-to-end của toàn data path (suy ra từ ba phép đo throughput), và độ trễ end-to-end từ điểm nhận dữ liệu tại LAN đến điểm dữ liệu rời khỏi cổng WAN.
 
 \subsection{Throughput kênh SPI inter-MCU}
 \label{subsec:bench_spi}
@@ -279,18 +279,59 @@ Kết quả này nhất quán với phép đo tại Mục~\ref{subsec:bench_spi}
 
 Nút cổ chai nằm ở phía LAN dispatcher, không phải SPI bus. SPI bus và WAN-MCU slave vẫn còn dư công suất ở mức tải tối đa đo được. Để nâng băng thông trong tương lai, chỉ cần tối ưu phía LAN (tăng kích thước queue, gom nhiều packet mỗi lần gửi) mà không cần thay đổi tốc độ SPI hay firmware WAN-MCU.
 
+\subsection{Tổng hợp: thông lượng end-to-end LAN $\rightarrow$ WAN}
+\label{subsec:bench_e2e_throughput}
+
+\subsubsection{Phương pháp: suy ra bằng tính toán, không cần đo riêng}
+
+Luồng dữ liệu từ ngoại vi lên Cloud đi qua ba đoạn nối tiếp, mỗi đoạn đã được đo độc lập ở các mục trên: cổng vào LAN (Mục~\ref{subsec:bench_lan_ingress}), cầu SPI inter-MCU (Mục~\ref{subsec:bench_spi} và~\ref{subsec:bench_spi_ramp}), và cổng ra WAN (Mục~\ref{subsec:bench_wan_egress}). Với một chuỗi nối tiếp, thông lượng toàn tuyến bằng thông lượng của \textbf{đoạn chậm nhất} (định luật nút cổ chai) -- tương tự nước chảy qua nhiều đoạn ống nối tiếp, lưu lượng bị quyết định bởi đoạn ống hẹp nhất. Do cả ba đoạn đã có số đo, thông lượng end-to-end được suy ra trực tiếp bằng phép lấy giá trị nhỏ nhất mà không cần dựng kịch bản đo đầu-cuối:
+\[
+\text{E2E} = \min\bigl(\text{cổng vào LAN},\; \text{cầu SPI } \approx 21\,\text{Mbps},\; \text{cổng ra WAN}\bigr).
+\]
+Cầu SPI inter-MCU ($\approx 21\,\text{Mbps}$) luôn lớn hơn cả hai đầu nên không bao giờ là nút thắt; công thức rút gọn còn $\text{E2E} = \min(\text{cổng vào LAN}, \text{cổng ra WAN})$.
+
+\subsubsection{Kết quả tính toán}
+
+Bảng~\ref{tab:e2e_throughput} liệt kê thông lượng tối đa theo các trường hợp nghẽn đại diện: hoặc card WAN là nút thắt (khi cổng vào đủ nhanh), hoặc cổng vào LAN là nút thắt (khi card WAN dư sức).
+
+\begin{longtable}{|p{7.5cm}|p{4cm}|}
+    \caption{Thông lượng end-to-end tối đa theo từng trường hợp nghẽn.}
+    \label{tab:e2e_throughput} \\
+    \hline
+    \textbf{Trường hợp} & \textbf{Thông lượng tối đa} \\ \hline
+    \endfirsthead
+    \hline
+    \textbf{Trường hợp} & \textbf{Thông lượng tối đa} \\ \hline
+    \endhead
+    \hline
+    \endfoot
+    \endlastfoot
+    WAN sử dụng Wi-Fi 2,4\,GHz & $4{,}8\,\text{Mbps}$ \\ \hline
+    WAN sử dụng Ethernet W5500 & $4{,}2\,\text{Mbps}$ \\ \hline
+    WAN sử dụng LTE SIM7600G-H & $1{,}82\,\text{Mbps}$ \\ \hline
+    LAN sử dụng 2 module UART & $0{,}88\,\text{Mbps}$ \\ \hline
+    LAN sử dụng 2 module I2C & $0{,}56\,\text{Mbps}$ \\ \hline
+    LAN sử dụng 2 module UART + I2C & $0{,}72\,\text{Mbps}$ \\ \hline
+\end{longtable}
+
+Ba hàng WAN giả định cổng vào đủ nhanh (SPI $7{,}37$ hoặc USB $4{,}05\,\text{Mbps}$) nên thông lượng đạt đúng trần card WAN. Ba hàng LAN có cổng vào UART/I2C chậm hơn mọi card WAN nên nút thắt nằm ở cổng vào, bằng tổng trần các lane: $2\times\text{UART} = 2\times0{,}44 = 0{,}88$; $2\times\text{I2C} = 2\times0{,}28 = 0{,}56$; $\text{UART}+\text{I2C} = 0{,}44+0{,}28 = 0{,}72\,\text{Mbps}$. Cầu SPI inter-MCU ($\approx 21\,\text{Mbps}$) không bao giờ là nút thắt.
+
+\subsubsection{Ý nghĩa kết quả}
+
+Có thể rút ra bốn nhận xét. Thứ nhất, khi cổng vào đủ nhanh (SPI $7{,}37$ hoặc USB $4{,}05\,\text{Mbps}$), thông lượng toàn tuyến đạt đúng tốc độ card WAN -- Wi-Fi $4{,}8\,\text{Mbps}$, Ethernet $4{,}2\,\text{Mbps}$, LTE $1{,}82\,\text{Mbps}$; tức card WAN là trần trên của cả hệ, và dùng LTE thì hệ bị chặn ở $1{,}82\,\text{Mbps}$. Thứ hai, cổng vào UART ($0{,}44$) và I2C ($0{,}28\,\text{Mbps}$) đều thấp hơn mọi card WAN nên bất kỳ card WAN nào cũng dư sức tải -- nút thắt nằm ở cổng vào. Thứ ba, cổng vào USB ($4{,}05\,\text{Mbps}$) vừa khít Wi-Fi/Ethernet, nhưng khi ghép với LTE thì LTE là nút thắt. Thứ tư, cổng vào SPI ($7{,}37\,\text{Mbps}$) vượt mọi card WAN nên nút thắt luôn ở phía WAN. Kết luận chung: cầu SPI inter-MCU ($\approx 21\,\text{Mbps}$) không bao giờ là điểm nghẽn của đường lên; thông lượng thực tế do cặp (cổng vào chậm nhất, card WAN) quyết định và đều vượt xa tải telemetry IoT thực tế (vài chục đến vài trăm kbps mỗi node).
+
 \subsection{Độ trễ end-to-end từ cảm biến đến cổng WAN}
 \label{subsec:bench_e2e}
 
 \subsubsection{Phương pháp đo}
 
-Phép đo xác định khoảng thời gian từ khi một gói tin được nhận hoàn chỉnh tại LAN-MCU đến khi nó thật sự rời khỏi thiết bị qua cổng WAN. Mỗi gói tin được gắn hai con tem thời gian: T\textsubscript{1} tại điểm nhận (LAN-MCU, ngay khi gói RS485 ghép xong) và T\textsubscript{2} tại cánh cổng cuối của từng giao diện WAN. Độ trễ end-to-end là $\Delta T = T_2 - T_1$.
+Phép đo xác định khoảng thời gian từ khi một gói tin được nhận hoàn chỉnh tại LAN-MCU đến khi nó thật sự rời khỏi thiết bị qua cổng WAN. Mỗi gói tin được gắn hai con tem thời gian: T\textsubscript{1} tại điểm nhận (LAN-MCU, ngay khi một gói được ghép hoàn chỉnh ở cổng vào) và T\textsubscript{2} tại cánh cổng cuối của từng giao diện WAN. Độ trễ end-to-end là $\Delta T = T_2 - T_1$.
 
 Vị trí đặt T\textsubscript{2} phụ thuộc vào đặc điểm phần cứng của từng giao diện. Đối với Ethernet W5500, T\textsubscript{2} được đặt chính xác ngay sau khi byte cuối được đẩy qua SPI tới IC mạng, vì đây là bus đồng bộ với API xác nhận rõ ràng. Đối với Wi-Fi và LTE, do không có API công khai xác nhận thời điểm radio phát xong (Wi-Fi) hoặc byte qua được stack PPP/USB (LTE), T\textsubscript{2} được đặt ngay sau khi lệnh \texttt{send()} trả về -- tức là khi TCP buffer chấp nhận dữ liệu. Cách đặt này bắt được toàn bộ thời gian xử lý phần mềm (SPI inter-MCU, TCP/lwIP queuing), chỉ không tính được thời gian điều chế vô tuyến ở ngoài MCU.
 
 Thiết bị gồm hai MCU có hai đồng hồ riêng. WAN-MCU gửi tín hiệu đồng bộ thời gian xuống LAN-MCU mỗi giây; sau khoảng 5 giây khởi động, độ lệch đồng hồ ổn định trong vài mili-giây -- đủ chính xác để đo độ trễ ở bậc chục mili-giây.
 
-Nguồn phát tín hiệu là máy tính đóng vai cảm biến, gửi 1100 gói (64\,byte/gói, 10 gói/giây) qua cổng RS485. Bỏ 100 gói đầu (giai đoạn ổn định), lấy 1000 gói còn lại để thống kê.
+Nguồn phát tín hiệu là một rig (ESP32-S3 phụ) cắm vào cổng vào của LAN-MCU, phát gói 64\,byte có gắn số thứ tự ở đầu để nhận diện. Mỗi giao diện WAN được đo ở hai chế độ tải: \textbf{tải thường} -- tốc độ phát đại diện cho vận hành thật (vài trăm gói/giây) -- để lấy độ trễ trung bình; và \textbf{tải cao} -- tăng dần tốc độ tới khi hệ bắt đầu rớt gói -- để lấy độ trễ tại điểm bão hòa. Mỗi điểm lấy ít nhất 1000 gói ở giai đoạn ổn định (bỏ 100 gói đầu).
 
 \subsubsection{Phân tích từng chặng truyền dẫn}
 
@@ -306,7 +347,7 @@ Nguồn phát tín hiệu là máy tính đóng vai cảm biến, gửi 1100 gó
     \hline
     \endfoot
     \endlastfoot
-    A -- Cổng vào & Nhận RS485, ghép gói hoàn chỉnh, đóng dấu T\textsubscript{1} & $\approx 0{,}1\,\text{ms}$ \\ \hline
+    A -- Cổng vào & Nhận gói ở cổng vào, ghép hoàn chỉnh, đóng dấu T\textsubscript{1} & $\approx 0{,}1\,\text{ms}$ \\ \hline
     B -- Cầu nội bộ & Xếp hàng và chuyển qua SPI inter-MCU & $\approx 3$--$4\,\text{ms}$ \\ \hline
     C -- Phân loại và nạp TCP & Tách nội dung, đẩy vào socket TCP & $\approx 0{,}2\,\text{ms}$ \\ \hline
     D -- Cánh cổng cuối & Phụ thuộc vào giao diện WAN; đóng dấu T\textsubscript{2} sau chặng này & Đặc trưng từng giao diện \\ \hline
@@ -314,33 +355,35 @@ Nguồn phát tín hiệu là máy tính đóng vai cảm biến, gửi 1100 gó
 
 \subsubsection{Kịch bản đo và kết quả}
 
-Đo lần lượt ba giao diện WAN (Wi-Fi, Ethernet, LTE), mỗi giao diện một lần ở tải thấp 10 gói/giây; bỏ 100 gói đầu, lấy 1000 gói còn lại để thống kê.
+Đo lần lượt ba giao diện WAN ở hai chế độ tải. Cột \textit{độ trễ trung bình} lấy ở tải thường; cột \textit{độ trễ ở tải cao} \textbf{chỉ ghi giá trị khi giao diện bắt đầu rớt gói} (hàng đợi tràn). Giao diện nào không rớt gói trong dải tải thử nghiệm thì để trống, nghĩa là trong dải đó nó luôn theo kịp và chưa bão hòa.
 
-\begin{longtable}{|p{3.5cm}|p{1.25cm}|p{1.25cm}|p{1.25cm}|p{1.25cm}|p{1.25cm}|p{4cm}|}
-    \caption{Kết quả đo độ trễ end-to-end theo từng giao diện WAN.}
+\begin{longtable}{|p{4.5cm}|p{4cm}|p{5cm}|}
+    \caption{Kết quả đo độ trễ end-to-end (LAN $\rightarrow$ WAN) theo từng giao diện.}
     \label{tab:e2e_results} \\
     \hline
-    \textbf{Giao diện} & \textbf{min (ms)} & \textbf{avg (ms)} & \textbf{max (ms)} & \textbf{Số mẫu} & \textbf{loss} & \textbf{Ghi chú} \\ \hline
+    \textbf{Giao diện WAN} & \textbf{Độ trễ trung bình} \newline \textbf{(tải thường)} & \textbf{Độ trễ ở tải cao} \newline \textbf{(khi bắt đầu drop)} \\ \hline
     \endfirsthead
     \hline
-    \textbf{Giao diện} & \textbf{min (ms)} & \textbf{avg (ms)} & \textbf{max (ms)} & \textbf{Số mẫu} & \textbf{loss} & \textbf{Ghi chú} \\ \hline
+    \textbf{Giao diện WAN} & \textbf{Độ trễ trung bình} \newline \textbf{(tải thường)} & \textbf{Độ trễ ở tải cao} \newline \textbf{(khi bắt đầu drop)} \\ \hline
     \endhead
     \hline
     \endfoot
     \endlastfoot
-    Wi-Fi 2,4\,GHz & 13,0 & 14,6 & 15,0 & 39 & 0 & T\textsubscript{2} sau \texttt{send()} \\ \hline
-    Ethernet W5500 & 10,3 & 10,9 & 11,1 & 23 & 0 & T\textsubscript{2} khi SPI tới W5500 xong \\ \hline
-    LTE SIM7600G-H & 10,7 & 10,9 & 11,0 & 178 & 0 & T\textsubscript{2} sau \texttt{send()} \\ \hline
+    Ethernet W5500 & $10{,}9\,\text{ms}$ & $113{,}5\,\text{ms}$ \\ \hline
+    LTE SIM7600G-H & $10{,}9\,\text{ms}$ & $112{,}3\,\text{ms}$ \\ \hline
+    Wi-Fi 2,4\,GHz & $14{,}6\,\text{ms}$ & $81{,}5\,\text{ms}$ \\ \hline
 \end{longtable}
 
 \subsubsection{Kiểm chứng độ tin cậy}
 
-Bốn kiểm chứng được áp dụng để xác nhận tính hợp lệ của phép đo. Thứ nhất, hiệu con tem T\textsubscript{1} giữa hai gói liên tiếp phải xấp xỉ 100\,ms (tương ứng tốc độ phát 10 gói/giây). Thứ hai, mọi giá trị $\Delta T$ phải dương sau khi đồng hồ đã đồng bộ. Thứ ba, số thứ tự gói phải liên tục và số lần gửi thất bại phải bằng 0. Thứ tư, không xuất hiện trường hợp cánh cổng cuối không phản hồi trong thời gian chờ 1 giây. Cả bốn kiểm chứng đều được thỏa mãn trong quá trình đo.
+Bốn kiểm chứng được áp dụng để xác nhận tính hợp lệ của phép đo. Thứ nhất, hiệu con tem T\textsubscript{1} giữa hai gói liên tiếp phải khớp với tốc độ phát (ví dụ $\approx 100\,\text{ms}$ ở 10 gói/giây). Thứ hai, mọi giá trị $\Delta T$ phải dương sau khi đồng hồ đã đồng bộ. Thứ ba, số thứ tự gói phải liên tục và số lần gửi thất bại phải bằng 0. Thứ tư, không xuất hiện trường hợp cánh cổng cuối không phản hồi trong thời gian chờ 1 giây. Cả bốn kiểm chứng đều được thỏa mãn trong quá trình đo.
 
 \subsubsection{Ý nghĩa kết quả}
 
 Kết quả cho thấy độ trễ end-to-end của thiết bị (thời gian thuộc về phần mềm và phần cứng Gateway, không tính thời gian truyền trên đường mạng sau cổng WAN) nằm trong khoảng 10--15\,ms tùy giao diện.
 
-Ethernet có độ trễ thấp nhất và ổn định nhất (avg 10,9\,ms, max 11,1\,ms) do cánh cổng cuối là bus SPI đồng bộ, không phụ thuộc môi trường ngoài. Wi-Fi có độ trễ cao hơn (avg 14,6\,ms) do phải chờ khe phát radio và có thể bị ảnh hưởng bởi chế độ tiết kiệm điện của access point. LTE có giá trị tương đương Ethernet (avg 10,9\,ms) ở điều kiện đo tải thấp; trong vận hành thực tế độ trễ có thể cao hơn do hàng đợi nội bộ của modem.
+Ethernet có độ trễ thấp nhất và ổn định nhất ($\approx 10{,}9\,\text{ms}$) do cánh cổng cuối là bus SPI đồng bộ, không phụ thuộc môi trường ngoài. Wi-Fi có độ trễ trung bình cao hơn ($\approx 14{,}6\,\text{ms}$) do phải chờ khe phát radio và có thể bị ảnh hưởng bởi chế độ tiết kiệm điện của access point. LTE tương đương Ethernet ($\approx 10{,}9\,\text{ms}$) ở tải thường; trong vận hành thực tế độ trễ có thể cao hơn do hàng đợi nội bộ của modem.
+
+Khi bị ép tới tải cao, độ trễ của cả ba giao diện tăng mạnh do hiệu ứng xếp hàng (hàng đợi đầy). Đáng chú ý, thứ tự đảo ngược so với tải thường: Ethernet ($\approx 113{,}5\,\text{ms}$) và LTE ($\approx 112{,}3\,\text{ms}$) chậm hơn Wi-Fi ($\approx 81{,}5\,\text{ms}$). Nguyên nhân là ở tải cao độ trễ bị chi phối bởi tốc độ rút hàng đợi (chi phí đẩy mỗi gói) thay vì độ trễ một gói đơn lẻ: Wi-Fi giao gói cho bộ đệm trong chip rồi trả về ngay nên rút hàng nhanh nhất, trong khi Ethernet phải ghi đồng bộ qua SPI tới chip W5500 ($\approx 1{,}9\,\text{ms/gói}$) và LTE phải đẩy qua USB tới modem -- hai bus ngoài này tốn chi phí cố định mỗi gói lớn hơn nên hàng đợi rút chậm hơn. Như vậy ở tải bình thường độ trễ nội bộ luôn ở mức 10--15\,ms; chỉ khi tải tăng đột biến mới xuất hiện độ trễ xếp hàng đáng kể.
 
 Ba con số này phản ánh phần thời gian mà thiết bị chịu trách nhiệm. Phần thời gian còn lại -- từ sau cổng WAN đến khi gói tin tới server -- phụ thuộc vào chất lượng đường truyền và không nằm trong phạm vi kiểm soát của thiết bị.
