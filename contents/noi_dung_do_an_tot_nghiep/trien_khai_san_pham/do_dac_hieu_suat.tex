@@ -44,11 +44,11 @@ Bảng~\ref{tab:spi_stages} mô tả các chặng xử lý mà một gói tin ph
 \end{longtable}
 
 \paragraph{Trần lý thuyết suy ra từ datapath.}
-Cần phân biệt rõ \textit{trần clock thuần} của bus SPI và \textit{trần thực của datapath}. Một transaction vận chuyển 16~KB = $16\times1024\times8 = 131\,072$~bit, gồm 8 packet 2~KB. Ở tốc độ clock 60~MHz, riêng thời gian dịch bit qua dây (chặng F) là $131\,072 / 60\times10^{6} \approx 2{,}18\,\text{ms}$, tương ứng trần clock thuần đúng bằng $60\,\text{Mbps}$. Tuy nhiên đây không phải throughput thực, vì dữ liệu còn phải đi nối tiếp qua các chặng đóng khung (D), bàn giao DMA (E) và -- ở chế độ B -- qua dispatcher (C). Throughput thực của một chuỗi pipeline bị quyết định bởi chặng chậm nhất cộng các chi phí không chồng lấp được, chứ không phải bởi riêng chặng F.
+Cần phân biệt rõ \textit{trần clock thuần} của bus SPI và \textit{trần thực của datapath}. Một transaction vận chuyển 16~KB = $16\times1024\times8 = 131\,072$~bit, gồm 8 packet 2~KB. Ở tốc độ clock 60~MHz, riêng thời gian dịch bit qua dây (chặng F) là $131\,072 / (60\times10^{6}) \approx 2{,}18\,\text{ms}$, tương ứng trần clock thuần đúng bằng $60\,\text{Mbps}$. Tuy nhiên đây không phải throughput thực, vì dữ liệu còn phải đi nối tiếp qua các chặng đóng khung (D), bàn giao DMA (E) và -- ở chế độ B -- qua dispatcher (C). Throughput thực của một chuỗi pipeline bị quyết định bởi chặng chậm nhất cộng các chi phí không chồng lấp được, chứ không phải bởi riêng chặng F.
 
 Chế độ A đi qua D, E, F. Nhờ DMA double-buffer, việc đóng khung packet kế tiếp (D) chồng lấp với lúc bus đang dịch packet hiện tại (F), nên hai chặng này chạy song song và chặng quyết định là chặng dài hơn trong hai chặng. Với 8 packet, tổng thời gian đóng khung là $D_\text{tot} = 8\times410\,\mu\text{s} = 3{,}28\,\text{ms}$, lớn hơn thời gian bus $F = 2{,}18\,\text{ms}$; do đó chặng đóng khung D là nút quyết định, không phải bus SPI. Cộng thêm chi phí bàn giao DMA $E = 0{,}95\,\text{ms}$ (nối tiếp một lần mỗi transaction), thời gian mỗi transaction là:
 \[
-T_A = \max(D_\text{tot},\, F) + E = \max(3{,}28;\ 2{,}18) + 0{,}95 = 4{,}23\,\text{ms},
+T_A = \max(D_\text{tot},\, F) + E = \max(3{,}28,\ 2{,}18) + 0{,}95 = 4{,}23\,\text{ms},
 \]
 suy ra trần lý thuyết chế độ A:
 \[
@@ -66,7 +66,7 @@ Phân tích trên cho thấy rõ SPI clock 60~MHz không phải điểm nghẽn 
 
 \subsubsection{Kịch bản đo và kết quả}
 
-Hai kịch bản được thực hiện trên cùng một phần cứng. Sau khi flash đồng thời hai MCU và đợi handshake hoàn tất (khoảng 5 giây), hệ thống tự khởi động bench. Bỏ cửa sổ đầu tiên (warm-up), lấy trung bình 5 cửa sổ liên tiếp ở trạng thái ổn định.
+Hai kịch bản được thực hiện trên cùng một phần cứng. Sau khi flash đồng thời hai MCU và đợi handshake hoàn tất (khoảng 5 giây), hệ thống tự khởi động bench. Bỏ qua cửa sổ đầu tiên (warm-up), lấy trung bình 5 cửa sổ liên tiếp ở trạng thái ổn định.
 
 \begin{longtable}{|p{1.25cm}|p{3cm}|p{3cm}|p{3cm}|p{1.75cm}|p{1.75cm}|}
     \caption{Kết quả đo throughput SPI inter-MCU theo hai chế độ.}
