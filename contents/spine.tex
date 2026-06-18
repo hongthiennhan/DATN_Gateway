@@ -1,0 +1,20 @@
+\clearpage
+\thispagestyle{empty} 
+
+\newgeometry{top=2cm, bottom=2cm, left=1cm, right=1cm}
+
+\begin{center}
+    % Thêm tùy chọn [remember picture, overlay] vào \begin{tikzpicture}
+    % Sửa 'current picture bounding box.center' thành 'current page.center'
+    \begin{tikzpicture}[remember picture, overlay]
+        \node[rotate=-90, font=\fontsize{15pt}{18pt}\selectfont\bfseries] at (current page.center) {
+            \MakeUppercase{\docsName} \hspace{1cm} 
+            $\star$ \hspace{1cm} 
+            2026
+        };
+    \end{tikzpicture}
+\end{center}
+
+\clearpage
+\restoregeometry
+\setcounter{page}{1}
