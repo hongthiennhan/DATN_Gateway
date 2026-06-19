@@ -95,30 +95,11 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
                             = 8{,}2 + 97{,}6 + 3{,}5
                             = 109{,}3\,\text{kbps}
             \]
-
-            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại Bảng~\ref{tab:batch_data}. Kết quả:
-
-            \begin{itemize}
-                \item \textbf{Tải trung bình:} $\approx 137\,\text{byte/batch}$, $T_{SPI} \approx 0{,}0183\,\text{ms}$, $U_{SPI} \approx 0{,}183\%$.
-                \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ (xem Bảng~\ref{tab:spi_worst}).
-            \end{itemize}
-
-            Thông lượng tối đa lý thuyết của SPI:
-            \[
-                R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
-            \]
-
-            \textbf{Kết luận:} SPI không phải nút thắt ở bất kỳ điều kiện tải nào. Thông lượng LAN$\,\rightarrow\,$WAN thực tế kỳ vọng, sau khi trừ overhead giao thức và jitter scheduler:
-            \[
-                R_{practical} \approx (85 \div 95)\% \times 109{,}3 \approx 93 \div 104\,\text{kbps}
-            \]
-
             Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng. Nguy cơ suy giảm PDR chủ yếu đến từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao trong mỗi chu kỳ $10\,\text{ms}$.
 
         \end{enumerate}
 
         \paragraph{Bảng kiểm thử chi tiết}\mbox{} \\
-
         Nhóm kiểm thử đọc cấu hình xác minh khả năng của gateway trong việc phản hồi đúng và đầy đủ thông tin cấu hình khi PC yêu cầu thông qua giao tiếp USB/UART. Các ca kiểm thử bao gồm quét thiết bị, đọc cấu hình mặc định, đọc lại sau khi đã ghi và kiểm tra tính bền vững của cấu hình qua các lần khởi động lại, nhằm đảm bảo dữ liệu NVS được lưu trữ nhất quán và thông tin nhạy cảm được che dấu đúng cách.
 
         \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
