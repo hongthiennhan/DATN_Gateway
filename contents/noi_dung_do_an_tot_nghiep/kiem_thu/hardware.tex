@@ -14,7 +14,7 @@
             \end{itemize}
 
             % \newpage
-            \begin{longtable}{|c|p{2.5cm}|p{6.5cm}|p{4cm}|c|}
+            \begin{longtable}{|c|p{0.2\textwidth}|p{0.5\textwidth}|p{0.2\textwidth}|c|}
                 \caption{Kết quả kiểm tra ngoại quan.}
                 \label{tab:visual_inspection} \\
                 \hline
@@ -32,7 +32,7 @@
                 % PHẦN A: KIỂM TRA CHUNG
                 \multicolumn{5}{|l|}{\textbf{A. KIỂM TRA TỔNG QUÁT}} \\ \hline
             
-                \multirow{2}{*}{1} & \multirow{2}{3cm}{\textbf{Tổng quan} \newline (Physical \& Solder)}
+                \multirow{2}{*}{1} & \multirow{2}{*}{\textbf{Tổng quan} \newline (Physical \& Solder)}
                     & Bo mạch PCB (Bề mặt, Flux, Vết xước) 
                     & Sạch sẽ, không lộ đồng, không cong vênh. 
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
@@ -45,9 +45,9 @@
                 \multicolumn{5}{|l|}{\textbf{B. KIỂM TRA CHI TIẾT LINH KIỆN}} \\ \hline
             
                 % NHÓM 1: LINH KIỆN CHUNG
-                \multirow{15}{*}{2} & \multirow{15}{3cm}{\textbf{Nhóm Linh kiện} \newline (General Components)}
+                \multirow{15}{*}{2} & \multirow{15}{*}{\textbf{Nhóm Linh kiện} \newline (General Components)}
                     & \textbf{SoC:} U1, U2 
-                    & \multirow{15}{4cm}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).}
+                    & \multirow{15}{*}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
                     & & \textbf{USB to UART Bridge IC:} U13 
@@ -93,18 +93,18 @@
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             
                 % NHÓM 2: LINH KIỆN PHÂN CỰC
-                \multirow{2}{*}{3} & \multirow{2}{3cm}{\textbf{Nhóm Phân cực} \newline (Polarized Components)}
+                \multirow{2}{*}{3} & \multirow{2}{*}{\textbf{Nhóm Phân cực} \newline (Polarized Components)}
                     & \textbf{Bán dẫn phân cực:} \newline (Diode TVS, Schottky, LEDs)
-                    & \multirow{2}{4cm}{\textbf{Đúng Cực tính:} \newline - Cực Dương (+), Cathode (K) gia công đúng chiều.}
+                    & \multirow{2}{*}{\textbf{Đúng Cực tính:} \newline - Cực Dương (+), Cathode (K) gia công đúng chiều.}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
                     & & \textbf{Nguồn:} BAT1, CON9, CON5 \newline (CR2032, DC-091, TYPE-C-31-M-12)
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             
                 % NHÓM 3: CƠ KHÍ & KẾT NỐI
-                \multirow{8}{*}{4} & \multirow{8}{3cm}{\textbf{Nhóm Cơ khí} \newline (Mechanical Parts)}
+                \multirow{8}{*}{4} & \multirow{8}{*}{\textbf{Nhóm Cơ khí} \newline (Mechanical Parts)}
                     & \textbf{USB Type-C Connector:} CON5
-                    & \multirow{8}{4cm}{\textbf{Mức độ chống chịu cơ khí:} \newline - Chân vỏ (Shield) hàn chắc, chịu lực tốt.}
+                    & \multirow{8}{*}{\textbf{Mức độ chống chịu cơ khí:} \newline - Chân vỏ (Shield) hàn chắc, chịu lực tốt.}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
                     & & \textbf{Expansion Connectors WAN/LAN:} CON3, CON6, CON7
