@@ -5,7 +5,7 @@
 
     Bảng~\ref{tab:layer_desc} mô tả vai trò của từng tầng và nguyên tắc giao tiếp giữa các tầng.
 
-    \begin{longtable}{|p{3cm}|p{2cm}|p{11cm}|}
+    \begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.6\textwidth}|}
         \caption{Mô tả bốn tầng kiến trúc firmware}
         \label{tab:layer_desc} \\
 
@@ -38,7 +38,7 @@
 
     Việc chạy đồng thời các protocol stack WAN (Wi-Fi, LTE, MQTT) và LAN (Zigbee, LoRa, BLE) trên một MCU đơn dễ gây tràn bộ nhớ đệm và xung đột tài nguyên RAM/Flash. Kiến trúc Dual-MCU Master--Slave giải quyết vấn đề này bằng cách cấp cho mỗi vi điều khiển một không gian bộ nhớ độc lập, chuyên biệt hóa theo miền chức năng.
 
-    \begin{longtable}{|p{4cm}|p{6cm}|p{6cm}|}
+    \begin{longtable}{|p{0.3\textwidth}|p{0.3\textwidth}|p{0.3\textwidth}|}
         \caption{So sánh kiến trúc Single-MCU và Dual-MCU}
         \label{tab:single_dual_compare} \\
 

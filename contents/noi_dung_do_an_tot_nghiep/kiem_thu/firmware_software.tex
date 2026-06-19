@@ -96,11 +96,11 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
                             = 109{,}3\,\text{kbps}
             \]
             
-            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại Bảng~\ref{tab:batch_data}. Kết quả:
+            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại \autoref{tab:batch_data}. Kết quả:
             
             \begin{itemize}
                 \item \textbf{Tải trung bình:} $\approx 137\,\text{byte/batch}$, $T_{SPI} \approx 0{,}0183\,\text{ms}$, $U_{SPI} \approx 0{,}183\%$.
-                \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ (xem Bảng~\ref{tab:spi_worst}).
+                \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ \footnote{\autoref{tab:spi_worst}}.
             \end{itemize}
             
             Thông lượng tối đa lý thuyết của SPI:

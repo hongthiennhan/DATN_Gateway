@@ -263,7 +263,7 @@
                 \label{fig:wan_mcu_arch}
             \end{figure}
             
-            \begin{longtable}{|p{2.5cm}|p{5.5cm}|p{7.5cm}|}
+            \begin{longtable}{|p{0.15\textwidth}|p{0.35\textwidth}|p{0.4\textwidth}|}
                 \caption{Kiến trúc phân lớp firmware WAN-MCU (DA2\_esp)}
                 \label{tab:wan_mcu_arch} \\
                 \hline
@@ -312,7 +312,7 @@
                 \label{fig:lan_mcu_arch}
             \end{figure}
             
-            \begin{longtable}{|p{2.5cm}|p{5.5cm}|p{7.5cm}|}
+            \begin{longtable}{|p{0.15\textwidth}|p{0.35\textwidth}|p{0.4\textwidth}|}
                 \caption{Kiến trúc phân lớp firmware LAN-MCU (DA2\_esp\_LAN)}
                 \label{tab:lan_mcu_arch} \\
                 \hline
@@ -355,7 +355,7 @@
         
             Hệ thống sử dụng FreeRTOS với mô hình đa task. Trong firmware hiện tại, các tác vụ xử lý đường truyền WAN-LAN và publish dữ liệu được đặt ưu tiên cao hơn các tác vụ giám sát/phụ trợ để giảm trễ giao tiếp và tránh mất khung SPI.
             
-            \begin{longtable}{|p{4cm}|p{2cm}|p{6cm}|p{3.5cm}|}
+            \begin{longtable}{|p{0.2\textwidth}|p{0.1\textwidth}|p{0.35\textwidth}|p{0.2\textwidth}|}
                 \caption{Danh sách Task và mức ưu tiên FreeRTOS -- WAN-MCU}
                 \label{tab:freertos_wan} \\
                 \hline
@@ -376,7 +376,7 @@
                 FOTA Task & 5 (khi kích hoạt) & Chạy OTA khi có lệnh FOTA & Trigger theo sự kiện \\ \hline
                 \end{longtable}
                 
-                \begin{longtable}{|p{4cm}|p{2cm}|p{6cm}|p{3.5cm}|}
+                \begin{longtable}{|p{0.2\textwidth}|p{0.1\textwidth}|p{0.35\textwidth}|p{0.2\textwidth}|}
                 \caption{Danh sách Task và mức ưu tiên FreeRTOS -- LAN-MCU}
                 \label{tab:freertos_lan} \\
                 \hline
@@ -578,9 +578,9 @@
                 
                 Đối với cả WAN-MCU và LAN-MCU, cơ chế OTA của ESP-IDF sử dụng hai partition OTA (\texttt{ota\_0} và \texttt{ota\_1}). Firmware mới được ghi vào partition không đang chạy. Sau khi ghi xong, hệ thống xác nhận tính toàn vẹn bằng SHA-256 checksum trước khi chuyển boot pointer. Nếu checksum không khớp, boot pointer không được cập nhật và MCU tiếp tục chạy firmware cũ -- đảm bảo thiết bị không bị brick do firmware lỗi.
                 
-                Ngoài ra, trước khi khởi động FOTA WAN, WAN-MCU gửi thông báo trạng thái \texttt{FOTA\_IN\_PROGRESS} lên Cloud để Server không gửi lệnh điều khiển trong khoảng thời gian này, tránh xung đột. Trong trường hợp mất nguồn điện giữa quá trình ghi partition, ESP-IDF đảm bảo tính nguyên tử ở cấp độ sector flash: partition đang được ghi sẽ không bao giờ được đánh dấu hợp lệ nếu chưa hoàn tất, và thiết bị sẽ tự động boot lại bằng firmware cũ.
+                Ngoài ra, trước khi khởi động FOTA WAN, WAN-MCU gửi thông báo trạng thái \texttt{FOTA\_IN\_PRO}-\texttt{GRESS} lên Cloud để Server không gửi lệnh điều khiển trong khoảng thời gian này, tránh xung đột. Trong trường hợp mất nguồn điện giữa quá trình ghi partition, ESP-IDF đảm bảo tính nguyên tử ở cấp độ sector flash: partition đang được ghi sẽ không bao giờ được đánh dấu hợp lệ nếu chưa hoàn tất, và thiết bị sẽ tự động boot lại bằng firmware cũ.
                 
-                \begin{longtable}{|p{5cm}|p{5.5cm}|p{5cm}|}
+                \begin{longtable}{|p{0.3\textwidth}|p{0.3\textwidth}|p{0.3\textwidth}|}
                     \caption{Tóm tắt cơ chế xử lý lỗi FOTA}
                     \label{tab:fota_error} \\
                     \hline
@@ -623,7 +623,7 @@
         
         Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh các module Zigbee phổ biến trên thị trường. Phân tích cho thấy một điểm bất đồng nhất đáng chú ý: hầu hết các chức năng là giống nhau giữa tất cả các module -- tạo mạng, mở kết nối, gửi lệnh ZCL, reset phần mềm, reset phần cứng -- nhưng cú pháp lệnh lại khác hoàn toàn giữa các nhà sản xuất. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
         
-        \begin{longtable}{|p{3cm}|p{2.5cm}|p{3.5cm}|p{2.5cm}|p{2.5cm}|}
+        \begin{longtable}{|p{0.14\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|}
             \caption{So sánh cú pháp AT Command giữa các module Zigbee}
             \label{tab:zigbee_at} \\
             \hline
