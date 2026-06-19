@@ -96,22 +96,15 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
                             = 109{,}3\,\text{kbps}
             \]
             
-            \textbf{Phân tích tải bus SPI.} Dữ liệu tích lũy tại LAN-MCU trong một batch interval ($T_{batch} = 10\,\text{ms}$) và hệ số sử dụng bus SPI đã được phân tích chi tiết tại \autoref{tab:batch_data}. Kết quả:
-            
-            \begin{itemize}
-                \item \textbf{Tải trung bình:} $\approx 137\,\text{byte/batch}$, $T_{SPI} \approx 0{,}0183\,\text{ms}$, $U_{SPI} \approx 0{,}183\%$.
-                \item \textbf{Worst-case} (toàn bộ 29 node gửi frame tối đa đồng thời: 20 node Zigbee $\times$ 146 byte + 8 node BLE $\times$ 263 byte + 1 node LoRa $\times$ 169 byte $= 5193\,\text{byte}$): $T_{SPI} \approx 0{,}693\,\text{ms}$, $U_{SPI} \approx 6{,}93\%$ \footnote{\autoref{tab:spi_worst}}.
-            \end{itemize}
-            
-            Thông lượng tối đa lý thuyết của SPI:
+            \textbf{Đối chiếu với số liệu đo thực tế.} Theo kết quả đo tại Mục~\ref{subsec:bench_spi} và~\ref{subsec:bench_spi_ramp}, kênh SPI inter-MCU đạt throughput thực tế $\approx 21\,\text{Mbps}$ (chế độ production path qua đầy đủ queue, mutex và dispatcher) và trần lossless $19{,}2\,\text{Mbps}$. So sánh với tổng thông lượng lý thuyết của ba kênh vô tuyến:
             \[
-                R_{SPI,max} = 60\,\text{Mbps} = 7{,}5\,\text{MB/s}
+                R_{total} = 109{,}3\,\text{kbps} \approx 0{,}11\,\text{Mbps}
+                \quad \ll \quad
+                R_{SPI,\text{đo}} \approx 21\,\text{Mbps}
             \]
-            
-            \textbf{Kết luận:} SPI không phải nút thắt ở bất kỳ điều kiện tải nào. Thông lượng LAN$\,\rightarrow\,$WAN thực tế kỳ vọng, sau khi trừ overhead giao thức và jitter scheduler:
-            \[
-                R_{practical} \approx (85 \div 95)\% \times 109{,}3 \approx 93 \div 104\,\text{kbps}
-            \]
+            Kênh SPI inter-MCU dư công suất hơn \textbf{190 lần} so với tải tổng hợp thực tế. Không cổng nào trong số ba giao diện vô tuyến (Zigbee $8{,}2\,\text{kbps}$, BLE $97{,}6\,\text{kbps}$, LoRa $3{,}5\,\text{kbps}$) đủ để làm bão hoà kênh SPI ở bất kỳ điều kiện tải nào.
+
+            \textbf{Kết luận:} SPI inter-MCU không phải nút thắt của hệ thống. Thông lượng LAN$\,\rightarrow\,$WAN thực tế sau khi qua cầu SPI và giao diện WAN (xem Bảng~\ref{tab:e2e_throughput}) vượt xa nhu cầu $109{,}3\,\text{kbps}$ của kịch bản đa kênh đồng thời.
             
             Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng. Nguy cơ suy giảm PDR chủ yếu đến từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao trong mỗi chu kỳ $10\,\text{ms}$.
             
