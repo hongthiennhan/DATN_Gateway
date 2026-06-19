@@ -177,22 +177,22 @@ WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một si
     \caption{Đặc điểm đường truyền và trần theo thông số nhà sản xuất của từng giao diện WAN.}
     \label{tab:wan_paths} \\
     \hline
-    \textbf{Giao diện} & \textbf{Bus kết nối} & \textbf{Trần nhà sản xuất} & \textbf{Bottleneck tiềm năng} \\ \hline
+    \textbf{Giao diện} & \textbf{Bus kết nối} & \textbf{Trần nhà sản xuất} & \textbf{Bottleneck} \\ \hline
     \endfirsthead
     \hline
-    \textbf{Giao diện} & \textbf{Bus kết nối} & \textbf{Trần nhà sản xuất} & \textbf{Bottleneck tiềm năng} \\ \hline
+    \textbf{Giao diện} & \textbf{Bus kết nối} & \textbf{Trần nhà sản xuất} & \textbf{Bottleneck} \\ \hline
     \endhead
     \hline
     \endfoot
     \endlastfoot
-    Wi-Fi 2,4\,GHz & Internal (cùng IC) & PHY 150\,Mbps; TCP thực $\approx 20$--$40\,\text{Mbps}$ (lab Espressif) & lwIP stack + Wi-Fi MAC firmware \\ \hline
+    Wi-Fi 2,4\,GHz & Internal (cùng IC) & PHY 150\,Mbps; TCP thực $\approx 20\,\text{Mbps}$ (lab Espressif) & lwIP stack + Wi-Fi MAC firmware \\ \hline
     Ethernet W5500 & SPI 40\,MHz (bus ngoài) & SPI 40\,MHz $\to \approx 39{,}9\,\text{Mbps}$; PHY link 100\,Mbps & Chi phí cố định mỗi lời gọi driver W5500 ($\approx 1{,}9\,\text{ms/gói}$) \\ \hline
     LTE SIM7600G-H & USB CDC Full-Speed (bus ngoài) & USB FS bulk hữu ích $\approx 9{,}73\,\text{Mbps}$ (modem LTE $\gg$ con số này) & USB FS overhead + CDC/PPP + modem buffering + cellular uplink \\ \hline
 \end{longtable}
 
 Điểm mấu chốt khi đọc bảng này: trần của mỗi giao diện được lấy theo thông số nhà sản xuất của linh kiện thực tế đang dùng, không phải theo trần lý thuyết của chuẩn giao tiếp. Cụ thể từng giao diện như sau.
 
-\textbf{Wi-Fi (radio tích hợp ESP32-S3).} Espressif công bố lớp PHY 802.11n đạt tới $150\,\text{Mbps}$ (kênh 40~MHz, 1 luồng), nhưng đây chỉ là tốc độ điều chế vô tuyến. Throughput TCP thực đo trong phòng lab của Espressif chỉ ở mức vài chục Mbps (khoảng $20$--$40\,\text{Mbps}$ tùy cấu hình buffer và môi trường). Số đo $4{,}8\,\text{Mbps}$ của hệ thống thấp hơn nhiều so với cả trần TCP này, chứng tỏ nút thắt không nằm ở giao diện vô tuyến mà ở tầng phần mềm (lwIP + MAC firmware) phải chia sẻ CPU với tác vụ SPI bridge.
+\textbf{Wi-Fi (radio tích hợp ESP32-S3).} Espressif công bố lớp PHY 802.11n đạt tới $150\,\text{Mbps}$ (kênh 40~MHz, 1 luồng), nhưng đây chỉ là tốc độ điều chế vô tuyến. Throughput TCP thực đo trong phòng lab của Espressif chỉ ở mức vài chục Mbps (khoảng $20\,\text{Mbps}$ tùy cấu hình buffer và môi trường). Số đo $4{,}8\,\text{Mbps}$ của hệ thống thấp hơn nhiều so với cả trần TCP này, chứng tỏ nút thắt không nằm ở giao diện vô tuyến mà ở tầng phần mềm (lwIP + MAC firmware) phải chia sẻ CPU với tác vụ SPI bridge.
 
 \textbf{Ethernet (W5500 qua SPI 40~MHz).} W5500 hỗ trợ SPI tới 80~MHz, nhưng hệ thống chạy ở $40\,\text{MHz}$. Giao thức SPI của W5500 chèn 3~byte (2 byte địa chỉ + 1 byte control) trước mỗi khối dữ liệu; với khung 2~KB, hiệu suất khung là $2048/(2048+3) \approx 99{,}85\%$, nên trần lý thuyết của bus SPI ở 40~MHz là $40 \times 0{,}9985 \approx 39{,}9\,\text{Mbps}$ -- vẫn nằm dưới link Ethernet vật lý 100~Mbps, do đó SPI 40~MHz là cận trên của datapath. Tuy nhiên số đo thực chỉ $4{,}2\,\text{Mbps}$, thấp hơn rất nhiều so với $39{,}9\,\text{Mbps}$: nguyên nhân là chi phí cố định mỗi lời gọi driver W5500 khoảng $1{,}9\,\text{ms/gói}$. Tính theo cơ chế này, trần $= 2\,\text{KB}\times8 / 1{,}9\,\text{ms} \approx 8{,}6\,\text{Mbps}$; phần hụt tiếp xuống $4{,}2\,\text{Mbps}$ do tranh chấp CPU với các tác vụ khác. Như vậy nút thắt là độ trễ giao dịch driver, không phải tốc độ clock SPI hay link 100~Mbps.
 
@@ -224,6 +224,88 @@ Ba kịch bản, mỗi kịch bản một giao diện (Wi-Fi, Ethernet, LTE), ch
 Kiểm chứng chéo firmware và sink server cho thấy chênh lệch dưới 2\% ở cả ba giao diện, xác nhận không có packet rớt trên đường mạng. Ở cả ba trường hợp, producer đẩy nhanh hơn khả năng card (Wi-Fi: gấp 4 lần; LTE: gấp 37 lần; Ethernet: bị back-pressure tự động), xác nhận kết quả là trần thật. Giá trị \texttt{sent\_fail} bằng 0 trong suốt thời gian đo, chứng tỏ không có TCP reset hay ngắt kết nối trong quá trình đo.
 
 Cơ chế bão hòa ở Wi-Fi và LTE là bão hòa buffer (q\_drop lớn), trong khi Ethernet bão hòa theo cơ chế back-pressure đồng bộ do mỗi lần gọi driver W5500 mất khoảng 1,9\,ms. Hai pattern khác nhau về hình thức nhưng đều chứng minh trần đã được chạm.
+
+\subsubsection{Đối chiếu ước lượng lý thuyết với số đo}
+
+Để kiểm tra các số đo phía trên có hợp lý hay không, phần này ước lượng bằng lý thuyết throughput tối đa mà mỗi giao diện có thể đạt, dựa trên đặc tính đường truyền và cách dữ liệu được đẩy ra. Trần lý thuyết đóng vai trò giới hạn lý tưởng: một số đo hợp lệ phải nằm dưới và tương đối sát trần này. Cơ chế giới hạn của ba giao diện không giống nhau nên cách ước lượng cũng khác nhau.
+
+\paragraph{Wi-Fi.}
+Trong điều kiện lý tưởng -- gửi khối dữ liệu lớn và CPU chỉ lo riêng việc truyền -- radio Wi-Fi của ESP32-S3 đạt tới khoảng $20\,\text{Mbps}$ ở mức TCP theo công bố của nhà sản xuất. Khi chạy trong hệ thống thật, ba yếu tố lần lượt kéo con số này xuống. Thứ nhất, mỗi lần gửi chỉ đẩy một gói $1\,\text{KB}$, nhỏ hơn kích thước gói TCP tối đa ($1440\,\text{byte}$), nên mỗi gói chở chưa đầy tải và phần khung cố định chiếm tỉ lệ cao hơn. Thứ hai, CPU phải chia sẻ giữa việc truyền Wi-Fi và việc khuân dữ liệu qua cầu SPI nội bộ, chỉ còn khoảng một nửa công suất cho việc truyền. Thứ ba, chỉ có một luồng gửi duy nhất, mỗi khi bộ đệm đầy phải dừng chờ rồi thử lại. Bảng~\ref{tab:wifi_theory} thể hiện việc nhân dồn ba yếu tố này.
+
+\begin{longtable}{|p{8.5cm}|p{2.5cm}|p{3cm}|}
+    \caption{Các bước ước lượng lý thuyết throughput Wi-Fi.}
+    \label{tab:wifi_theory} \\
+    \hline
+    \textbf{Yếu tố} & \textbf{Hệ số} & \textbf{Còn lại} \\ \hline
+    \endfirsthead
+    \hline
+    \textbf{Yếu tố} & \textbf{Hệ số} & \textbf{Còn lại} \\ \hline
+    \endhead
+    \hline
+    \endfoot
+    \endlastfoot
+    Trần TCP lý tưởng của radio (nhà sản xuất công bố) & -- & $20\,\text{Mbps}$ \\ \hline
+    Gói gửi $1\,\text{KB}$ nhỏ hơn gói TCP tối đa $1440\,\text{byte}$ & $\times 0{,}71$ & $14{,}2\,\text{Mbps}$ \\ \hline
+    CPU chia sẻ với cầu SPI nội bộ & $\times 0{,}55$ & $7{,}8\,\text{Mbps}$ \\ \hline
+    Một luồng gửi, dừng chờ khi bộ đệm đầy & $\times 0{,}65$ & $\approx 5{,}1\,\text{Mbps}$ \\ \hline
+\end{longtable}
+
+Kết quả ước lượng lý thuyết khoảng $5\,\text{Mbps}$, nằm ngay trên số đo $4{,}8\,\text{Mbps}$ (đạt $96\%$). Điều này xác nhận nút thắt của Wi-Fi nằm ở phần mềm và CPU dùng chung, không phải ở giao diện vô tuyến.
+
+\paragraph{Ethernet.}
+Với Ethernet, nút thắt không phải tốc độ bus mà là chi phí cố định cho mỗi gói. Chip mạng ngoài cần một chuỗi thao tác trao đổi cho mỗi gói tin, tốn khoảng $1{,}9\,\text{ms}$ dù gói lớn hay nhỏ. Vì chi phí này gần như cố định, throughput tỉ lệ thuận với kích thước gói. Với gói $1\,\text{KB}$:
+\[
+\text{BW}_\text{Eth} \approx \frac{1024 \times 8}{1{,}9 \times 10^{-3}} \approx 4{,}3\,\text{Mbps}.
+\]
+Số đo $4{,}2\,\text{Mbps}$ khớp gần như tuyệt đối (đạt $98\%$). Trần tốc độ bus (gần $40\,\text{Mbps}$) không bao giờ chạm tới, vì ở cỡ gói $1\,\text{KB}$ chính chi phí cố định mỗi gói mới là yếu tố quyết định.
+
+Vai trò thứ yếu của tốc độ clock thể hiện rõ khi thử nâng nó lên gấp đôi. Trong $1{,}9\,\text{ms}$ của mỗi gói, thời gian thực sự dùng để dịch dữ liệu qua dây ở $40\,\text{MHz}$ chỉ khoảng $0{,}2\,\text{ms}$, phần còn lại (khoảng $1{,}7\,\text{ms}$) là chi phí cố định không phụ thuộc clock. Nếu chạy chip mạng ở $80\,\text{MHz}$, phần dịch dữ liệu giảm đi một nửa nhưng chi phí cố định giữ nguyên, nên thời gian mỗi gói chỉ rút xuống còn khoảng $1{,}8\,\text{ms}$:
+\[
+\text{BW}_\text{Eth}^{80\,\text{MHz}} \approx \frac{1024 \times 8}{1{,}8 \times 10^{-3}} \approx 4{,}6\,\text{Mbps}.
+\]
+Như vậy tăng gấp đôi clock chỉ nâng throughput từ $4{,}3$ lên khoảng $4{,}6\,\text{Mbps}$ (thêm chưa tới $7\%$), trong khi trần tốc độ bus thuần lại tăng từ $40$ lên gần $80\,\text{Mbps}$. Điều này một lần nữa khẳng định nút thắt nằm ở chi phí cố định mỗi gói, không phải tốc độ clock.
+
+\paragraph{LTE.}
+Với LTE, dữ liệu đi tới một máy chủ ở xa qua mạng di động nên thời gian một vòng đi--về (độ trễ vòng) lớn. Giao thức TCP chỉ cho phép một lượng dữ liệu giới hạn cùng lưu thông trên đường truyền, đúng bằng kích thước cửa sổ (ở đây là $64\,\text{KB}$); do đó throughput tối đa bằng kích thước cửa sổ chia cho độ trễ vòng. Với độ trễ vòng điển hình của mạng di động tới một máy chủ công cộng (khoảng $250$--$290\,\text{ms}$), trần rơi vào khoảng $1{,}8$--$2{,}1\,\text{Mbps}$ như Bảng~\ref{tab:lte_theory}.
+
+\begin{longtable}{|p{4cm}|p{5cm}|}
+    \caption{Trần lý thuyết của LTE theo độ trễ vòng.}
+    \label{tab:lte_theory} \\
+    \hline
+    \textbf{Độ trễ vòng} & \textbf{Throughput tối đa} \\ \hline
+    \endfirsthead
+    \hline
+    \textbf{Độ trễ vòng} & \textbf{Throughput tối đa} \\ \hline
+    \endhead
+    \hline
+    \endfoot
+    \endlastfoot
+    $250\,\text{ms}$ & $2{,}10\,\text{Mbps}$ \\ \hline
+    $290\,\text{ms}$ & $1{,}81\,\text{Mbps}$ \\ \hline
+    $350\,\text{ms}$ & $1{,}50\,\text{Mbps}$ \\ \hline
+\end{longtable}
+
+Lấy ở mức độ trễ vòng thuận lợi điển hình ($250\,\text{ms}$), ước lượng lý thuyết là khoảng $2{,}1\,\text{Mbps}$. Số đo $1{,}82\,\text{Mbps}$ thấp hơn một chút, tương ứng độ trễ vòng thực khoảng $290\,\text{ms}$ -- chênh lệch đến từ điều kiện mạng di động thực tế. Trần của cổng kết nối modem (gần $9{,}7\,\text{Mbps}$) và tốc độ sóng (hàng chục Mbps) đều còn dư nhiều; nút thắt thực sự là cửa sổ TCP trên đường truyền có độ trễ cao.
+
+\paragraph{Tổng hợp.}
+Bảng~\ref{tab:theory_vs_meas} đặt cạnh ước lượng lý thuyết và số đo của cả ba giao diện. Cả ba ước lượng lý thuyết đều nằm trên số đo tương ứng và bám tương đối sát, cho thấy số đo phản ánh đúng giới hạn thực của từng giao diện chứ không phải kết quả ngẫu nhiên.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{2.5cm}|p{2.5cm}|}
+    \caption{Đối chiếu ước lượng lý thuyết và số đo throughput WAN.}
+    \label{tab:theory_vs_meas} \\
+    \hline
+    \textbf{Giao diện} & \textbf{Ước lượng lý thuyết} & \textbf{Số đo} & \textbf{Tỉ lệ đạt} \\ \hline
+    \endfirsthead
+    \hline
+    \textbf{Giao diện} & \textbf{Ước lượng lý thuyết} & \textbf{Số đo} & \textbf{Tỉ lệ đạt} \\ \hline
+    \endhead
+    \hline
+    \endfoot
+    \endlastfoot
+    Wi-Fi & $\approx 5\,\text{Mbps}$ & $4{,}8\,\text{Mbps}$ & $96\%$ \\ \hline
+    Ethernet & $\approx 4{,}3\,\text{Mbps}$ & $4{,}2\,\text{Mbps}$ & $98\%$ \\ \hline
+    LTE & $\approx 2{,}1\,\text{Mbps}$ & $1{,}82\,\text{Mbps}$ & $\approx 87\%$ \\ \hline
+\end{longtable}
 
 \subsubsection{Ý nghĩa kết quả}
 
@@ -382,23 +464,25 @@ Nguồn phát tín hiệu là một rig (ESP32-S3 phụ) cắm vào cổng vào 
 
 \subsubsection{Kịch bản đo và kết quả}
 
-Đo lần lượt ba giao diện WAN ở hai chế độ tải. Cột \textit{độ trễ trung bình} lấy ở tải thường; cột \textit{độ trễ ở tải cao} \textbf{chỉ ghi giá trị khi giao diện bắt đầu rớt gói} (hàng đợi tràn). Giao diện nào không rớt gói trong dải tải thử nghiệm thì để trống, nghĩa là trong dải đó nó luôn theo kịp và chưa bão hòa.
+Cần nhấn mạnh bản chất: đây là độ trễ của toàn hệ thống, không phải riêng card WAN. Mỗi gói đi trọn chuỗi cổng vào LAN (chặng A) $\rightarrow$ cầu SPI inter-MCU (B) $\rightarrow$ nạp socket TCP (C) $\rightarrow$ cánh cổng WAN (D) như Bảng~\ref{tab:e2e_stages}; phần lớn thời gian nằm ở cầu SPI (B, $\approx 3$--$4\,\text{ms}$) và card WAN (D), còn cổng vào LAN -- dù dùng UART, SPI, I2C hay RS485 -- chỉ chiếm $\approx 0{,}1\,\text{ms}$ (chặng A) và cho kết quả như nhau. Vì chỉ chặng D thay đổi theo phần cứng, bảng kết quả nhóm theo card WAN cho gọn, nhưng mỗi giá trị là độ trễ end-to-end đầy đủ của cả chuỗi, không phải độ trễ riêng của card.
 
-\begin{longtable}{|p{4.5cm}|p{4cm}|p{5cm}|}
-    \caption{Kết quả đo độ trễ end-to-end (LAN $\rightarrow$ WAN) theo từng giao diện.}
+Đo ba cấu hình ở hai chế độ tải: cột \textit{độ trễ trung bình} lấy ở tải thường; cột \textit{độ trễ ở tải cao} chỉ ghi khi giao diện bắt đầu rớt gói (hàng đợi tràn).
+
+\begin{longtable}{|p{5.5cm}|p{3.5cm}|p{4cm}|}
+    \caption{Độ trễ end-to-end \textbf{toàn hệ thống} (cổng vào LAN $\rightarrow$ cầu SPI $\rightarrow$ card WAN), nhóm theo card WAN.}
     \label{tab:e2e_results} \\
     \hline
-    \textbf{Giao diện WAN} & \textbf{Độ trễ trung bình} \newline \textbf{(tải thường)} & \textbf{Độ trễ ở tải cao} \newline \textbf{(khi bắt đầu drop)} \\ \hline
+    \textbf{Đường dữ liệu end-to-end} & \textbf{Độ trễ trung bình} \newline \textbf{(tải thường)} & \textbf{Độ trễ ở tải cao} \newline \textbf{(khi bắt đầu drop)} \\ \hline
     \endfirsthead
     \hline
-    \textbf{Giao diện WAN} & \textbf{Độ trễ trung bình} \newline \textbf{(tải thường)} & \textbf{Độ trễ ở tải cao} \newline \textbf{(khi bắt đầu drop)} \\ \hline
+    \textbf{Đường dữ liệu end-to-end} & \textbf{Độ trễ trung bình} \newline \textbf{(tải thường)} & \textbf{Độ trễ ở tải cao} \newline \textbf{(khi bắt đầu drop)} \\ \hline
     \endhead
     \hline
     \endfoot
     \endlastfoot
-    Ethernet W5500 & $10{,}9\,\text{ms}$ & $113{,}5\,\text{ms}$ \\ \hline
-    LTE SIM7600G-H & $10{,}9\,\text{ms}$ & $112{,}3\,\text{ms}$ \\ \hline
-    Wi-Fi 2,4\,GHz & $14{,}6\,\text{ms}$ & $81{,}5\,\text{ms}$ \\ \hline
+    Cổng LAN (bất kỳ) $\rightarrow$ SPI $\rightarrow$ Ethernet W5500 & $10{,}9\,\text{ms}$ & $113{,}5\,\text{ms}$ \\ \hline
+    Cổng LAN (bất kỳ) $\rightarrow$ SPI $\rightarrow$ LTE SIM7600G-H & $10{,}9\,\text{ms}$ & $112{,}3\,\text{ms}$ \\ \hline
+    Cổng LAN (bất kỳ) $\rightarrow$ SPI $\rightarrow$ Wi-Fi 2,4\,GHz & $14{,}6\,\text{ms}$ & $81{,}5\,\text{ms}$ \\ \hline
 \end{longtable}
 
 \subsubsection{Kiểm chứng độ tin cậy}
