@@ -491,7 +491,7 @@
                     \item Để đảm bảo chất lượng tín hiệu và giảm thiểu hiện tượng phản xạ (reflection) trên đường truyền, việc phối hợp trở kháng là bắt buộc đối với các đường tín hiệu tốc độ cao. Các tiêu chuẩn trở kháng đặc tính (Characteristic Impedance) áp dụng trong thiết kế bao gồm:
                     \begin{itemize}
                         \item \textbf{Tín hiệu đơn cực (Single-ended):} Mục tiêu $50\Omega \pm 10\%$. Áp dụng cho các giao tiếp SDIO, SPI, I2C. Cấu trúc sử dụng là Coplanar Waveguide with Ground (CPWG).
-                        \item \textbf{Tín hiệu vi sai (Differential pair):} Mục tiêu $90\Omega \pm 10\%$. Áp dụng cho cặp dây dữ liệu USB (D+/D-). Cấu trúc sử dụng là Coplarar Differential-pair.
+                        \item \textbf{Tín hiệu vi sai (Differential pair):} Mục tiêu $90\Omega \pm 10\%$. Áp dụng cho cặp dây dữ liệu USB (D+/D-). Cấu trúc sử dụng là Coplanar Differential-pair.
                     \end{itemize}
                     
                     \item Các thông số hình học của đường mạch (bề rộng, khoảng cách cách ly) được tính toán dựa trên độ dày lớp đồng, hằng số điện môi ($\epsilon_r$) và chiều cao lớp cách điện (Prepreg/Core) của nhà sản xuất PCB (JLCPCB). Chi tiết kích thước và cấu trúc stack-up được thể hiện trong các hình dưới đây:
@@ -505,7 +505,7 @@
                     \begin{figure}[h]
                         \centering
                         \includegraphics[width=\textwidth]{figures/impedance_90R.png}
-                        \caption{Thông số kích thước cho cặp tín hiệu vi sai (Coplarar Differential-pair) $90\Omega$ (Đơn vị: mm)}
+                        \caption{Thông số kích thước cho cặp tín hiệu vi sai (Coplanar Differential-pair) $90\Omega$ (Đơn vị: mm)}
                     \end{figure}
 
                     \begin{figure}[h]
@@ -572,7 +572,7 @@
                 \item \textbf{Kỹ thuật Che chắn và Lồng Faraday:}
                 \begin{itemize}
                     \item \textbf{Phủ mass toàn mạch:} Các diện tích trống trên tất cả các lớp PCB đều được phủ đồng nối đất (GND). Việc này tạo ra một lồng chắn tĩnh điện tự nhiên, giúp hấp thụ các nhiễu bức xạ từ môi trường và giảm thiểu phát xạ từ các đường mạch nội bộ.
-                    \item \textbf{Vòng bảo vệ và Via Stitching:} Đối với các khu vực nhạy cảm hoặc nguồn gây nhiễu mạnh như mạch dao động thạch anh (Crystal Oscillator) và cặp dây vi sai USB tốc độ cao, kỹ thuật "khâu via" (Via Stitching) được áp dụng. Các lỗ via nối đất được đặt bao quanh linh kiện/đường mạch với mật độ cao (khoảng cách $<\lambda/20$ tần số hoạt động). Cấu trúc này hoạt động như một bức tường chắn sóng (Shielding Wall), cô lập nhiễu điện từ lan truyền ngang qua lớp điện môi.
+                    \item \textbf{Vòng bảo vệ và Via Stitching:} Đối với các khu vực nhạy cảm hoặc nguồn gây nhiễu mạnh như mạch dao động thạch anh (Crystal Oscillator) và cặp dây vi sai USB tốc độ cao, kỹ thuật khâu via (Via Stitching) được áp dụng. Các lỗ via nối đất được đặt bao quanh linh kiện/đường mạch với mật độ cao (khoảng cách $<\lambda/20$ tần số hoạt động). Cấu trúc này hoạt động như một bức tường chắn sóng (Shielding Wall), cô lập nhiễu điện từ lan truyền ngang qua lớp điện môi.
                 \end{itemize}
                 
                 \begin{figure}[h]
@@ -623,7 +623,7 @@
                         \item \textbf{Tối ưu hóa Vòng lặp Dòng điện (Hot Loop):}
                         \begin{itemize}
                             \item Các tụ điện đầu vào ($C_{IN}$) và đầu ra ($C_{OUT}$) là nguồn cung cấp năng lượng tức thời cho bộ chuyển đổi. Chúng được bố trí sát nhất có thể với các chân $V_{IN}/GND$ và $V_{OUT}/PGND$ của IC nguồn hoặc cuộn cảm cho nguồn xung.
-                            \item Mục tiêu là giảm thiểu diện tích vật lý của "vòng lặp xung" (Hot Loop Area) - nơi có dòng điện biến thiên $di/dt$ lớn nhất. Việc này giúp giảm cảm kháng ký sinh đường dây, hạn chế các xung gai điện áp (Voltage Spikes) và giảm thiểu bức xạ nhiễu EMI ra môi trường.
+                            \item Mục tiêu là giảm thiểu diện tích vật lý của vòng lặp xung (Hot Loop Area) - nơi có dòng điện biến thiên $di/dt$ lớn nhất. Việc này giúp giảm cảm kháng ký sinh đường dây, hạn chế các xung gai điện áp (Voltage Spikes) và giảm thiểu bức xạ nhiễu EMI ra môi trường.
                         \end{itemize}
                     \end{minipage}
                 \end{figure}

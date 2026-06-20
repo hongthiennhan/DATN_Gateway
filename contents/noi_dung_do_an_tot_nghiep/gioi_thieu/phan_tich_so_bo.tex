@@ -3,7 +3,7 @@
         Để hiện thực hóa ý tưởng về một Gateway IoT vừa có tính tùy biến cao, vừa tối ưu chi phí và dễ dàng triển khai, hệ thống cần phải thỏa mãn các yêu cầu và ràng buộc tổng quát sau đây:
 
         \subsubsection{Tính module hóa}
-            Để đạt được sự linh hoạt trong việc thay đổi chức năng theo từng kịch bản, hệ thống phần cứng không được thiết kế theo dạng "đóng gói cố định" mà phải tuân thủ các nguyên tắc chuẩn hóa giao tiếp:
+            Để đạt được sự linh hoạt trong việc thay đổi chức năng theo từng kịch bản, hệ thống phần cứng không được thiết kế theo dạng đóng gói cố định mà phải tuân thủ các nguyên tắc chuẩn hóa giao tiếp:
             \begin{itemize}
                 \item \textbf{Chuẩn hóa giao diện vật lý:} Sản phẩm phải sử dụng một loại đầu nối vật lý thống nhất cho tất cả các khe cắm mở rộng. Việc này cho phép bo mạch chủ (Baseboard) kết nối đồng bộ với đa dạng các Module Adapter.
                 \item \textbf{Giao diện giao tiếp đa năng:} Mỗi khe cắm module phải hỗ trợ đầy đủ các giao thức ngoại vi phổ thông bao gồm UART, SPI, I2C, USB và các chân GPIO chức năng. Điều này đảm bảo Gateway có thể tiếp nhận bất kỳ loại module nào từ Zigbee, LoRa đến LTE hay RS-485 mà không cần thay đổi thiết kế bo mạch chính.

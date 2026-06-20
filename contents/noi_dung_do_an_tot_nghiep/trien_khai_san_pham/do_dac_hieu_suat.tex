@@ -157,7 +157,7 @@ Cổng I2C đạt $\approx 282\,\text{kbps}$, bằng 80\% trần lý thuyết c�
 
 Cổng SPI đạt $7{,}37\,\text{Mbps}$, bằng 73,6\% trần lý thuyết $10\,\text{Mbps}$. SPI không có bit khung trên mỗi byte (kéo CS xuống là clock dữ liệu thẳng) nên trần lý thuyết bằng đúng tốc độ clock; phần hụt là chi phí cố định mỗi giao dịch (chân CS, khe nghỉ, DMA), không thể tối ưu thêm ở mức phần mềm.
 
-Cổng USB CDC đạt $4{,}05\,\text{Mbps}$, bằng $\approx 42\%$ trần lý thuyết hữu ích ($\approx 9{,}73\,\text{Mbps}$). USB Full-Speed thô là $12\,\text{Mbps}$ nhưng khung giao thức nặng (SYNC/PID/CRC mỗi gói, bulk tối đa 64\,byte/gói kèm handshake) nên trần hữu ích chỉ còn $\approx 9{,}73\,\text{Mbps}$; phần hụt còn lại do overhead CDC và MCU của rig phải chờ bộ đệm USB trống trước khi ghi tiếp.
+Cổng USB CDC đạt $4{,}05\,\text{Mbps}$, bằng $\approx 42\%$ trần lý thuyết hữu ích ($\approx 9{,}73\,\text{Mbps}$). USB Full-speed thô là $12\,\text{Mbps}$ nhưng khung giao thức nặng (SYNC/PID/CRC mỗi gói, bulk tối đa 64\,byte/gói kèm handshake) nên trần hữu ích chỉ còn $\approx 9{,}73\,\text{Mbps}$; phần hụt còn lại do overhead CDC và MCU của rig phải chờ bộ đệm USB trống trước khi ghi tiếp.
 
 \subsubsection{Kiểm chứng độ tin cậy}
 
@@ -197,7 +197,7 @@ WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một si
     \endlastfoot
     Wi-Fi 2,4\,GHz & Internal (cùng IC) & PHY 150\,Mbps; TCP thực $\approx 20\,\text{Mbps}$ (lab Espressif) & lwIP stack + Wi-Fi MAC firmware \\ \hline
     Ethernet W5500 & SPI 40\,MHz (bus ngoài) & SPI 40\,MHz $\approx 39{,}9\,\text{Mbps}$; PHY link 100\,Mbps & Chi phí cố định mỗi lời gọi driver W5500 ($\approx 1{,}9\,\text{ms/gói}$) \\ \hline
-    LTE SIM7600G-H & USB CDC Full-Speed (bus ngoài) & USB FS bulk hữu ích $\approx 9{,}73\,\text{Mbps}$ (modem LTE $\gg$ con số này) & USB FS overhead + CDC/PPP + modem buffering + cellular uplink \\ \hline
+    LTE SIM7600G-H & USB CDC Full-speed (bus ngoài) & USB FS bulk hữu ích $\approx 9{,}73\,\text{Mbps}$ (modem LTE $\gg$ con số này) & USB FS overhead + CDC/PPP + modem buffering + cellular uplink \\ \hline
 \end{longtable}
 
 Điểm mấu chốt khi đọc bảng này: trần của mỗi giao diện được lấy theo thông số nhà sản xuất của linh kiện thực tế đang dùng, không phải theo trần lý thuyết của chuẩn giao tiếp. Cụ thể từng giao diện như sau.
@@ -206,7 +206,7 @@ WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một si
 
 \textbf{Ethernet (W5500 qua SPI 40~MHz).} W5500 hỗ trợ SPI tới 80~MHz, nhưng hệ thống chạy ở $40\,\text{MHz}$. Giao thức SPI của W5500 chèn 3~byte (2 byte địa chỉ + 1 byte control) trước mỗi khối dữ liệu; với khung 2~KB, hiệu suất khung là $2048/(2048+3) \approx 99{,}85\%$, nên trần lý thuyết của bus SPI ở 40~MHz là $40 \times 0{,}9985 \approx 39{,}9\,\text{Mbps}$ -- vẫn nằm dưới link Ethernet vật lý 100~Mbps, do đó SPI 40~MHz là cận trên của datapath. Tuy nhiên số đo thực chỉ $4{,}2\,\text{Mbps}$, thấp hơn rất nhiều so với $39{,}9\,\text{Mbps}$: nguyên nhân là chi phí cố định mỗi lời gọi driver W5500 khoảng $1{,}9\,\text{ms/gói}$. Tính theo cơ chế này, trần $= 2\,\text{KB}\times8 / 1{,}9\,\text{ms} \approx 8{,}6\,\text{Mbps}$; phần hụt tiếp xuống $4{,}2\,\text{Mbps}$ do tranh chấp CPU với các tác vụ khác. Như vậy nút thắt là độ trễ giao dịch driver, không phải tốc độ clock SPI hay link 100~Mbps.
 
-\textbf{LTE (SIM7600G-H qua USB Full-Speed).} Modem SIM7600G-H về lý thuyết hỗ trợ uplink tới hàng chục Mbps, nhưng trong hệ thống nó nối với MCU qua \textbf{USB Full-Speed}, nên chính USB FS mới là trần cứng của datapath chứ không phải sóng LTE. USB FS thô là $12\,\text{Mbps}$; ở chế độ bulk transfer, mỗi micro-frame 1~ms chứa tối đa 19 gói $\times$ 64~byte, tức $19\times64\times1000\times8 \approx 9{,}73\,\text{Mbps}$ hữu ích. Số đo thực $1{,}82\,\text{Mbps}$ còn thấp hơn trần USB này, do cộng dồn overhead của lớp CDC/PPP, độ trễ đệm trong modem và -- quan trọng nhất trong điều kiện vận hành thực -- băng thông uplink thực tế của mạng di động. Nói cách khác: USB Full-Speed đặt trần cứng $\approx 9{,}73\,\text{Mbps}$, còn nút thắt vận hành thực tế là cellular uplink cộng buffering modem.
+\textbf{LTE (SIM7600G-H qua USB Full-speed).} Modem SIM7600G-H về lý thuyết hỗ trợ uplink tới hàng chục Mbps, nhưng trong hệ thống nó nối với MCU qua \textbf{USB Full-speed}, nên chính USB FS mới là trần cứng của datapath chứ không phải sóng LTE. USB FS thô là $12\,\text{Mbps}$; ở chế độ bulk transfer, mỗi micro-frame 1~ms chứa tối đa 19 gói $\times$ 64~byte, tức $19\times64\times1000\times8 \approx 9{,}73\,\text{Mbps}$ hữu ích. Số đo thực $1{,}82\,\text{Mbps}$ còn thấp hơn trần USB này, do cộng dồn overhead của lớp CDC/PPP, độ trễ đệm trong modem và -- quan trọng nhất trong điều kiện vận hành thực -- băng thông uplink thực tế của mạng di động. Nói cách khác: USB Full-speed đặt trần cứng $\approx 9{,}73\,\text{Mbps}$, còn nút thắt vận hành thực tế là cellular uplink cộng buffering modem.
 
 \subsubsection{Kịch bản đo và kết quả}
 
