@@ -38,7 +38,7 @@
             Nhờ ba năng lực trên, IoT gateway không chỉ đóng vai trò là điểm trung chuyển dữ liệu mà còn là một nút điện toán biên thông minh, giúp giảm độ trễ, tối ưu băng thông và hỗ trợ ra quyết định gần thời gian thực ngay tại biên mạng.
 
         \subsubsection{Vị trí của IoT gateway trong kiến trúc IoT}
-            IoT gateway chiếm vị trí chiến lược trong kiến trúc nhiều lớp của hệ thống IoT. Theo tiêu chuẩn của IEEE, trong ba lớp của Internet vạn vật (gồm lớp cảm nhận, lớp mạng và lớp ứng dụng), gateway là thành phần thiết yếu vì lớp cảm nhận và lớp mạng thuộc về các mạng dị thể (heterogeneous networks) vốn không thể giao tiếp trực tiếp với nhau.
+            IoT gateway chiếm vị trí chiến lược trong kiến trúc nhiều lớp của hệ thống IoT. Theo tiêu chuẩn của IEEE, trong ba lớp của Internet vạn vật (gồm lớp cảm nhận, lớp mạng và lớp ứng dụng), gateway là thành phần thiết yếu vì lớp cảm nhận và lớp mạng thuộc về các mạng dị thể (heterogeneous networks) vốn không thể giao tiếp trực tiếp với nhau\cite{ieee802154_2020}.
 
             Các IoT gateway đóng vai trò là liên kết trung gian, cho phép thông tin thu thập từ các cảm biến IoT được chuyển đổi và đóng gói thành các gói dữ liệu mạng để truyền đến các máy chủ backend hoặc nền tảng đám mây. Nhờ đó, IoT gateway trở thành điểm then chốt trong việc đảm bảo luồng dữ liệu ổn định và tin cậy trong toàn bộ hạ tầng IoT.
 
@@ -253,7 +253,7 @@
         \subsection{Cơ sở lý thuyết về Thiết kế phần cứng}
             \subsubsection{Thiết kế High-Speed PCB}
                 \paragraph{Khái niệm High-Speed PCB Design}
-                    High-Speed PCB Design là quá trình thiết kế mạch in trong đó tín hiệu số có tốc độ chuyển mức rất nhanh (thời gian cạnh lên/xuống nhỏ), khiến các đường mạch phải được xem như một đường truyền thay vì dây nối lý tưởng. Khi độ trễ lan truyền trên đường mạch xấp xỉ hoặc lớn hơn khoảng 20\% thời gian cạnh lên/xuống của tín hiệu, các hiệu ứng truyền sóng như phản xạ, nhiễu xuyên kênh và bức xạ điện từ trở nên đáng kể, nên mạch phải tuân theo các nguyên tắc thiết kế high-speed.
+                    High-Speed PCB Design là quá trình thiết kế mạch in trong đó tín hiệu số có tốc độ chuyển mức rất nhanh (thời gian cạnh lên/xuống nhỏ), khiến các đường mạch phải được xem như một đường truyền thay vì dây nối lý tưởng. Khi độ trễ lan truyền trên đường mạch xấp xỉ hoặc lớn hơn khoảng 20\% thời gian cạnh lên/xuống của tín hiệu, các hiệu ứng truyền sóng như phản xạ, nhiễu xuyên kênh và bức xạ điện từ trở nên đáng kể, nên mạch phải tuân theo các nguyên tắc thiết kế high-speed\cite{bogatin2010signal}.
                     
                     Ranh giới giữa mạch low-speed và high-speed không được xác định bằng một tần số cố định mà chủ yếu dựa trên edge rate của tín hiệu. Các hệ thống dùng giao thức tốc độ cao như USB, Ethernet, HDMI, PCIe, v.v. hầu hết đều nằm trong phạm vi thiết kế high-speed.
                     
@@ -529,7 +529,7 @@
             \subsubsection{Power Distribution Network – PDN}
                 Mạng phân phối điện (Power Distribution Network – PDN) bao gồm tất cả các kết nối từ Voltage Regulator Module (VRM) đến pad nguồn của chip và lớp kim loại trên die, đảm nhận việc phân phối dòng điện và đường hồi tiếp (return path). PDN bao gồm VRM, tụ khối (bulk decoupling capacitors), via, trace, plane trên PCB, tụ gắn trên board, kết nối package, wire bond / bóng hàn C4, và các kết nối trên chip.
                 
-                Việc kiểm soát PDN là cực kỳ quan trọng đối với các SoC hiệu năng cao, đặc trưng bởi dòng điện tiêu thụ lớn, điện áp thấp và tần số hoạt động cao. Trở kháng phức tạp của PDN phải được kiểm soát tại pad nguồn của chip. Do dòng tiêu thụ của SoC thường mang dạng sóng vuông (square wave) thay vì tuyến tính, nên sẽ xuất hiện độ gợn (ripple) điện áp do transistor chuyển mạch theo tần số hoạt động. Vì vậy, trở kháng PDN cần được duy trì dưới giá trị trở kháng mục tiêu $Z_{\text{target}}$:
+                Việc kiểm soát PDN là cực kỳ quan trọng đối với các SoC hiệu năng cao, đặc trưng bởi dòng điện tiêu thụ lớn, điện áp thấp và tần số hoạt động cao. Trở kháng phức tạp của PDN phải được kiểm soát tại pad nguồn của chip. Do dòng tiêu thụ của SoC thường mang dạng sóng vuông (square wave) thay vì tuyến tính, nên sẽ xuất hiện độ gợn (ripple) điện áp do transistor chuyển mạch theo tần số hoạt động. Vì vậy, trở kháng PDN cần được duy trì dưới giá trị trở kháng mục tiêu $Z_{\text{target}}$\cite{bogatin2010signal}:
                 
                 \begin{equation}
                     Z_{\text{target}} = \frac{V_{dd} \times \Delta V_{\text{target}}}{I_{\max}}
