@@ -70,7 +70,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
 
             \textbf{Phương pháp:} Từng giao thức (Zigbee, LoRa, BLE) gửi dữ liệu liên tục với tốc độ tối đa; đo thông lượng thực tế tại LAN-MCU và tại MQTT Broker, đồng thời ghi nhận PDR (\textit{Packet Delivery Ratio}).
             
-            \begin{longtable}{|p{4.5cm}|p{4.5cm}|p{3.5cm}|}
+            \begin{longtable}{|p{4cm}|p{5.5cm}|p{2.5cm}|}
                 \caption{Baseline kỳ vọng cho kiểm thử đơn kênh.}
                 \label{tab:single_channel_baseline} \\
                 \hline
@@ -155,6 +155,8 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             4 & Chính sách retry & backoff/retry & Ghi retry policy & Mất mạng $\rightarrow$ reconnect theo chính sách & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Giá trị ngoài dải & period\_ms = 0 hoặc quá lớn & Ghi tham số lỗi & Trả FAIL, không áp dụng, NVS không đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
+
+        \newpage %add page break to remove extra line at the end of the previous table
 
         \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
             \caption{Kiểm thử Wi-Fi (Personal/Enterprise)}
