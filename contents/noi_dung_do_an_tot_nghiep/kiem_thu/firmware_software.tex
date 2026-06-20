@@ -112,7 +112,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
 
         \paragraph{Bảng kiểm thử chi tiết}
 
-        \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
             \caption{Kiểm thử đọc cấu hình hệ thống}
             \label{tab:test_read_config} \\
             \hline
@@ -134,7 +134,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Read LAN config & LAN-MCU đang chạy & PC gửi CFSC, đọc trường LAN & stack1\_id, stack2\_id, json\_len hiển thị đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
             \caption{Kiểm thử ghi cấu hình tham số chung}
             \label{tab:test_write_config} \\
             \hline
@@ -156,7 +156,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Giá trị ngoài dải & period\_ms = 0 hoặc quá lớn & Ghi tham số lỗi & Trả FAIL, không áp dụng, NVS không đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
             \caption{Kiểm thử Wi-Fi (Personal/Enterprise)}
             \label{tab:test_wifi} \\
             \hline
@@ -179,7 +179,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             6 & Reconnect & Ngắt/khôi phục WiFi & Tắt AP rồi bật lại & Online trở lại, không cần reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
             \caption{Kiểm thử LTE và PPP}
             \label{tab:test_lte_ppp} \\
             \hline
@@ -199,7 +199,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             3 & LTE config update & Gateway đang dùng LTE & Ghi APN mới qua UART & APN mới lưu NVS, apply sau reconnect & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2cm}|p{3.5cm}|p{2.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
             \caption{Kiểm thử Ethernet}
             \label{tab:test_ethernet} \\
             \hline
@@ -220,7 +220,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             4 & Static IP & Cấu hình IP tĩnh & Ghi static IP config & Dùng đúng IP tĩnh, không DHCP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{3cm}|p{4cm}|p{5cm}|c|}
+        \begin{longtable}{|c|p{0.15\textwidth}|p{0.25\textwidth}|p{0.3\textwidth}|c|}
             \caption{Kiểm thử Server MQTT}
             \label{tab:test_mqtt} \\
             \hline
@@ -243,7 +243,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             6 & QoS 1 & Publish với QoS 1 & Broker gửi PUBACK, không duplicate & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{3cm}|p{4cm}|p{5cm}|c|}
+        \begin{longtable}{|c|p{0.15\textwidth}|p{0.275\textwidth}|p{0.275\textwidth}|c|}
             \caption{Kiểm thử Server HTTP}
             \label{tab:test_http} \\
             \hline
@@ -265,7 +265,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Downlink polling & Server gửi lệnh & WAN GET, forward LAN & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{3cm}|p{4cm}|p{5cm}|c|}
+        \begin{longtable}{|c|p{0.15\textwidth}|p{0.25\textwidth}|p{0.3\textwidth}|c|}
             \caption{Kiểm thử Server CoAP}
             \label{tab:test_coap} \\
             \hline
@@ -287,7 +287,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & DTLS & Ghi DTLS config & Handshake OK, dữ liệu mã hóa & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{2cm}|p{3cm}|p{3cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.18\textwidth}|p{0.15\textwidth}|p{0.25\textwidth}|c|}
             \caption{Kiểm thử Web Config Portal -- AP Mode (Lần đầu khởi động)}
             \label{tab:test_web_config_ap} \\
             \hline
@@ -309,7 +309,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             7 & Sai WiFi password & Nhập pass sai & Set WiFi Config $\rightarrow$ Reboot & Gateway không vào mạng, tự quay lại AP mode sau N lần retry & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{3cm}|p{2cm}|p{4cm}|p{3cm}|c|}
+        \begin{longtable}{|c|p{0.16\textwidth}|p{0.12\textwidth}|p{0.22\textwidth}|p{0.2\textwidth}|c|}
             \caption{Kiểm thử Web Config Portal -- STA Mode}
             \label{tab:test_web_config_sta} \\
             \hline
@@ -328,13 +328,13 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
         
             3 & GET \texttt{/api/config} & Gateway ở STA & GET \texttt{/api/config} từ browser & Trả JSON đầy đủ: wifi, lte, mqtt, http, coap & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-            4 & POST \texttt{/api/config} (WiFi) & Gateway ở STA & POST \newline\texttt{\{"wifi":} \newline\texttt{\{"ssid":"...",} \newline\texttt{"password":"..."\}\}} & Gateway cập nhật WiFi, NVS save & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            4 & POST \texttt{/api/config} (WiFi) & Gateway ở STA & POST \texttt{\{"wifi":} \newline\texttt{\{"ssid":"...",} \newline\texttt{"password":} \newline \texttt{"..."\}\}} & Gateway cập nhật WiFi, NVS save & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
             5 & POST \texttt{/api/config} (MQTT) & Gateway ở STA & POST \newline\texttt{\{"mqtt":} \newline\texttt{\{"broker":"..."\}\}} & MQTT reconnect với broker mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-            6 & GET \texttt{/api/lan\_config} & Gateway ở STA, LAN chạy & GET \newline\texttt{/api/lan\_config} & Trả danh sách preset JSON cho BLE / LoRa / Zigbee & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & GET \texttt{/api/lan\_} \newline \texttt{config} & Gateway ở STA, LAN chạy & GET \newline\texttt{/api/lan\_config} & Trả danh sách preset JSON cho BLE / LoRa / Zigbee & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-            7 & POST \texttt{/api/lan\_config} (BLE) & Module BLE đang chạy & POST JSON config BLE qua web & LAN-MCU parse, NVS save, BLE handler restart & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            7 & POST \texttt{/api/lan\_} \newline \texttt{config} (BLE) & Module BLE đang chạy & POST JSON config BLE qua web & LAN-MCU parse, NVS save, BLE handler restart & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
             8 & GET \texttt{/api/status} & Gateway chạy bình thường & GET \newline\texttt{/api/status} & Trả uptime, RSSI, FW version, internet\_status & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
@@ -345,7 +345,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             11 & Advanced Mode -- Firmware OTA & Advanced Mode & Nhập OTA URL, Start OTA & FOTA WAN-MCU kích hoạt thành công & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.14\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.21\textwidth}|c|}
             \caption{Kiểm thử Module Base Setting -- Nạp JSON Config}
             \label{tab:test_module_base_json} \\
             \hline
@@ -369,7 +369,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             9 & JSON schema không hợp lệ & Gateway đang chạy & Gửi JSON thiếu trường bắt buộc & Firmware trả lỗi, NVS không thay đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
             \caption{Kiểm thử Module Base Setting -- Command Execution}
             \label{tab:test_module_base_command} \\
             \hline
@@ -390,7 +390,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             6 & Timeout response & Module không phản hồi & Gửi AT+CONNECT với thiết bị ngoài tầm & Firmware trả ESP ERR TIMEOUT đúng giá trị timeout ms từ JSON & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
             \caption{Kiểm thử BLE AT Command Handler (CFBL -- STM32WB55)}
             \label{tab:test_ble_at_handler} \\
             \hline
@@ -416,7 +416,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
 
         %
 
-        \begin{longtable}{|c|p{2cm}|p{2cm}|p{4cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.13\textwidth}|p{0.12\textwidth}|p{0.225\textwidth}|p{0.225\textwidth}|c|}
             \caption{Kiểm thử BLE Mesh Native Provisioner (CFBN)}
             \label{tab:test_ble_mesh_native} \\
             \hline
@@ -446,7 +446,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             8 & Get status & Node đã provision & Gửi \texttt{CFBN:0:}\newline\texttt{STATUS:<addr>} & \texttt{+STATUS:addr,}\newline\texttt{value} trả về đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
             \caption{Kiểm thử LoRa Handler (CFLR)}
             \label{tab:test_lora_handler} \\
             \hline
@@ -466,7 +466,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             5 & Send / Receive frame & Hai node LoRa & Gửi frame từ node, gateway nhận & Frame nhận được, RSSI và SNR hợp lệ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
             \caption{Kiểm thử Zigbee Handler (CFZB)}
             \label{tab:test_zigbee_handler} \\
             \hline
@@ -485,7 +485,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             4 & ZCL OnOff cluster & Thiết bị Zigbee join & Gửi CFZB:0:<hex ZCL OnOff> & Thiết bị bật/tắt đúng lệnh & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
             \caption{Kiểm thử RS485 Handler (CFRS)}
             \label{tab:test_rs485_handler} \\
             \hline
@@ -504,7 +504,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             4 & Modbus RTU write & Thiết bị Modbus kết nối & Gửi frame write single register & Ghi thanh ghi thành công, phản hồi đúng frame & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2cm}|p{2.5cm}|p{3.5cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
             \caption{Kiểm thử FOTA toàn Gateway}
             \label{tab:test_fota_gateway} \\
             \hline
@@ -525,7 +525,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             6 & Mất mạng giữa chừng & Đang download firmware & Ngắt Internet tạm thời & Quy trình dừng an toàn, không brick firmware & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2.5cm}|p{3.5cm}|p{2cm}|p{4cm}|c|}
+        \begin{longtable}{|c|p{0.15\textwidth}|p{0.19\textwidth}|p{0.11\textwidth}|p{0.25\textwidth}|c|}
             \caption{Kiểm thử Firmware -- Tổng hợp}
             \label{tab:test_firmware_summary} \\
             \hline
@@ -560,7 +560,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             20 & FOTA toàn gateway & CFFW + PPP & Firmware available & Cả hai MCU update thành công, boot OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
-        \begin{longtable}{|c|p{2.5cm}|p{3cm}|p{3.5cm}|c|}
+        \begin{longtable}{|c|p{0.15\textwidth}|p{0.175\textwidth}|p{0.2\textwidth}|c|}
             \caption{Kiểm thử thông lượng}
             \label{tab:test_throughput} \\
             \hline

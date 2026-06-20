@@ -23,7 +23,7 @@ Mỗi packet được tính vào counter chỉ sau khi SPI transport xác nhận
 
 Bảng~\ref{tab:spi_stages} mô tả các chặng xử lý mà một gói tin phải đi qua trong từng chế độ đo và chi phí thời gian tương ứng.
 
-\begin{longtable}{|p{3cm}|p{5cm}|p{1.25cm}|p{1.25cm}|p{4cm}|}
+\begin{longtable}{|p{3cm}|p{4cm}|p{1.25cm}|p{1.25cm}|p{4cm}|}
     \caption{Phân tích chi phí thời gian từng chặng truyền dẫn SPI inter-MCU.}
     \label{tab:spi_stages} \\
     \hline
@@ -68,7 +68,7 @@ Phân tích trên cho thấy rõ SPI clock 60~MHz không phải điểm nghẽn 
 
 Hai kịch bản được thực hiện trên cùng một phần cứng. Sau khi flash đồng thời hai MCU và đợi handshake hoàn tất (khoảng 5 giây), hệ thống tự khởi động bench. Bỏ qua cửa sổ đầu tiên (warm-up), lấy trung bình 5 cửa sổ liên tiếp ở trạng thái ổn định.
 
-\begin{longtable}{|p{1.25cm}|p{3cm}|p{3cm}|p{3cm}|p{1.75cm}|p{1.75cm}|}
+\begin{longtable}{|p{1cm}|p{2.75cm}|p{2.75cm}|p{2.75cm}|p{1.75cm}|p{1.75cm}|}
     \caption{Kết quả đo throughput SPI inter-MCU theo hai chế độ.}
     \label{tab:spi_results} \\
     \hline
@@ -183,7 +183,7 @@ WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một si
 
 \subsubsection{Phân tích từng chặng truyền dẫn}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{5cm}|p{5cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{4.5cm}|p{4.5cm}|}
     \caption{Đặc điểm đường truyền và trần theo thông số nhà sản xuất của từng giao diện WAN.}
     \label{tab:wan_paths} \\
     \hline
@@ -212,7 +212,7 @@ WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một si
 
 Ba kịch bản, mỗi kịch bản một giao diện (Wi-Fi, Ethernet, LTE), chạy độc lập. Mỗi giá trị là trung bình 10 cửa sổ liên tiếp ở giai đoạn ổn định. Cross-check được thực hiện giữa counter firmware (tại MCU) và counter sink server (tại máy nhận).
 
-\begin{longtable}{|p{3.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2cm}|p{1.5cm}|}
+\begin{longtable}{|p{3.25cm}|p{2.25cm}|p{2.25cm}|p{2.25cm}|p{1.75cm}|p{1.25cm}|}
     \caption{Kết quả đo throughput của từng giao diện WAN.}
     \label{tab:wan_results} \\
     \hline
@@ -248,7 +248,7 @@ Trong điều kiện lý tưởng -- gửi khối dữ liệu lớn và CPU ch�
 \end{itemize}
 Bảng~\ref{tab:wifi_theory} thể hiện tác động tích lũy của ba yếu tố này.
 
-\begin{longtable}{|p{10cm}|p{2cm}|p{3cm}|}
+\begin{longtable}{|p{9.5cm}|p{2cm}|p{2.5cm}|}
     \caption{Các bước ước lượng lý thuyết throughput Wi-Fi.}
     \label{tab:wifi_theory} \\
     \hline
@@ -377,7 +377,7 @@ Bậc 1200\,pps là bậc cao nhất duy trì \texttt{LAN.drop = 0}. Bậc 1500\
     \item Trần kỹ thuật: từ bậc 1500\,pps trở lên, \texttt{TX.pkt} không tăng theo yêu cầu, ổn định ở khoảng 1350\,pps = $21{,}6\,\text{Mbps}$. Đây là giới hạn tối đa của LAN dispatcher; vượt qua ngưỡng này thì \texttt{drop} tăng nhưng throughput thực không tăng thêm.
 \end{itemize}
 
-\begin{longtable}{|p{3cm}|p{3.5cm}|p{8.5cm}|}
+\begin{longtable}{|p{3cm}|p{3cm}|p{8cm}|}
     \caption{Tóm tắt các mức trần của SPI bridge.}
     \label{tab:spi_summary} \\
     \hline
@@ -467,7 +467,7 @@ Nguồn phát tín hiệu là một \textit{rig} (ESP32-S3 phụ) kết nối v�
 
 \subsubsection{Phân tích từng chặng truyền dẫn}
 
-\begin{longtable}{|p{3.5cm}|p{7.5cm}|p{4.5cm}|}
+\begin{longtable}{|p{3cm}|p{7cm}|p{4cm}|}
     \caption{Các chặng truyền dẫn trong phép đo độ trễ end-to-end.}
     \label{tab:e2e_stages} \\
     \hline

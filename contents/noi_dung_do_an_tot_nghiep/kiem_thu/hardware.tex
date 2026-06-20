@@ -14,7 +14,7 @@
             \end{itemize}
 
             % \newpage
-            \begin{longtable}{|c|p{0.2\textwidth}|p{0.5\textwidth}|p{0.2\textwidth}|c|}
+            \begin{longtable}{|c|p{0.15\textwidth}|p{0.35\textwidth}|p{0.2\textwidth}|c|}
                 \caption{Kết quả kiểm tra ngoại quan.}
                 \label{tab:visual_inspection} \\
                 \hline
@@ -32,7 +32,7 @@
                 % PHẦN A: KIỂM TRA CHUNG
                 \multicolumn{5}{|l|}{\textbf{A. KIỂM TRA TỔNG QUÁT}} \\ \hline
             
-                \multirow{2}{*}{1} & \multirow{2}{*}{\textbf{Tổng quan} \newline (Physical \& Solder)}
+                \multirow{2}{*}{1} & \multirow{2}{0.15\textwidth}{\textbf{Tổng quan} \newline (Physical \& Solder)}
                     & Bo mạch PCB (Bề mặt, Flux, Vết xước) 
                     & Sạch sẽ, không lộ đồng, không cong vênh. 
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-5}
@@ -45,9 +45,9 @@
                 \multicolumn{5}{|l|}{\textbf{B. KIỂM TRA CHI TIẾT LINH KIỆN}} \\ \hline
             
                 % NHÓM 1: LINH KIỆN CHUNG
-                \multirow{15}{*}{2} & \multirow{15}{*}{\textbf{Nhóm Linh kiện} \newline (General Components)}
+                \multirow{15}{*}{2} & \multirow{15}{0.15\textwidth}{\textbf{Nhóm Linh kiện} \newline (General Components)}
                     & \textbf{SoC:} U1, U2 
-                    & \multirow{15}{*}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).}
+                    & \multirow{15}{0.2\textwidth}{\textbf{Đúng Pinmap \& Định hướng:} \newline - Chân số 1 (Pin 1) trùng khớp dấu chấm PCB. \newline - Không bị xoay sai chiều. \newline - Chân gầm không bị dính thiếc (Short circuit).}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
                     & & \textbf{USB to UART Bridge IC:} U13 
@@ -93,18 +93,18 @@
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             
                 % NHÓM 2: LINH KIỆN PHÂN CỰC
-                \multirow{2}{*}{3} & \multirow{2}{*}{\textbf{Nhóm Phân cực} \newline (Polarized Components)}
+                \multirow{2}{*}{3} & \multirow{2}{0.15\textwidth}{\textbf{Nhóm Phân cực} \newline (Polarized Components)}
                     & \textbf{Bán dẫn phân cực:} \newline (Diode TVS, Schottky, LEDs)
-                    & \multirow{2}{*}{\textbf{Đúng Cực tính:} \newline - Cực Dương (+), Cathode (K) gia công đúng chiều.}
+                    & \multirow{2}{0.2\textwidth}{\textbf{Đúng Cực tính:} \newline - Cực Dương (+), Cathode (K) gia công đúng chiều.}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
                     & & \textbf{Nguồn:} BAT1, CON9, CON5 \newline (CR2032, DC-091, TYPE-C-31-M-12)
                     & & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             
                 % NHÓM 3: CƠ KHÍ & KẾT NỐI
-                \multirow{8}{*}{4} & \multirow{8}{*}{\textbf{Nhóm Cơ khí} \newline (Mechanical Parts)}
+                \multirow{8}{*}{4} & \multirow{8}{0.15\textwidth}{\textbf{Nhóm Cơ khí} \newline (Mechanical Parts)}
                     & \textbf{USB Type-C Connector:} CON5
-                    & \multirow{8}{*}{\textbf{Mức độ chống chịu cơ khí:} \newline - Chân vỏ (Shield) hàn chắc, chịu lực tốt.}
+                    & \multirow{8}{0.2\textwidth}{\textbf{Mức độ chống chịu cơ khí:} \newline - Chân vỏ (Shield) hàn chắc, chịu lực tốt.}
                     & \textcolor{modern_blue}{\textbf{Passed}} \\ \cline{3-3} \cline{5-5}
             
                     & & \textbf{Expansion Connectors WAN/LAN:} CON3, CON6, CON7
@@ -134,7 +134,7 @@
 
             Kết quả đo đạc thực tế đã kiểm tra:
 
-            \begin{longtable}{|c|p{4cm}|p{5cm}|p{3cm}|c|}
+            \begin{longtable}{|c|p{0.2\textwidth}|p{0.35\textwidth}|p{0.15\textwidth}|c|}
                 \caption{Kết quả kiểm tra trở kháng nguội các đường nguồn.}
                 \label{tab:cold_check_results} \\
                 \hline
@@ -176,7 +176,7 @@
 
             \textbf{Kết quả kiểm thử:}
             Hệ thống hoạt động ổn định ở chế độ Điện áp không đổi (CV). Dòng tiêu thụ tĩnh (Quiescent Current) đo được ở mức thấp ($\approx 25mA$), không xuất hiện hiện tượng sụt áp đầu vào hay quá nhiệt cục bộ trên các linh kiện công suất. Điều này xác nhận bo mạch không có lỗi quá dòng nghiêm trọng.
-            \begin{longtable}{|c|p{4cm}|p{4.5cm}|p{3.5cm}|c|}
+            \begin{longtable}{|c|p{0.25\textwidth}|p{0.3\textwidth}|p{0.2\textwidth}|c|}
                 \caption{Kết quả kiểm tra nóng và dòng tiêu thụ tĩnh.}
                 \label{tab:smoke_test_results_final} \\
                 \hline
@@ -203,11 +203,11 @@
         \subsubsection{Xác thực thông số điện áp}
             Sau khi xác nhận tính an toàn của hệ thống, giới hạn dòng điện được tăng đến mức vận hành tiêu chuẩn. Các mức điện áp tại các điểm kiểm tra (Test Points) được đo đạc để xác minh độ chính xác của khối nguồn Buck Converter và LDO so với tính toán thiết kế.
 
-            \begin{longtable}{|c|p{5cm}|p{4.5cm}|p{2.5cm}|c|}
+            \begin{longtable}{|c|p{0.25\textwidth}|p{0.3\textwidth}|p{0.15\textwidth}|c|}
                 \caption{Kết quả đo kiểm điện áp.}
                 \label{tab:voltage_validation_final} \\
                 \hline
-                \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế)} & \textbf{Kết quả} \\ \hline
+                \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
                 \endfirsthead
                 \hline
                 \textbf{STT} & \textbf{Điểm đo} & \textbf{Giá trị kỳ vọng} & \textbf{Giá trị đo thực tế} & \textbf{Kết quả} \\ \hline
@@ -259,7 +259,7 @@
             \subsubsection{Kiểm tra trạng thái Logic và Điều khiển (Logic State Verification)}
                 Các tín hiệu điều khiển tới hạn (Critical Control Signals) bao gồm Reset, Boot Mode và Enable được đo đạc tại thời điểm khởi động và trạng thái ổn định. Việc này nhằm xác minh cấu hình điện trở kéo (Pull-up/Pull-down) đã được thiết kế đúng, đảm bảo MCU vào đúng chế độ hoạt động (Boot mode vs Download mode) và không xảy ra hiện tượng thả nổi tín hiệu (Floating).
         
-                \begin{longtable}{|c|p{5.5cm}|p{6.5cm}|c|}
+                \begin{longtable}{|c|p{0.3\textwidth}|p{0.4\textwidth}|c|}
                     \caption{Kết quả kiểm tra các mức Logic điều khiển.}
                     \label{tab:logic_verification} \\
                     \hline
@@ -293,7 +293,7 @@
             \subsubsection{Kiểm tra Chất lượng Nguồn (Power Integrity Analysis)}
                 Chất lượng nguồn được đánh giá thông qua đo đạc từ máy hiện sóng (Oscilloscope) để đo độ gợn (Voltage Ripple) và độ sụt áp (Voltage Drop) dưới tải. Các phép đo được thực hiện khi hệ thống đang chạy firmware kiểm thử (Test Firmware) với tải giả định để mô phỏng điều kiện hoạt động thực tế.
         
-                \begin{longtable}{|c|c|p{4cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|>{\centering\arraybackslash}p{1.5cm}|c|}
+                \begin{longtable}{|c|c|p{4.25cm}|>{\centering\arraybackslash}p{1.25cm}|>{\centering\arraybackslash}p{1.25cm}|>{\centering\arraybackslash}p{1.25cm}|c|}
                     \caption{Kết quả kiểm tra chất lượng nguồn điện.}
                     \label{tab:power_analysis} \\
                     \hline
@@ -349,7 +349,7 @@
             \subsubsection{Kiểm tra Chức năng Phần cứng (Functional Verification)}
                 Từng khối chức năng ngoại vi được kiểm tra độc lập thông qua các firmware driver cơ bản. Mục đích là xác nhận sự toàn vẹn của các đường dẫn tín hiệu và khả năng giao tiếp vật lý giữa MCU và các linh kiện ngoại vi.
         
-                \begin{longtable}{|c|p{3cm}|p{5cm}|p{4cm}|c|}
+                \begin{longtable}{|c|p{0.15\textwidth}|p{0.3\textwidth}|p{0.25\textwidth}|c|}
                     \caption{Kết quả kiểm tra chức năng.}
                     \label{tab:detailed_functional_verification_final} \\
                     \hline
