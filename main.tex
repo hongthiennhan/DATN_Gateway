@@ -20,20 +20,27 @@
     \input{contents/other_contents/phieu_nhiem_vu.tex}
     \input{contents/other_contents/phieu_cham_huong_dan.tex}
     \input{contents/other_contents/phieu_cham_phan_bien.tex}
+    \clearpage
+    \pagenumbering{roman}
+    \renewcommand{\CurrentLastPageRef}{\pageref{LastRomanPage}}
+    \setcounter{page}{1}
     \input{contents/other_contents/loicamdoan.tex}
     \input{contents/other_contents/loicamon.tex}
     \input{contents/other_contents/tomtat.tex}
     \tableofcontents
     \listoftables
     \listoffigures
-
-    % tập trung so sánh độ trễ, thông lượng, giá thành với M5
+    \label{LastRomanPage}
 
     % \input{contents/preparation.tex}
 
     % \input{contents/timhieu.tex}
     % \input{contents/concept_design.tex}
 
+    \clearpage
+    \pagenumbering{arabic}
+    \renewcommand{\CurrentLastPageRef}{\pageref{LastPage}}
+    \setcounter{page}{1}
     \part{Nội dung Đồ án Tốt nghiệp}
         \input{contents/noi_dung_do_an_tot_nghiep/gioi_thieu.tex}
         \input{contents/noi_dung_do_an_tot_nghiep/nen_tang_ky_thuat.tex}
@@ -44,6 +51,7 @@
         \input{contents/noi_dung_do_an_tot_nghiep/ket_luan.tex}
     % \input{contents/y_tuong/phan_mo_dau.tex}
 
+    \nocite{*}
     \newpage
     \bibliographystyle{plain}
     \bibliography{bibliography.bib}
@@ -65,10 +73,8 @@
         % \input{contents/bring_up_verification/bring_up_verification.tex}
         % \input{contents/ket_luan/ket_luan.tex}
 
-
-
-
-    \nocite{*}
+    \label{LastArabicPage}
+    % \nocite{*}
     % \newpage
     % \bibliographystyle{plain}
     % \bibliography{bibliography.bib}
