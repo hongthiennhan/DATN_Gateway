@@ -1,0 +1,109 @@
+% ==================================================================
+% TRANG BÌA ĐÃ ĐIỀU CHỈNH KHUNG VIỀN RỘNG RA
+% ==================================================================
+\begin{titlepage}
+    % 1. Thiết lập lề cho nội dung văn bản bên trong
+    % Giữ nguyên lề văn bản là 2cm để nội dung không bị sát khung quá
+    \newgeometry{top=2cm, bottom=2cm, left=3cm, right=2cm}
+
+    % ==========================
+    % VẼ KHUNG VIỀN (Đã điều chỉnh)
+    % ==========================
+    \begin{tikzpicture}[remember picture, overlay]
+        % --- Khung viền ngoài (nét đậm) ---
+        \draw[line width=1pt]
+            ($(current page.north west) + (2.0cm,-1.0cm)$)
+            rectangle
+            ($(current page.south east) + (-1.0cm,1.0cm)$);
+
+        % --- Khung viền trong (nét mảnh) ---
+        \draw[line width=3pt]
+            ($(current page.north west) + (2.15cm,-1.15cm)$)
+            rectangle
+            ($(current page.south east) + (-1.15cm,1.15cm)$);
+    \end{tikzpicture}
+
+    % ==========================
+    % NỘI DUNG TRANG BÌA (Không đổi)
+    % ==========================
+    \begin{center}
+        \vspace*{-0.5cm}
+
+        \textbf{\fontsize{15pt}{18pt}\selectfont ĐẠI HỌC QUỐC GIA TP.HCM}\\
+        \textbf{\fontsize{15pt}{18pt}\selectfont TRƯỜNG ĐẠI HỌC BÁCH KHOA}\\
+        \textbf{\fontsize{15pt}{18pt}\selectfont KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH} \\
+
+        \vspace{0.5cm}
+
+        % LOGO
+        \includegraphics[width=4cm, keepaspectratio]{figures/logo/logo_bk.png}
+
+        \vspace{0.5cm}
+
+        \textbf{\fontsize{15pt}{18pt}\selectfont BÁO CÁO}\\
+        \textbf{\fontsize{15pt}{18pt}\selectfont \docsType} \\
+
+        \vspace{1.0cm}
+
+        % TÊN ĐỀ TÀI
+        \parbox{0.9\textwidth}{
+            \centering
+            \textbf{\fontsize{22pt}{25pt}\selectfont \MakeUppercase{Thiết kế và hiện thực\\một gateway IoT dạng mô-đun\\có khả năng cấu hình}}
+        } \\
+
+        \vspace{1em}
+        
+        {\fontsize{15pt}{18pt}\selectfont Ngành: Kỹ thuật Máy tính}
+
+        \vspace{1cm}
+
+        % THÔNG TIN HỘI ĐỒNG / SVTH
+        % \begin{table}[h]
+        %     \centering
+        %     \begin{tabular}{p{4cm} r l}
+        %         & \textbf{HỘI ĐỒNG:} & \textbf{PGS. TS. Phạm Quốc Cường (Chủ tịch)} \\
+        %         & & \textbf{CN. Nguyễn Thành Lộc (Thư ký)} \\
+        %         & & \textbf{CN. Nguyễn Thiên Ân (Ủy viên 1)} \\
+        %         & \textbf{GVHD:} & \textbf{ThS. Huỳnh Phúc Nghị} \\
+        %         & & \textbf{ThS. Huỳnh Hoàng Kha (Đồng hướng dẫn)} \\
+        %         & \textbf{GVPB:} & \textbf{PGS. TS. Trần Ngọc Thịnh} \\
+        %         & & \\
+        %         & \multicolumn{2}{c}{\textbf{---o0o---}} \\
+        %         & & \\
+        %         & \textbf{SVTH 1:} & \textbf{Hồng Thiện Nhân (2111900)} \\
+        %         & \textbf{SVTH 2:} & \textbf{Trần Hải Thảo Quảng (2212767)} \\
+        %     \end{tabular}
+        % \end{table}
+        \begin{table}[h]
+            \centering
+            \fontsize{15pt}{18pt}\selectfont
+            \begin{tabular}{p{3.5cm} r l}
+                & \textbf{HỘI ĐỒNG:} & \textbf{PGS. TS. Phạm Quốc Cường} \textit{(Chủ tịch)} \\
+                & & \textbf{CN. Nguyễn Thành Lộc} \textit{(Thư ký)} \\
+                & & \textbf{CN. Nguyễn Thiên Ân} \textit{(Ủy viên 1)} \\
+                & \textbf{GVHD:} & \textbf{ThS. Huỳnh Phúc Nghị} \\
+                & & \textbf{ThS. Huỳnh Hoàng Kha} \\
+                & & \textit{(Đồng hướng dẫn)} \\
+                & \textbf{GVPB:} & \textbf{PGS. TS. Trần Ngọc Thịnh} \\
+                % & & \\
+                & \multicolumn{2}{c}{\textbf{---o0o---}} \\
+                % & & \\
+                & \textbf{SVTH 1:} & \textbf{Hồng Thiện Nhân (2111900)} \\
+                & \textbf{SVTH 2:} & \textbf{Trần Hải Thảo Quảng (2212767)} \\
+                & \textbf{SVTH 3:} & \textbf{Nguyễn Hoàng Triều (2213612)} \\
+                & & \textit{(Sinh viên cộng tác Khoa Điện - Điện tử)} \\
+            \end{tabular}
+        \end{table}
+
+        \vfill
+
+        \textbf{\fontsize{15pt}{18pt}\selectfont TP. HỒ CHÍ MINH, 06/2026}
+
+    \end{center}
+
+    % Trả lại thiết lập lề cho các trang sau
+    \restoregeometry
+\end{titlepage}
+
+% Thiết lập số trang cho trang sau
+% \setcounter{page}{1}
