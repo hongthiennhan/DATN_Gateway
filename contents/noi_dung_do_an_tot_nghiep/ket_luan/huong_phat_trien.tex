@@ -1,6 +1,6 @@
 
 \section{Hướng phát triển trong tương lai}
-    Mặc dù sản phẩm đã đạt được những kết quả khả quan và đáp ứng đầy đủ các mục tiêu thiết kế cốt lõi của một IoT Gateway dạng module, việc đưa thiết bị vào vận hành thực tế trong môi trường công nghiệp đòi hỏi cần đạt được những tiêu chuẩn khắt khe. Trong tương lai, sản phẩm cần được đánh giá dựa trên các tiêu chuẩn công nghiệp nhằm đạt được những yêu cầu thực tế, mục tiêu có thể đưa sản phẩm ra thị trường.
+    Mặc dù sản phẩm đã đạt được những kết quả khả quan và đáp ứng đầy đủ các mục tiêu thiết kế cốt lõi của một IoT Gateway dạng mô-đun, việc đưa thiết bị vào vận hành thực tế trong môi trường công nghiệp đòi hỏi cần đạt được những tiêu chuẩn khắt khe. Trong tương lai, sản phẩm cần được đánh giá dựa trên các tiêu chuẩn công nghiệp nhằm đạt được những yêu cầu thực tế, mục tiêu có thể đưa sản phẩm ra thị trường.
 
     % \subsection{Timeline giai đoạn tiếp theo}
     %     \resizebox{\textwidth}{!}{
@@ -71,7 +71,7 @@
     % \subsection{Hoàn thiện và khắc phục các hạn chế thiết kế}
     % Dù hệ thống đã vận hành ổn định, quá trình thử nghiệm thực tế cho thấy vẫn tồn tại một số lỗi nhỏ về mặt logic phần cứng và bố trí linh kiện. 
     %     \begin{itemize}
-    %         \item \textbf{Tối ưu hóa thiết kế:} Mặc dù đã được thiết kế nhỏ gọn với vỏ hộp và cơ chế lắp đặt module adapter dễ dàng hơn, tuy nhiên việc láp ráp thiết bị vẫn còn khá phức tạp và tốn thời gian. Cần cải tiến thiết kế vỏ hộp và cơ chế lắp đặt để giảm thiểu thời gian lắp ráp, đồng thời tăng tính tiện lợi cho người dùng cuối khi triển khai thực tế.
+    %         \item \textbf{Tối ưu hóa thiết kế:} Mặc dù đã được thiết kế nhỏ gọn với vỏ hộp và cơ chế lắp đặt Module Adapter dễ dàng hơn, tuy nhiên việc láp ráp thiết bị vẫn còn khá phức tạp và tốn thời gian. Cần cải tiến thiết kế vỏ hộp và cơ chế lắp đặt để giảm thiểu thời gian lắp ráp, đồng thời tăng tính tiện lợi cho người dùng cuối khi triển khai thực tế.
     %         \item \textbf{Cải thiện Layout PCB:} Tinh chỉnh lại các đường mạch tín hiệu nhạy cảm để giảm thiểu hiện tượng nhiễu xuyên âm (Crosstalk) và cải thiện tính toàn vẹn tín hiệu (Signal Integrity) khi hệ thống hoạt động ở tần số cao.
     %     \end{itemize}
 
@@ -96,20 +96,20 @@
     % \begin{itemize}
     %     \item \textbf{Hoàn thiện Driver và Stack giao thức cho mạng cảm biến (LAN Domain):}
     %     \begin{itemize}
-    %         \item Nâng cấp các giao thức hiện hữu (LoRa, Zigbee, RS485): Hiện tại, các module này mới chỉ được phát triển ở mức độ thử nghiệm (demo) gửi/nhận gói tin đơn giản (raw data). Cần triển khai đầy đủ các tầng của ngăn xếp giao thức (Protocol Stack) như cơ chế địa chỉ hóa (Addressing), quản lý mạng (Network Management), và kiểm tra lỗi gói tin (Packet Error Checking) để đảm bảo độ tin cậy.
+    %         \item Nâng cấp các giao thức hiện hữu (LoRa, Zigbee, RS485): Hiện tại, các mô-đun này mới chỉ được phát triển ở mức độ thử nghiệm (demo) gửi/nhận gói tin đơn giản (raw data). Cần triển khai đầy đủ các tầng của ngăn xếp giao thức (Protocol Stack) như cơ chế địa chỉ hóa (Addressing), quản lý mạng (Network Management), và kiểm tra lỗi gói tin (Packet Error Checking) để đảm bảo độ tin cậy.
     %         \item Phát triển mới các giao thức chưa được hỗ trợ: Tiến hành lập trình driver và tích hợp các giao thức đã có trong thiết kế nhưng chưa được hiện thực hóa, bao gồm Z-Wave, Thread và Bluetooth Low Energy (BLE). Việc này đòi hỏi tích hợp các thư viện stack chuẩn và cấu hình tài nguyên phần cứng (Timer, Interrupt) phù hợp trên LAN-MCU.
     %     \end{itemize}
         
     %     \item \textbf{Mở rộng khả năng kết nối mạng và giao thức ứng dụng (WAN Domain):}
     %     \begin{itemize}
-    %         \item Đa dạng hóa kênh kết nối Internet: Hiện tại hệ thống chưa hỗ trợ Ethernet và NB-IoT. Cần phát triển driver cho module Ethernet (như W5500 hoặc EMAC tích hợp) và module NB-IoT để tăng tính dự phòng đường truyền khi Wi-Fi hoặc LTE gặp sự cố.
+    %         \item Đa dạng hóa kênh kết nối Internet: Hiện tại hệ thống chưa hỗ trợ Ethernet và NB-IoT. Cần phát triển driver cho mô-đun Ethernet (như W5500 hoặc EMAC tích hợp) và mô-đun NB-IoT để tăng tính dự phòng đường truyền khi Wi-Fi hoặc LTE gặp sự cố.
     %         \item Bổ sung giao thức tầng ứng dụng: Ngoài MQTT hiện đang hoạt động, cần phát triển thêm các client cho HTTP/HTTPS (phục vụ gọi REST API) và CoAP (Constrained Application Protocol) để tương thích với các nền tảng IoT khác nhau và tối ưu hóa băng thông cho các mạng di động.
     %     \end{itemize}
         
     %     \item \textbf{Cải tiến kiến trúc luồng dữ liệu và độ tin cậy hệ thống:}
     %     \begin{itemize}
     %         \item Tối ưu hóa luồng Gửi/Nhận (TX/RX Pipeline): Thiết kế lại cơ chế đệm (Buffering) và quản lý hàng đợi (Queue management) giữa các tác vụ (Tasks) trong FreeRTOS. Chuyển đổi từ cơ chế xử lý tuần tự hoặc blocking sang cơ chế hướng sự kiện (Event-driven) hoặc sử dụng DMA (Direct Memory Access) để tăng thông lượng và giảm tải cho CPU.
-    %         \item Xây dựng cơ chế xử lý lỗi (Error Handling) toàn diện: Hiện tại cơ chế xử lý lỗi còn sơ sài. Cần bổ sung các trình phục vụ ngắt và giám sát trạng thái (State Machine) để tự động phát hiện và khôi phục (Self-healing) khi xảy ra các lỗi như: mất kết nối module, treo bus SPI/I2C, hoặc tràn bộ nhớ đệm.
+    %         \item Xây dựng cơ chế xử lý lỗi (Error Handling) toàn diện: Hiện tại cơ chế xử lý lỗi còn sơ sài. Cần bổ sung các trình phục vụ ngắt và giám sát trạng thái (State Machine) để tự động phát hiện và khôi phục (Self-healing) khi xảy ra các lỗi như: mất kết nối mô-đun, treo bus SPI/I2C, hoặc tràn bộ nhớ đệm.
     %     \end{itemize}
     % \end{itemize}
 

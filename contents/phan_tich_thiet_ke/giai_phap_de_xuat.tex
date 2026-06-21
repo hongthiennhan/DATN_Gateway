@@ -31,12 +31,12 @@
 
 
     \subsection{Giải pháp phần mềm}
-        Giải pháp phần mềm được xây dựng nhằm đáp ứng các yêu cầu cốt lõi của hệ thống IoT Gateway, bao gồm: tính module hóa (Modularity), khả năng cấu hình linh hoạt (Configurability), độ ổn định -- tin cậy cao, khả năng mở rộng và dễ bảo trì.
+        Giải pháp phần mềm được xây dựng nhằm đáp ứng các yêu cầu cốt lõi của hệ thống IoT Gateway, bao gồm: tính mô-đun hóa (Modularity), khả năng cấu hình linh hoạt (Configurability), độ ổn định -- tin cậy cao, khả năng mở rộng và dễ bảo trì.
 
         Phần mềm phải tận dụng hiệu quả kiến trúc \textbf{Dual-MCU Master--Slave}, phân tách rõ ràng trách nhiệm giữa hai vi điều khiển để tối ưu tài nguyên phần cứng, đồng thời bảo đảm luồng dữ liệu thông suốt từ thiết bị cảm biến tới nền tảng đám mây.
 
         \subsubsection{Kiến trúc phần mềm tổng thể}
-            Phần mềm hệ thống được thiết kế theo kiến trúc phân lớp (Layered Architecture) và module hóa, áp dụng nhất quán cho cả hai MCU LAN và MCU WAN. Mỗi firmware được chia thành 4 lớp chính:
+            Phần mềm hệ thống được thiết kế theo kiến trúc phân lớp (Layered Architecture) và mô-đun hóa, áp dụng nhất quán cho cả hai MCU LAN và MCU WAN. Mỗi firmware được chia thành 4 lớp chính:
             \begin{itemize}
                 \item Driver Layer
                 \item Board Support Package (BSP)
@@ -46,7 +46,7 @@
             Việc phân lớp rõ ràng giúp:
             \begin{itemize}
                 \item Tách biệt logic ứng dụng và phụ thuộc phần cứng
-                \item Dễ dàng mở rộng, thay thế module
+                \item Dễ dàng mở rộng, thay thế mô-đun
                 \item Giảm rủi ro ảnh hưởng dây chuyền khi thay đổi một thành phần
             \end{itemize}
 
@@ -102,7 +102,7 @@
                 \begin{itemize}
                     \item \textbf{Main Control:} điều phối hoạt động tổng thể của MCU LAN theo lệnh từ MCU WAN.
                     \item \textbf{FOTA:} cập nhật firmware cho MCU.
-                    \item \textbf{Module Monitor Task:} theo dõi trạng thái stack, phát hiện module, khôi phục cấu hình từ NVS và khởi động lại handler task khi cấu hình thay đổi trong lúc runtime.
+                    \item \textbf{Module Monitor Task:} theo dõi trạng thái stack, phát hiện mô-đun, khôi phục cấu hình từ NVS và khởi động lại handler task khi cấu hình thay đổi trong lúc runtime.
                     \item \textbf{Các Handler Task theo giao thức:}
                     \begin{itemize}
                         \item LoRa Handler Task
@@ -121,7 +121,7 @@
                 
                 Chức năng chung của mỗi Handler Task:
                 \begin{itemize}
-                    \item Đọc dữ liệu thô từ module.
+                    \item Đọc dữ liệu thô từ mô-đun.
                     \item Kiểm tra định dạng, checksum, loại bỏ khung lỗi.
                     \item Gắn nhãn nguồn dữ liệu và timestamp.
                     \item Chuẩn hóa dữ liệu về định dạng khung nội bộ.
@@ -141,7 +141,7 @@
 
             \paragraph{BSP \& Driver – MCU LAN:}
                 \begin{itemize}
-                    \item BSP quản lý giao tiếp với các module vật lý: RS-485, SD Card, IO Expander.
+                    \item BSP quản lý giao tiếp với các mô-đun vật lý: RS-485, SD Card, IO Expander.
                     \item Driver Layer cung cấp driver chuẩn: UART, SPI, I2C, SDIO, GPIO, ADC, USB.
                 \end{itemize}
 
@@ -153,7 +153,7 @@
                 \item Cho phép:
                 \begin{itemize}
                     \item Đọc cấu hình hiện tại.
-                    \item Chỉnh sửa module, giao thức, WAN, MQTT.
+                    \item Chỉnh sửa mô-đun, giao thức, WAN, MQTT.
                     \item Ghi cấu hình mà không cần build lại firmware.
                 \end{itemize}
                 \item Hỗ trợ FOTA an toàn:
@@ -167,7 +167,7 @@
         \subsubsection{Đánh giá giải pháp phần mềm}
             Giải pháp phần mềm đáp ứng:
             \begin{itemize}
-                \item Modularity: bật/tắt module qua cấu hình
+                \item Modularity: bật/tắt mô-đun qua cấu hình
                 \item Configurability: cấu hình không cần sửa firmware
                 \item Reliability: watchdog, queue, retry, buffer
                 \item Interoperability: hỗ trợ đa giao thức LAN/WAN

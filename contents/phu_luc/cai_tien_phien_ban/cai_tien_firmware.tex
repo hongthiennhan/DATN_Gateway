@@ -1,5 +1,5 @@
 \section{Cải tiến về Firmware}
-    Phiên bản 1.0.0 có sự cải tiến về kiến trúc hệ thống so với phiên bản nguyên mẫu, chuyển đổi từ một mẫu thử nghiệm chức năng cơ bản sang một Gateway IoT hoàn chỉnh và ổn định. Về phần cứng và kết nối, hệ thống bổ sung giao tiếp Ethernet qua driver W5500 và cơ chế Internet Monitor giúp tự động chuyển đổi dự phòng giữa Wi-Fi/LTE/Ethernet. Kiến trúc firmware được thiết kế phân lớp mạch lạc, mở rộng bộ đệm cấu hình tại WAN MCU để xử lý dữ liệu JSON phức tạp, đồng thời chuẩn hóa giao tiếp server thông qua đa giao thức (MQTT, HTTP/HTTPS, CoAP). Đặc biệt, cơ chế FOTA được cải tiến sang phương thức Wi-Fi NAT thay thế cho PPP qua UART, giúp tối ưu băng thông. Tại LAN MCU, khả năng quản lý module được nâng cấp mạnh mẽ với việc hỗ trợ đa dạng chủng loại (Zigbee, BLE Native/GATT, LoRa, RS485), cho phép lưu trữ cấu hình vào NVS và tự động nhận diện thay đổi phần cứng, tạo tiền đề cho một hệ thống có khả năng mở rộng linh hoạt.
+    Phiên bản 1.0.0 có sự cải tiến về kiến trúc hệ thống so với phiên bản nguyên mẫu, chuyển đổi từ một mẫu thử nghiệm chức năng cơ bản sang một Gateway IoT hoàn chỉnh và ổn định. Về phần cứng và kết nối, hệ thống bổ sung giao tiếp Ethernet qua driver W5500 và cơ chế Internet Monitor giúp tự động chuyển đổi dự phòng giữa Wi-Fi/LTE/Ethernet. Kiến trúc firmware được thiết kế phân lớp mạch lạc, mở rộng bộ đệm cấu hình tại WAN MCU để xử lý dữ liệu JSON phức tạp, đồng thời chuẩn hóa giao tiếp server thông qua đa giao thức (MQTT, HTTP/HTTPS, CoAP). Đặc biệt, cơ chế FOTA được cải tiến sang phương thức Wi-Fi NAT thay thế cho PPP qua UART, giúp tối ưu băng thông. Tại LAN MCU, khả năng quản lý mô-đun được nâng cấp mạnh mẽ với việc hỗ trợ đa dạng chủng loại (Zigbee, BLE Native/GATT, LoRa, RS485), cho phép lưu trữ cấu hình vào NVS và tự động nhận diện thay đổi phần cứng, tạo tiền đề cho một hệ thống có khả năng mở rộng linh hoạt.
 
     \begin{longtable}{|p{2.5cm}|p{4.5cm}|p{7cm}|}
         \caption{Bảng so sánh đặc tính kỹ thuật giữa phiên bản nguyên mẫu và 1.0.0} \label{tab:so_sanh_fw} \\
@@ -23,7 +23,7 @@
         Kết nối Internet & Wi-Fi, LTE (PPP). & Wi-Fi, LTE, Ethernet (W5500) với trình giám sát Internet Monitor (Auto-failover). \\ \hline
         Giao thức Server & Chủ yếu MQTT. & Đa giao thức: MQTT, HTTP/HTTPS, CoAP với Handler chuyên biệt. \\ \hline
         Cơ chế FOTA & LAN MCU cập nhật qua PPP server (UART) từ WAN MCU. & LAN MCU cập nhật qua Wi-Fi AP (NAT) do WAN MCU khởi tạo. \\ \hline
-        Quản lý Module (LAN) & Hỗ trợ cơ bản LoRa, CAN, RS485; bộ đệm nhỏ. & Mở rộng Zigbee, BLE Native/GATT; bộ đệm lớn; quản lý qua JSON/Command. \\ \hline
-        Lưu trữ \& Khôi phục & Chưa hỗ trợ quản lý trạng thái cấu hình phức tạp. & Lưu cấu hình vào NVS, tự động khôi phục hoặc xóa bỏ khi thay đổi module. \\ \hline
-        Độ linh hoạt & Kịch bản cố định, khó mở rộng. & Kiến trúc module hóa, sẵn sàng cho triển khai thực tế đa nền tảng. \\ \hline
+        Quản lý Mô-đun (LAN) & Hỗ trợ cơ bản LoRa, CAN, RS485; bộ đệm nhỏ. & Mở rộng Zigbee, BLE Native/GATT; bộ đệm lớn; quản lý qua JSON/Command. \\ \hline
+        Lưu trữ \& Khôi phục & Chưa hỗ trợ quản lý trạng thái cấu hình phức tạp. & Lưu cấu hình vào NVS, tự động khôi phục hoặc xóa bỏ khi thay đổi mô-đun. \\ \hline
+        Độ linh hoạt & Kịch bản cố định, khó mở rộng. & Kiến trúc mô-đun hóa, sẵn sàng cho triển khai thực tế đa nền tảng. \\ \hline
     \end{longtable}

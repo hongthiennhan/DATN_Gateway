@@ -36,22 +36,22 @@
                 \end{itemize}
 
             \paragraph{Khối Module Adapter}\par
-                Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các module, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
+                Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các mô-đun, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
                 \begin{itemize}
                     \item \textbf{WAN Module Adapter}
                     \begin{itemize}
                         \item Kết nối với MASTER WAN-MCU.
-                        \item Hỗ trợ các module giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
+                        \item Hỗ trợ các mô-đun giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
                     \end{itemize}
                     \item \textbf{LAN1 Module Adapter}
                     \begin{itemize}
                         \item Kết nối với SLAVE LAN-MCU.
-                        \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
+                        \item Hỗ trợ kết nối các mô-đun kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
                     \end{itemize}
                     \item \textbf{LAN2 Module Adapter}
                     \begin{itemize}
                         \item Kết nối với SLAVE LAN-MCU.
-                        \item Hỗ trợ kết nối các module kết nối có dây như RS-485, CAN, \dots
+                        \item Hỗ trợ kết nối các mô-đun kết nối có dây như RS-485, CAN, \dots
                     \end{itemize}
                 \end{itemize}
 
@@ -60,7 +60,7 @@
             \paragraph{Cloud Service:}\par
                 Nền tảng đám mây cung cấp dịch vụ lưu trữ, phân tích dữ liệu và quản lý tập trung cho hệ thống IoT.
             \paragraph{Configuration Tools:}\par
-                Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các module được kết nối.
+                Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các mô-đun được kết nối.
             \paragraph{Luồng dữ liệu:}\par
                 \begin{itemize}
                     \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua MASTER WAN-MCU, sau đó được chuyển tiếp đến SLAVE LAN-MCU qua kênh UART chuyên biệt.
@@ -70,9 +70,9 @@
 
         \subsubsection{Thiết kế Module hóa}
             \paragraph{Nguyên lý:}\par
-                Thiết kế module hóa cho phép người dùng dễ dàng thay thế, nâng cấp hoặc mở rộng các chức năng của gateway mà không cần thay đổi toàn bộ hệ thống. Mỗi module được thiết kế theo chuẩn kết nối chung, giúp đảm bảo tính tương thích và linh hoạt trong việc lựa chọn các module phù hợp với nhu cầu sử dụng cụ thể.
+                Thiết kế mô-đun hóa cho phép người dùng dễ dàng thay thế, nâng cấp hoặc mở rộng các chức năng của gateway mà không cần thay đổi toàn bộ hệ thống. Mỗi mô-đun được thiết kế theo chuẩn kết nối chung, giúp đảm bảo tính tương thích và linh hoạt trong việc lựa chọn các mô-đun phù hợp với nhu cầu sử dụng cụ thể.
             \paragraph{Thiết kế:}\par
-                Đối với các module sẵn có trên thị trường, giao diện kết nối thường không tuân theo một tiêu chuẩn thống nhất, kể cả với các module sử dụng chuẩn cơ khí như Mini PCIe hay M.2. Vì vậy, việc thiết kế các module adapter là cần thiết để chuẩn hóa kết nối giữa module và baseboard. Trong thiết kế này, cổng chuẩn vật lý PCI Express x1 (36-pin Card Edge Connector) được lựa chọn làm giao diện kết nối giữa module adapter và baseboard. Tuy nhiên, sơ đồ chân trên cổng được định nghĩa lại để phù hợp với kiến trúc phần cứng của hệ thống.
+                Đối với các mô-đun sẵn có trên thị trường, giao diện kết nối thường không tuân theo một tiêu chuẩn thống nhất, kể cả với các mô-đun sử dụng chuẩn cơ khí như Mini PCIe hay M.2. Vì vậy, việc thiết kế các Module Adapter là cần thiết để chuẩn hóa kết nối giữa mô-đun và baseboard. Trong thiết kế này, cổng chuẩn vật lý PCI Express x1 (36-pin Card Edge Connector) được lựa chọn làm giao diện kết nối giữa Module Adapter và baseboard. Tuy nhiên, sơ đồ chân trên cổng được định nghĩa lại để phù hợp với kiến trúc phần cứng của hệ thống.
             \paragraph{Chuẩn hóa giao diện:}\par
                 Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa sơ đồ chân.
                 % \begin{longtable}{|l|l|p{5cm}|l|}
@@ -255,7 +255,7 @@
             % \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
                 % Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
                 % \begin{itemize}
-                %     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                %     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (Wi-Fi, LTE, Ethernet).
                 %     \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
                 %     \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
                 %     \item Cấu hình file JSON cho từng module cắm vào LAN.
@@ -275,7 +275,7 @@
                         \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
                         Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
                         \begin{itemize}
-                            \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                            \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (Wi-Fi, LTE, Ethernet).
                             \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
                             \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
                             \item Cấu hình file JSON cho từng module cắm vào LAN.
@@ -294,7 +294,7 @@
             % \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
             %     Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
                 % \begin{itemize}
-                %     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                %     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (Wi-Fi, LTE, Ethernet).
                 %     \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
                 %     \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
                 %     \item Cấu hình file JSON cho từng module cắm vào LAN.
@@ -314,7 +314,7 @@
                         \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
                         Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
                         \begin{itemize}
-                            \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+                            \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (Wi-Fi, LTE, Ethernet).
                             \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
                             \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
                             \item Cấu hình file JSON cho từng module cắm vào LAN.
@@ -375,10 +375,10 @@
                         IC RTC PCF8563T dùng pin CR2032 đảm bảo tính liên tục của dữ liệu thời gian, hỗ trợ hiệu quả việc đồng bộ hóa mạng và thực thi các tác vụ theo lịch trình.
                         
                         \item \textbf{Mở rộng GPIO:} 
-                        Hệ thống sử dụng IC TCA6416ARTWR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
+                        Hệ thống sử dụng IC TCA6416ARTWR để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và mô-đun mở rộng.
 
                         \item \textbf{Cổng PCIe mở rộng WAN/LAN:} 
-                        % Hệ thống được thiết kế với 3 khe cắm PCIe, 1 khe dành cho module WAN và 2 khe dành cho module LAN. Các khe cắm này hỗ trợ kết nối linh hoạt với các module giao tiếp không dây (LoRa, Zigbee, BLE, Thread, NB-IoT,...) hoặc có dây (RS-485, CAN,...), giúp mở rộng khả năng kết nối của gateway.
+                        % Hệ thống được thiết kế với 3 khe cắm PCIe, 1 khe dành cho mô-đun WAN và 2 khe dành cho mô-đun LAN. Các khe cắm này hỗ trợ kết nối linh hoạt với các mô-đun giao tiếp không dây (LoRa, Zigbee, BLE, Thread, NB-IoT,...) hoặc có dây (RS-485, CAN,...), giúp mở rộng khả năng kết nối của gateway.
                         Thiết kế modular với ba khe PCIe (01 WAN, 02 LAN) cho phép tích hợp linh hoạt các chuẩn truyền thông, tối ưu khả năng mở rộng hệ thống cho đa dạng ứng dụng IoT.
                         
                         \item \textbf{Mở rộng I2C:} 
@@ -450,23 +450,23 @@
                         \item \textbf{+5V\_CTRL:} Được tạo từ +4V2\_VSYS thông qua bộ chuyển đổi DC-DC và có khả năng điều khiển thông qua IO expander, phục vụ các ngoại vi yêu cầu mức điện áp 5V.
                     \end{itemize}
                     
-                    Đối với các module mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng module, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết.
+                    Đối với các mô-đun mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng mô-đun, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết.
                     
                     Cách thiết kế này mang lại các ưu điểm sau:
                     \begin{itemize}
-                        \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng;
+                        \item Cho phép chủ động bật/tắt nguồn từng mô-đun LAN/WAN tùy theo cấu hình và kịch bản sử dụng;
                         \item Hỗ trợ cô lập nhanh và ngắt nguồn khi phát hiện sự cố từ các thiết bị ngoại vi;
                         \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động tiết kiệm năng lượng.
                         \item Đơn giản hóa thiết kế phần cứng của baseboard bằng cách chuyển các thành phần đặc thù lên adapter, qua đó tối ưu chi phí.
                     \end{itemize}
 
                 \paragraph{Sơ đồ khối mạch adapter:}
-                    % Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các module mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn vật lý PCI Express x1, trong đó các đường tín hiệu và nguồn được định nghĩa lại theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
+                    % Mạch adapter được thiết kế nhằm chuẩn hóa giao diện kết nối giữa baseboard và các mô-đun mạng phổ biến trên thị trường. Adapter board được kết nối với baseboard thông qua đầu nối chuẩn vật lý PCI Express x1, trong đó các đường tín hiệu và nguồn được định nghĩa lại theo một chuẩn riêng thống nhất, hỗ trợ các giao thức cơ bản như USB, UART, SPI và I\textsuperscript{2}C.
 
-                    % Trên mỗi adapter tích hợp một IC IO Expander, được điều khiển bởi MCU master hoặc slave trên baseboard (trong đó master quản lý các module WAN, slave quản lý các module LAN). IC này đảm nhiệm chức năng đóng/ngắt nguồn cấp cho module mạng, đồng thời đọc mã nhận dạng thiết bị (device ID) được mã hóa dưới dạng 4 bit thông qua 4 chân GPIO.
+                    % Trên mỗi adapter tích hợp một IC IO Expander, được điều khiển bởi MCU master hoặc slave trên baseboard (trong đó master quản lý các mô-đun WAN, slave quản lý các mô-đun LAN). IC này đảm nhiệm chức năng đóng/ngắt nguồn cấp cho mô-đun mạng, đồng thời đọc mã nhận dạng thiết bị (device ID) được mã hóa dưới dạng 4 bit thông qua 4 chân GPIO.
                     
-                    % Dựa trên mã nhận dạng này, MCU trên baseboard có thể tự động xác định loại module được kết nối trong quá trình cấu hình gateway. Từ đó, hệ thống máy tính cấu hình sẽ truyền các tập lệnh giao tiếp phù hợp với từng loại module đến MCU quản lý, giúp đơn giản hóa quá trình tích hợp và tăng tính linh hoạt của hệ thống.
-                    Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các module mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện module, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
+                    % Dựa trên mã nhận dạng này, MCU trên baseboard có thể tự động xác định loại mô-đun được kết nối trong quá trình cấu hình gateway. Từ đó, hệ thống máy tính cấu hình sẽ truyền các tập lệnh giao tiếp phù hợp với từng loại mô-đun đến MCU quản lý, giúp đơn giản hóa quá trình tích hợp và tăng tính linh hoạt của hệ thống.
+                    Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các mô-đun mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện mô-đun, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
 
                     \begin{figure}[h]
                         \centering
@@ -487,7 +487,7 @@
     %         \end{figure}
 
     %         \paragraph{Thiết kế Mạch xử lý trung tâm}
-    %             Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
+    %             Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai mô-đun ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
 
     %             % Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
 
@@ -898,7 +898,7 @@
     %             Tại đầu vào nguồn của quạt DC, một diode được mắc song song nhằm bảo vệ mạch cấp nguồn. Khi nguồn bị ngắt hoặc xuất hiện các xung điện áp trên đường cấp, diode tạo đường dẫn cho dòng điện quá độ lưu thông, giúp hạn chế điện áp đột biến và giảm ảnh hưởng đến các linh kiện điều khiển.
                 
     %             \paragraph{Thiết kế Mạch Module Adapter}\label{par:sche_wanlan_adapter}
-    %             Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard.
+    %             Baseboard được thiết kế để kết nối với các mô-đun mạng WAN và LAN thông qua một Module Adapter trung gian. Module adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các mô-đun WAN/LAN và baseboard.
 
     %             \begin{figure}[h]
     %                 \centering
@@ -907,7 +907,7 @@
     %                 \label{fig:sche_wan-lan_conn}
     %             \end{figure}
 
-    %             Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet được phát triển dựa trên IC Ethernet PHY W5500. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
+    %             Trong phiên bản hiện tại, Module Adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho mô-đun SIM7600G-H-PCIE và adapter WAN Ethernet được phát triển dựa trên IC Ethernet PHY W5500. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
                 
     %             Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
 
@@ -928,9 +928,9 @@
     %                 \label{fig:sche_wanlte}
     %             \end{figure}
 
-    %             Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
+    %             Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của mô-đun WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
 
-    %             Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại module mạng khác nhau, bao gồm:
+    %             Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại mô-đun mạng khác nhau, bao gồm:
 
     %             \begin{itemize}
     %                 \item Module Zigbee E180-ZG120B (dựa trên SoC Silicon Labs EFR32MG1B) của EBYTE, sử dụng nguồn cấp 3.3V và giao tiếp UART;
@@ -945,12 +945,12 @@
     %                 \label{fig:sche_lan} 
     %             \end{figure}
 
-    %             Trên mỗi adapter tích hợp một IC IO Expander, được sử dụng để điều khiển các tín hiệu IO của module, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (device ID) trên adapter. Mỗi module được thiết kế với một adapter riêng biệt và được gán một mã thiết bị tương ứng nhằm phục vụ quá trình nhận diện tự động bởi MCU.
+    %             Trên mỗi adapter tích hợp một IC IO Expander, được sử dụng để điều khiển các tín hiệu IO của mô-đun, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (device ID) trên adapter. Mỗi mô-đun được thiết kế với một adapter riêng biệt và được gán một mã thiết bị tương ứng nhằm phục vụ quá trình nhận diện tự động bởi MCU.
 
     %             Bảng mã nhận dạng thiết bị được quy định như sau:
                 
     %             \begin{longtable}{|c|c|c|}
-    %                 \caption{Device ID của các module WAN/LAN} \\
+    %                 \caption{Device ID của các mô-đun WAN/LAN} \\
     %                 \hline
     %                 \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
     %                 \hline
@@ -1066,8 +1066,8 @@
     %                     \begin{itemize}
     %                         \item \textbf{Vùng Nguồn (Power Zone):} Bố trí cục bộ gần đầu vào DC để cô lập nhiễu chuyển mạch.
     %                         \item \textbf{Vùng Xử lý trung tâm (Digital Core):} Chứa MCU Master và Slave, đặt tại trung tâm để tối ưu hóa đường đi tín hiệu.
-    %                         \item \textbf{Vùng Giao tiếp Modular (Interface Zone):} Bố trí dọc theo các cạnh bo mạch để thuận tiện cho thao tác cắm rút module.
-    %                         \item \textbf{Vùng RF (RF Zone):} Dành riêng cho các module không dây và anten.
+    %                         \item \textbf{Vùng Giao tiếp Modular (Interface Zone):} Bố trí dọc theo các cạnh bo mạch để thuận tiện cho thao tác cắm rút mô-đun.
+    %                         \item \textbf{Vùng RF (RF Zone):} Dành riêng cho các mô-đun không dây và anten.
     %                     \end{itemize}
     %                 \end{itemize}
     %             % \begin{figure}[h]
@@ -1093,7 +1093,7 @@
     %                 \item \textbf{Kiểm soát Nhiễu điện từ (EMI Management):}
     %                 \begin{itemize}
     %                     \item \textbf{Cách ly nguồn nhiễu:} Các thành phần gây nhiễu mạnh như mạch nguồn xung (Buck Converter), cuộn cảm, và diode chuyển mạch được quy hoạch xa khỏi các khu vực nhạy cảm như khối Analog, mạch tạo dao động (Crystal Oscillator) và khối RF.
-    %                     \item \textbf{Phân tách không gian RF:} Các vị trí dành cho module RF (như WiFi, LoRa) được bố trí tại các góc hoặc rìa của bo mạch. Khoảng cách vật lý giữa các anten được tối đa hóa (Spatial Diversity) và đặt chéo góc nhau để giảm hiện tượng bão hòa đầu vào hoặc giao thoa sóng vô tuyến (Co-existence interference).
+    %                     \item \textbf{Phân tách không gian RF:} Các vị trí dành cho mô-đun RF (như Wi-Fi, LoRa) được bố trí tại các góc hoặc rìa của bo mạch. Khoảng cách vật lý giữa các anten được tối đa hóa (Spatial Diversity) và đặt chéo góc nhau để giảm hiện tượng bão hòa đầu vào hoặc giao thoa sóng vô tuyến (Co-existence interference).
     %                 \end{itemize}
 
     %                 \item \textbf{Tương thích Cơ khí và Sản xuất (DFM/DFA):}
@@ -1319,7 +1319,7 @@
             \end{minipage}
         \end{figure}
         
-        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
+        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính mô-đun hóa cho các giao thức mở rộng.
 
         Trong đó, LAN-MCU đóng vai trò điều phối lớp dưới, trực tiếp quản lý các kết nối nội bộ như LoRa, Zigbee, BLE và RS-485. Nhiệm vụ trọng tâm của LAN-MCU là thu thập, kiểm chứng và chuẩn hóa dữ liệu thô từ sensor trước khi đẩy lên kênh truyền thông nội bộ.
         
@@ -1335,7 +1335,7 @@
         \begin{itemize}
             \item \textbf{Quản lý đa phương thức kết nối Internet:} Thiết lập và duy trì đường truyền qua Wi-Fi (Personal/Enterprise), LTE (giao thức USB) và Ethernet. Hệ thống tích hợp cơ chế tự động khôi phục kết nối (Auto-reconnect) và đồng bộ thời gian thực (SNTP/RTC) để đảm bảo tính thống nhất cho timestamp dữ liệu.
         
-            \item \textbf{Cơ chế Internet Fallback:} Hệ thống tự động chuyển đổi nguồn Internet dựa trên độ ưu tiên vật lý (Ethernet $>$ Wi-Fi $>$ LTE). Khi phát hiện module LTE hoặc Ethernet được kết nối, WAN-MCU chủ động kiểm tra trạng thái link để thay đổi kênh truyền ưu tiên, đồng thời tự động tái kết nối kênh dự phòng khi có sự cố, đảm bảo duy trì luồng dữ liệu Cloud liên tục.
+            \item \textbf{Cơ chế Internet Fallback:} Hệ thống tự động chuyển đổi nguồn Internet dựa trên độ ưu tiên vật lý (Ethernet $>$ Wi-Fi $>$ LTE). Khi phát hiện mô-đun LTE hoặc Ethernet được kết nối, WAN-MCU chủ động kiểm tra trạng thái link để thay đổi kênh truyền ưu tiên, đồng thời tự động tái kết nối kênh dự phòng khi có sự cố, đảm bảo duy trì luồng dữ liệu Cloud liên tục.
         
             \item \textbf{Điều phối giao tiếp Cloud:} Đảm nhiệm vai trò Gateway chính để xuất bản dữ liệu lên Server và tiếp nhận lệnh điều khiển ngược lại hệ thống.
         
@@ -1440,23 +1440,23 @@
 
         \subsubsection{Hệ thống cấu hình Module dựa trên JSON (Module Base Setting)}
 
-        Trong kiến trúc ban đầu của gateway, loại module RF gắn vào từng khe phần cứng được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của module -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO cho reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại module mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên module có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
+        Trong kiến trúc ban đầu của gateway, loại mô-đun RF gắn vào từng khe phần cứng được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của mô-đun -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO cho reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại mô-đun mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên mô-đun có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
 
-        Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh tám module BLE phổ biến trên thị trường. Phân tích cho thấy một điều nghịch lý: gần như hầu hết chức năng là giống nhau giữa tất cả các module -- đặt tên thiết bị, quét thiết bị lân cận, kết nối, ngắt kết nối, reset phần mềm, reset phần cứng -- nhưng cú pháp lệnh lại khác hoàn toàn. Ví dụ, chức năng đặt tên thiết bị được gọi bằng \texttt{AT+NAME=} trên HC-05, \texttt{AT+BLENAME=} trên module ESP32, và \texttt{AT+GAPDEVNAME=} trên nRF52. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
+        Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh tám mô-đun BLE phổ biến trên thị trường. Phân tích cho thấy một điều nghịch lý: gần như hầu hết chức năng là giống nhau giữa tất cả các mô-đun -- đặt tên thiết bị, quét thiết bị lân cận, kết nối, ngắt kết nối, reset phần mềm, reset phần cứng -- nhưng cú pháp lệnh lại khác hoàn toàn. Ví dụ, chức năng đặt tên thiết bị được gọi bằng \texttt{AT+NAME=} trên HC-05, \texttt{AT+BLENAME=} trên mô-đun ESP32, và \texttt{AT+GAPDEVNAME=} trên nRF52. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
 
         \paragraph{Ý tưởng triển khai}
 
-        Thay vì hard-code thông tin của từng loại module vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của module ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành module đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả chức năng module hỗ trợ. Mỗi chức năng trong danh sách được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
+        Thay vì hard-code thông tin của từng loại mô-đun vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của mô-đun ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành mô-đun đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả chức năng mô-đun hỗ trợ. Mỗi chức năng trong danh sách được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
         
-        Ví dụ khi sử dụng module cho BLE, bằng cách này, firmware không còn quan tâm đến việc module đang dùng là STM32WB55 hay nRF52840 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_SCAN}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo chính xác những gì JSON mô tả. Toàn bộ logic đặc thù của module nằm trong file JSON, không nằm trong firmware. Thay đổi module đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
+        Ví dụ khi sử dụng mô-đun cho BLE, bằng cách này, firmware không còn quan tâm đến việc mô-đun đang dùng là STM32WB55 hay nRF52840 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_SCAN}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo chính xác những gì JSON mô tả. Toàn bộ logic đặc thù của mô-đun nằm trong file JSON, không nằm trong firmware. Thay đổi mô-đun đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
         
-        Ba file cấu hình preset đã được chuẩn bị cho giai đoạn kiểm thử: Zigbee E180-ZG120B, BLE STM32WB55 và LoRa Wio-E5. Một file ánh xạ \texttt{stack\_id\_map.json} liên kết định danh khe phần cứng với preset module tương ứng.
+        Ba file cấu hình preset đã được chuẩn bị cho giai đoạn kiểm thử: Zigbee E180-ZG120B, BLE STM32WB55 và LoRa Wio-E5. Một file ánh xạ \texttt{stack\_id\_map.json} liên kết định danh khe phần cứng với preset mô-đun tương ứng.
 
 
         % \begin{figure}[H]
         %     \begin{minipage}[b]{0.55\textwidth}
         %         \paragraph{Luồng hoạt động}
-        %         Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình module và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển module.
+        %         Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình mô-đun và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển mô-đun.
         %     \end{minipage}
         %     \hfill
         %     \begin{minipage}[t]{0.4\textwidth}
@@ -1469,7 +1469,7 @@
 
         \paragraph{Luồng hoạt động}
 
-        Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình module và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển module.
+        Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình mô-đun và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển mô-đun.
 
         \begin{figure}[H]
             \centering
@@ -1480,11 +1480,11 @@
 
         \paragraph{Kịch bản hoạt động}
 
-        Về kịch bản vận hành, khi có yêu cầu từ người dùng, lệnh điều khiển được truyền xuống WAN-MCU và chuyển tiếp sang LAN-MCU. Tại đây, LAN-MCU phân tích tiền tố để nhận diện chức năng và tra cứu khuôn mẫu (\textit{template}) trong file JSON cấu hình. Nếu là lệnh tĩnh, hệ thống trích xuất trực tiếp chuỗi lệnh thô. Nếu là lệnh động, LAN-MCU sẽ tự động ghép nối tham số từ Server vào khuôn mẫu lệnh. Sau cùng, LAN-MCU kích hoạt trình tự điều khiển GPIO nếu được yêu cầu trong JSON, đẩy lệnh hoàn chỉnh xuống module vật lý và gửi phản hồi trạng thái ngược lên Server.
+        Về kịch bản vận hành, khi có yêu cầu từ người dùng, lệnh điều khiển được truyền xuống WAN-MCU và chuyển tiếp sang LAN-MCU. Tại đây, LAN-MCU phân tích tiền tố để nhận diện chức năng và tra cứu khuôn mẫu (\textit{template}) trong file JSON cấu hình. Nếu là lệnh tĩnh, hệ thống trích xuất trực tiếp chuỗi lệnh thô. Nếu là lệnh động, LAN-MCU sẽ tự động ghép nối tham số từ Server vào khuôn mẫu lệnh. Sau cùng, LAN-MCU kích hoạt trình tự điều khiển GPIO nếu được yêu cầu trong JSON, đẩy lệnh hoàn chỉnh xuống mô-đun vật lý và gửi phản hồi trạng thái ngược lên Server.
 
         % \begin{figure}[H]
         %     \begin{minipage}[b]{0.55\textwidth}
-        %         Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các module phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
+        %         Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các mô-đun phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
         %     \end{minipage}
         %     \hfill
         %     \begin{minipage}[t]{0.4\textwidth}
@@ -1495,7 +1495,7 @@
         %     \end{minipage}
         % \end{figure}
 
-        Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các module phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
+        Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các mô-đun phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
 
         \begin{figure}[H]
             \centering

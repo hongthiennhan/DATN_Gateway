@@ -1,6 +1,6 @@
 \section{Kiểm thử Firmware và Software}
 
-Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào giai đoạn Firmware \& Software Verification nhằm xác nhận bo mạch có thể vận hành ổn định với firmware thực tế, đồng thời kiểm chứng các luồng chức năng cốt lõi của kiến trúc Dual-MCU, gồm WAN-MCU và LAN-MCU giao tiếp qua SPI. Giai đoạn này bổ sung các nhóm kiểm thử mới so với phiên bản trước, bao gồm: hệ thống cấu hình module dựa trên JSON (Module Base Setting), cổng cấu hình Web nhúng (Web Config Portal), BLE Mesh Native Provisioner, các loại server mới (HTTP, CoAP) và loại kết nối Internet mới (Ethernet).
+Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào giai đoạn Firmware \& Software Verification nhằm xác nhận bo mạch có thể vận hành ổn định với firmware thực tế, đồng thời kiểm chứng các luồng chức năng cốt lõi của kiến trúc Dual-MCU, gồm WAN-MCU và LAN-MCU giao tiếp qua SPI. Giai đoạn này bổ sung các nhóm kiểm thử mới so với phiên bản trước, bao gồm: hệ thống cấu hình mô-đun dựa trên JSON (Module Base Setting), cổng cấu hình Web nhúng (Web Config Portal), BLE Mesh Native Provisioner, các loại server mới (HTTP, CoAP) và loại kết nối Internet mới (Ethernet).
     
     \subsection{Mục tiêu}
     
@@ -60,7 +60,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
         
             \item \textbf{Kiểm thử Module Base Setting (LAN-MCU)}
         
-            Nạp JSON config cho module BLE/LoRa/Zigbee qua PC App và Web Portal. Prefix command matching: gửi AT command động, firmware tự tra JSON để lấy GPIO/timeout. GPIO-only command: \texttt{MODULE\_HW\_RESET} không gửi UART, chỉ toggle GPIO. Auto-restore: tắt nguồn và kiểm tra handler tự khởi động lại với config từ NVS.
+            Nạp JSON config cho mô-đun BLE/LoRa/Zigbee qua PC App và Web Portal. Prefix command matching: gửi AT command động, firmware tự tra JSON để lấy GPIO/timeout. GPIO-only command: \texttt{MODULE\_HW\_RESET} không gửi UART, chỉ toggle GPIO. Auto-restore: tắt nguồn và kiểm tra handler tự khởi động lại với config từ NVS.
         
             \item \textbf{Kiểm thử FOTA toàn gateway}
         
@@ -150,7 +150,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endlastfoot
 
             1 & Chọn loại Internet & Wi-Fi / LTE / PPP / Ethernet & Ghi internet\_type & Chuyển đúng chế độ, log trạng thái đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Chọn loại Server & MQTT / HTTP / CoAP & Ghi server\_type & Module connection tương ứng khởi động & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Chọn loại Server & MQTT / HTTP / CoAP & Ghi server\_type & Mô-đun connection tương ứng khởi động & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Chu kỳ gửi & period\_ms & Ghi period\_ms & Áp dụng runtime, không nghẽn SPI/Server & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Chính sách retry & backoff/retry & Ghi retry policy & Mất mạng $\rightarrow$ reconnect theo chính sách & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Giá trị ngoài dải & period\_ms = 0 hoặc quá lớn & Ghi tham số lỗi & Trả FAIL, không áp dụng, NVS không đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -178,7 +178,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             3 & Enterprise & SSID + user/pass (EAP) & AP Enterprise & Auth OK, có IP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Enterprise & Sai credential & AP Enterprise & Auth FAIL, retry có kiểm soát & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Đồng bộ thời gian & SNTP + RTC & Internet OK & RTC được cập nhật sau khi vào mạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            6 & Reconnect & Ngắt/khôi phục WiFi & Tắt AP rồi bật lại & Online trở lại, không cần reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & Reconnect & Ngắt/khôi phục Wi-Fi & Tắt AP rồi bật lại & Online trở lại, không cần reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
         \begin{longtable}{|c|p{0.105\textwidth}|p{0.2\textwidth}|p{0.15\textwidth}|p{0.245\textwidth}|c|}
@@ -218,7 +218,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
         
             1 & Ethernet connect & W5500 gắn SPI, có cáp LAN & Chọn internet\_type = Ethernet & DHCP lấy IP, online ổn định & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Ethernet reconnect & Rút/cắm lại cáp LAN & Quan sát tự reconnect & Online trở lại sau khi cắm cáp & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            3 & Ethernet + WiFi fallback & Ethernet connected & Rút cáp Ethernet & Tự fallback sang WiFi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            3 & Ethernet + Wi-Fi fallback & Ethernet connected & Rút cáp Ethernet & Tự fallback sang Wi-Fi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Static IP & Cấu hình IP tĩnh & Ghi static IP config & Dùng đúng IP tĩnh, không DHCP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
@@ -302,13 +302,13 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endfoot
             \endlastfoot
         
-            1 & AP phát sóng & Không có WiFi credentials trong NVS & Khởi động gateway & SSID ``DA2-Gateway-XXXX'' xuất hiện & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Captive DNS redirect & Phone kết nối AP & Kết nối WiFi AP, không mở browser thủ công & OS tự hiện popup ``Sign in to network'', redirect về 192.168.4.1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            1 & AP phát sóng & Không có Wi-Fi credentials trong NVS & Khởi động gateway & SSID ``DA2-Gateway-XXXX'' xuất hiện & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Captive DNS redirect & Phone kết nối AP & Kết nối Wi-Fi AP, không mở browser thủ công & OS tự hiện popup ``Sign in to network'', redirect về 192.168.4.1 & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Captive DNS -- Android & Phone Android & Kết nối AP, đợi prompt & Trang cấu hình hiện tự động (Android) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Captive DNS -- iOS & iPhone/iPad & Kết nối AP, đợi prompt & Trang cấu hình hiện tự động (iOS) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Load giao diện SPA & Browser kết nối AP & Truy cập 192.168.4.1 & Trang cấu hình load đầy đủ, không lỗi JS & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            6 & Set WiFi + Reboot & Nhập SSID/Pass đúng & Nhấn Set WiFi Config $\rightarrow$ Reboot & Gateway reboot, kết nối WiFi thành công trong 30s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            7 & Sai WiFi password & Nhập pass sai & Set WiFi Config $\rightarrow$ Reboot & Gateway không vào mạng, tự quay lại AP mode sau N lần retry & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & Set Wi-Fi + Reboot & Nhập SSID/Pass đúng & Nhấn Set Wi-Fi Config $\rightarrow$ Reboot & Gateway reboot, kết nối Wi-Fi thành công trong 30s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            7 & Sai Wi-Fi password & Nhập pass sai & Set Wi-Fi Config $\rightarrow$ Reboot & Gateway không vào mạng, tự quay lại AP mode sau N lần retry & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
         \begin{longtable}{|c|p{0.16\textwidth}|p{0.12\textwidth}|p{0.22\textwidth}|p{0.2\textwidth}|c|}
@@ -330,13 +330,13 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
         
             3 & GET \texttt{/api/config} & Gateway ở STA & GET \texttt{/api/config} từ browser & Trả JSON đầy đủ: wifi, lte, mqtt, http, coap & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-            4 & POST \texttt{/api/config} (WiFi) & Gateway ở STA & POST \texttt{\{"wifi":} \newline\texttt{\{"ssid":"...",} \newline\texttt{"password":} \newline \texttt{"..."\}\}} & Gateway cập nhật WiFi, NVS save & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            4 & POST \texttt{/api/config} (Wi-Fi) & Gateway ở STA & POST \texttt{\{"wifi":} \newline\texttt{\{"ssid":"...",} \newline\texttt{"password":} \newline \texttt{"..."\}\}} & Gateway cập nhật Wi-Fi, NVS save & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
             5 & POST \texttt{/api/config} (MQTT) & Gateway ở STA & POST \newline\texttt{\{"mqtt":} \newline\texttt{\{"broker":"..."\}\}} & MQTT reconnect với broker mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
             6 & GET \texttt{/api/lan\_} \newline \texttt{config} & Gateway ở STA, LAN chạy & GET \newline\texttt{/api/lan\_config} & Trả danh sách preset JSON cho BLE / LoRa / Zigbee & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
-            7 & POST \texttt{/api/lan\_} \newline \texttt{config} (BLE) & Module BLE đang chạy & POST JSON config BLE qua web & LAN-MCU parse, NVS save, BLE handler restart & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            7 & POST \texttt{/api/lan\_} \newline \texttt{config} (BLE) & Mô-đun BLE đang chạy & POST JSON config BLE qua web & LAN-MCU parse, NVS save, BLE handler restart & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
             8 & GET \texttt{/api/status} & Gateway chạy bình thường & GET \newline\texttt{/api/status} & Trả uptime, RSSI, FW version, internet\_status & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         
@@ -360,14 +360,14 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endfoot
             \endlastfoot
         
-            1 & Gửi BLE JSON từ PC App & Module BLE STM32WB55 cắm khe 1 & Gửi \texttt{CFBL:JSON:0:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, BLE handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Gửi LoRa JSON từ PC App & Module LoRa RAK3172 cắm khe 1 & Gửi \texttt{CFLR:JSON:0:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, LoRa handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            3 & Gửi Zigbee JSON từ PC App & Module Zigbee E180-ZG120B cắm khe 2 & Gửi \texttt{CFZB:JSON:1:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, Zigbee handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            1 & Gửi BLE JSON từ PC App & Mô-đun BLE STM32WB55 cắm khe 1 & Gửi \texttt{CFBL:JSON:0:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, BLE handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Gửi LoRa JSON từ PC App & Mô-đun LoRa RAK3172 cắm khe 1 & Gửi \texttt{CFLR:JSON:0:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, LoRa handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            3 & Gửi Zigbee JSON từ PC App & Mô-đun Zigbee E180-ZG120B cắm khe 2 & Gửi \texttt{CFZB:JSON:1:}\newline\texttt{<json>} qua UART & LAN parse OK, NVS save, Zigbee handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Gửi JSON từ Web Portal & Gateway ở STA mode & POST \texttt{/api/}\newline\texttt{lan\_config} với BLE JSON & LAN-MCU nhận qua SPI, parse OK, NVS save & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Gửi JSON từ MQTT & Server publish JSON config & MQTT publish \texttt{CFBL:JSON:0:}\newline\texttt{<json>} & WAN forward SPI $\rightarrow$ LAN parse OK & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             6 & Parse đúng tham số & BLE config với UART 115200/8N1 & Gửi JSON, đọc lại CFSC & baudrate=115200, parity=none phản ánh đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             7 & Auto-restore sau reboot & Đã lưu config vào NVS & Tắt/bật nguồn gateway & BLE handler tự khởi động lại đúng config, không cần gửi lại JSON & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            8 & Thay đổi loại module tại runtime & Khe 1 đang chạy BLE handler & Gửi JSON config LoRa cho khe 1 & BLE handler dừng, LoRa handler start với config mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            8 & Thay đổi loại mô-đun tại runtime & Khe 1 đang chạy BLE handler & Gửi JSON config LoRa cho khe 1 & BLE handler dừng, LoRa handler start với config mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             9 & JSON schema không hợp lệ & Gateway đang chạy & Gửi JSON thiếu trường bắt buộc & Firmware trả lỗi, NVS không thay đổi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
@@ -385,11 +385,11 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endlastfoot
         
             1 & Prefix match -- AT+ \newline SCAN= & BLE config đã nạp, có MODULE START DISCOVERY & Gửi \texttt{CFBL:0:}\newline\texttt{AT+SCAN=5000} & Firmware tìm đúng function, áp dụng timeout 7000ms từ JSON, gửi UART & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Prefix match -- AT+ \newline CONNECT \newline = & BLE config đã nạp & Gửi \texttt{CFBL:0:}\newline\texttt{AT+CONNECT=}\newline\texttt{AABBCCDDEE} & Firmware ghép command đúng, gửi UART đến module & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Prefix match -- AT+ \newline CONNECT \newline = & BLE config đã nạp & Gửi \texttt{CFBL:0:}\newline\texttt{AT+CONNECT=}\newline\texttt{AABBCCDDEE} & Firmware ghép command đúng, gửi UART đến mô-đun & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & GPIO-only -- MODULE HW RESET & BLE config đã nạp & Gửi MODULE HW RESET qua CFBL & Không có byte nào gửi qua UART; chỉ toggle RST pin LOW $\rightarrow$ 100ms $\rightarrow$ HIGH & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & GPIO-only -- MODULE WAKEUP & BLE config đã nạp & Gửi MODULE WAKEUP & Toggle WAKE pin đúng sequence từ JSON & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Không khớp JSON & BLE config đã nạp & Gửi \texttt{CFBL:0:}\newline\texttt{AT+UNKNOWNCMD} & Firmware log lỗi ``no function match'', không gửi UART & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            6 & Timeout response & Module không phản hồi & Gửi AT+CONNECT với thiết bị ngoài tầm & Firmware trả ESP ERR TIMEOUT đúng giá trị timeout ms từ JSON & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & Timeout response & Mô-đun không phản hồi & Gửi AT+CONNECT với thiết bị ngoài tầm & Firmware trả ESP ERR TIMEOUT đúng giá trị timeout ms từ JSON & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
         \begin{longtable}{|c|p{0.12\textwidth}|p{0.15\textwidth}|p{0.2\textwidth}|p{0.23\textwidth}|c|}
@@ -405,15 +405,15 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endfoot
             \endlastfoot
         
-            1 & Hardware Reset & Module cắm, BLE config nạp & Gửi MODULE HW RESET & Module reset đúng, GPIO sequence thực thi, log ``reset ok'' & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Get Info & Module đang chạy & Gửi AT+GETINFO & Phản hồi FW version, BD\_ADDR đúng format & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            1 & Hardware Reset & Mô-đun cắm, BLE config nạp & Gửi MODULE HW RESET & Mô-đun reset đúng, GPIO sequence thực thi, log ``reset ok'' & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Get Info & Mô-đun đang chạy & Gửi AT+GETINFO & Phản hồi FW version, BD\_ADDR đúng format & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Scan BLE devices & Thiết bị BLE ở gần & Gửi \texttt{CFBL:0:}\newline\texttt{AT+SCAN=5000} & Trả về danh sách \texttt{+SCAN:MAC,RSSI,}\newline\texttt{Name} trong 5s & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & Connect & Có thiết bị từ kết quả scan & Gửi \texttt{CFBL:0:}\newline\texttt{AT+CONNECT=}\newline\texttt{<MAC>} & \texttt{+CONNECTED:0} trong vòng timeout & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Discover GATT & Đã connect & Gửi \texttt{CFBL:0:}\newline\texttt{AT+DISC=0} & Trả danh sách \texttt{+CHAR:}\newline\texttt{handle,UUID} đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            6 & Enable Notify & Đã discover, có characteristic notify & Gửi \texttt{CFBL:0:}\newline\texttt{AT+NOTIFY=0,}\newline\texttt{<handle>,1} & Notify enable OK, module gửi +NOTIFY khi có data & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            6 & Enable Notify & Đã discover, có characteristic notify & Gửi \texttt{CFBL:0:}\newline\texttt{AT+NOTIFY=0,}\newline\texttt{<handle>,1} & Notify enable OK, mô-đun gửi +NOTIFY khi có data & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             7 & Write Characteristic & Đã connect, biết handle & Gửi \texttt{CFBL:0:}\newline\texttt{AT+WRITE=0,}\newline\texttt{<handle>,}\newline\texttt{<hex\_payload>} & Thiết bị nhận lệnh và thay đổi trạng thái & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            8 & Disconnect & Đang connected & Gửi \texttt{CFBL:0:}\newline\texttt{AT+DISCONNECT=0} & \texttt{+DISCONNECTED:0}, module sẵn sàng scan lại & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            9 & Response forward & Module trả phản hồi & Các lệnh trên & Response từ UART module được forward lên MQTT/HTTP server & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            8 & Disconnect & Đang connected & Gửi \texttt{CFBL:0:}\newline\texttt{AT+DISCONNECT=0} & \texttt{+DISCONNECTED:0}, mô-đun sẵn sàng scan lại & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            9 & Response forward & Mô-đun trả phản hồi & Các lệnh trên & Response từ UART mô-đun được forward lên MQTT/HTTP server & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
 
         %
@@ -461,8 +461,8 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endfoot
             \endlastfoot
         
-            1 & JSON config LoRa & Module RAK3172 cắm & Gửi CFLR:JSON:0:\newline<json> & Parse OK, UART init, LoRa handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Tham số RF (SF, BW, CR) & JSON config nạp & Nhập tham số trên App và ghi lên gateway & Config lưu NVS và áp dụng trên module & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            1 & JSON config LoRa & Mô-đun RAK3172 cắm & Gửi CFLR:JSON:0:\newline<json> & Parse OK, UART init, LoRa handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Tham số RF (SF, BW, CR) & JSON config nạp & Nhập tham số trên App và ghi lên gateway & Config lưu NVS và áp dụng trên mô-đun & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & Slot TDMA / num\_slots & JSON config nạp & Thay đổi Slot/num\_slots trên App & Node gửi đúng slot, không đụng nhau & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & ID gateway/node & JSON config nạp & Thay đổi ID gateway/node trên App & Lưu vào NVS LAN-MCU & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Send / Receive frame & Hai node LoRa & Gửi frame từ node, gateway nhận & Frame nhận được, RSSI và SNR hợp lệ & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -481,9 +481,9 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \endfoot
             \endlastfoot
         
-            1 & JSON config Zigbee & Module E180-ZG120B cắm & Gửi CFZB:JSON:0:\newline<json> & Parse OK, UART init, Zigbee handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            2 & Coordinator join & Module là coordinator & Khởi động Zigbee network & Network open, thiết bị join được & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            3 & ZCL Basic cluster & Thiết bị Zigbee join & Gửi lệnh read basic attributes & Module trả device info đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            1 & JSON config Zigbee & Mô-đun E180-ZG120B cắm & Gửi CFZB:JSON:0:\newline<json> & Parse OK, UART init, Zigbee handler start & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            2 & Coordinator join & Mô-đun là coordinator & Khởi động Zigbee network & Network open, thiết bị join được & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            3 & ZCL Basic cluster & Thiết bị Zigbee join & Gửi lệnh read basic attributes & Mô-đun trả device info đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & ZCL OnOff cluster & Thiết bị Zigbee join & Gửi CFZB:0:<hex ZCL OnOff> & Thiết bị bật/tắt đúng lệnh & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
         \end{longtable}
         
@@ -521,7 +521,7 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
         
             1 & Trigger FOTA từ server & Gateway online, MQTT connected & Server gửi CFML:CFFW:\newline<url> & WAN nhận, xác định OTA mode, bắt đầu quy trình & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             2 & Trigger FOTA từ Web Portal & Gateway ở STA mode & Tab FW $\rightarrow$ nhập URL $\rightarrow$ Start OTA & WAN bắt đầu download firmware qua HTTP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            3 & LAN-MCU OTA qua WiFi & WiFi AP mode đã khởi động & WAN trigger LAN OTA & LAN tải firmware, flash, reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            3 & LAN-MCU OTA qua Wi-Fi & Wi-Fi AP mode đã khởi động & WAN trigger LAN OTA & LAN tải firmware, flash, reboot & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & WAN-MCU OTA & LAN đã hoàn tất OTA & WAN tự update & WAN download, flash, reboot thành công & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             5 & Hệ thống sau FOTA & Cả hai MCU đã update & Quan sát sau reboot & Cả hai MCU boot đúng image mới, log version mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             6 & Mất mạng giữa chừng & Đang download firmware & Ngắt Internet tạm thời & Quy trình dừng an toàn, không brick firmware & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
@@ -544,16 +544,16 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             2 & Nạp LAN từ WAN & UART + GPIO boot/reset & WAN-MCU hoạt động & Flash OK, LAN reboot chạy image mới & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             3 & SPI uplink & Truyền data + CRC/sequence & LAN/WAN hoạt động & ACK/NACK đúng, retry hoạt động & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             4 & GPIO handshake downlink & WAN push command & Downlink command & LAN nhận đúng, phản hồi OK/FAIL & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            5 & Internet -- WiFi & Connect + reconnect & WiFi configured & Online ổn định, phục hồi sau mất mạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            5 & Internet -- Wi-Fi & Connect + reconnect & Wi-Fi configured & Online ổn định, phục hồi sau mất mạng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             6 & Internet -- LTE & Connect + PPP & LTE modem/SIM & Online ổn định, LAN có IP qua PPP & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            7 & Internet -- Ethernet & Cắm cáp, DHCP & Ethernet module & Lấy IP, online ổn định & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            7 & Internet -- Ethernet & Cắm cáp, DHCP & Ethernet mô-đun & Lấy IP, online ổn định & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             8 & Server -- MQTT & Publish/subscribe & MQTT configured & Telemetry OK; downlink route đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             9 & Server -- HTTP & POST telemetry & HTTP configured & Server nhận payload đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             10 & Server -- CoAP & PUT/Observe & CoAP configured & Telemetry OK; observe notify hoạt động & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             11 & Web Portal AP mode & Captive DNS & AP mode & Trang cấu hình hiện tự động (Android + iOS) & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             12 & Web Portal STA mode & REST API & STA mode & Đọc/ghi config dùng qua browser & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             13 & Module Base Setting & Nạp JSON + prefix match & Config loaded & Config save NVS, command routing đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
-            14 & BLE AT Command & Scan/Connect\newline/Write & BLE module & Module phản hồi đúng, response forward về server & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
+            14 & BLE AT Command & Scan/Connect\newline/Write & BLE mô-đun & Mô-đun phản hồi đúng, response forward về server & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             15 & BLE Mesh Provisioner & Provision + Control & BLE Mesh node & Node provision thành công, control có phản hồi & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             16 & LoRa Handler & Send/Receive frame & LoRa node & Frame truyền nhận đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline
             17 & Zigbee Handler & ZCL command & Zigbee device & Thiết bị phản hồi đúng & \textcolor{modern_blue}{\textbf{Passed}} \\ \hline

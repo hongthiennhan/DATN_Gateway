@@ -37,25 +37,25 @@
             \end{itemize}
 
         \paragraph{Khối Module Adapter:}\par
-            Khối Module Adapter được thiết kế với mục tiêu cho phép người dùng dễ dàng thay thế, nâng cấp hoặc mở rộng các chức năng kết nối của gateway mà không cần thay đổi toàn bộ hệ thống. Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các module, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
+            Khối Module Adapter được thiết kế với mục tiêu cho phép người dùng dễ dàng thay thế, nâng cấp hoặc mở rộng các chức năng kết nối của gateway mà không cần thay đổi toàn bộ hệ thống. Đây là thành phần cho phép tháo lắp và thay thế linh hoạt các mô-đun, được chuẩn hóa kết nối với Baseboard gồm các giao thức: UART, SPI, I2C, USB, và các GPIO.
             \begin{itemize}
                 \item \textbf{WAN Module Adapter}
                 \begin{itemize}
                     \item Kết nối với MASTER WAN-MCU.
-                    \item Hỗ trợ các module giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
+                    \item Hỗ trợ các mô-đun giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
                 \end{itemize}
                 \item \textbf{LAN1 Module Adapter}
                 \begin{itemize}
                     \item Kết nối với SLAVE LAN-MCU.
-                    \item Hỗ trợ kết nối các module kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
+                    \item Hỗ trợ kết nối các mô-đun kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
                 \end{itemize}
                 \item \textbf{LAN2 Module Adapter}
                 \begin{itemize}
                     \item Kết nối với SLAVE LAN-MCU.
-                    \item Hỗ trợ kết nối các module kết nối có dây như RS-485, CAN, \dots
+                    \item Hỗ trợ kết nối các mô-đun kết nối có dây như RS-485, CAN, \dots
                 \end{itemize}
             \end{itemize}
-            Đối với các module sẵn có trên thị trường, giao diện kết nối thường không tuân theo một tiêu chuẩn thống nhất, kể cả với các module sử dụng chuẩn cơ khí như Mini PCIe hay M.2. Vì vậy, việc thiết kế các module adapter là cần thiết để chuẩn hóa kết nối giữa module và baseboard. Trong thiết kế này, cổng chuẩn vật lý PCI Express x1 (36-pin Card Edge Connector) được lựa chọn làm giao diện kết nối giữa module adapter và baseboard. Tuy nhiên, sơ đồ chân trên cổng được định nghĩa lại để phù hợp với kiến trúc phần cứng của hệ thống. Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa theo bảng pinout sau:
+            Đối với các mô-đun sẵn có trên thị trường, giao diện kết nối thường không tuân theo một tiêu chuẩn thống nhất, kể cả với các mô-đun sử dụng chuẩn cơ khí như Mini PCIe hay M.2. Vì vậy, việc thiết kế các Module Adapter là cần thiết để chuẩn hóa kết nối giữa mô-đun và bo mạch chính. Trong thiết kế này, cổng chuẩn vật lý PCI Express x1 (36-pin Card Edge Connector) được lựa chọn làm giao diện kết nối giữa Module Adapter và baseboard. Tuy nhiên, sơ đồ chân trên cổng được định nghĩa lại để phù hợp với kiến trúc phần cứng của hệ thống. Mỗi Module Adapter được thiết kế với các giao diện chuẩn bao gồm UART, SPI, I2C, USB, và GPIO được định nghĩa theo bảng pinout sau:
             \begin{longtable}{|l|l|p{6.5cm}|p{4.5cm}|}
                 \caption{Pinout Module Adapter}
                 \label{tab:new_module_adapter_pinout} \\
@@ -119,13 +119,13 @@
             Nền tảng đám mây cung cấp dịch vụ lưu trữ, phân tích dữ liệu và quản lý tập trung cho hệ thống IoT.
 
         \paragraph{Configuration Tools:}\par
-            Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các module được kết nối.
+            Một chương trình máy tính để cấu hình cho gateway thực hiện những chức năng cho các mô-đun được kết nối.
 
         \paragraph{Luồng dữ liệu:}\par
             \begin{itemize}
                 \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua MASTER WAN-MCU, sau đó được chuyển tiếp đến SLAVE LAN-MCU qua kênh UART chuyên biệt.
                 \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua MASTER WAN-MCU đến SLAVE LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại SLAVE LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua MASTER WAN-MCU lên Cloud Service. Các request và dữ liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
-                \item \textbf{Control Flow:} Luồng tín điều khiển từ MASTER WAN-MCU để điều khiển trạng thái hoạt động của SLAVE LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
+                \item \textbf{Control Flow:} Luồng tín hiệu điều khiển từ MASTER WAN-MCU để điều khiển trạng thái hoạt động của SLAVE LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
             \end{itemize}
 
     
@@ -146,8 +146,8 @@
                 \item \textbf{Quản lý pin LiPo:} Việc lựa chọn IC Battery Fuel Gauge cùng thuật toán Impedance Track\texttrademark\ giúp hệ thống dự báo chính xác dung lượng pin. Khả năng tự động bù trừ sai số do lão hóa và nhiệt độ là yếu tố then chốt để đảm bảo tính ổn định và an toàn năng lượng lâu dài cho thiết bị.
                 \item \textbf{Cổng USB và USB-to-UART Bridge:} Việc tích hợp IC USB to UART Bridge thiết lập cổng COM ảo thực hiện quy trình nạp firmware và cấu hình thiết bị, hỗ trợ gỡ lỗi và giám sát vận hành tin cậy thông qua hệ thống log dữ liệu tập trung.
                 \item \textbf{Quản lý thời gian thực (RTC):} IC RTC dùng pin CR2032 đảm bảo tính liên tục của dữ liệu thời gian, hỗ trợ hiệu quả việc đồng bộ hóa mạng và thực thi các tác vụ theo lịch trình.
-                \item \textbf{Mở rộng GPIO:} Hệ thống sử dụng IC IO Expanders để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và module mở rộng.
-                \item \textbf{Cổng PCIe mở rộng WAN/LAN:} Thiết kế modular với ba khe PCIe (01 WAN, 02 LAN) cho phép tích hợp linh hoạt các chuẩn truyền thông, tối ưu khả năng mở rộng hệ thống cho đa dạng ứng dụng IoT.
+                \item \textbf{Mở rộng GPIO:} Hệ thống sử dụng IC IO Expanders để điều khiển tín hiệu Enable của các khối nguồn, đồng thời quản lý các tín hiệu reset, interrupt, GPIO của các khối ngoại vi và mô-đun mở rộng.
+                \item \textbf{Cổng PCIe mở rộng WAN/LAN:} Thiết kế mô-đun hóa với ba khe PCIe (01 WAN, 02 LAN) cho phép tích hợp linh hoạt các chuẩn truyền thông, tối ưu khả năng mở rộng hệ thống cho đa dạng ứng dụng IoT.
                 \item \textbf{Mở rộng I2C:} IC đệm I2C được tích hợp nhằm giảm ảnh hưởng điện dung trên đường truyền dài, bảo toàn tính toàn vẹn tín hiệu và duy trì sự ổn định cho bus I2C.
                 \item \textbf{Hiển thị trạng thái:} Giao diện HMI TFT cảm ứng hỗ trợ giám sát và cấu hình trực tiếp, giúp vận hành và bảo trì hệ thống tại chỗ.
                 \item \textbf{Nút nhấn:} Ba nút nhấn (Power, Reset, Boot) để điều khiển nguồn và cấu hình thiết bị.
@@ -188,16 +188,16 @@
                 \item \textbf{+3V3\_CTRL:} Là nhánh nguồn từ +3V3 thông qua IC power switch, cho phép điều khiển đóng/ngắt bởi IO expander của MCU master. Rail này cấp cho các khối không cần hoạt động trong chế độ tiết kiệm năng lượng.
                 \item \textbf{+5V\_CTRL:} Được tạo từ +4V2\_VSYS thông qua bộ chuyển đổi DC-DC và có khả năng điều khiển thông qua IO expander, phục vụ các ngoại vi yêu cầu mức điện áp 5V.
             \end{itemize}
-            Đối với các module mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng module, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết. Cách thiết kế này mang lại các ưu điểm sau:
+            Đối với các mô-đun mở rộng kết nối qua adapter, nguồn cấp mặc định là +3V3 hoặc +3V3\_CTRL. Trên mỗi adapter có tích hợp cơ chế điều khiển nguồn riêng cho từng mô-đun, đồng thời hỗ trợ chuyển đổi sang các mức điện áp khác khi cần thiết. Cách thiết kế này mang lại các ưu điểm sau:
             \begin{itemize}
-                \item Cho phép chủ động bật/tắt nguồn từng module LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
+                \item Cho phép chủ động bật/tắt nguồn từng mô-đun LAN/WAN tùy theo cấu hình và kịch bản sử dụng.
                 \item Hỗ trợ cô lập nhanh và ngắt nguồn khi phát hiện sự cố từ các thiết bị ngoại vi.
                 \item Giảm tiêu thụ năng lượng trong các chế độ hoạt động tiết kiệm năng lượng.
                 \item Đơn giản hóa thiết kế phần cứng của baseboard bằng cách chuyển các thành phần đặc thù lên adapter, qua đó tối ưu chi phí.
             \end{itemize}
 
         \paragraph{Sơ đồ khối phần cứng Mạch adapter:}\par
-            Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các module mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện module, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
+            Mạch adapter chuẩn hóa kết nối giữa bo mạch chủ và các mô-đun mạng thông qua đầu nối vật lý PCI Express x1 với sơ đồ chân thống nhất cho các giao tiếp USB, UART, SPI và I²C. Sự tích hợp IC IO Expander trên mỗi adapter cho phép vi điều khiển chủ động quản lý nguồn và truy xuất mã định danh phần cứng (Device ID) 4-bit. Cơ chế này hỗ trợ cho việc tự động nhận diện mô-đun, giúp hệ thống tự cấu hình tập lệnh tương ứng, từ đó tối ưu hóa tính linh hoạt và đơn giản hóa quy trình tích hợp thiết bị.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/BlockDiagram_Ver1.1_ModularIoTGateway-Adapter Diagram.jpg}

@@ -19,7 +19,7 @@
     %         \end{minipage}
     %     \end{figure}
         
-    %     Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
+    %     Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính mô-đun hóa cho các giao thức mở rộng.
 
     %     Trong đó, LAN-MCU đóng vai trò điều phối lớp dưới, trực tiếp quản lý các kết nối nội bộ như LoRa, Zigbee, BLE và RS-485. Nhiệm vụ trọng tâm của LAN-MCU là thu thập, kiểm chứng và chuẩn hóa dữ liệu thô từ sensor trước khi đẩy lên kênh truyền thông nội bộ.
         
@@ -35,7 +35,7 @@
     %     \begin{itemize}
     %         \item \textbf{Quản lý đa phương thức kết nối Internet:} Thiết lập và duy trì đường truyền qua Wi-Fi (Personal/Enterprise), LTE (giao thức USB) và Ethernet. Hệ thống tích hợp cơ chế tự động khôi phục kết nối (Auto-reconnect) và đồng bộ thời gian thực (SNTP/RTC) để đảm bảo tính thống nhất cho timestamp dữ liệu.
         
-    %         \item \textbf{Cơ chế Internet Fallback:} Hệ thống tự động chuyển đổi nguồn Internet dựa trên độ ưu tiên vật lý (Ethernet $>$ Wi-Fi $>$ LTE). Khi phát hiện module LTE hoặc Ethernet được kết nối, WAN-MCU chủ động kiểm tra trạng thái link để thay đổi kênh truyền ưu tiên, đồng thời tự động tái kết nối kênh dự phòng khi có sự cố, đảm bảo duy trì luồng dữ liệu Cloud liên tục.
+    %         \item \textbf{Cơ chế Internet Fallback:} Hệ thống tự động chuyển đổi nguồn Internet dựa trên độ ưu tiên vật lý (Ethernet $>$ Wi-Fi $>$ LTE). Khi phát hiện mô-đun LTE hoặc Ethernet được kết nối, WAN-MCU chủ động kiểm tra trạng thái link để thay đổi kênh truyền ưu tiên, đồng thời tự động tái kết nối kênh dự phòng khi có sự cố, đảm bảo duy trì luồng dữ liệu Cloud liên tục.
         
     %         \item \textbf{Điều phối giao tiếp Cloud:} Đảm nhiệm vai trò Gateway chính để xuất bản dữ liệu lên Server và tiếp nhận lệnh điều khiển ngược lại hệ thống.
         
@@ -107,23 +107,23 @@
     %         \end{minipage}
     %     \end{figure}
 
-    % \subsection{Hệ thống cấu hình Module dựa trên JSON (Module Base Setting)}
+    % \subsection{Hệ thống cấu hình mô-đun dựa trên JSON (Module Base Setting)}
 
-    %     Trong kiến trúc ban đầu của gateway, loại module RF gắn vào từng khe phần cứng được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của module -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO cho reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại module mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên module có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
+    %     Trong kiến trúc ban đầu của gateway, loại mô-đun RF gắn vào từng khe phần cứng được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của mô-đun -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO cho reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại mô-đun mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên mô-đun có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
 
-    %     Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh tám module BLE phổ biến trên thị trường. Phân tích cho thấy một điều nghịch lý: gần như hầu hết chức năng là giống nhau giữa tất cả các module -- đặt tên thiết bị, quét thiết bị lân cận, kết nối, ngắt kết nối, reset phần mềm, reset phần cứng -- nhưng cú pháp lệnh lại khác hoàn toàn. Ví dụ, chức năng đặt tên thiết bị được gọi bằng \texttt{AT+NAME=} trên HC-05, \texttt{AT+BLENAME=} trên module ESP32, và \texttt{AT+GAPDEVNAME=} trên nRF52. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
+    %     Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh tám mô-đun BLE phổ biến trên thị trường. Phân tích cho thấy một điều nghịch lý: gần như hầu hết chức năng là giống nhau giữa tất cả các mô-đun -- đặt tên thiết bị, quét thiết bị lân cận, kết nối, ngắt kết nối, reset phần mềm, reset phần cứng -- nhưng cú pháp lệnh lại khác hoàn toàn. Ví dụ, chức năng đặt tên thiết bị được gọi bằng \texttt{AT+NAME=} trên HC-05, \texttt{AT+BLENAME=} trên mô-đun ESP32, và \texttt{AT+GAPDEVNAME=} trên nRF52. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
 
     %     \paragraph{Ý tưởng triển khai}
 
-    %     Thay vì hard-code thông tin của từng loại module vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của module ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành module đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả chức năng module hỗ trợ. Mỗi chức năng trong danh sách được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
+    %     Thay vì hard-code thông tin của từng loại mô-đun vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của mô-đun ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành mô-đun đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả chức năng mô-đun hỗ trợ. Mỗi chức năng trong danh sách được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
         
-    %     Ví dụ khi sử dụng module cho BLE, bằng cách này, firmware không còn quan tâm đến việc module đang dùng là STM32WB55 hay nRF52840 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_SCAN}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo chính xác những gì JSON mô tả. Toàn bộ logic đặc thù của module nằm trong file JSON, không nằm trong firmware. Thay đổi module đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
+    %     Ví dụ khi sử dụng mô-đun cho BLE, bằng cách này, firmware không còn quan tâm đến việc mô-đun đang dùng là STM32WB55 hay nRF52840 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_SCAN}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo chính xác những gì JSON mô tả. Toàn bộ logic đặc thù của mô-đun nằm trong file JSON, không nằm trong firmware. Thay đổi mô-đun đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
         
-    %     Ba file cấu hình preset đã được chuẩn bị cho giai đoạn kiểm thử: Zigbee E180-ZG120B, BLE STM32WB55 và LoRa Wio-E5. Một file ánh xạ \texttt{stack\_id\_map.json} liên kết định danh khe phần cứng với preset module tương ứng.
+    %     Ba file cấu hình preset đã được chuẩn bị cho giai đoạn kiểm thử: Zigbee E180-ZG120B, BLE STM32WB55 và LoRa Wio-E5. Một file ánh xạ \texttt{stack\_id\_map.json} liên kết định danh khe phần cứng với preset mô-đun tương ứng.
 
     %     \paragraph{Luồng hoạt động}
 
-    %     Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình module và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển module.
+    %     Hệ thống hoạt động theo hai giai đoạn tách biệt: giai đoạn nạp cấu hình mô-đun và giai đoạn thực thi lệnh điều khiển. Hình dưới đây mô tả toàn bộ luồng từ khi ứng dụng PC hoặc server gửi JSON config đến khi gateway sẵn sàng thực thi lệnh điều khiển mô-đun.
 
     %     \begin{figure}[H]
     %         \centering
@@ -134,9 +134,9 @@
 
     %     \paragraph{Kịch bản hoạt động}
 
-    %     Về kịch bản vận hành, khi có yêu cầu từ người dùng, lệnh điều khiển được truyền xuống WAN-MCU và chuyển tiếp sang LAN-MCU. Tại đây, LAN-MCU phân tích tiền tố để nhận diện chức năng và tra cứu khuôn mẫu (\textit{template}) trong file JSON cấu hình. Nếu là lệnh tĩnh, hệ thống trích xuất trực tiếp chuỗi lệnh thô. Nếu là lệnh động, LAN-MCU sẽ tự động ghép nối tham số từ Server vào khuôn mẫu lệnh. Sau cùng, LAN-MCU kích hoạt trình tự điều khiển GPIO nếu được yêu cầu trong JSON, đẩy lệnh hoàn chỉnh xuống module vật lý và gửi phản hồi trạng thái ngược lên Server.
+    %     Về kịch bản vận hành, khi có yêu cầu từ người dùng, lệnh điều khiển được truyền xuống WAN-MCU và chuyển tiếp sang LAN-MCU. Tại đây, LAN-MCU phân tích tiền tố để nhận diện chức năng và tra cứu khuôn mẫu (\textit{template}) trong file JSON cấu hình. Nếu là lệnh tĩnh, hệ thống trích xuất trực tiếp chuỗi lệnh thô. Nếu là lệnh động, LAN-MCU sẽ tự động ghép nối tham số từ Server vào khuôn mẫu lệnh. Sau cùng, LAN-MCU kích hoạt trình tự điều khiển GPIO nếu được yêu cầu trong JSON, đẩy lệnh hoàn chỉnh xuống mô-đun vật lý và gửi phản hồi trạng thái ngược lên Server.
 
-    %     Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các module phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
+    %     Cơ chế linh hoạt này biến Gateway thành một bộ dịch giao thức thông minh. Nó không chỉ giảm tải cho Server khi không cần quản lý các chuỗi lệnh thô phức tạp, mà còn cho phép hệ thống tương thích với các mô-đun phần cứng mới chỉ bằng cách cập nhật file JSON cấu hình mà không cần can thiệp vào mã nguồn.
 
     %     \begin{figure}[H]
     %         \centering
@@ -204,10 +204,10 @@
     %                 \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ App Config PC}
     %                 Cơ chế cấu hình từ ứng dụng PC cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
     %                 \begin{itemize}
-    %                     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+    %                     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (Wi-Fi, LTE, Ethernet).
     %                     \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
     %                     \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
-    %                     \item Cấu hình file JSON cho từng module cắm vào LAN.
+    %                     \item Cấu hình file JSON cho từng mô-đun cắm vào LAN.
     %                 \end{itemize}
     %                 Quy trình cập nhật cấu hình gồm 3 thành phần chính: App PC $\rightarrow$ WAN-MCU $\rightarrow$ LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
     %             \end{minipage}
@@ -226,10 +226,10 @@
     %                 \paragraph{Cơ chế cập nhật cấu hình cho Gateway từ Web Config Portal}
     %                 Cơ chế cấu hình từ Web Config Portal cho phép thay đổi tham số mà không cần sửa firmware, trực tiếp tác động đến pipeline dữ liệu như:
     %                 \begin{itemize}
-    %                     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (WiFi, LTE, Ethernet).
+    %                     \item Thông số MQTT/HTTP/CoAP, lựa chọn kênh Internet (Wi-Fi, LTE, Ethernet).
     %                     \item Bật/tắt luồng downlink hoặc định tuyến lệnh.
     %                     \item Các tham số giao tiếp thuộc LAN, cần chuyển tiếp sang LAN-MCU.
-    %                     \item Cấu hình file JSON cho từng module cắm vào LAN.
+    %                     \item Cấu hình file JSON cho từng mô-đun cắm vào LAN.
     %                 \end{itemize}
     %                 Quy trình cập nhật cấu hình gồm 3 thành phần chính: Web Browser, WAN-MCU, LAN-MCU tùy trường hợp. WAN-MCU đóng vai trò ``router cấu hình'': nếu cấu hình thuộc WAN thì tự lưu và áp dụng; nếu thuộc LAN thì forward qua SPI và nhận ACK/FAIL từ LAN-MCU.
     %             \end{minipage}
@@ -246,7 +246,7 @@
 
     \subsection{Kiến trúc phần mềm}
  
-        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính module hóa cho các giao thức mở rộng.
+        Phần mềm được xây dựng trên nền tảng FreeRTOS với cấu trúc phân lớp chuẩn hóa gồm Application, Middleware, BSP và Driver. Kiến trúc này tách hệ thống thành hai miền xử lý độc lập theo mô hình Dual-MCU Master--Slave, vừa tối ưu tài nguyên vừa đảm bảo tính mô-đun hóa cho các giao thức mở rộng.
         
         Trong đó, LAN-MCU đóng vai trò điều phối lớp dưới, trực tiếp quản lý các kết nối nội bộ như LoRa, Zigbee, BLE và RS-485. Nhiệm vụ trọng tâm của LAN-MCU là thu thập, kiểm chứng và chuẩn hóa dữ liệu thô từ sensor trước khi đẩy lên kênh truyền thông nội bộ.
         
@@ -267,16 +267,16 @@
                 \caption{Kiến trúc phân lớp firmware WAN-MCU (DA2\_esp)}
                 \label{tab:wan_mcu_arch} \\
                 \hline
-                \textbf{Tầng} & \textbf{Module} & \textbf{Chức năng chính} \\ \hline
+                \textbf{Tầng} & \textbf{Mô-đun} & \textbf{Chức năng chính} \\ \hline
                 \endfirsthead
                 \hline
-                \textbf{Tầng} & \textbf{Module} & \textbf{Chức năng chính} \\ \hline
+                \textbf{Tầng} & \textbf{Mô-đun} & \textbf{Chức năng chính} \\ \hline
                 \endhead
                 Application & Config Handler & Phân tích mã lệnh cấu hình và áp dụng/định tuyến cấu hình giữa WAN-MCU và LAN-MCU \\ \hline
                 Application & Data Communication Handler & Xử lý luồng cấu hình qua UART từ PC App \\ \hline
                 Application & FOTA Handler & Điều phối cập nhật firmware cho hệ thống Dual-MCU \\ \hline
                 Application & HMI Task & Cập nhật hiển thị trạng thái hệ thống trên HMI \\ \hline
-                Application & Internet Communication Handler -- WiFi Handler & Quản lý kết nối WiFi, reconnect và tích hợp failover \\ \hline
+                Application & Internet Communication Handler -- Wi-Fi Handler & Quản lý kết nối Wi-Fi, reconnect và tích hợp failover \\ \hline
                 Application & Internet Communication Handler -- LTE Handler & Quản lý kết nối LTE và trạng thái modem WAN \\ \hline
                 Application & Internet Communication Handler -- Ethernet Handler & Quản lý kết nối Ethernet (W5500/ETH path) \\ \hline
                 Application & Internet Monitor Handler & Giám sát kết nối Internet runtime và trigger fallback/restore \\ \hline
@@ -290,7 +290,7 @@
                 Middleware & LTE middleware handler & Trừu tượng hóa thao tác modem LTE và phiên dữ liệu LTE cho tầng app \\ \hline
                 Middleware & HMI display middleware & Trừu tượng hóa render/update dữ liệu hiển thị HMI \\ \hline
                 Middleware & FreeRTOS primitives & Queue, semaphore, task scheduling và đồng bộ đa tác vụ \\ \hline
-                Middleware & Network/protocol stacks (MQTT/HTTP/CoAP, WiFi/LTE/ETH, NVS) & Cung cấp stack mạng/giao thức và lưu cấu hình cho tầng ứng dụng \\ \hline
+                Middleware & Network/protocol stacks (MQTT/HTTP/CoAP, Wi-Fi/LTE/ETH, NVS) & Cung cấp stack mạng/giao thức và lưu cấu hình cho tầng ứng dụng \\ \hline
                 BSP & Modem communication -- BG96 communication & Giao tiếp và điều khiển modem BG96 \\ \hline
                 BSP & Modem communication -- SIM7600 communication & Giao tiếp và điều khiển modem SIM7600 \\ \hline
                 BSP & Modem communication -- ESP modem qua UART & Kênh modem dựa trên UART \\ \hline
@@ -300,7 +300,7 @@
                 BSP & I2C device support BSP & BSP hỗ trợ thiết bị ngoại vi I2C \\ \hline
                 BSP & Stack handler BSP & BSP quản lý stack phần cứng và khởi tạo liên quan \\ \hline
                 Driver/HAL & ESP32-S3 peripheral drivers & GPIO, UART, SPI, I2C, USB \\ \hline
-                Driver/HAL & ESP-IDF network interface runtime & WiFi, Ethernet stack, modem netif \\ \hline
+                Driver/HAL & ESP-IDF network interface runtime & Wi-Fi, Ethernet stack, modem netif \\ \hline
             \end{longtable}
         
         \subsubsection{Kiến trúc phân lớp LAN-MCU}
@@ -316,12 +316,12 @@
                 \caption{Kiến trúc phân lớp firmware LAN-MCU (DA2\_esp\_LAN)}
                 \label{tab:lan_mcu_arch} \\
                 \hline
-                \textbf{Tầng} & \textbf{Module} & \textbf{Chức năng chính} \\ \hline
+                \textbf{Tầng} & \textbf{Mô-đun} & \textbf{Chức năng chính} \\ \hline
                 \endfirsthead
                 \hline
-                \textbf{Tầng} & \textbf{Module} & \textbf{Chức năng chính} \\ \hline
+                \textbf{Tầng} & \textbf{Mô-đun} & \textbf{Chức năng chính} \\ \hline
                 \endhead
-                Application & Config Handler & Phân tích cấu hình module và áp dụng theo profile runtime \\ \hline
+                Application & Config Handler & Phân tích cấu hình mô-đun và áp dụng theo profile runtime \\ \hline
                 Application & MCU WAN Handler -- Uplink Task/Path & Đóng gói và gửi dữ liệu từ LAN-MCU lên WAN-MCU qua SPI master \\ \hline
                 Application & MCU WAN Handler -- Downlink Task/Path & Nhận lệnh từ WAN-MCU và dispatch đến handler đích \\ \hline
                 Application & BLE Handler app -- BLE GATT Path & Xử lý luồng BLE GATT (scan/connect/read/write/notify) \\ \hline
@@ -329,20 +329,20 @@
                 Application & LoRa Handler app & Thu thập và xử lý dữ liệu LoRa P2P \\ \hline
                 Application & Zigbee Handler app & Thu thập và xử lý dữ liệu Zigbee \\ \hline
                 Application & RS485 Handler app & Giao tiếp và xử lý dữ liệu RS485/Modbus RTU \\ \hline
-                Application & Module Monitor Task & Theo dõi trạng thái module và quản lý vòng đời handler \\ \hline
+                Application & Module Monitor Task & Theo dõi trạng thái mô-đun và quản lý vòng đời handler \\ \hline
                 Application & FOTA LAN Handler & Tự cập nhật firmware LAN-MCU theo điều phối từ WAN-MCU \\ \hline
-                Application & Benchmark task/module & Đo kiểm hiệu năng/throughput theo kịch bản test \\ \hline
+                Application & Benchmark task/mô-đun & Đo kiểm hiệu năng/throughput theo kịch bản test \\ \hline
                 Middleware & BLE middleware handler & Thành phần trung gian cho luồng BLE handler \\ \hline
                 Middleware & LoRa middleware handler & Thành phần trung gian cho luồng LoRa handler \\ \hline
                 Middleware & Zigbee middleware handler & Thành phần trung gian cho luồng Zigbee handler \\ \hline
-                Middleware & JSON Config Parser & Phân tích cú pháp preset JSON module \\ \hline
+                Middleware & JSON Config Parser & Phân tích cú pháp preset JSON mô-đun \\ \hline
                 Middleware & Module Config Controller & Ánh xạ lệnh/chức năng sang handler và template lệnh \\ \hline
                 Middleware & Storage Handler & Lưu/đọc dữ liệu đệm và cấu hình runtime \\ \hline
                 BSP & MCU WAN Communication BSP (SPI master side) & BSP cho giao tiếp inter-MCU phía LAN master \\ \hline
-                BSP & Module communication BSP -- UART communication & BSP giao tiếp module qua UART \\ \hline
-                BSP & Module communication BSP -- SPI communication & BSP giao tiếp module qua SPI \\ \hline
-                BSP & Module communication BSP -- I2C communication & BSP giao tiếp module qua I2C \\ \hline
-                BSP & Module communication BSP -- USB communication & BSP giao tiếp module qua USB \\ \hline
+                BSP & Module communication BSP -- UART communication & BSP giao tiếp mô-đun qua UART \\ \hline
+                BSP & Module communication BSP -- SPI communication & BSP giao tiếp mô-đun qua SPI \\ \hline
+                BSP & Module communication BSP -- I2C communication & BSP giao tiếp mô-đun qua I2C \\ \hline
+                BSP & Module communication BSP -- USB communication & BSP giao tiếp mô-đun qua USB \\ \hline
                 BSP & RS485 communication BSP & BSP điều khiển transceiver RS485 \\ \hline
                 BSP & SDCard communication BSP & BSP truy cập lưu trữ SDCard/SDIO \\ \hline
                 BSP & Stack handler BSP & BSP quản lý stack phần cứng và khởi tạo liên quan \\ \hline
@@ -365,13 +365,13 @@
                 \textbf{Task} & \textbf{Ưu tiên} & \textbf{Vai trò} & \textbf{Cơ chế kích hoạt} \\ \hline
                 \endhead
                 MCU LAN Uplink Task & 6 & Nhận dữ liệu từ LAN qua SPI Slave, đưa vào uplink queue & RTOS enqueue \\ \hline
-                MCU LAN Downlink Path & Không tách task riêng & Downlink xử lý theo luồng queue + GPIO handshake trong module MCU LAN Handler & Event-driven \\ \hline
+                MCU LAN Downlink Path & Không tách task riêng & Downlink xử lý theo luồng queue + GPIO handshake trong mô-đun MCU LAN Handler & Event-driven \\ \hline
                 MQTT Publish / Config Task & 5 & Publish telemetry và xử lý cấu hình MQTT & Sự kiện MQTT \\ \hline
                 HTTP Publish Task / HTTP Polling Task & 5 / 4 & Gửi dữ liệu HTTP và polling RPC & HTTP request / timer \\ \hline
                 CoAP Publish Task / CoAP Polling Task & 5 / 4 & Gửi dữ liệu CoAP và polling / observe & CoAP request / timer \\ \hline
                 Config Handler Task & 5 & Xử lý lệnh cấu hình, cập nhật NVS / runtime & Queue lệnh cấu hình \\ \hline
                 Data Communication Task & 5 & Nhận cấu hình từ UART (PC App) & UART / USB event \\ \hline
-                Internet Monitor Task & 3 & Giám sát kết nối primary / fallback và trigger chuyển kênh & Probe TCP định kỳ \\ \hline
+                Internet Monitor Task & 3 & Giám sát kết nối primary / fallback và kích hoạt chuyển kênh & Probe TCP định kỳ \\ \hline
                 Captive DNS Task (Web Config) & 5 & Hỗ trợ captive portal cho Web Config & DNS request \\ \hline
                 FOTA Task & 5 (khi kích hoạt) & Chạy OTA khi có lệnh FOTA & Trigger theo sự kiện \\ \hline
                 \end{longtable}
@@ -391,7 +391,7 @@
                 LoRa Downlink / Uplink / Listener & 6 / 5 / 4 & Thực thi lệnh, chuyển phản hồi, lắng nghe sự kiện LoRa & Queue + COM Event \\ \hline
                 BLE Downlink / Uplink / Listener & 6 / 5 / 4 & Thực thi lệnh, chuyển phản hồi, lắng nghe sự kiện BLE & Queue + BLE / COM Event \\ \hline
                 RS-485 Handler Task & 5 & Giao tiếp Modbus RTU, xử lý uplink / downlink RS-485 & Queue + COM Event \\ \hline
-                Module Monitor Task & 3 & Quản lý vòng đời module theo JSON / NVS (start/stop handler) & Queue cấu hình \\ \hline
+                Module Monitor Task & 3 & Quản lý vòng đời mô-đun theo JSON / NVS (start/stop handler) & Queue cấu hình \\ \hline
                 FOTA LAN Task & Theo sự kiện & Chạy khi nhận lệnh FOTA để tự cập nhật firmware LAN & Trigger từ WAN-MCU \\ \hline
             \end{longtable}
         
@@ -492,7 +492,7 @@
                     \endhead
                     LTE & Wi-Fi & \texttt{IN:LTE[:fallback \newline \_enable[:fallback\_type]]} \\ \hline
                     Ethernet & Wi-Fi & \texttt{IN:ETHERNET[:fallback \newline \_enable[:fallback\_type]]} \\ \hline
-                    Wi-Fi & LTE / Ethernet (tùy module hiện có) & \texttt{IN:WIFI[:fallback \newline \_enable[:fallback\_type]]} \\ \hline
+                    Wi-Fi & LTE / Ethernet (tùy mô-đun hiện có) & \texttt{IN:WIFI[:fallback \newline \_enable[:fallback\_type]]} \\ \hline
                 \end{longtable}
         
         \subsubsection{Config Handler -- Bảng mã lệnh cấu hình}
@@ -533,13 +533,13 @@
                 \texttt{CFFU} & FOTA LAN URL & Lưu URL firmware LAN vào NVS, chưa kích hoạt OTA \\ \hline
                 \texttt{CFRS:JSON} & RS-485 & Nạp cấu hình GPIO chế độ Send/Receive cho RS-485 từ JSON preset \\ \hline
                 \texttt{CFRS:BR} & RS-485 & Cập nhật baud rate (9600 / 19200 / 38400 / 57600 / 115200) \\ \hline
-                \texttt{CFRS:<stack>:DATA} & RS-485 & Gửi dữ liệu thô (Modbus RTU frame) xuống module RS-485 \\ \hline
-                \texttt{CFBL:JSON} & BLE (legacy AT) & Nạp JSON preset cho module BLE điều khiển qua AT command \\ \hline
-                \texttt{CFBL:<stack>} & BLE (legacy AT) & Thực thi lệnh chuẩn hóa trên module BLE theo JSON preset đã nạp \\ \hline
-                \texttt{CFLR:JSON} & LoRa & Nạp JSON preset cấu hình radio cho module LoRa \\ \hline
-                \texttt{CFLR:<stack>} & LoRa & Thực thi lệnh chuẩn hóa trên module LoRa theo JSON preset đã nạp \\ \hline
-                \texttt{CFZB:JSON} & Zigbee & Nạp JSON preset cấu hình mạng cho module Zigbee \\ \hline
-                \texttt{CFZB:<stack>} & Zigbee & Thực thi lệnh chuẩn hóa trên module Zigbee theo JSON preset đã nạp \\ \hline
+                \texttt{CFRS:<stack>:DATA} & RS-485 & Gửi dữ liệu thô (Modbus RTU frame) xuống mô-đun RS-485 \\ \hline
+                \texttt{CFBL:JSON} & BLE (legacy AT) & Nạp JSON preset cho mô-đun BLE điều khiển qua AT command \\ \hline
+                \texttt{CFBL:<stack>} & BLE (legacy AT) & Thực thi lệnh chuẩn hóa trên mô-đun BLE theo JSON preset đã nạp \\ \hline
+                \texttt{CFLR:JSON} & LoRa & Nạp JSON preset cấu hình radio cho mô-đun LoRa \\ \hline
+                \texttt{CFLR:<stack>} & LoRa & Thực thi lệnh chuẩn hóa trên mô-đun LoRa theo JSON preset đã nạp \\ \hline
+                \texttt{CFZB:JSON} & Zigbee & Nạp JSON preset cấu hình mạng cho mô-đun Zigbee \\ \hline
+                \texttt{CFZB:<stack>} & Zigbee & Thực thi lệnh chuẩn hóa trên mô-đun Zigbee theo JSON preset đã nạp \\ \hline
                 \texttt{CFBN:JSON} \textit{(chưa hỗ trợ)} & BLE Native (Mesh) & Nạp JSON preset cho BLE Mesh -- chưa hỗ trợ trong phiên bản hiện tại \\ \hline
                 \texttt{CFBN:<stack>} \textit{(chưa hỗ trợ)} & BLE Native (Mesh) & Thực thi lệnh BLE Mesh -- chưa hỗ trợ trong phiên bản hiện tại \\ \hline
                 \texttt{CFBG:JSON} & BLE GATT Central & Nạp JSON preset cấu hình cho BLE GATT Central theo slot \\ \hline
@@ -589,7 +589,7 @@
                     \hline
                     \textbf{Tình huống lỗi} & \textbf{Hành vi hệ thống} & \textbf{Kết quả} \\ \hline
                     \endhead
-                    Mất kết nối khi tải firmware & Dừng OTA, retry sau timeout & Giữ nguyên firmware cũ \\ \hline
+                    Mất kết nối khi tải firmware & Dừng OTA, thử lại sau timeout & Giữ nguyên firmware cũ \\ \hline
                     Checksum sai sau khi tải & Hủy partition mới, không cập nhật boot pointer & Giữ nguyên firmware cũ \\ \hline
                     Mất nguồn giữa quá trình ghi & Partition chưa hoàn tất không được đánh dấu hợp lệ & Boot lại bằng firmware cũ \\ \hline
                     LAN FOTA thành công, WAN FOTA thất bại & WAN rollback về firmware cũ; LAN đã cập nhật & Cần FOTA lại WAN ở lần sau \\ \hline
@@ -615,16 +615,16 @@
             %     Scalability & Kiến trúc phân lớp Layered; handler mới thêm ở tầng Application không ảnh hưởng BSP/Driver & Đã thêm thành công RS-485 handler mà không sửa tầng Driver & Cần kiểm thử giới hạn số handler đồng thời trên LAN-MCU dưới áp tải cao \\ \hline
             % \end{longtable}
     
-    \subsection{Hệ thống cấu hình Module dựa trên JSON (Module Base Setting)}
+    \subsection{Hệ thống cấu hình mô-đun dựa trên JSON (Module Base Setting)}
         
         \subsubsection{Vấn đề đặt ra -- Bất đồng nhất cú pháp AT Command}
         
-        Trong kiến trúc ban đầu của gateway, loại module RF gắn vào từng vị trí lắp module được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của module -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO để reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại module mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên module có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
+        Trong kiến trúc ban đầu của gateway, loại mô-đun RF gắn vào từng vị trí lắp mô-đun được coi là cố định tại thời điểm biên dịch. Toàn bộ thông tin đặc thù của mô-đun -- cú pháp lệnh AT, chuỗi điều khiển chân GPIO để reset phần cứng, kiểu giao tiếp và cấu hình tương ứng -- được viết trực tiếp vào mã nguồn firmware. Điều này đặt ra một giới hạn căn bản: mỗi khi hệ thống cần chuyển sang loại mô-đun mới, bất kể lý do là thay thế phần cứng hay nâng cấp lên mô-đun có tính năng cao hơn, đội kỹ thuật phải sửa firmware, biên dịch lại và nạp lại cho toàn bộ thiết bị đã triển khai.
         
-        Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh các module Zigbee phổ biến trên thị trường. Phân tích cho thấy một điểm bất đồng nhất đáng chú ý: hầu hết các chức năng là giống nhau giữa tất cả các module -- tạo mạng, mở kết nối, gửi lệnh ZCL, reset phần mềm, reset phần cứng\cite{zigbee_spec_r21} -- nhưng cú pháp lệnh lại khác hoàn toàn giữa các nhà sản xuất. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
+        Vấn đề này trở nên rõ ràng hơn khi tiến hành phân tích so sánh các mô-đun Zigbee phổ biến trên thị trường. Phân tích cho thấy một điểm bất đồng nhất đáng chú ý: hầu hết các chức năng là giống nhau giữa tất cả các mô-đun -- tạo mạng, mở kết nối, gửi lệnh ZCL, reset phần mềm, reset phần cứng\cite{zigbee_spec_r21} -- nhưng cú pháp lệnh lại khác hoàn toàn giữa các nhà sản xuất. Việc chuẩn hóa theo lệnh là không khả thi; nhưng chuẩn hóa theo tên chức năng thì hoàn toàn có thể thực hiện, và đây chính là nền tảng của hệ thống Module Base Setting.
         
         \begin{longtable}{|p{0.14\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|p{0.18\textwidth}|}
-            \caption{So sánh cú pháp AT Command giữa các module Zigbee}
+            \caption{So sánh cú pháp AT Command giữa các mô-đun Zigbee}
             \label{tab:zigbee_at} \\
             \hline
             \textbf{Chức năng} & \textbf{E18 (Ebyte)} & \textbf{CC2530 (TI)} & \textbf{XBee ZB (Digi)} & \textbf{MT7688 + ZB} \\ \hline
@@ -646,9 +646,9 @@
         
         \subsubsection{Giải pháp -- Cấu hình hóa thông qua JSON Preset}
         
-        Thay vì hard-code thông tin của từng loại module vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của module ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành module đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả các chức năng module hỗ trợ -- mỗi chức năng được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
+        Thay vì hard-code thông tin của từng loại mô-đun vào firmware, hệ thống Module Base Setting đưa toàn bộ kiến thức đặc thù của mô-đun ra ngoài firmware dưới dạng một file cấu hình JSON có thể cập nhật tại runtime. File JSON mô tả đầy đủ mọi điều firmware cần để vận hành mô-đun đó: loại giao tiếp vật lý và các tham số kèm theo, cùng danh sách tất cả các chức năng mô-đun hỗ trợ -- mỗi chức năng được định nghĩa bởi một tên chuẩn hóa dùng làm khóa tra cứu, một template lệnh AT với placeholder cho tham số động, chuỗi điều khiển GPIO cần thực hiện trước và sau khi gửi lệnh, và giá trị timeout chờ phản hồi.
         
-        Ví dụ khi sử dụng module Zigbee, firmware không còn quan tâm đến việc module đang dùng là E180-ZG120B hay CC2530 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_START\_NETWORK}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo đúng những gì JSON mô tả. Toàn bộ logic đặc thù của module nằm trong file JSON, không nằm trong firmware. Thay đổi module đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
+        Ví dụ khi sử dụng mô-đun Zigbee, firmware không còn quan tâm đến việc mô-đun đang dùng là E180-ZG120B hay CC2530 -- nó chỉ biết rằng khi cần thực hiện chức năng \texttt{MODULE\_START\_NETWORK}, nó sẽ tra cứu tên này trong cấu hình đã nạp và thực thi theo đúng những gì JSON mô tả. Toàn bộ logic đặc thù của mô-đun nằm trong file JSON, không nằm trong firmware. Thay đổi mô-đun đồng nghĩa với gửi một file JSON mới, không phải biên dịch lại firmware.
         
         \begin{figure}[H]
             \centering
@@ -666,7 +666,7 @@
             \hline
             \textbf{Trường JSON} & \textbf{Cấp} & \textbf{Nội dung} & \textbf{Ví dụ giá trị} \\ \hline
             \endhead
-            \texttt{comm\_type} & Root & Loại giao tiếp vật lý với module & \texttt{"UART"}, \texttt{"SPI"}, \texttt{"I2C"}, \texttt{"USB"} \\ \hline
+            \texttt{comm\_type} & Root & Loại giao tiếp vật lý với mô-đun & \texttt{"UART"}, \texttt{"SPI"}, \texttt{"I2C"}, \texttt{"USB"} \\ \hline
             \texttt{functions} & Root & Mảng các chức năng được hỗ trợ & \texttt{[...]} \\ \hline
             \texttt{functions[i].} \newline \texttt{name} & Phần tử & Tên chức năng chuẩn hóa (firmware dùng tên này) & \texttt{"MODULE\_SCAN"}, \texttt{"MODULE\_CONNECT"} \\ \hline
             \texttt{functions[i].} \newline \texttt{cmd\_template} & Phần tử & Chuỗi AT với placeholder tham số & \texttt{"AT+BLESCAN=} \newline \texttt{\{duration\}"} \\ \hline
@@ -677,7 +677,7 @@
         
         \subsubsection{Luồng hoạt động Module Base Setting}
         
-        Hoạt động của hệ thống MBS chia làm hai giai đoạn chính: \textbf{Nạp cấu hình} (provisioning file JSON từ PC/Server vào LAN-MCU) và \textbf{Thực thi lệnh} (Server gửi lệnh $\to$ LAN-MCU tra cứu JSON $\to$ gửi AT xuống module).
+        Hoạt động của hệ thống MBS chia làm hai giai đoạn chính: \textbf{Nạp cấu hình} (provisioning file JSON từ PC/Server vào LAN-MCU) và \textbf{Thực thi lệnh} (Server gửi lệnh $\to$ LAN-MCU tra cứu JSON $\to$ gửi AT xuống mô-đun).
         
         \begin{figure}[H]
             \centering

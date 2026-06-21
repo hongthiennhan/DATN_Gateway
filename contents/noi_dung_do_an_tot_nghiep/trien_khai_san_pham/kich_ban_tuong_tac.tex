@@ -6,7 +6,7 @@
     %     Người dùng sử dụng điện thoại hoặc máy tính kết nối vào mạng Wi-Fi của Gateway. Một trang Web cấu hình (Captive Portal) sẽ tự động hiện ra, cho phép thiết lập các thông số kết nối chỉ trong vài bước thao tác đơn giản.
         
     %     \item \textbf{Giám sát qua Dashboard tập trung:} 
-    %     Khi hệ thống vận hành, người dùng có thể truy cập vào giao diện Dashboard để theo dõi trạng thái hoạt động của từng module, xem dữ liệu cảm biến hoặc kiểm tra nhật ký (Logs) được lưu trên thẻ nhớ SD.
+    %     Khi hệ thống vận hành, người dùng có thể truy cập vào giao diện Dashboard để theo dõi trạng thái hoạt động của từng mô-đun, xem dữ liệu cảm biến hoặc kiểm tra nhật ký (Logs) được lưu trên thẻ nhớ SD.
         
         
 
@@ -14,7 +14,7 @@
     %     Người dùng có thể thực hiện nâng cấp tính năng cho cả hai MCU Master và Slave thông qua tính năng OTA (Over-The-Air) trực tiếp từ giao diện Web, giúp tiết kiệm thời gian và công sức bảo trì tại hiện trường.
     % \end{enumerate}
 
-    Tính tiện dụng của sản phẩm được thể hiện qua khả năng tương tác linh hoạt với các module/giao thức và giao diện quản trị trực quan. Người dùng (kỹ thuật viên hoặc quản trị viên) tương tác với hệ thống thông qua các kịch bản chính sau:
+    Tính tiện dụng của sản phẩm được thể hiện qua khả năng tương tác linh hoạt với các mô-đun/giao thức và giao diện quản trị trực quan. Người dùng (kỹ thuật viên hoặc quản trị viên) tương tác với hệ thống thông qua các kịch bản chính sau:
 
     \subsection{Cấu hình ban đầu bằng Ứng dụng PC}
     Đây là kịch bản dành cho kỹ thuật viên triển khai tại hiện trường, sử dụng App cấu hình trên PC kết nối với gateway qua cổng USB-C. Ứng dụng hỗ trợ đa giao thức (UART/USB CDC) và cung cấp giao diện đồ họa. Quy trình thác tác tiêu chuẩn gồm:
@@ -22,7 +22,7 @@
     \begin{itemize}
         \item \textbf{Quét và nhận diện:} App tự động phát hiện gateway khi kết nối cáp và xác nhận thiết bị sẵn sàng.
         \item \textbf{Đọc cấu hình:} App tải toàn bộ thông số hiện tại từ gateway để hiển thị lên giao diện.
-        \item \textbf{Chỉnh sửa tham số:} Người dùng thác tác trên giao diện dạng biểu mẫu (form) để thiết lập. Hỗ trợ tải lên file JSON preset để provisioning hàng loạt cho nhiều gateway cùng loại stack module.
+        \item \textbf{Chỉnh sửa tham số:} Người dùng thác tác trên giao diện dạng biểu mẫu (form) để thiết lập. Hỗ trợ tải lên file JSON preset để provisioning hàng loạt cho nhiều gateway cùng loại stack mô-đun.
         \item \textbf{Ghi cấu hình:} Sau khi nhấn "Apply", App gửi lệnh xuống gateway. Firmware thực hiện validate, lưu NVS và áp dụng cấu hình mới tức thì. Nếu tham số thuộc về LAN-MCU, WAN-MCU sẽ đóng vai trò cầu nối để chuyển tiếp cấu hình.
     \end{itemize}
 

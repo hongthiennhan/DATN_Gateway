@@ -1,7 +1,7 @@
 \section{Cơ sở lý thuyết}
     Nội dung trong phần này là nền tảng lý thuyết và kỹ thuật cốt lõi để định hướng và hiện thực hóa sản phẩm IoT Gateway trong đồ án. Thông qua việc nghiên cứu tổng quan về Internet vạn vật (IoT), vị trí, cấu trúc và nguyên lý hoạt động của gateway, cũng như các tiêu chuẩn thiết kế phần cứng chuyên sâu (như High-Speed PCB và Power Distribution Network - PDN), nội dung phần này cung cấp các luận cứ khoa học vững chắc.
     
-    Qua đó, cơ sở lý thuyết giúp làm rõ các phương pháp nhằm giải quyết triệt để những vấn đề kỹ thuật then chốt đã được đặt ra trong \autoref{sec:cac_van_de}. Đồng thời, những kiến thức này là nền tảng giúp hiện thực hóa các yêu cầu được phân tích tại \autoref{sec:phan_tich_so_bo}, đặc biệt là việc thỏa mãn các ràng buộc thiết kế, đảm bảo tính module hóa, khả năng cấu hình linh hoạt cũng như đáp ứng trọn vẹn các yêu cầu chức năng và phi chức năng của hệ thống.
+    Qua đó, cơ sở lý thuyết giúp làm rõ các phương pháp nhằm giải quyết triệt để những vấn đề kỹ thuật then chốt đã được đặt ra trong \autoref{sec:cac_van_de}. Đồng thời, những kiến thức này là nền tảng giúp hiện thực hóa các yêu cầu được phân tích tại \autoref{sec:phan_tich_so_bo}, đặc biệt là việc thỏa mãn các ràng buộc thiết kế, đảm bảo tính mô-đun hóa, khả năng cấu hình linh hoạt cũng như đáp ứng trọn vẹn các yêu cầu chức năng và phi chức năng của hệ thống.
     \subsection{Tổng quan về Lĩnh vực}
         \subsubsection{Khái niệm Internet vạn vật (IoT)}
             Internet vạn vật (Internet of Things – IoT) là một mô hình kết nối các đối tượng vật lý, thiết bị và cảm biến với Internet, cho phép chúng thu thập, trao đổi và phân tích dữ liệu mà không cần sự can thiệp trực tiếp từ con người. IoT tạo ra một mạng lưới các thiết bị không đồng nhất như thiết bị gia dụng, máy móc công nghiệp và cảm biến, có khả năng giao tiếp với nhau thông qua nhiều giao thức và tiêu chuẩn khác nhau.
@@ -84,7 +84,7 @@
                     \textbf{Bộ xử lý trung tâm và bộ nhớ} \\
                         Gateway sử dụng vi xử lý hoặc vi điều khiển có năng lực xử lý đủ mạnh kết hợp với bộ nhớ RAM và bộ nhớ Flash/eMMC để lưu trữ hệ điều hành, firmware và dữ liệu tạm thời. Tùy vào yêu cầu ứng dụng, gateway có thể sử dụng Single Board Computer (SBC) như Raspberry Pi, hoặc các nền tảng công nghiệp chuyên dụng có khả năng hoạt động trong môi trường khắc nghiệt.
 
-                    \textbf{Các module giao tiếp và kết nối} \\
+                    \textbf{Các mô-đun giao tiếp và kết nối} \\
                         Đây là thành phần cốt lõi giúp gateway kết nối với thiết bị biên và mạng Internet:
                         \begin{itemize}
                             \item Kết nối có dây: Ethernet (Fast Ethernet/Gigabit), RS-232, RS-485/422, Modbus RTU, CAN bus phục vụ giao tiếp với các thiết bị công nghiệp, cảm biến và PLC.
@@ -108,13 +108,13 @@
                         Hệ điều hành cung cấp nền tảng phần mềm cơ bản để quản lý tài nguyên phần cứng, lập lịch tiến trình, quản lý bộ nhớ và cung cấp môi trường thực thi cho các dịch vụ phía trên. Tuỳ yêu cầu, gateway có thể sử dụng RTOS cho các tác vụ thời gian thực hoặc Linux nhúng (OpenWrt, Debian, Ubuntu Core, \dots) cho các ứng dụng phức tạp hỗ trợ container và tích hợp cloud.
                     
                     \textbf{Lớp trừu tượng phần cứng (Hardware Abstraction Layer -- HAL)}\\
-                        HAL cung cấp tập API thống nhất để các module phần mềm tương tác với ngoại vi phần cứng (UART, SPI, I\textsuperscript{2}C, radio, \dots) mà không phụ thuộc vào chi tiết triển khai của từng nền tảng gateway. Điều này giúp tăng tính khả chuyển, cho phép cùng một mã nguồn ứng dụng có thể chạy trên các bo mạch phần cứng khác nhau chỉ bằng cách thay đổi HAL.
+                        HAL cung cấp tập API thống nhất để các mô-đun phần mềm tương tác với ngoại vi phần cứng (UART, SPI, I\textsuperscript{2}C, radio, \dots) mà không phụ thuộc vào chi tiết triển khai của từng nền tảng gateway. Điều này giúp tăng tính khả chuyển, cho phép cùng một mã nguồn ứng dụng có thể chạy trên các bo mạch phần cứng khác nhau chỉ bằng cách thay đổi HAL.
                     
                     \textbf{Lớp ngăn xếp cảm biến (Sensor Stacks)}\\
-                        Lớp này hiện thực các driver và ngăn xếp giao thức cho mạng cảm biến và thiết bị như ZigBee, 6LoWPAN, EnOcean, BLE, Modbus, PROFIBUS,\dots{} Nó chịu trách nhiệm thu thập dữ liệu từ các nút cảm biến/chấp hành, chuyển về định dạng nội bộ thống nhất để các module quản lý dữ liệu và ứng dụng có thể sử dụng.
+                        Lớp này hiện thực các driver và ngăn xếp giao thức cho mạng cảm biến và thiết bị như ZigBee, 6LoWPAN, EnOcean, BLE, Modbus, PROFIBUS,\dots{} Nó chịu trách nhiệm thu thập dữ liệu từ các nút cảm biến/chấp hành, chuyển về định dạng nội bộ thống nhất để các mô-đun quản lý dữ liệu và ứng dụng có thể sử dụng.
                     
                     \textbf{Lớp giao thức truyền thông (Protocols)}\\
-                        Lớp giao thức cung cấp các protocol ở tầng ứng dụng phục vụ trao đổi dữ liệu với cloud hoặc hệ thống bên ngoài, điển hình như MQTT, CoAP, WebSockets, HTTP/HTTPS,\dots{} Các module này được xây dựng trên nền TCP/UDP của hệ điều hành và được các khối quản lý dữ liệu, quản lý cloud sử dụng để gửi/nhận các gói tin.
+                        Lớp giao thức cung cấp các protocol ở tầng ứng dụng phục vụ trao đổi dữ liệu với cloud hoặc hệ thống bên ngoài, điển hình như MQTT, CoAP, WebSockets, HTTP/HTTPS,\dots{} Các mô-đun này được xây dựng trên nền TCP/UDP của hệ điều hành và được các khối quản lý dữ liệu, quản lý cloud sử dụng để gửi/nhận các gói tin.
                     
                     \textbf{Lớp cập nhật firmware từ xa (FOTA/OTA)}\\
                         Module FOTA chịu trách nhiệm kiểm tra, tải về, xác thực và cài đặt các bản cập nhật phần mềm/firmware từ cloud. Ngoài việc đảm bảo gateway luôn được vá lỗi và cập nhật tính năng mới, lớp này còn hỗ trợ cơ chế rollback trong trường hợp cập nhật thất bại, giúp hệ thống duy trì trạng thái ổn định.
@@ -126,10 +126,10 @@
                         Lớp này quản lý vòng đời của thiết bị IoT: đăng ký/huỷ đăng ký, lưu trữ thuộc tính (kiểu thiết bị, vị trí, tham số hoạt động), giám sát trạng thái, cấu hình tham số, cũng như hỗ trợ cập nhật firmware và chẩn đoán từ xa. Đây là điểm tập trung cho việc quản lý tập trung số lượng lớn node cảm biến/actuator.
                     
                     \textbf{Lớp quản lý dữ liệu (Data Management)}\\
-                        Lớp quản lý dữ liệu chịu trách nhiệm tiếp nhận luồng dữ liệu từ sensor stacks, thực hiện lọc, tiền xử lý, tổng hợp và lưu trữ đệm. Module này giúp giảm băng thông bằng việc chỉ gửi dữ liệu cần thiết, bảo vệ dữ liệu khi kết nối cloud không ổn định (buffering và đồng bộ lại khi có mạng), đồng thời hỗ trợ các chức năng xử lý biên như phát hiện bất thường hoặc áp dụng rule engine.
+                        Lớp quản lý dữ liệu chịu trách nhiệm tiếp nhận luồng dữ liệu từ sensor stacks, thực hiện lọc, tiền xử lý, tổng hợp và lưu trữ đệm. Mô-đun này giúp giảm băng thông bằng việc chỉ gửi dữ liệu cần thiết, bảo vệ dữ liệu khi kết nối cloud không ổn định (buffering và đồng bộ lại khi có mạng), đồng thời hỗ trợ các chức năng xử lý biên như phát hiện bất thường hoặc áp dụng rule engine.
                     
                     \textbf{Lớp quản lý kết nối cloud (Cloud Connectivity Manager)}\\
-                        Cloud Connectivity Manager đảm nhiệm việc thiết lập và duy trì kết nối hai chiều giữa gateway và nền tảng cloud: quản lý phiên làm việc, gửi heartbeat, xử lý cơ chế reconnect, xác thực gateway với cloud và ánh xạ trạng thái thiết bị trên cloud. Lớp này sử dụng các giao thức ở module \emph{Protocols} và cung cấp API thống nhất cho lớp ứng dụng.
+                        Cloud Connectivity Manager đảm nhiệm việc thiết lập và duy trì kết nối hai chiều giữa gateway và nền tảng cloud: quản lý phiên làm việc, gửi heartbeat, xử lý cơ chế reconnect, xác thực gateway với cloud và ánh xạ trạng thái thiết bị trên cloud. Lớp này sử dụng các giao thức ở mô-đun \emph{Protocols} và cung cấp API thống nhất cho lớp ứng dụng.
                     
                     \textbf{Lớp ứng dụng tuỳ biến (Custom Application)}\\
                         Trên cùng là lớp ứng dụng tuỳ biến, nơi hiện thực logic nghiệp vụ cụ thể của hệ thống: các kịch bản tự động hoá, xử lý cảnh báo và sự kiện, dashboard cục bộ cho cấu hình/giám sát, cũng như các dịch vụ tích hợp với hệ SCADA/MES/ERP hoặc nền tảng quản lý vận hành khác. Các ứng dụng này tận dụng toàn bộ dịch vụ do các lớp phía dưới cung cấp để xây dựng giải pháp IoT hoàn chỉnh.
@@ -150,7 +150,7 @@
                     Gateway là tuyến phòng thủ đầu tiên trong hệ thống IoT, thực hiện các biện pháp bảo mật như mã hóa dữ liệu (encryption), xác thực thiết bị (authentication), và lọc gói tin (packet filtering) để đảm bảo an toàn cho dữ liệu cả trong quá trình truyền và khi lưu trữ. Gateway thực hiện kiểm soát truy cập, ngăn chặn các kết nối trái phép, và giám sát hoạt động để phát hiện các bất thường bảo mật.
     \subsection{Phân tích các sản phẩm trên thị trường}
         \subsubsection{Các công nghệ kết nối phổ biến}
-            Trong hạ tầng IoT hiện đại, các gateway cần hỗ trợ đa dạng công nghệ kết nối để tích hợp với nhiều loại thiết bị khác nhau. Các công nghệ kết nối tầm ngắn như \textbf{WiFi}, \textbf{Bluetooth Low Energy (BLE)}, \textbf{Zigbee}, \textbf{Z-Wave} được sử dụng rộng rãi trong các ứng dụng gia dụng và văn phòng. Các công nghệ \textbf{LPWAN} như \textbf{LoRaWAN}, \textbf{NB-IoT}, \textbf{LTE-M} phù hợp với những kịch bản yêu cầu phạm vi phủ sóng rộng và tiêu thụ năng lượng thấp. Bên cạnh đó, các kết nối có dây như \textbf{Ethernet}, \textbf{RS-485}, \textbf{RS-232}, \textbf{CAN} vẫn giữ vai trò quan trọng trong môi trường công nghiệp nhờ độ ổn định cao và khả năng chống nhiễu tốt.
+            Trong hạ tầng IoT hiện đại, các gateway cần hỗ trợ đa dạng công nghệ kết nối để tích hợp với nhiều loại thiết bị khác nhau. Các công nghệ kết nối tầm ngắn như \textbf{Wi-Fi}, \textbf{Bluetooth Low Energy (BLE)}, \textbf{Zigbee}, \textbf{Z-Wave} được sử dụng rộng rãi trong các ứng dụng gia dụng và văn phòng. Các công nghệ \textbf{LPWAN} như \textbf{LoRaWAN}, \textbf{NB-IoT}, \textbf{LTE-M} phù hợp với những kịch bản yêu cầu phạm vi phủ sóng rộng và tiêu thụ năng lượng thấp. Bên cạnh đó, các kết nối có dây như \textbf{Ethernet}, \textbf{RS-485}, \textbf{RS-232}, \textbf{CAN} vẫn giữ vai trò quan trọng trong môi trường công nghiệp nhờ độ ổn định cao và khả năng chống nhiễu tốt.
     
         \subsubsection{Các giao thức truyền dữ liệu}
             Tại tầng ứng dụng, các giao thức truyền dữ liệu phổ biến được tích hợp trên gateway gồm:
@@ -172,7 +172,7 @@
         \subsubsection{Các tính năng quan trọng của gateway trên thị trường}
             Các gateway IoT thương mại hiện nay thường tích hợp những tính năng sau:
             \begin{itemize}
-                \item Hỗ trợ đa giao thức kết nối (WiFi, Ethernet, Zigbee, LoRa, BLE, LTE,~\ldots)
+                \item Hỗ trợ đa giao thức kết nối (Wi-Fi, Ethernet, Zigbee, LoRa, BLE, LTE,~\ldots)
                 \item Chuyển đổi giao thức hai chiều (protocol translation)
                 \item Xử lý dữ liệu tại biên (edge computing)
                 \item Lưu trữ dữ liệu cục bộ (local storage)
@@ -184,19 +184,19 @@
             \end{itemize}
         % \subsubsection{Ví dụ về các gateway thực tế trên thị trường}
         %     \paragraph{M5Stack IoT gateway series}
-        %         M5Stack cung cấp các giải pháp gateway IoT dựa trên nền tảng ESP32 với khả năng kết nối đa dạng (WiFi, BLE, LoRa). Các thiết bị này hỗ trợ giao thức MQTT, HTTP và có thể lập trình dễ dàng thông qua Arduino IDE hoặc MicroPython. M5Stack gateway phù hợp cho các ứng dụng prototyping và phát triển nhanh. Hai dòng sản phẩm tiêu biểu là CoreS3-Lite và CoreMP135.
+        %         M5Stack cung cấp các giải pháp gateway IoT dựa trên nền tảng ESP32 với khả năng kết nối đa dạng (Wi-Fi, BLE, LoRa). Các thiết bị này hỗ trợ giao thức MQTT, HTTP và có thể lập trình dễ dàng thông qua Arduino IDE hoặc MicroPython. M5Stack gateway phù hợp cho các ứng dụng prototyping và phát triển nhanh. Hai dòng sản phẩm tiêu biểu là CoreS3-Lite và CoreMP135.
         %         \paragraph*{M5Stack CoreS3-Lite}
-        %             Thiết bị nhỏ gọn của M5Stack với khả năng hoạt động như một mini-gateway hoặc HMI trong hệ thống IoT quy mô nhỏ. Nhờ tích hợp sẵn WiFi/BLE, màn hình cảm ứng, cảm biến và các giao tiếp mở rộng, CoreS3-Lite có thể vừa thu thập dữ liệu, hiển thị trạng thái, vừa giao tiếp với nhiều thiết bị ngoại vi thông qua các module.
+        %             Thiết bị nhỏ gọn của M5Stack với khả năng hoạt động như một mini-gateway hoặc HMI trong hệ thống IoT quy mô nhỏ. Nhờ tích hợp sẵn Wi-Fi/BLE, màn hình cảm ứng, cảm biến và các giao tiếp mở rộng, CoreS3-Lite có thể vừa thu thập dữ liệu, hiển thị trạng thái, vừa giao tiếp với nhiều thiết bị ngoại vi thông qua các mô-đun.
         %             \begin{itemize}
-        %                 \item MCU \textbf{ESP32-S3}, lõi kép Xtensa LX7 240\,MHz, hỗ trợ \textbf{WiFi 2.4\,GHz} và \textbf{Bluetooth Low Energy (BLE)}.
+        %                 \item MCU \textbf{ESP32-S3}, lõi kép Xtensa LX7 240\,MHz, hỗ trợ \textbf{Wi-Fi 2.4\,GHz} và \textbf{Bluetooth Low Energy (BLE)}.
         %                 \item Bộ nhớ \textbf{Flash 16\,MB}, \textbf{PSRAM 8\,MB}, đủ cho ứng dụng có giao diện đồ hoạ, kết nối mạng và xử lý dữ liệu cảm biến.
         %                 \item Màn hình \textbf{IPS 2.0''} cảm ứng điện dung, độ phân giải 320$\times$240, phù hợp làm giao diện HMI mini (nút bấm, slider, biểu đồ,\dots).
         %                 \item Tích hợp \textbf{camera 0.3\,MP}, cảm biến ánh sáng/tiệm cận \textbf{LTR-553}, \textbf{IMU 6 trục} và \textbf{từ kế 3 trục}, cho phép xây dựng các ứng dụng nhận diện cơ bản, phát hiện chuyển động, tương tác theo hướng nhìn,\dots
         %                 \item Khối âm thanh gồm \textbf{codec ES7210}, \textbf{ampli I2S} và \textbf{loa 1\,W} cùng \textbf{micro kép}, hỗ trợ các ứng dụng trợ lý giọng nói, phát cảnh báo âm thanh,\dots
         %                 \item \textbf{Hỗ trợ GPIO/I\textsuperscript{2}C/UART} thông qua:
         %                 \begin{itemize}
-        %                     \item Cổng mở rộng dạng HY2.0/Grove trên thân thiết bị để kết nối trực tiếp cảm biến, relay, module I/O.
-        %                     \item Bus phía sau \textbf{M5-Bus} cho phép \emph{stack} thêm các module M5Stack như \textbf{LoRa, Zigbee, Ethernet, RS485/RS232, CAN, mở rộng GPIO/ADC},\dots giúp mở rộng giao thức phần cứng mà không cần thiết kế lại mạch chính.
+        %                     \item Cổng mở rộng dạng HY2.0/Grove trên thân thiết bị để kết nối trực tiếp cảm biến, relay, mô-đun I/O.
+        %                     \item Bus phía sau \textbf{M5-Bus} cho phép \emph{stack} thêm các mô-đun M5Stack như \textbf{LoRa, Zigbee, Ethernet, RS485/RS232, CAN, mở rộng GPIO/ADC},\dots giúp mở rộng giao thức phần cứng mà không cần thiết kế lại mạch chính.
         %                 \end{itemize}
         %                 \item Hỗ trợ các giao thức ứng dụng như \textbf{MQTT}, \textbf{HTTP/REST} qua firmware phát triển trên \textbf{ESP-IDF}, \textbf{Arduino} hoặc UiFlow, cho phép hoạt động như một mini-gateway gửi dữ liệu lên server/cloud.
         %                 \item Phù hợp cho các ứng dụng \textbf{home automation}, bảng điều khiển HMI, logger dữ liệu môi trường hay thiết bị hiển thị trạng thái tại chỗ.
@@ -207,23 +207,23 @@
         %             \begin{itemize}
         %                 \item CPU \textbf{STM32MP135DAE7} (Arm Cortex-A7 @ 1\,GHz), có MMU nên \textbf{chạy Linux} (Buildroot, Debian, Yocto,\dots).
         %                 \item Tích hợp \textbf{2$\times$ Gigabit Ethernet}, \textbf{2$\times$ USB\,2.0-A}, \textbf{1$\times$ USB-C OTG}, khe \textbf{microSD} và cổng \textbf{PWR485} (nguồn 9--24\,V + RS485), phù hợp làm gateway công nghiệp.
-        %                 \item WiFi/BLE có thể bổ sung thông qua \textbf{module mở rộng M5Stack} hoặc USB dongle, giúp linh hoạt trong việc xây dựng gateway IoT có cả Ethernet và kết nối không dây.
+        %                 \item Wi-Fi/BLE có thể bổ sung thông qua \textbf{mô-đun mở rộng M5Stack} hoặc USB dongle, giúp linh hoạt trong việc xây dựng gateway IoT có cả Ethernet và kết nối không dây.
         %                 \item Màn hình cảm ứng \textbf{IPS 2.0''} cùng loa 1\,W dùng làm HMI: hiển thị trạng thái thiết bị, tham số hệ thống, nút điều khiển,\dots
         %                 \item \textbf{Hỗ trợ giao tiếp công nghiệp và mở rộng phần cứng} thông qua:
         %                 \begin{itemize}
         %                     \item 2$\times$ giao tiếp \textbf{CAN-FD} và \textbf{RS485} tích hợp sẵn.
-        %                     \item Bus phía sau \textbf{M5-Bus} và các cổng Grove cho phép gắn thêm các module \textbf{LoRa, Zigbee, Ethernet bổ sung, RS485, CAN, I/O mở rộng},\dots giúp CoreMP135 hoạt động như một gateway trung tâm kết nối nhiều chuẩn trường khác nhau.
+        %                     \item Bus phía sau \textbf{M5-Bus} và các cổng Grove cho phép gắn thêm các mô-đun \textbf{LoRa, Zigbee, Ethernet bổ sung, RS485, CAN, I/O mở rộng},\dots giúp CoreMP135 hoạt động như một gateway trung tâm kết nối nhiều chuẩn trường khác nhau.
         %                 \end{itemize}
         %                 \item Bộ nhớ \textbf{DDR3L SDRAM} và lưu trữ \textbf{eMMC} kết hợp \textbf{microSD} (kèm thẻ microSD cài sẵn Debian) cho phép chạy các dịch vụ edge như gateway, xử lý dữ liệu, logging, web UI cấu hình,\dots
-        %                 \item Thích hợp cho \textbf{edge computing} quy mô nhỏ, gateway điều khiển công nghiệp, HMI thông minh, hoặc làm bộ điều khiển trung tâm trong tủ điện với khả năng mở rộng giao thức phần cứng qua các module M5Stack.
+        %                 \item Thích hợp cho \textbf{edge computing} quy mô nhỏ, gateway điều khiển công nghiệp, HMI thông minh, hoặc làm bộ điều khiển trung tâm trong tủ điện với khả năng mở rộng giao thức phần cứng qua các mô-đun M5Stack.
         %             \end{itemize}
         %     \paragraph{RAK7391 WisGate Connect}
         %         Gateway IoT/LoRaWAN linh hoạt dựa trên \textbf{Raspberry Pi Compute Module 4}, phù hợp cho ứng dụng edge và công nghiệp.
         %         \begin{itemize}
         %             \item \textbf{CPU:} Raspberry Pi Compute Module 4 (Broadcom BCM2711, 4$\times$ Cortex-A72 1{.}5\,GHz, 1--8\,GB RAM tuỳ cấu hình CM4).
         %             \item \textbf{Kết nối mạng:} 1$\times$ cổng Ethernet 1\,Gbps (hỗ trợ PoE tuỳ chọn) và 1$\times$ cổng Ethernet 2{.}5\,Gbps; HDMI 2{.}0, 1$\times$ USB\,2{.}0, 2$\times$ USB\,3{.}0.
-        %             \item \textbf{Kết nối không dây:} \textbf{WiFi 5 2{.}4/5\,GHz} và \textbf{BLE 5{.}0} (tuỳ phiên bản CM4 có WiFi/BLE); có thể gắn thêm module không dây qua mPCIe hoặc M.2.
-        %             \item \textbf{Mở rộng:} 3$\times$ khe \textbf{mPCIe} (module LoRaWAN concentrator, LTE, WiFi 6,\dots), 1$\times$ \textbf{M.2 B-Key}, 2$\times$ khe \textbf{WisBlock IO} và header \textbf{Raspberry Pi HAT} 40-pin.
+        %             \item \textbf{Kết nối không dây:} \textbf{Wi-Fi 5 2{.}4/5\,GHz} và \textbf{BLE 5{.}0} (tuỳ phiên bản CM4 có Wi-Fi/BLE); có thể gắn thêm mô-đun không dây qua mPCIe hoặc M.2.
+        %             \item \textbf{Mở rộng:} 3$\times$ khe \textbf{mPCIe} (mô-đun LoRaWAN concentrator, LTE, Wi-Fi 6,\dots), 1$\times$ \textbf{M.2 B-Key}, 2$\times$ khe \textbf{WisBlock IO} và header \textbf{Raspberry Pi HAT} 40-pin.
         %             \item \textbf{Nguồn:} dải \textbf{10--28\,VDC} qua jack DC, terminal Phoenix hoặc \textbf{PoE IEEE 802{.}3at/bt}; tích hợp giám sát điện áp, nhiệt độ PCB, RTC kèm pin và bộ siêu tụ để duy trì hệ thống khi mất điện ngắn hạn.
         %             \item \textbf{Hệ điều hành:} \textbf{RAKPiOS} (fork từ Raspberry Pi OS) với driver tích hợp sẵn, tăng cường bảo mật, hỗ trợ \textbf{Docker} và triển khai nhanh các dịch vụ IoT.
         %             \item \textbf{Ứng dụng:} gateway LoRaWAN đa kênh/đa băng tần, gateway công nghiệp/edge dùng WisBlock (Modbus, 0--5\,V, 4--20\,mA, I/O,\dots), nền tảng phát triển sản phẩm mới.
@@ -235,7 +235,7 @@
         %             \item \textbf{CPU:} \textbf{NXP i.MX8M Plus} Quad-Core Cortex-A53 1{.}6\,GHz (tùy cấu hình có \textbf{NPU} tích hợp cho AI tại biên).
         %             \item \textbf{Bộ nhớ:} \textbf{LPDDR4 2\,GB} (tuỳ chọn 4\,GB) và \textbf{eMMC 16\,GB} (tuỳ chọn 32\,GB).
         %             \item \textbf{Kết nối:} 2$\times$ Gigabit Ethernet, 2$\times$ USB 3.0 Type-A, 2$\times$ RS-232/422/485 (Phoenix), 2$\times$ CAN-FD, 1$\times$ HDMI 2.0a.
-        %             \item \textbf{Mở rộng:} 2$\times$ khe \textbf{mini-PCIe} (cho module 4G/LTE, WiFi,\dots), khe \textbf{microSD}, khe SIM và đầu nối board-to-board để mở rộng thêm PCIe, USB 3{.}0, I\textsuperscript{2}C, GPIO,\dots
+        %             \item \textbf{Mở rộng:} 2$\times$ khe \textbf{mini-PCIe} (cho mô-đun 4G/LTE, Wi-Fi,\dots), khe \textbf{microSD}, khe SIM và đầu nối board-to-board để mở rộng thêm PCIe, USB 3{.}0, I\textsuperscript{2}C, GPIO,\dots
         %             \item \textbf{Nguồn:} dải \textbf{DC 9--36\,V}, công suất điển hình khoảng 9{.}36\,W, hỗ trợ làm việc trong dải nhiệt \textbf{-20\,\textdegree C đến 70\,\textdegree C}.
         %             \item \textbf{Bảo mật:} tích hợp \textbf{TPM 2{.}0}, hỗ trợ Secure Boot và các chứng chỉ công nghiệp như CE/FCC Class A, IEC61000-6-2/6-4, IEC61131-2,\dots
         %             \item \textbf{Hệ điều hành:} hỗ trợ \textbf{Debian 11} (mặc định), \textbf{Android 13}, \textbf{Windows 10 IoT} và \textbf{Yocto}, thích hợp cho nhiều kịch bản triển khai khác nhau.
@@ -244,7 +244,7 @@
         \subsubsection{Xu hướng phát triển hiện tại}
             Hiện nay, xu hướng phát triển gateway IoT hướng tới:
             \begin{itemize}
-                \item \textbf{Modularity}: Các gateway được thiết kế theo dạng module để có thể tùy chỉnh tính năng theo nhu cầu cụ thể, giúp tối ưu chi phí.
+                \item \textbf{Modularity}: Các gateway được thiết kế theo dạng mô-đun để có thể tùy chỉnh tính năng theo nhu cầu cụ thể, giúp tối ưu chi phí.
                 \item \textbf{Configurability}: Quy trình cấu hình được đơn giản hóa, thân thiện với người dùng, giúp rút ngắn thời gian triển khai.
                 \item \textbf{Edge intelligence}: Tích hợp thêm các chức năng xử lý dữ liệu cao cấp, học máy (machine learning) tại biên mạng.
                 \item \textbf{Interoperability}: Cải thiện khả năng tích hợp giữa các nền tảng và tiêu chuẩn khác nhau.

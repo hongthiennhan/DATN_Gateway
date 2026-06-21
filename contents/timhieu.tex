@@ -119,7 +119,7 @@
         IoT Gateway thường nằm trong Network Layer, hoạt động như một trung tâm thu thập và truyền dữ liệu. 
         Tuy nhiên, các gateway thực hiện điện toán biên cũng chồng chéo với lớp xử lý dữ liệu. Với một số gateway, phân tích và xử lý dữ liệu sơ bộ diễn ra ở "biên" của mạng hoặc gần hơn với nguồn dữ liệu (các cảm biến).\par
         
-        IoT Gateway thường là một thiết bị phần cứng có khả năng hoạt động trong môi trường khắc nghiệt và hỗ trợ nhiều chuẩn kết nối cục bộ như Bluetooth, WiFi, 6LoWPAN, NFC, WiFi Direct, GSM, BLE, Zigbee, Z-Wave, 3G 4G LTE, LoRa, NB-IoT và LTE-M.\par
+        IoT Gateway thường là một thiết bị phần cứng có khả năng hoạt động trong môi trường khắc nghiệt và hỗ trợ nhiều chuẩn kết nối cục bộ như Bluetooth, Wi-Fi, 6LoWPAN, NFC, Wi-Fi Direct, GSM, BLE, Zigbee, Z-Wave, 3G 4G LTE, LoRa, NB-IoT và LTE-M.\par
 
         IoT Gateway được sử dụng để định tuyến dữ liệu giữa các thiết bị IoT và đám mây, cũng như cung cấp bảo mật cho mạng IoT và dữ liệu. Ngoài việc định tuyến lưu lượng, Gateway còn có thể tiền xử lý dữ liệu để giảm khối lượng dữ liệu cần chuyển tiếp đến đám mây, ảnh hưởng đến thời gian phản hồi và chi phí truyền tải qua mạng.\par
 
@@ -133,7 +133,7 @@
 
         \textbf{Cấu trúc:}
         \begin{itemize}
-            \item Phần cứng (Hardware): Bao gồm bộ xử lý (processor)/vi điều khiển (microcontroller), bộ nhớ (memory), bộ nhớ (memory), mạch bảo vệ, các module kết nối (Zigbee, Bluetooth, WiFi, LoRa, v.v.), và các cảm biến (sensors).
+            \item Phần cứng (Hardware): Bao gồm bộ xử lý (processor)/vi điều khiển (microcontroller), bộ nhớ (memory), bộ nhớ (memory), mạch bảo vệ, các module kết nối (Zigbee, Bluetooth, Wi-Fi, LoRa, v.v.), và các cảm biến (sensors).
             \item Hệ điều hành (Operating System):
             \item Lớp trừu tượng phần cứng (Hardware Abstraction Layer): Giao diện để phần mềm có thể tương tác với phần cứng mà không cần biết chi tiết về phần cứng cụ thể. Lớp trừu tượng hóa phần cứng tách phần cứng khỏi phần mềm để chúng có thể được phát triển và cập nhật riêng biệt. 
             \item Sensor Stacks: Để giao tiếp với các cảm biến và thiết bị được kết nối, cổng kết hợp một ngăn xếp cảm biến cho phép thu thập và xử lý dữ liệu liền mạch. 
@@ -144,7 +144,7 @@
             \item Quản lý dữ liệu (Data Management): Quản lý dữ liệu bao gồm truyền dữ liệu, lọc dữ liệu và lưu trữ dữ liệu (trong trường hợp mất kết nối với đám mây). IoT Gateway quản lý dữ liệu từ các nút cảm biến (sensor node) đến gateway và dữ liệu từ gateway đến đám mây. IoT Gateway có thể thực hiện các tác vụ như lọc, phân tích và lưu trữ dữ liệu trước khi gửi lên đám mây hoặc hệ thống quản lý dữ liệu.
             \item Quản lý kết nối Đám mây (Cloud Connectivity Management): IoT Gateway quản lý kết nối với các dịch vụ đám mây, bao gồm việc thiết lập kết nối, bảo mật kết nối và truyền dữ liệu đến đám mây. Lớp này chịu trách nhiệm kết nối liền mạch với đám mây và cũng xử lý các tình huống như kết nối lại, trạng thái thiết bị, thông báo heartbeat meassage và xác thực gateway với đám mây.
             \item Ứng dụng tùy chỉnh (Custom Applications): Ứng dụng IoT Gateway được thiết kế riêng theo nhu cầu kinh doanh, hỗ trợ các ứng dụng tùy chỉnh phù hợp với các yêu cầu kinh doanh cụ thể.
-            \item Gateway Data Transfer: IoT Gateway có thể được kết nối với internet để truyền dữ liệu bằng Ethernet, modem 4G/3G/GPRS hoặc Wifi.
+            \item Gateway Data Transfer: IoT Gateway có thể được kết nối với internet để truyền dữ liệu bằng Ethernet, modem 4G/3G/GPRS hoặc Wi-fi.
         \end{itemize}
 
         \textbf{Chức năng:}
@@ -168,7 +168,7 @@
     \section{Các công nghệ, giao thức, và chuẩn giao tiếp được sử dụng phổ biến trong hạ tầng IoT}
         \textbf{Công nghệ:} 
         \begin{itemize}
-            \item \textbf{Kết nối:} WiFi, Bluetooth, Zigbee, LoRaWAN, NB-IoT, LTE-M, Ethernet, 6LoWPAN, ...
+            \item \textbf{Kết nối:} Wi-Fi, Bluetooth, Zigbee, LoRaWAN, NB-IoT, LTE-M, Ethernet, 6LoWPAN, ...
             \item \textbf{Điện toán đám mây (Cloud computing):} Nền tảng đám mây cung cấp cơ sở hạ tầng để lưu trữ, xử lý và phân tích dữ liệu khổng lồ từ các thiết bị IoT. 
             \item \textbf{Phân tích dữ liệu lớn (Big data analytics):} Các công cụ phân tích dữ liệu lớn, bao gồm cả máy học (machine learning), được sử dụng để trích xuất thông tin chi tiết và đưa ra quyết định từ dữ liệu IoT. 
             \item \textbf{Bảo mật và quyền riêng tư (Security and privacy):} Các công nghệ bảo mật như mã hóa, kiểm soát truy cập và hệ thống phát hiện xâm nhập được sử dụng để bảo vệ dữ liệu và thiết bị IoT khỏi các mối đe dọa mạng. 
@@ -177,7 +177,7 @@
 
         \textbf{Giao thức, chuẩn giao tiếp:}
         \begin{itemize}
-            \item \textbf{Giao thức kết nối:} Bluetooth, Zigbee, LoRaWAN, NB-IoT, LTE-M, WiFi, Ethernet, 6LoWPAN.
+            \item \textbf{Giao thức kết nối:} Bluetooth, Zigbee, LoRaWAN, NB-IoT, LTE-M, Wi-Fi, Ethernet, 6LoWPAN.
             \item \textbf{Giao thức truyền dữ liệu:} MQTT, CoAP, HTTP/HTTPS, AMQP, XMPP.
         \end{itemize}
     \section{Các thiết bị IoT gateway khả cấu hình đã có trên thị trường, tập trung vào các chức năng, đặc điểm nổi bật, công nghệ, giao thức, và các chuẩn giao tiếp được hỗ trợ}

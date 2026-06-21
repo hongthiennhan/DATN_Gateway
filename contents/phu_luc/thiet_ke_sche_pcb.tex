@@ -10,7 +10,7 @@
         \end{figure}
 
         \subsection{Thiết kế Mạch xử lý trung tâm}
-            Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai module ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
+            Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai mô-đun ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
 
             % Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
 
@@ -359,7 +359,7 @@
             Tại đầu vào nguồn của quạt DC, một diode được mắc song song nhằm bảo vệ mạch cấp nguồn. Khi nguồn bị ngắt hoặc xuất hiện các xung điện áp trên đường cấp, diode tạo đường dẫn cho dòng điện quá độ lưu thông, giúp hạn chế điện áp đột biến và giảm ảnh hưởng đến các linh kiện điều khiển.
             
         \subsection{Thiết kế Mạch Module Adapter}\label{par:sche_wanlan_adapter}
-            Baseboard được thiết kế để kết nối với các module mạng WAN và LAN thông qua một module adapter trung gian. Module adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các module WAN/LAN và baseboard.
+            Baseboard được thiết kế để kết nối với các mô-đun mạng WAN và LAN thông qua một Module Adapter trung gian. Module Adapter được chuẩn hóa chân kết nối theo các giao thức phổ biến như UART, I\textsuperscript{2}C, SPI, USB cùng các chân GPIO hỗ trợ, nhằm đảm bảo khả năng tương thích linh hoạt giữa các mô-đun WAN/LAN và baseboard.
 
             \begin{figure}[h]
                 \centering
@@ -368,7 +368,7 @@
                 \label{fig:sche_wan-lan_conn}
             \end{figure}
 
-            Trong phiên bản hiện tại, module adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho module SIM7600G-H-PCIE và adapter WAN Ethernet. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
+            Trong phiên bản hiện tại, Module Adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho mô-đun SIM7600G-H-PCIE và adapter WAN Ethernet. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
             
             Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
 
@@ -389,13 +389,13 @@
                 \label{fig:sche_wanlte}
             \end{figure}
 
-            Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của module WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
+            Việc sử dụng adapter trung gian giúp tách biệt thiết kế baseboard khỏi các yêu cầu đặc thù của mô-đun WAN, qua đó nâng cao tính linh hoạt và khả năng mở rộng của hệ thống. 
 
-            Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại module mạng khác nhau, bao gồm:
+            Đối với khối LAN, mạch adapter được triển khai dưới dạng ba adapter riêng biệt, mỗi adapter hỗ trợ một loại mô-đun mạng khác nhau, bao gồm:
 
             \begin{itemize}
-                \item Module Zigbee E180-ZG120B (dựa trên SoC Silicon Labs EFR32MG1B) của EBYTE, sử dụng nguồn cấp 3.3V và giao tiếp UART;
-                \item Module LoRaWAN Wio-E5-LE mini (mã 113991156, dựa trên SoC STM32WLE5JC, hỗ trợ băng tần 868\,MHz và 915\,MHz) của Seeed Studio, sử dụng nguồn cấp 3.3V và giao tiếp UART;
+                \item Mô-đun Zigbee E180-ZG120B (dựa trên SoC Silicon Labs EFR32MG1B) của EBYTE, sử dụng nguồn cấp 3.3V và giao tiếp UART;
+                \item Mô-đun LoRaWAN Wio-E5-LE mini (mã 113991156, dựa trên SoC STM32WLE5JC, hỗ trợ băng tần 868\,MHz và 915\,MHz) của Seeed Studio, sử dụng nguồn cấp 3.3V và giao tiếp UART;
                 \item Mạch chuyển đổi RS485 sang TTL, hoạt động với nguồn 3.3V và giao tiếp UART.
             \end{itemize}
 
@@ -406,19 +406,19 @@
                 \label{fig:sche_lan} 
             \end{figure}
 
-            Trên mỗi adapter tích hợp một IC IO Expander, được sử dụng để điều khiển các tín hiệu IO của module, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (device ID) trên adapter. Mỗi module được thiết kế với một adapter riêng biệt và được gán một mã thiết bị tương ứng nhằm phục vụ quá trình nhận diện tự động bởi MCU.
+            Trên mỗi adapter tích hợp một IC IO Expander, được sử dụng để điều khiển các tín hiệu IO của mô-đun, quản lý việc cấp nguồn và đọc mã nhận dạng thiết bị (device ID) trên adapter. Mỗi mô-đun được thiết kế với một adapter riêng biệt và được gán một mã thiết bị tương ứng nhằm phục vụ quá trình nhận diện tự động bởi MCU.
 
             Bảng mã nhận dạng thiết bị được quy định như sau:
             
             \begin{longtable}{|c|c|c|}
-                \caption{Device ID của các module WAN/LAN} \\
+                \caption{Device ID của các mô-đun WAN/LAN} \\
                 \hline
-                \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
+                \textbf{Loại} & \textbf{Mô-đun} & \textbf{Device ID (4-bit)} \\
                 \hline
                 \endfirsthead
                 
                 \hline
-                \textbf{Loại} & \textbf{Module} & \textbf{Device ID (4-bit)} \\
+                \textbf{Loại} & \textbf{Mô-đun} & \textbf{Device ID (4-bit)} \\
                 \hline
                 \endhead
                 
@@ -527,8 +527,8 @@
                     \begin{itemize}
                         \item \textbf{Vùng Nguồn (Power Zone):} Bố trí cục bộ gần đầu vào DC để cô lập nhiễu chuyển mạch.
                         \item \textbf{Vùng Xử lý trung tâm (Digital Core):} Chứa MCU Master và Slave, đặt tại trung tâm để tối ưu hóa đường đi tín hiệu.
-                        \item \textbf{Vùng Giao tiếp Modular (Interface Zone):} Bố trí dọc theo các cạnh bo mạch để thuận tiện cho thao tác cắm rút module.
-                        \item \textbf{Vùng RF (RF Zone):} Dành riêng cho các module không dây và anten.
+                        \item \textbf{Vùng Giao tiếp Modular (Interface Zone):} Bố trí dọc theo các cạnh bo mạch để thuận tiện cho thao tác cắm rút mô-đun.
+                        \item \textbf{Vùng RF (RF Zone):} Dành riêng cho các mô-đun không dây và anten.
                     \end{itemize}
                 \end{itemize}
             % \begin{figure}[h]
@@ -554,7 +554,7 @@
                 \item \textbf{Kiểm soát Nhiễu điện từ (EMI Management):}
                 \begin{itemize}
                     \item \textbf{Cách ly nguồn nhiễu:} Các thành phần gây nhiễu mạnh như mạch nguồn xung (Buck Converter), cuộn cảm, và diode chuyển mạch được quy hoạch xa khỏi các khu vực nhạy cảm như khối Analog, mạch tạo dao động (Crystal Oscillator) và khối RF.
-                    \item \textbf{Phân tách không gian RF:} Các vị trí dành cho module RF (như WiFi, LoRa) được bố trí tại các góc hoặc rìa của bo mạch. Khoảng cách vật lý giữa các anten được tối đa hóa (Spatial Diversity) và đặt chéo góc nhau để giảm hiện tượng bão hòa đầu vào hoặc giao thoa sóng vô tuyến (Co-existence interference).
+                    \item \textbf{Phân tách không gian RF:} Các vị trí dành cho mô-đun RF (như Wi-Fi, LoRa) được bố trí tại các góc hoặc rìa của bo mạch. Khoảng cách vật lý giữa các anten được tối đa hóa (Spatial Diversity) và đặt chéo góc nhau để giảm hiện tượng bão hòa đầu vào hoặc giao thoa sóng vô tuyến (Co-existence interference).
                 \end{itemize}
 
                 \item \textbf{Tương thích Cơ khí và Sản xuất (DFM/DFA):}

@@ -104,7 +104,7 @@ Throughput 21\,Mbps là trần thực tế của kênh inter-MCU mà bốn handl
 
 \subsubsection{Phương pháp đo}
 
-LAN-MCU tiếp nhận dữ liệu từ các module cảm biến qua bốn cổng vật lý: UART, SPI, I2C và USB. Mục tiêu của phép đo là xác định tốc độ nhận tối đa (lane ceiling) của từng cổng trước khi xảy ra mất dữ liệu.
+LAN-MCU tiếp nhận dữ liệu từ các mô-đun cảm biến qua bốn cổng vật lý: UART, SPI, I2C và USB. Mục tiêu của phép đo là xác định tốc độ nhận tối đa (lane ceiling) của từng cổng trước khi xảy ra mất dữ liệu.
 
 Một ESP32-S3 phụ (gọi là \textit{rig}) được kết nối trực tiếp vào từng cổng và phát dữ liệu giả lập với tốc độ tăng dần. LAN-MCU đếm số byte nhận được và báo cáo mỗi 2 giây. Rig đồng thời ghi nhận số liệu phía phát để kiểm chứng chéo. Lý do không đo qua các handler thực (BLE, Zigbee, LoRa): các giao thức này phát quá chậm (vài chục kbps), không đủ để chạm trần cổng vật lý, do đó phép đo được thực hiện trực tiếp ở tầng driver/BSP.
 
@@ -170,14 +170,14 @@ Các kiểm chứng độc lập xác nhận số đo phản ánh đúng trần 
 
 \subsubsection{Ý nghĩa kết quả}
 
-Bốn cổng vào của LAN-MCU đều đạt trần cao hơn nhiều lần so với tải thực tế của các module cảm biến tương ứng: UART ($\approx 440\,\text{kbps}$) và I2C ($\approx 282\,\text{kbps}$) phục vụ cảm biến phát vài chục kbps; SPI ($\approx 7{,}37\,\text{Mbps}$) và USB CDC ($\approx 4{,}05\,\text{Mbps}$) phục vụ LoRa concentrator và Zigbee coordinator phát vài trăm kbps. Với mức dư công suất như vậy, không cổng nào là điểm nghẽn trong vận hành bình thường với tải sensor IoT, và LAN-MCU còn nhiều dư địa để mở rộng số lượng module trên mỗi cổng.
+Bốn cổng vào của LAN-MCU đều đạt trần cao hơn nhiều lần so với tải thực tế của các mô-đun cảm biến tương ứng: UART ($\approx 440\,\text{kbps}$) và I2C ($\approx 282\,\text{kbps}$) phục vụ cảm biến phát vài chục kbps; SPI ($\approx 7{,}37\,\text{Mbps}$) và USB CDC ($\approx 4{,}05\,\text{Mbps}$) phục vụ LoRa concentrator và Zigbee coordinator phát vài trăm kbps. Với mức dư công suất như vậy, không cổng nào là điểm nghẽn trong vận hành bình thường với tải sensor IoT, và LAN-MCU còn nhiều dư địa để mở rộng số lượng mô-đun trên mỗi cổng.
 
 \subsection{Throughput đẩy dữ liệu ra Internet của từng giao diện WAN}
 \label{subsec:bench_wan_egress}
 
 \subsubsection{Phương pháp đo}
 
-WAN-MCU có ba đường kết nối Internet với phần cứng khác nhau: Wi-Fi 2,4\,GHz (radio tích hợp trong ESP32-S3), Ethernet 10/100 (IC W5500 ngoài, giao tiếp qua SPI), và LTE 4G (module SIM7600G-H ngoài, giao tiếp qua USB CDC). Mỗi đường được đo độc lập.
+WAN-MCU có ba đường kết nối Internet với phần cứng khác nhau: Wi-Fi 2,4\,GHz (radio tích hợp trong ESP32-S3), Ethernet 10/100 (IC W5500 ngoài, giao tiếp qua SPI), và LTE 4G (mô-đun SIM7600G-H ngoài, giao tiếp qua USB CDC). Mỗi đường được đo độc lập.
 
 WAN-MCU tự sinh dữ liệu giả và đẩy qua raw TCP socket tới một sink server (Python TCP sink chạy trên máy chủ trong cùng LAN, hoặc máy chủ công cộng cho trường hợp LTE). Phép đo đi qua đúng đường truyền dẫn mà mọi application protocol (MQTT, HTTP, CoAP) cũng phải sử dụng, do đó kết quả là giới hạn trên cho mọi protocol ứng dụng.
 
@@ -434,9 +434,9 @@ Bảng~\ref{tab:e2e_throughput} liệt kê thông lượng tối đa theo các t
     WAN sử dụng Wi-Fi 2,4\,GHz & $4{,}8\,\text{Mbps}$ \\ \hline
     WAN sử dụng Ethernet W5500 & $4{,}2\,\text{Mbps}$ \\ \hline
     WAN sử dụng LTE SIM7600G-H & $1{,}82\,\text{Mbps}$ \\ \hline
-    LAN sử dụng 2 module UART & $0{,}88\,\text{Mbps}$ \\ \hline
-    LAN sử dụng 2 module I2C & $0{,}56\,\text{Mbps}$ \\ \hline
-    LAN sử dụng 2 module UART + I2C & $0{,}72\,\text{Mbps}$ \\ \hline
+    LAN sử dụng 2 mô-đun UART & $0{,}88\,\text{Mbps}$ \\ \hline
+    LAN sử dụng 2 mô-đun I2C & $0{,}56\,\text{Mbps}$ \\ \hline
+    LAN sử dụng 2 mô-đun UART + I2C & $0{,}72\,\text{Mbps}$ \\ \hline
 \end{longtable}
 
 Ba hàng WAN giả định cổng vào đủ nhanh (SPI $7{,}37$ hoặc USB $4{,}05\,\text{Mbps}$) nên thông lượng đạt đúng trần card WAN. Ba hàng LAN có cổng vào UART/I2C chậm hơn mọi card WAN nên nút thắt nằm ở cổng vào, bằng tổng trần các lane: $2\times\text{UART} = 2\times0{,}44 = 0{,}88$; $2\times\text{I2C} = 2\times0{,}28 = 0{,}56$; $\text{UART}+\text{I2C} = 0{,}44+0{,}28 = 0{,}72\,\text{Mbps}$. Cầu SPI inter-MCU ($\approx 21\,\text{Mbps}$) không bao giờ là nút thắt.
@@ -457,7 +457,7 @@ Kết luận chung: cầu SPI inter-MCU ($\approx 21\,\text{Mbps}$) không tạo
 
 \subsubsection{Phương pháp đo}
 
-Phép đo xác định khoảng thời gian từ khi một gói tin được nhận hoàn chỉnh tại LAN-MCU đến khi nó thực sự rời khỏi thiết bị qua cổng WAN. Mỗi gói tin được gắn hai con tem thời gian: T\textsubscript{1} tại điểm nhận (LAN-MCU, ngay khi một gói được ghép hoàn chỉnh ở cổng vào) và T\textsubscript{2} tại cánh cổng cuối của từng giao diện WAN. Độ trễ end-to-end là $\Delta T = T_2 - T_1$.
+Phép đo xác định khoảng thời gian từ khi một gói tin được nhận hoàn chỉnh tại LAN-MCU đến khi nó thực sự rời khỏi thiết bị qua cổng WAN. Mỗi gói tin được gán hai nhãn thời gian: T\textsubscript{1} tại điểm nhận (LAN-MCU, ngay khi một gói được ghép hoàn chỉnh ở cổng vào) và T\textsubscript{2} tại cánh cổng cuối của từng giao diện WAN. Độ trễ end-to-end là $\Delta T = T_2 - T_1$.
 
 Vị trí đặt T\textsubscript{2} phụ thuộc vào đặc điểm phần cứng của từng giao diện. Đối với Ethernet W5500, T\textsubscript{2} được đặt chính xác ngay sau khi byte cuối được đẩy qua SPI tới IC mạng, vì đây là bus đồng bộ với API xác nhận rõ ràng. Đối với Wi-Fi và LTE, do không có API công khai xác nhận thời điểm radio phát xong (Wi-Fi) hoặc byte qua được stack PPP/USB (LTE), T\textsubscript{2} được đặt ngay sau khi lệnh \texttt{send()} trả về -- tức là khi TCP buffer chấp nhận dữ liệu. Cách đặt này bắt được toàn bộ thời gian xử lý phần mềm (SPI inter-MCU, TCP/lwIP queuing), chỉ không tính được thời gian điều chế vô tuyến ở ngoài MCU.
 
@@ -479,10 +479,10 @@ Nguồn phát tín hiệu là một \textit{rig} (ESP32-S3 phụ) kết nối v�
     \hline
     \endfoot
     \endlastfoot
-    A -- Cổng vào & Nhận gói ở cổng vào, ghép hoàn chỉnh, đóng dấu T\textsubscript{1} & $\approx 0{,}1\,\text{ms}$ \\ \hline
+    A -- Cổng vào & Nhận gói ở cổng vào, ghép hoàn chỉnh, gán nhãn thời gian T\textsubscript{1} & $\approx 0{,}1\,\text{ms}$ \\ \hline
     B -- Cầu nội bộ & Xếp hàng và chuyển qua SPI inter-MCU & $\approx 3$--$4\,\text{ms}$ \\ \hline
     C -- Phân loại và nạp TCP & Tách nội dung, đẩy vào socket TCP & $\approx 0{,}2\,\text{ms}$ \\ \hline
-    D -- Cánh cổng cuối & Phụ thuộc vào giao diện WAN; đóng dấu T\textsubscript{2} sau chặng này & Đặc trưng từng giao diện \\ \hline
+    D -- Cánh cổng cuối & Phụ thuộc vào giao diện WAN; gán nhãn thời gian T\textsubscript{2} sau chặng này & Đặc trưng từng giao diện \\ \hline
 \end{longtable}
 
 \subsubsection{Kịch bản đo và kết quả}
