@@ -12,7 +12,7 @@
         \subsection{Thiết kế Mạch xử lý trung tâm}
             Khối xử lý trung tâm của hệ thống được thiết kế theo kiến trúc Dual-MCU, sử dụng hai mô-đun ESP32-S3-WROOM-1U-N16R8 đảm nhiệm vai trò Master và Slave.
 
-            % Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
+            % Nguyên lý được thiết kế dựa trên các khuyến nghị trong tài liệu \href{https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/esp-hardware-design-guidelines-en-master-esp32s3.pdf}{ESP32-S3 Hardware Design Guidelines - Espressif}. Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu.
 
             \begin{figure}[h]
                 \centering
@@ -37,7 +37,7 @@
             % Bên cạnh đó, SoC master còn quản lý các tín hiệu điều khiển quan trọng của slave như reset, boot và UART0, phục vụ cho quá trình nạp firmware và cập nhật từ xa (FOTA). Trong cấu trúc này, master đóng vai trò điều phối và quản lý tập trung firmware của slave, đồng thời thực hiện cơ chế nạp gián tiếp thông qua các giao diện điều khiển đã được tích hợp. Ngoài kênh truyền dữ liệu chính, một đường tín hiệu ngắt từ slave tới master được sử dụng nhằm thông báo các sự kiện hoặc cờ ngắt phát sinh trong quá trình vận hành, giúp nâng cao khả năng phản hồi và phối hợp giữa hai SoC.
             Kiến trúc Dual-MCU Master-Slave kết nối qua Quad SPI (60MHz) đảm bảo tính toàn vẹn khi đồng bộ dữ liệu giữa hai SoC ESP32-S3. Việc Master quản lý trực tiếp các tín hiệu Reset, Boot và UART0 cho phép điều phối tập trung và thực thi FOTA gián tiếp cho Slave. Cơ chế này, kết hợp cùng tín hiệu ngắt phản hồi, tối ưu hóa tốc độ tương tác và duy trì sự ổn định vận hành của hệ thống.
 
-            Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\,\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu\cite{Esp32S3HardwareDesignGuidelines}.
+            Đối với các đường tín hiệu clock, một điện trở nối tiếp giá trị 22\(\Omega\) được bố trí trên đường tín hiệu nhằm giảm hiện tượng phản xạ, hạn chế nhiễu và cải thiện độ toàn vẹn tín hiệu\cite{Esp32S3HardwareDesignGuidelines}.
 
             % \begin{figure}[h]
             %     \centering
@@ -55,7 +55,7 @@
                 \label{fig:datasheet_esp32timmingreq}
             \end{figure}
 
-            Dựa trên yêu cầu này, mạch RC được thiết kế với $R = 10\,k\Omega$ và $C = 1\,\mu F$. Thời gian để điện áp trên tụ đạt đến ngưỡng kích hoạt (xấp xỉ $0.75V_{CC} \approx 2.5V$) được xác định theo biểu thức:
+            Dựa trên yêu cầu này, mạch RC được thiết kế với $R = 10\text{k}\Omega$ và $C = 1\mu\text{F}$. Thời gian để điện áp trên tụ đạt đến ngưỡng kích hoạt (xấp xỉ $0.75V_{CC} \approx 2.5V$) được xác định theo biểu thức:
 
             \begin{minipage}{0.45\textwidth}
                 \centering
@@ -98,7 +98,7 @@
                     \item \(C_b\): điện dung tổng của bus I\textsuperscript{2}C\footnote{Bao gồm điện dung ký sinh của đường mạch và điện dung ngõ vào của các thiết bị trên bus.} (F).
                     \item \(t_r\): thời gian cạnh lên của tín hiệu I\textsuperscript{2}C (s) \footnote{Đối với chế độ Fast Mode (400\,kHz), \(t_r\) được giới hạn ở mức 300\,ns\cite{I2CBusPullupResistorCalculation}.}
                     \item \(V_{CC}\): điện áp cấp cho bus I\textsuperscript{2}C (V).
-                    \item \(V_{OL(\max)}\): mức điện áp logic thấp tối đa cho phép khi thiết bị nhận mức 0 (V)\footnote{Lấy theo datasheet của ESP32, xấp xỉ \(0.2\,V_{CC}\)\cite{Esp32S3WroomDatasheet}.}
+                    \item \(V_{OL(\max)}\): mức điện áp logic thấp tối đa cho phép khi thiết bị nhận mức 0 (V)\footnote{Lấy theo datasheet của ESP32, xấp xỉ \(0.2V_{CC}\)\cite{Esp32S3WroomDatasheet}.}
                     \item \(I_{OL}\): dòng kéo xuống cực đại của thiết bị khi xuất mức logic thấp (A).
                 \end{itemize}
             \end{minipage}
@@ -114,13 +114,13 @@
 
             Kết quả tính toán:
             \[
-            880\,\Omega \leq R_{PU\_master} \leq 4720.88\,\Omega
+            880\Omega \leq R_{PU\_master} \leq 4720.88\Omega
             \]
             \[
-            880\,\Omega \leq R_{PU\_slave} \leq 11802.2\,\Omega
+            880\Omega \leq R_{PU\_slave} \leq 11802.2\Omega
             \]
 
-            Dựa trên các khoảng giá trị này, điện trở kéo lên được lựa chọn là $3.3\,k\Omega$ cho bus phía master và $10\,k\Omega$ cho phía slave.
+            Dựa trên các khoảng giá trị này, điện trở kéo lên được lựa chọn là $3.3\text{k}\Omega$ cho bus phía master và $10\text{k}\Omega$ cho phía slave.
 
         \subsection{Thiết kế Mạch nguồn}
 
@@ -183,18 +183,18 @@
                 \item \textbf{Cấp nguồn đồng thời từ VBUS và VBAT (trạng thái sạc):}
                 Trong trường hợp này, điện áp VSYS phụ thuộc vào mức điện áp pin:
                 \begin{itemize}
-                    \item Khi điện áp pin thấp (từ 3.0\,V đến dưới 3.5\,V): 
-                    BATFET hoạt động ở chế độ tuyến tính (LDO mode) để duy trì điện áp hệ thống lớn hơn điện áp pin. VSYS được giữ ổn định tại mức $VSYS(MIN) + 150\,mV$, tương đương khoảng 3.65\,V.
+                    \item Khi điện áp pin thấp (từ 3.0V đến dưới 3.5V): 
+                    BATFET hoạt động ở chế độ tuyến tính (LDO mode) để duy trì điện áp hệ thống lớn hơn điện áp pin. VSYS được giữ ổn định tại mức $VSYS(MIN) + 150\,mV$, tương đương khoảng 3.65V.
 
-                    \item Khi điện áp pin lớn hơn 3.5\,V: 
-                    BATFET được bật hoàn toàn, điện áp VSYS sẽ bám theo điện áp pin với độ lệch khoảng 50\,mV, tức là $VSYS \approx VBAT + 50\,mV$. Do đó, VSYS tăng dần trong khoảng từ 3.55\,V đến 4.25\,V.
+                    \item Khi điện áp pin lớn hơn 3.5V: 
+                    BATFET được bật hoàn toàn, điện áp VSYS sẽ bám theo điện áp pin với độ lệch khoảng 50\,mV, tức là $VSYS \approx VBAT + 50\,mV$. Do đó, VSYS tăng dần trong khoảng từ 3.55V đến 4.25V.
 
                     \item Trường hợp quá tải (chế độ Supplement): 
-                    Khi dòng tải vượt khả năng cung cấp của VBUS, điện áp VSYS có xu hướng giảm. Khi VSYS thấp hơn điện áp pin, IC sẽ chuyển sang sử dụng năng lượng từ pin để bổ sung cho hệ thống. Khi đó, VSYS xấp xỉ bằng điện áp pin, nằm trong khoảng từ 3.5\,V đến 4.2\,V.
+                    Khi dòng tải vượt khả năng cung cấp của VBUS, điện áp VSYS có xu hướng giảm. Khi VSYS thấp hơn điện áp pin, IC sẽ chuyển sang sử dụng năng lượng từ pin để bổ sung cho hệ thống. Khi đó, VSYS xấp xỉ bằng điện áp pin, nằm trong khoảng từ 3.5V đến 4.2V.
                 \end{itemize}
             \end{itemize}
 
-            Việc tích hợp IC Power Monitor tại đầu ra VSYS cho phép giám sát công suất toàn hệ thống theo thời gian thực với sai số thấp (tối đa 0.3\%). Lựa chọn này đảm bảo dữ liệu năng lượng tin cậy mà không gây hao tổn đáng kể nhờ dòng tiêu thụ thấp (tối đa 420 $\mu$A). Song song đó, IC Battery Fuel Gauge được sử dụng để quản lý trạng thái pin LiPo, hoàn thiện giải pháp giám sát năng lượng đồng bộ cho thiết bị.
+            Việc tích hợp IC Power Monitor tại đầu ra VSYS cho phép giám sát công suất toàn hệ thống theo thời gian thực với sai số thấp (tối đa 0.3\%). Lựa chọn này đảm bảo dữ liệu năng lượng tin cậy mà không gây hao tổn đáng kể nhờ dòng tiêu thụ thấp (tối đa 420$\mu$A). Song song đó, IC Battery Fuel Gauge được sử dụng để quản lý trạng thái pin LiPo, hoàn thiện giải pháp giám sát năng lượng đồng bộ cho thiết bị.
 
             \begin{figure}[h]
                 \centering
@@ -228,7 +228,7 @@
                 \label{fig:sche_usbconn}
             \end{figure}
 
-            Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22\,$\Omega$\cite{EngineersGuideToUsbTypeC}\cite{UsbTypeCCableConnectorSpecification}, với tác dụng:
+            Ngoài ra, trên mỗi đường D$^+$ và D$^-$ còn được bố trí thêm điện trở giảm chấn (series damping resistor) 22$\Omega$\cite{EngineersGuideToUsbTypeC}\cite{UsbTypeCCableConnectorSpecification}, với tác dụng:
             \begin{itemize}
                 \item Giảm hiện tượng overshooting và ringing trên cạnh xung
                 \item Cải thiện Signal Integrity
@@ -265,14 +265,14 @@
                 \label{fig:sche_ioxpowerrecomendation}
             \end{figure}
 
-            Tại đầu vào dương của bộ so sánh là một cầu chia áp nhằm tạo điện áp tham chiếu. Điện áp tham chiếu này có giá trị xấp xỉ 2.2\,V. Tại đầu vào âm của bộ so sánh là mạch RC delay, trong đó điện áp trên tụ tăng dần theo thời gian khi mạch được cấp nguồn. Khi điện áp trên tụ vượt qua mức tham chiếu 2.2\,V, đầu ra của bộ so sánh sẽ chuyển từ mức thấp sang mức cao, kích hoạt MOSFET kênh P đóng và cấp nguồn cho chân VCCI của IO Expander.
+            Tại đầu vào dương của bộ so sánh là một cầu chia áp nhằm tạo điện áp tham chiếu. Điện áp tham chiếu này có giá trị xấp xỉ 2.2V. Tại đầu vào âm của bộ so sánh là mạch RC delay, trong đó điện áp trên tụ tăng dần theo thời gian khi mạch được cấp nguồn. Khi điện áp trên tụ vượt qua mức tham chiếu 2.2V, đầu ra của bộ so sánh sẽ chuyển từ mức thấp sang mức cao, kích hoạt MOSFET kênh P đóng và cấp nguồn cho chân VCCI của IO Expander.
 
-            Với các giá trị được lựa chọn trong thiết kế, trong đó $\tau = RC = 0.1\,\text{ms}$, điện áp nguồn $V_S = 3.3\,\text{V}$ và điện áp trên tụ tại thời điểm so sánh $V_C = 2.2\,\text{V}$, thời gian trễ tính toán được là $t \approx \textbf{0.11\,ms}$. Giá trị này đáp ứng dải thời gian ramp-up từ 0.1 đến 2000\,ms theo khuyến nghị trong datasheet của nhà sản xuất.
+            Với các giá trị được lựa chọn trong thiết kế, trong đó $\tau = RC = 0.1\,\text{ms}$, điện áp nguồn $V_S = 3.3\text{V}$ và điện áp trên tụ tại thời điểm so sánh $V_C = 2.2\text{V}$, thời gian trễ tính toán được là $t \approx \textbf{0.11\,ms}$. Giá trị này đáp ứng dải thời gian ramp-up từ 0.1 đến 2000\,ms theo khuyến nghị trong datasheet của nhà sản xuất.
 
             Cơ chế hoạt động của mạch được mô tả theo trình tự thời gian như sau:
             \begin{itemize}
-                \item \textbf{Tại thời điểm $t = 0$}: mạch IO Expander vừa được cấp nguồn. Điện áp tại đầu vào âm của bộ so sánh bắt đầu tăng dần từ 0\,V lên mức 3.3\,V, trong khi điện áp tại đầu vào dương được giữ cố định ở mức 2.2\,V. Op-amp cho mức điện áp đầu ra cao (xấp xỉ 3.3\,V), khiến MOSFET kênh P ở trạng thái đóng, nguồn VCCI chưa được cấp.
-                \item \textbf{Tại thời điểm $t \approx 0.11\,ms$}: điện áp tại đầu vào âm vượt qua mức 2.2\,V, làm đầu ra op-amp bị kéo xuống mức thấp (xấp xỉ 0\,V). MOSFET kênh P chuyển sang trạng thái dẫn, cho phép nguồn VCCI được cấp cho IO Expander.
+                \item \textbf{Tại thời điểm $t = 0$}: mạch IO Expander vừa được cấp nguồn. Điện áp tại đầu vào âm của bộ so sánh bắt đầu tăng dần từ 0V lên mức 3.3V, trong khi điện áp tại đầu vào dương được giữ cố định ở mức 2.2V. Op-amp cho mức điện áp đầu ra cao (xấp xỉ 3.3V), khiến MOSFET kênh P ở trạng thái đóng, nguồn VCCI chưa được cấp.
+                \item \textbf{Tại thời điểm $t \approx 0.11\,ms$}: điện áp tại đầu vào âm vượt qua mức 2.2V, làm đầu ra op-amp bị kéo xuống mức thấp (xấp xỉ 0V). MOSFET kênh P chuyển sang trạng thái dẫn, cho phép nguồn VCCI được cấp cho IO Expander.
             \end{itemize}
 
             Mạch được mô phỏng trên phần mềm LTspice, kết quả mô phỏng được trình bày trong Hình~\ref{fig:sim_ioxdelayvcci}.
@@ -285,7 +285,7 @@
             \end{figure}
 
         \subsection{Thiết kế Mạch RTC}
-            Hệ thống tích hợp IC RTC cùng mạch Power OR-ing dùng diode Schottky nhằm đảm bảo dữ liệu thời gian thực được duy trì thông suốt trong mọi tình huống chuyển đổi nguồn. Việc bố trí diode TVS tại đường pin dự phòng là giải pháp cần thiết để triệt tiêu xung ESD, bảo vệ mạch khỏi rủi ro hỏng hóc khi thay pin. Việc sử dụng thạch anh 32.768kHz có ESR < 100\,k$\Omega$ và điện dung 12.5pF là sự tuân thủ yêu cầu của IC, giúp hệ thống đạt độ chính xác cao nhất và tối ưu hóa năng lượng vận hành.
+            Hệ thống tích hợp IC RTC cùng mạch Power OR-ing dùng diode Schottky nhằm đảm bảo dữ liệu thời gian thực được duy trì thông suốt trong mọi tình huống chuyển đổi nguồn. Việc bố trí diode TVS tại đường pin dự phòng là giải pháp cần thiết để triệt tiêu xung ESD, bảo vệ mạch khỏi rủi ro hỏng hóc khi thay pin. Việc sử dụng thạch anh 32.768\,kHz có ESR < 100k$\Omega$ và điện dung 12.5pF là sự tuân thủ yêu cầu của IC, giúp hệ thống đạt độ chính xác cao nhất và tối ưu hóa năng lượng vận hành.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/sche_rtc.png}
@@ -294,7 +294,7 @@
             \end{figure}
 
         \subsection{Thiết kế Mạch Micro SD Card}
-            Giao tiếp thẻ MicroSD được thực hiện qua chuẩn SDIO 4-bit (80MHz) nhằm đảm bảo thông lượng lưu trữ dữ liệu tối ưu cho hệ thống. Để triệt tiêu hiện tượng ringing và overshoot phát sinh ở tần số cao, thiết kế tuân thủ nghiêm ngặt khuyến nghị của Espressif bằng cách tích hợp IC bảo vệ ESD ngay tại ngõ vào. Việc sử dụng linh kiện chuyên dụng này không chỉ giúp tối ưu hóa diện tích bo mạch mà còn là giải pháp kỹ thuật đồng bộ, cung cấp đồng thời trở giảm chấn (36-54\,$\Omega$), điện trở kéo lên (80-100k\,$\Omega$) và tầng bảo vệ ESD, giúp duy trì tính toàn vẹn tín hiệu vượt trội so với việc sử dụng các linh kiện rời rạc.
+            Giao tiếp thẻ MicroSD được thực hiện qua chuẩn SDIO 4-bit (80MHz) nhằm đảm bảo thông lượng lưu trữ dữ liệu tối ưu cho hệ thống. Để triệt tiêu hiện tượng ringing và overshoot phát sinh ở tần số cao, thiết kế tuân thủ nghiêm ngặt khuyến nghị của Espressif bằng cách tích hợp IC bảo vệ ESD ngay tại ngõ vào. Việc sử dụng linh kiện chuyên dụng này không chỉ giúp tối ưu hóa diện tích bo mạch mà còn là giải pháp kỹ thuật đồng bộ, cung cấp đồng thời trở giảm chấn (36-54$\Omega$), điện trở kéo lên (80-100k$\Omega$) và tầng bảo vệ ESD, giúp duy trì tính toàn vẹn tín hiệu vượt trội so với việc sử dụng các linh kiện rời rạc.
 
             \begin{figure}[h]
                 \centering
@@ -322,7 +322,7 @@
             \end{figure}
         
         \subsection{Thiết kế Mạch I\textsuperscript{2}C Buffer}   
-            Để bảo đảm tính toàn vẹn dữ liệu khi giao tiếp với nhiều thiết bị ngoại vi qua dây dẫn dài, thiết kế tích hợp IC đệm làm giải pháp phân tách bus chủ động. Lựa chọn này là kỹ thuật cần thiết để hệ thống vận hành ổn định ở chế độ Fast-mode (400kHz) mà không bị ảnh hưởng bởi giới hạn điện dung ký sinh 400pF. Việc sử dụng IC đệm giúp cô lập tải chỉ còn 10pF cho bus chính, đồng thời duy trì khả năng truyền dẫn tin cậy cho các nhánh mở rộng, giảm thiểu rủi ro lỗi bit do nhiễu và suy hao tín hiệu.
+            Để bảo đảm tính toàn vẹn dữ liệu khi giao tiếp với nhiều thiết bị ngoại vi qua dây dẫn dài, thiết kế tích hợp IC đệm làm giải pháp phân tách bus chủ động. Lựa chọn này là kỹ thuật cần thiết để hệ thống vận hành ổn định ở chế độ Fast-mode (400\,kHz) mà không bị ảnh hưởng bởi giới hạn điện dung ký sinh 400pF. Việc sử dụng IC đệm giúp cô lập tải chỉ còn 10pF cho bus chính, đồng thời duy trì khả năng truyền dẫn tin cậy cho các nhánh mở rộng, giảm thiểu rủi ro lỗi bit do nhiễu và suy hao tín hiệu.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/sche_i2cbuffer.png}
@@ -330,7 +330,7 @@
                 \label{fig:sche_i2cbuffer}
             \end{figure}
         \subsection{Thiết kế Mạch nút nhấn}
-            Thiết kế tích hợp diode TVS 3.3V để triệt tiêu chủ động xung ESD phát sinh từ tương tác cơ khí tại nút nhấn. Việc phối hợp tụ 100nF và trở giảm chấn 100\,$\Omega$ là giải pháp kỹ thuật cần thiết nhằm xử lý triệt để hiện tượng dội tiếp điểm (debounce) và ringing. Lựa chọn này đảm bảo tính toàn vẹn của tín hiệu truyền đến MCU, đồng thời tăng cường độ bền hệ thống trước các tác động điện-cơ trong điều kiện vận hành thực tế.
+            Thiết kế tích hợp diode TVS 3.3V để triệt tiêu chủ động xung ESD phát sinh từ tương tác cơ khí tại nút nhấn. Việc phối hợp tụ 100nF và trở giảm chấn 100$\Omega$ là giải pháp kỹ thuật cần thiết nhằm xử lý triệt để hiện tượng dội tiếp điểm (debounce) và ringing. Lựa chọn này đảm bảo tính toàn vẹn của tín hiệu truyền đến MCU, đồng thời tăng cường độ bền hệ thống trước các tác động điện-cơ trong điều kiện vận hành thực tế.
             \begin{figure}[H]
                 \centering
                 \includegraphics[width=0.75\textwidth]{figures/DATN/sche_button.png}
@@ -370,9 +370,9 @@
 
             Trong phiên bản hiện tại, Module Adapter WAN được triển khai thành hai mạch riêng biệt, bao gồm mạch adapter WAN LTE và mạch adapter WAN Ethernet. Adapter WAN LTE được thiết kế cho mô-đun SIM7600G-H-PCIE và adapter WAN Ethernet. Mỗi adapter đều tích hợp các khối chức năng cần thiết để giao tiếp với baseboard, bao gồm khối cấp và điều khiển nguồn, bộ mở rộng ngõ vào/ngõ ra (IO expander), cùng các bus giao tiếp phần cứng tương ứng. 
             
-            Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\,\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
+            Mạch adapter WAN LTE được thiết kế với một khe cắm SIM, hỗ trợ thẻ MicroSIM. Các đường tín hiệu của khe SIM được bảo vệ bằng diode TVS nhằm hạn chế ảnh hưởng của hiện tượng phóng tĩnh điện (ESD). Đồng thời, trên các đường tín hiệu này còn được bố trí điện trở nối tiếp 22\(\Omega\) để giảm chấn và tụ điện 18\,pF để lọc nhiễu, qua đó góp phần nâng cao độ ổn định và độ tin cậy của tín hiệu trong quá trình vận hành.\cite{Sim7600SeriesPcieHardwareDesign}
 
-            Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\,\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu.
+            Đối với adapter WAN Ethernet, trên đường tín hiệu MDI giữa cổng RJ45 và IC Ethernet PHY cũng được bố trí các điện trở nối tiếp 33\(\Omega\) để giảm chấn, cùng các linh kiện thụ động khác theo khuyến nghị thiết kế trong tài liệu.
             % \href{https://docs.wiznet.io/pdf-viewer?file=%2Fassets%2Ffiles%2Fw5500_sch_v110_use_mag_-dfff8bbb103d13be4f25cd2b2f8b950d.pdf}{W5500 Reference Schematic (RJ45)} của Wiznet.
 
             \begin{figure}[H]

@@ -82,9 +82,9 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
                 \hline
                 \endfoot
                 \endlastfoot
-                Zigbee & $\approx 8{,}2\,\text{kbps}$ & $> 95\%$ \\ \hline
-                LoRa SF7/125 (P2P) & $\approx 3{,}5\,\text{kbps}$ & $> 99\%$ \\ \hline
-                BLE (DLE bật) & $\approx 97{,}6\,\text{kbps}$ & $> 99\%$ \\ \hline
+                Zigbee & $\approx 8{.}2\,\text{kbps}$ & $> 95\%$ \\ \hline
+                LoRa SF7/125 (P2P) & $\approx 3{.}5\,\text{kbps}$ & $> 99\%$ \\ \hline
+                BLE (DLE bật) & $\approx 97{.}6\,\text{kbps}$ & $> 99\%$ \\ \hline
             \end{longtable}
             
             \item \textbf{Kiểm thử đa kênh đồng thời -- Concurrency Test}
@@ -92,19 +92,19 @@ Sau khi hoàn tất kiểm tra phần cứng, hệ thống được đưa vào g
             \textbf{Phương pháp:} Cả ba node (Zigbee, LoRa, BLE) cùng phát dữ liệu tối đa. Thông lượng lý thuyết tổng hợp tại chặng LAN$\,\rightarrow\,$WAN:
             \[
                 R_{total} = R_{Zigbee} + R_{BLE} + R_{LoRa}
-                            = 8{,}2 + 97{,}6 + 3{,}5
-                            = 109{,}3\,\text{kbps}
+                            = 8{.}2 + 97{.}6 + 3{.}5
+                            = 109{.}3\,\text{kbps}
             \]
             
-            \textbf{Đối chiếu với số liệu đo thực tế.} Theo kết quả đo tại Mục~\ref{subsec:bench_spi} và~\ref{subsec:bench_spi_ramp}, kênh SPI inter-MCU đạt throughput thực tế $\approx 21\,\text{Mbps}$ (chế độ production path qua đầy đủ queue, mutex và dispatcher) và trần lossless $19{,}2\,\text{Mbps}$. So sánh với tổng thông lượng lý thuyết của ba kênh vô tuyến:
+            \textbf{Đối chiếu với số liệu đo thực tế.} Theo kết quả đo tại Mục~\ref{subsec:bench_spi} và~\ref{subsec:bench_spi_ramp}, kênh SPI inter-MCU đạt throughput thực tế $\approx 21\,\text{Mbps}$ (chế độ production path qua đầy đủ queue, mutex và dispatcher) và trần lossless $19{.}2\,\text{Mbps}$. So sánh với tổng thông lượng lý thuyết của ba kênh vô tuyến:
             \[
-                R_{total} = 109{,}3\,\text{kbps} \approx 0{,}11\,\text{Mbps}
+                R_{total} = 109{.}3\,\text{kbps} \approx 0{.}11\,\text{Mbps}
                 \quad \ll \quad
                 R_{SPI,\text{đo}} \approx 21\,\text{Mbps}
             \]
-            Kênh SPI inter-MCU dư công suất hơn \textbf{190 lần} so với tải tổng hợp thực tế. Không cổng nào trong số ba giao diện vô tuyến (Zigbee $8{,}2\,\text{kbps}$, BLE $97{,}6\,\text{kbps}$, LoRa $3{,}5\,\text{kbps}$) đủ để làm bão hoà kênh SPI ở bất kỳ điều kiện tải nào.
+            Kênh SPI inter-MCU dư công suất hơn \textbf{190 lần} so với tải tổng hợp thực tế. Không cổng nào trong số ba giao diện vô tuyến (Zigbee $8{.}2\,\text{kbps}$, BLE $97{.}6\,\text{kbps}$, LoRa $3{.}5\,\text{kbps}$) đủ để làm bão hoà kênh SPI ở bất kỳ điều kiện tải nào.
 
-            \textbf{Kết luận:} SPI inter-MCU không phải nút thắt của hệ thống. Thông lượng LAN$\,\rightarrow\,$WAN thực tế sau khi qua cầu SPI và giao diện WAN (xem Bảng~\ref{tab:e2e_throughput}) vượt xa nhu cầu $109{,}3\,\text{kbps}$ của kịch bản đa kênh đồng thời.
+            \textbf{Kết luận:} SPI inter-MCU không phải nút thắt của hệ thống. Thông lượng LAN$\,\rightarrow\,$WAN thực tế sau khi qua cầu SPI và giao diện WAN (xem Bảng~\ref{tab:e2e_throughput}) vượt xa nhu cầu $109{.}3\,\text{kbps}$ của kịch bản đa kênh đồng thời.
             
             Mục tiêu PDR toàn hệ thống $> 85\%$ dưới tải nặng. Nguy cơ suy giảm PDR chủ yếu đến từ Zigbee Listener buffer ($512\,\text{byte}$) bị tràn khi LAN-MCU bận phục vụ ngắt SPI/UART tần suất cao trong mỗi chu kỳ $10\,\text{ms}$.
             

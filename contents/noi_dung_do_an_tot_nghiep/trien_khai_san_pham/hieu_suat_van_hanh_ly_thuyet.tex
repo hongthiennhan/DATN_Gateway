@@ -7,12 +7,12 @@ Kênh giao tiếp giữa Master (WAN-MCU) và Slave (LAN-MCU) sử dụng SPI, x
 \begin{itemize}
     \item \textbf{Thông lượng lý thuyết ($T_{\text{raw}}$):}
     $T_{\text{raw}} = f_{\text{clk}} \times 1\,\text{bit/clock} = 60\,\text{MHz} \times 1 = 60\,\text{Mbps}$
-    (tương đương $7{,}5\,\text{MB/s}$).
+    (tương đương $7{.}5\,\text{MB/s}$).
 
     \item \textbf{Thông lượng hiệu dụng theo giao thức ($T_{\text{protocol}}$):}
     Sau khi tính overhead khung tin (Header, Sequence Number, CRC), cơ chế bắt tay GPIO Handshake, trễ ngắt ISR và chu trình ACK/NACK, hiệu suất giao thức đạt $\eta \approx 95\%$:
     \[
-        T_{\text{protocol}} = \eta \times T_{\text{raw}} = 0{,}95 \times 60\,\text{Mbps} = 57\,\text{Mbps}.
+        T_{\text{protocol}} = \eta \times T_{\text{raw}} = 0{.}95 \times 60\,\text{Mbps} = 57\,\text{Mbps}.
     \]
 
     \item \textbf{Thông lượng duy trì thực tế ($T_{\text{eff}}$):}
@@ -21,10 +21,10 @@ Kênh giao tiếp giữa Master (WAN-MCU) và Slave (LAN-MCU) sử dụng SPI, x
         t_{\text{tx}} = \frac{L}{T_{\text{protocol}}} = \frac{16384}{57 \times 10^{6}} \approx 287\,\mu\text{s},
     \]
     \[
-        T_{\text{cycle}} = t_{\text{batch}} + t_{\text{tx}} = 10\,\text{ms} + 0{,}287\,\text{ms} \approx 10{,}287\,\text{ms},
+        T_{\text{cycle}} = t_{\text{batch}} + t_{\text{tx}} = 10\,\text{ms} + 0{.}287\,\text{ms} \approx 10{.}287\,\text{ms},
     \]
     \[
-        T_{\text{eff}} = \frac{L}{T_{\text{cycle}}} = \frac{16384\,\text{bits}}{10{,}287 \times 10^{-3}\,\text{s}} \approx 1{,}59\,\text{Mbps}.
+        T_{\text{eff}} = \frac{L}{T_{\text{cycle}}} = \frac{16384\,\text{bits}}{10{.}287 \times 10^{-3}\,\text{s}} \approx 1{.}59\,\text{Mbps}.
     \]
     Đây là thông lượng duy trì (sustained throughput) của kênh Inter-MCU trong điều kiện vận hành thực tế. Do lưu lượng dữ liệu cảm biến từ LAN-MCU thường nhỏ hơn $1\,\text{Mbps}$, kênh SPI không trở thành điểm nghẽn cổ chai của hệ thống.
 \end{itemize}

@@ -40,7 +40,7 @@
             \item \textbf{Cơ chế liên kết:} 
             Để hai vi điều khiển vận hành như một thực thể thống nhất, thiết kế tập trung vào ba tầng giao tiếp đặc thù:
             \begin{itemize}
-                \item \textit{Tầng dữ liệu:} Sử dụng \textbf{Quad SPI (60MHz)} để đảm bảo thông lượng dữ liệu giữa mạng cảm biến và Cloud không bị nghẽn cổ chai.
+                \item \textit{Tầng dữ liệu:} Sử dụng \textbf{Quad SPI (60 MHz)} để đảm bảo thông lượng dữ liệu giữa mạng cảm biến và Cloud không bị nghẽn cổ chai.
                 \item \textit{Tầng quản trị:} Kênh \textbf{UART Passthrough} cho phép Master trực tiếp nạp lại Firmware cho Slave, hỗ trợ quy trình cập nhật FOTA an toàn cho toàn hệ thống.
                 \item \textit{Tầng kiểm soát:} Hệ thống tín hiệu ngắt (\textit{Interrupt}) và \textit{Handshake} qua GPIO đảm bảo sự đồng bộ trạng thái thực tế giữa hai miền mạng WAN và LAN.
             \end{itemize}

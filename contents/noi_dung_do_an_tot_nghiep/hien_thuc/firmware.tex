@@ -33,7 +33,7 @@
     %     WAN-MCU đóng vai trò trung tâm điều phối cấu hình và quản trị kết nối ngoại vi cho toàn gateway. Bằng cách tách biệt các giao thức mạng nội bộ sang LAN-MCU, WAN-MCU tập trung nguồn lực thực hiện các nhiệm vụ trọng yếu sau:
 
     %     \begin{itemize}
-    %         \item \textbf{Quản lý đa phương thức kết nối Internet:} Thiết lập và duy trì đường truyền qua Wi-Fi (Personal/Enterprise), LTE (giao thức USB) và Ethernet. Hệ thống tích hợp cơ chế tự động khôi phục kết nối (Auto-reconnect) và đồng bộ thời gian thực (SNTP/RTC) để đảm bảo tính thống nhất cho timestamp dữ liệu.
+    %         \item \textbf{Quản lý đa phương thức kết nối Internet:} Thiết lập và duy trì đường truyền qua Wi-Fi (Personal/Enterprise), LTE (giao thức USB) và Ethernet. Hệ thống tích hợp cơ chế tự động khôi phục kết nối (Auto-reconnect) và đồng bộ thời gian thực (SNTP/RTC) để đảm bảo tính thống nhất cho time-stamp dữ liệu.
         
     %         \item \textbf{Cơ chế Internet Fallback:} Hệ thống tự động chuyển đổi nguồn Internet dựa trên độ ưu tiên vật lý (Ethernet $>$ Wi-Fi $>$ LTE). Khi phát hiện mô-đun LTE hoặc Ethernet được kết nối, WAN-MCU chủ động kiểm tra trạng thái link để thay đổi kênh truyền ưu tiên, đồng thời tự động tái kết nối kênh dự phòng khi có sự cố, đảm bảo duy trì luồng dữ liệu Cloud liên tục.
         

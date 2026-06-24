@@ -14,14 +14,14 @@
 
     %     % --- GATEWAY INTERNAL (KIẾN TRÚC DUAL-MCU) ---
     %     % Master MCU - Quản lý WAN [4, 5]
-    %     \node (master) [mcu_node] {\textbf{MASTER WAN-MCU}\\(Control/Cloud)\\{ESP32-S3}};
+    %     \node (master) [mcu_node] {\textbf{Master WAN-MCU}\\(Control/Cloud)\\{ESP32-S3}};
         
     %     % Slave MCU - Quản lý LAN [4, 6]
     %     \node (slave) [mcu_node, below=2.5cm of master] {\textbf{SLAVE LAN-MCU}\\(Sensing/Data)\\{ESP32-S3}};
         
     %     % Inter-MCU Link [7, 8]
     %     \draw [<->, line width=1.5pt, blue!70] (master) -- (slave) 
-    %         node [midway, right, align=left, font=\scriptsize] {Quad SPI (60MHz) \\ GPIO Handshake};
+    %         node [midway, right, align=left, font=\scriptsize] {Quad SPI (60 MHz) \\ GPIO Handshake};
 
     %     % --- MIỀN WAN (UPLINK) ---
     %     \node (cloud) [cloud_node, above=2.5cm of master] {Cloud Services \\ (MQTT/HTTP/CoAP)};

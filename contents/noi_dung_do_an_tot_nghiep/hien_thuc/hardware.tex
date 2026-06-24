@@ -16,23 +16,23 @@
         \paragraph{Khối Xử lý trung tâm:}\par
             Hệ thống sử dụng kiến trúc xử lý song song với hai vi điều khiển chuyên biệt nhằm tối ưu hóa hiệu năng và tài nguyên phần cứng:
             \begin{itemize}
-                \item \textbf{MASTER WAN-MCU}
+                \item \textbf{Master WAN-MCU}
                 \begin{itemize}
                     \item Vai trò: Là vi điều khiển chính, chịu trách nhiệm xử lý các tác vụ thuộc Lớp ứng dụng (Application Layer) và điều phối hoạt động cả hệ thống.
-                    \item Chức năng: Xử lý các tác vụ Lớp ứng dụng thông qua WAN Module Adapter, quản lý giao diện người dùng và kết nối đám mây, điều phối luồng dữ liệu chính, và điều phối hoạt động của SLAVE LAN-MCU. MASTER WAN-MCU chịu trách nhiệm cập nhật firmware từ thiết bị cấu hình (Configuration Tools) và từ đám mây (FOTA) cho cả hệ thống.
+                    \item Chức năng: Xử lý các tác vụ Lớp ứng dụng thông qua WAN Module Adapter, quản lý giao diện người dùng và kết nối đám mây, điều phối luồng dữ liệu chính, và điều phối hoạt động của Slave LAN-MCU. Master WAN-MCU chịu trách nhiệm cập nhật firmware từ thiết bị cấu hình (Configuration Tools) và từ đám mây (FOTA) cho cả hệ thống.
                 \end{itemize}
-                \item \textbf{SLAVE LAN-MCU}
+                \item \textbf{Slave LAN-MCU}
                 \begin{itemize}
                     \item Vai trò: Tương tác trực tiếp với lớp Cảm biến (Sensing Domain), quản lý các kết nối mạng nội bộ thông qua LAN Module Adapter, và lưu trữ dữ liệu.
-                    \item Chức năng: Quản lý các giao thức truyền thông nội bộ và mạng cảm biến, thu thập dữ liệu thô, thực hiện tiền xử lý và lưu trữ cục bộ (Micro SD Card) trước khi gửi lên MASTER WAN-MCU.
+                    \item Chức năng: Quản lý các giao thức truyền thông nội bộ và mạng cảm biến, thu thập dữ liệu thô, thực hiện tiền xử lý và lưu trữ cục bộ (Micro SD Card) trước khi gửi lên Master WAN-MCU.
                 \end{itemize}
             \end{itemize}
 
         \paragraph{Giao tiếp giữa hai Vi xử lý:}\par
-            Để đảm bảo đồng bộ dữ liệu giữa MASTER WAN-MCU và SLAVE LAN-MCU, hệ thống sử dụng ba đường giao tiếp riêng biệt:
+            Để đảm bảo đồng bộ dữ liệu giữa Master WAN-MCU và Slave LAN-MCU, hệ thống sử dụng ba đường giao tiếp riêng biệt:
             \begin{itemize}
                 \item \textbf{SPI (Request/Data)}: Kênh truyền dữ liệu tốc độ cao, dùng để Slave gửi dữ liệu cảm biến lên Master và Master gửi yêu cầu xuống Slave.
-                \item \textbf{UART (Firmware Flow)}: Kênh chuyên biệt dùng để nạp firmware cho SLAVE LAN-MCU thông qua MASTER WAN-MCU.
+                \item \textbf{UART (Firmware Flow)}: Kênh chuyên biệt dùng để nạp firmware cho Slave LAN-MCU thông qua Master WAN-MCU.
                 \item \textbf{GPIO (Control)}: Các đường tín hiệu điều khiển (Boot, Reset, Interrupt) để đảm bảo đồng bộ trạng thái hoạt động.
             \end{itemize}
 
@@ -41,17 +41,17 @@
             \begin{itemize}
                 \item \textbf{WAN Module Adapter}
                 \begin{itemize}
-                    \item Kết nối với MASTER WAN-MCU.
+                    \item Kết nối với Master WAN-MCU.
                     \item Hỗ trợ các mô-đun giao tiếp với Cloud hoặc thiết bị người dùng (User Interface Devices).
                 \end{itemize}
                 \item \textbf{LAN1 Module Adapter}
                 \begin{itemize}
-                    \item Kết nối với SLAVE LAN-MCU.
+                    \item Kết nối với Slave LAN-MCU.
                     \item Hỗ trợ kết nối các mô-đun kết nối không dây như LoRa, Zigbee, BLE, Thread, \dots
                 \end{itemize}
                 \item \textbf{LAN2 Module Adapter}
                 \begin{itemize}
-                    \item Kết nối với SLAVE LAN-MCU.
+                    \item Kết nối với Slave LAN-MCU.
                     \item Hỗ trợ kết nối các mô-đun kết nối có dây như RS-485, CAN, \dots
                 \end{itemize}
             \end{itemize}
@@ -123,9 +123,9 @@
 
         \paragraph{Luồng dữ liệu:}\par
             \begin{itemize}
-                \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua MASTER WAN-MCU, sau đó được chuyển tiếp đến SLAVE LAN-MCU qua kênh UART chuyên biệt.
-                \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua MASTER WAN-MCU đến SLAVE LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại SLAVE LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua MASTER WAN-MCU lên Cloud Service. Các request và dữ liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
-                \item \textbf{Control Flow:} Luồng tín hiệu điều khiển từ MASTER WAN-MCU để điều khiển trạng thái hoạt động của SLAVE LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
+                \item \textbf{Firmware/FOTA Flow:} Firmware được nạp vào thiết bị thông qua Configuration Tools bằng kênh USB, hoặc từ đám mây (FOTA) qua Master WAN-MCU, sau đó được chuyển tiếp đến Slave LAN-MCU qua kênh UART chuyên biệt.
+                \item \textbf{Request/Data Flow:} Request được gửi từ Miền Ứng dụng (Application Domain) qua Master WAN-MCU đến Slave LAN-MCU để lấy dữ liệu cảm biến. Dữ liệu cảm biến sau khi được thu thập và tiền xử lý tại Slave LAN-MCU, hoặc đang được lưu trữ sẽ được gửi ngược lại qua Master WAN-MCU lên Cloud Service. Các request và dữ liệu này được truyền qua kênh Quad SPI tốc độ cao kết nối giữa hai MCU.
+                \item \textbf{Control Flow:} Luồng tín hiệu điều khiển từ Master WAN-MCU để điều khiển trạng thái hoạt động của Slave LAN-MCU, và điều khiển hệ thống nguồn điện cho gateway thông qua các đường GPIO.
             \end{itemize}
 
     

@@ -206,7 +206,7 @@
         %             Gateway/HMI IoT mini dựa trên vi xử lý \textbf{STM32MP135} mạnh mẽ, có khả năng chạy Linux, hướng đến môi trường công nghiệp và các ứng dụng edge computing cần nhiều giao tiếp trường và giao thức công nghiệp.
         %             \begin{itemize}
         %                 \item CPU \textbf{STM32MP135DAE7} (Arm Cortex-A7 @ 1\,GHz), có MMU nên \textbf{chạy Linux} (Buildroot, Debian, Yocto,\dots).
-        %                 \item Tích hợp \textbf{2$\times$ Gigabit Ethernet}, \textbf{2$\times$ USB\,2.0-A}, \textbf{1$\times$ USB-C OTG}, khe \textbf{microSD} và cổng \textbf{PWR485} (nguồn 9--24\,V + RS485), phù hợp làm gateway công nghiệp.
+        %                 \item Tích hợp \textbf{2$\times$ Gigabit Ethernet}, \textbf{2$\times$ USB\,2.0-A}, \textbf{1$\times$ USB-C OTG}, khe \textbf{microSD} và cổng \textbf{PWR485} (nguồn 9--24V + RS485), phù hợp làm gateway công nghiệp.
         %                 \item Wi-Fi/BLE có thể bổ sung thông qua \textbf{mô-đun mở rộng M5Stack} hoặc USB dongle, giúp linh hoạt trong việc xây dựng gateway IoT có cả Ethernet và kết nối không dây.
         %                 \item Màn hình cảm ứng \textbf{IPS 2.0''} cùng loa 1\,W dùng làm HMI: hiển thị trạng thái thiết bị, tham số hệ thống, nút điều khiển,\dots
         %                 \item \textbf{Hỗ trợ giao tiếp công nghiệp và mở rộng phần cứng} thông qua:
@@ -224,9 +224,9 @@
         %             \item \textbf{Kết nối mạng:} 1$\times$ cổng Ethernet 1\,Gbps (hỗ trợ PoE tuỳ chọn) và 1$\times$ cổng Ethernet 2{.}5\,Gbps; HDMI 2{.}0, 1$\times$ USB\,2{.}0, 2$\times$ USB\,3{.}0.
         %             \item \textbf{Kết nối không dây:} \textbf{Wi-Fi 5 2{.}4/5\,GHz} và \textbf{BLE 5{.}0} (tuỳ phiên bản CM4 có Wi-Fi/BLE); có thể gắn thêm mô-đun không dây qua mPCIe hoặc M.2.
         %             \item \textbf{Mở rộng:} 3$\times$ khe \textbf{mPCIe} (mô-đun LoRaWAN concentrator, LTE, Wi-Fi 6,\dots), 1$\times$ \textbf{M.2 B-Key}, 2$\times$ khe \textbf{WisBlock IO} và header \textbf{Raspberry Pi HAT} 40-pin.
-        %             \item \textbf{Nguồn:} dải \textbf{10--28\,VDC} qua jack DC, terminal Phoenix hoặc \textbf{PoE IEEE 802{.}3at/bt}; tích hợp giám sát điện áp, nhiệt độ PCB, RTC kèm pin và bộ siêu tụ để duy trì hệ thống khi mất điện ngắn hạn.
+        %             \item \textbf{Nguồn:} dải \textbf{10--28VDC} qua jack DC, terminal Phoenix hoặc \textbf{PoE IEEE 802{.}3at/bt}; tích hợp giám sát điện áp, nhiệt độ PCB, RTC kèm pin và bộ siêu tụ để duy trì hệ thống khi mất điện ngắn hạn.
         %             \item \textbf{Hệ điều hành:} \textbf{RAKPiOS} (fork từ Raspberry Pi OS) với driver tích hợp sẵn, tăng cường bảo mật, hỗ trợ \textbf{Docker} và triển khai nhanh các dịch vụ IoT.
-        %             \item \textbf{Ứng dụng:} gateway LoRaWAN đa kênh/đa băng tần, gateway công nghiệp/edge dùng WisBlock (Modbus, 0--5\,V, 4--20\,mA, I/O,\dots), nền tảng phát triển sản phẩm mới.
+        %             \item \textbf{Ứng dụng:} gateway LoRaWAN đa kênh/đa băng tần, gateway công nghiệp/edge dùng WisBlock (Modbus, 0--5V, 4--20\,mA, I/O,\dots), nền tảng phát triển sản phẩm mới.
         %         \end{itemize}
             
         %     \paragraph{SRT-IMX8P industrial gateway}
@@ -236,7 +236,7 @@
         %             \item \textbf{Bộ nhớ:} \textbf{LPDDR4 2\,GB} (tuỳ chọn 4\,GB) và \textbf{eMMC 16\,GB} (tuỳ chọn 32\,GB).
         %             \item \textbf{Kết nối:} 2$\times$ Gigabit Ethernet, 2$\times$ USB 3.0 Type-A, 2$\times$ RS-232/422/485 (Phoenix), 2$\times$ CAN-FD, 1$\times$ HDMI 2.0a.
         %             \item \textbf{Mở rộng:} 2$\times$ khe \textbf{mini-PCIe} (cho mô-đun 4G/LTE, Wi-Fi,\dots), khe \textbf{microSD}, khe SIM và đầu nối board-to-board để mở rộng thêm PCIe, USB 3{.}0, I\textsuperscript{2}C, GPIO,\dots
-        %             \item \textbf{Nguồn:} dải \textbf{DC 9--36\,V}, công suất điển hình khoảng 9{.}36\,W, hỗ trợ làm việc trong dải nhiệt \textbf{-20\,\textdegree C đến 70\,\textdegree C}.
+        %             \item \textbf{Nguồn:} dải \textbf{DC 9--36V}, công suất điển hình khoảng 9{.}36\,W, hỗ trợ làm việc trong dải nhiệt \textbf{-20\,\textdegree C đến 70\,\textdegree C}.
         %             \item \textbf{Bảo mật:} tích hợp \textbf{TPM 2{.}0}, hỗ trợ Secure Boot và các chứng chỉ công nghiệp như CE/FCC Class A, IEC61000-6-2/6-4, IEC61131-2,\dots
         %             \item \textbf{Hệ điều hành:} hỗ trợ \textbf{Debian 11} (mặc định), \textbf{Android 13}, \textbf{Windows 10 IoT} và \textbf{Yocto}, thích hợp cho nhiều kịch bản triển khai khác nhau.
         %             \item \textbf{Ứng dụng:} nhà máy thông minh, gateway AI tại biên, hệ thống tự động hóa công nghiệp và các bài toán AIoT đòi hỏi độ tin cậy cao.
@@ -348,13 +348,13 @@
                         
                         Giá trị \(\Gamma\) càng xa 0, biên độ sóng phản xạ càng lớn. Điều này là lý do cốt lõi phải kiểm soát và thực hiện phối hợp trở kháng trong thiết kế high-speed.
                         
-                        % Trong các hệ thống số tốc độ cao hiện đại, phần lớn các linh kiện giao tiếp như PHY Ethernet, bộ thu phát USB, HDMI/DisplayPort, DDR PHY, các transceiver MIPI hay các bộ chuyển đổi ADC/DAC tốc độ cao đều được thiết kế với trở kháng vào và ra danh định, tương thích với các giá trị trở kháng chuẩn của đường truyền trên PCB và cáp kết nối. Các mức trở kháng này đã được tiêu chuẩn hóa nhằm đảm bảo khả năng truyền dẫn ổn định và tính tương thích giữa các thiết bị. Những giá trị thường gặp bao gồm 50~\(\Omega\) cho các đường tín hiệu single-ended trong nhiều ứng dụng RF và high-speed, 90~\(\Omega\) vi sai cho các giao thức như USB, HDMI, MIPI, và 100~\(\Omega\) vi sai cho Ethernet cũng như nhiều giao thức truyền vi sai khác.
+                        % Trong các hệ thống số tốc độ cao hiện đại, phần lớn các linh kiện giao tiếp như PHY Ethernet, bộ thu phát USB, HDMI/DisplayPort, DDR PHY, các transceiver MIPI hay các bộ chuyển đổi ADC/DAC tốc độ cao đều được thiết kế với trở kháng vào và ra danh định, tương thích với các giá trị trở kháng chuẩn của đường truyền trên PCB và cáp kết nối. Các mức trở kháng này đã được tiêu chuẩn hóa nhằm đảm bảo khả năng truyền dẫn ổn định và tính tương thích giữa các thiết bị. Những giá trị thường gặp bao gồm 50\(\Omega\) cho các đường tín hiệu single-ended trong nhiều ứng dụng RF và high-speed, 90\(\Omega\) vi sai cho các giao thức như USB, HDMI, MIPI, và 100\(\Omega\) vi sai cho Ethernet cũng như nhiều giao thức truyền vi sai khác.
 
-                        % Khi các đường mạch trên PCB không được thiết kế để có trở kháng đặc trưng phù hợp với giá trị mà linh kiện và chuẩn giao thức yêu cầu, sự không khớp trở kháng sẽ xuất hiện tại các điểm chuyển tiếp giữa chip, đường truyền và tải. Hiện tượng này làm tăng hệ số phản xạ \(\Gamma\), dẫn đến các vấn đề như overshoot, ringing, méo dạng sườn tín hiệu, suy giảm biên độ và sai lệch thời điểm lấy mẫu tại phía thu. Do đó, trong thiết kế PCB tốc độ cao, các đường truyền tín hiệu luôn được thiết kế theo nguyên tắc kiểm soát trở kháng (controlled impedance) với các giá trị chuẩn như 50~\(\Omega\), 90~\(\Omega\), 100~\(\Omega\), \ldots nhằm khai thác tối đa đặc tính trở kháng đã được chuẩn hóa.        
+                        % Khi các đường mạch trên PCB không được thiết kế để có trở kháng đặc trưng phù hợp với giá trị mà linh kiện và chuẩn giao thức yêu cầu, sự không khớp trở kháng sẽ xuất hiện tại các điểm chuyển tiếp giữa chip, đường truyền và tải. Hiện tượng này làm tăng hệ số phản xạ \(\Gamma\), dẫn đến các vấn đề như overshoot, ringing, méo dạng sườn tín hiệu, suy giảm biên độ và sai lệch thời điểm lấy mẫu tại phía thu. Do đó, trong thiết kế PCB tốc độ cao, các đường truyền tín hiệu luôn được thiết kế theo nguyên tắc kiểm soát trở kháng (controlled impedance) với các giá trị chuẩn như 50\(\Omega\), 90\(\Omega\), 100\(\Omega\), \ldots nhằm khai thác tối đa đặc tính trở kháng đã được chuẩn hóa.        
                         
-                        Trong các hệ thống số tốc độ cao, nhiều linh kiện giao tiếp như Ethernet PHY, USB, HDMI, DDR, MIPI hay ADC/DAC tốc độ cao đều được thiết kế với trở kháng chuẩn nhằm đảm bảo truyền dẫn ổn định và tương thích hệ thống. Các giá trị phổ biến gồm 50~\(\Omega\) cho tín hiệu single-ended, 90~\(\Omega\) vi sai cho USB, HDMI, MIPI, và 100~\(\Omega\) vi sai cho Ethernet cùng các giao thức tương tự.
+                        Trong các hệ thống số tốc độ cao, nhiều linh kiện giao tiếp như Ethernet PHY, USB, HDMI, DDR, MIPI hay ADC/DAC tốc độ cao đều được thiết kế với trở kháng chuẩn nhằm đảm bảo truyền dẫn ổn định và tương thích hệ thống. Các giá trị phổ biến gồm 50\(\Omega\) cho tín hiệu single-ended, 90\(\Omega\) vi sai cho USB, HDMI, MIPI, và 100\(\Omega\) vi sai cho Ethernet cùng các giao thức tương tự.
 
-                        Nếu trở kháng đường truyền trên PCB không phù hợp với yêu cầu của linh kiện hoặc chuẩn giao tiếp, hiện tượng không khớp trở kháng sẽ làm tăng hệ số phản xạ \(\Gamma\), gây overshoot, ringing, méo tín hiệu, suy giảm biên độ và sai lệch thời điểm lấy mẫu. Vì vậy, các đường high-speed thường được thiết kế theo nguyên tắc \textit{controlled impedance} với các mức chuẩn như 50~\(\Omega\), 90~\(\Omega\), 100~\(\Omega\), \ldots nhằm khai thác tối đa đặc tính trở kháng đã được chuẩn hóa.
+                        Nếu trở kháng đường truyền trên PCB không phù hợp với yêu cầu của linh kiện hoặc chuẩn giao tiếp, hiện tượng không khớp trở kháng sẽ làm tăng hệ số phản xạ \(\Gamma\), gây overshoot, ringing, méo tín hiệu, suy giảm biên độ và sai lệch thời điểm lấy mẫu. Vì vậy, các đường high-speed thường được thiết kế theo nguyên tắc \textit{controlled impedance} với các mức chuẩn như 50\(\Omega\), 90\(\Omega\), 100\(\Omega\), \ldots nhằm khai thác tối đa đặc tính trở kháng đã được chuẩn hóa.
                     
                 \paragraph{Kiểm soát trở kháng}
                     \paragraph{Trở kháng đặc trưng và các chuẩn thông dụng}
@@ -381,16 +381,16 @@
                             \hline
                             \endlastfoot
                         
-                            RF, tín hiệu high-speed tổng quát & Single-ended & 50~\(\Omega\) \\
-                            USB~2.0/3.x, HDMI & Differential & 90~\(\Omega\) \\
-                            Ethernet (10/100/1000/10G) & Differential & 100~\(\Omega\) \\
-                            PCIe, DDR3/DDR4 & Differential & 100~\(\Omega\) \\
-                            CAN bus, RS-485 & Differential & 120~\(\Omega\) \\
-                            LVDS & Differential & 100~\(\Omega\) \\
-                            SATA & Differential & 100~\(\Omega\) \\
+                            RF, tín hiệu high-speed tổng quát & Single-ended & 50\(\Omega\) \\
+                            USB~2.0/3.x, HDMI & Differential & 90\(\Omega\) \\
+                            Ethernet (10/100/1000/10G) & Differential & 100\(\Omega\) \\
+                            PCIe, DDR3/DDR4 & Differential & 100\(\Omega\) \\
+                            CAN bus, RS-485 & Differential & 120\(\Omega\) \\
+                            LVDS & Differential & 100\(\Omega\) \\
+                            SATA & Differential & 100\(\Omega\) \\
                         \end{longtable}
                         
-                        Mỗi chuẩn giao thức đều quy định chặt chẽ giá trị trở kháng danh định và dung sai cho phép nhằm đảm bảo đặc tính truyền dẫn và khả năng liên thông giữa các thiết bị. Chẳng hạn, các PHY Ethernet thường yêu cầu cặp đường vi sai có trở kháng 100~\(\Omega\) với dung sai khoảng \(\pm 10\%\), trong khi các bộ điều khiển USB được thiết kế để hoạt động tối ưu với đường truyền vi sai 90~\(\Omega\) từ phía phát đến phía thu. Việc tuân thủ đúng các giá trị trở kháng này là điều kiện tiên quyết để giảm phản xạ, hạn chế méo tín hiệu và đảm bảo độ tin cậy của hệ thống truyền thông tốc độ cao.
+                        Mỗi chuẩn giao thức đều quy định chặt chẽ giá trị trở kháng danh định và dung sai cho phép nhằm đảm bảo đặc tính truyền dẫn và khả năng liên thông giữa các thiết bị. Chẳng hạn, các PHY Ethernet thường yêu cầu cặp đường vi sai có trở kháng 100\(\Omega\) với dung sai khoảng \(\pm 10\%\), trong khi các bộ điều khiển USB được thiết kế để hoạt động tối ưu với đường truyền vi sai 90\(\Omega\) từ phía phát đến phía thu. Việc tuân thủ đúng các giá trị trở kháng này là điều kiện tiên quyết để giảm phản xạ, hạn chế méo tín hiệu và đảm bảo độ tin cậy của hệ thống truyền thông tốc độ cao.
                     
                     \paragraph{Các yếu tố quyết định trở kháng của đường dây}
                         Trở kháng đặc trưng \(Z_0\) của đường truyền microstrip (trace đặt trên bề mặt PCB) và stripline (trace nằm kẹp giữa hai mặt phẳng tham chiếu) được xác định từ các bài toán trường điện từ phân bố, trong đó điện trường và từ trường lan truyền trong môi trường điện môi xung quanh trace. Mặc dù các công thức chính xác tương đối phức tạp, giá trị \(Z_0\) có thể được phân tích định tính thông qua một số yếu tố chi phối chính sau đây:
